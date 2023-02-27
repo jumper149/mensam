@@ -4,7 +4,7 @@
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     let
       source = nix-gitignore.gitignoreSource [] ./.;
-      package = (haskellPackages.callCabal2nixWithOptions "homepage" source "-fcabal2nix" {});
+      package = (haskellPackages.callCabal2nixWithOptions "mensam" source "-fcabal2nix" {});
       executables = haskell.lib.justStaticExecutables package;
     in executables;
 

@@ -23,7 +23,7 @@ The configuration file is written in JSON and is specified in [here](./source/li
 nix build ..#subflakes.config.packages.x86_64-linux.default
 
 # Use cabal to develop the application.
-HOMEPAGE_CONFIG_FILE=result cabal run homepage
+HOMEPAGE_CONFIG_FILE=result cabal run mensam
 ```
 
 ### Formatting

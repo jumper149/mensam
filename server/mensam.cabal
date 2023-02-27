@@ -1,5 +1,5 @@
 cabal-version: 3.6
-name: homepage
+name: mensam
 version: 0
 
 flag cabal2nix
@@ -130,20 +130,20 @@ library
     , Text.Blaze.Html5.Extra
   hs-source-dirs: source/library
 
-executable homepage-test-application
+executable mensam-test-application
   import:
     , dependencies
     , language
   build-depends:
-    , homepage
+    , mensam
   main-is: Main.hs
   hs-source-dirs: source/test-application
   ghc-options:
     -Wno-unused-packages
 
-executable homepage
+executable mensam
   build-depends:
-    , homepage
+    , mensam
   main-is: Main.hs
   hs-source-dirs: source/executable
   default-language: GHC2021

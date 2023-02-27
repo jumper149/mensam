@@ -2,7 +2,7 @@
 
   packages.x86_64-linux.default =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    writeText "homepage.json" (builtins.toJSON config);
+    writeText "mensam.json" (builtins.toJSON config);
 
   config =
     self.subflakes.setup.config // {

@@ -1,8 +1,8 @@
 { finalOverlay }:
   { config, lib, pkgs, ... }: {
     options = {
-      services.homepage = {
-        enable = lib.mkEnableOption "Felix Springer's Homepage.";
+      services.mensam = {
+        enable = lib.mkEnableOption "Mensam.";
         config = lib.mkOption {
           default = { };
           type = with lib.types; attrsOf anything;
@@ -13,31 +13,31 @@
         };
       };
     };
-    config = lib.mkIf config.services.homepage.enable {
+    config = lib.mkIf config.services.mensam.enable {
       environment = {
-        etc."homepage.json".text = builtins.toJSON (
-          lib.recursiveUpdate pkgs.homepage-jumper149.config.default config.services.homepage.config
+        etc."mensam.json".text = builtins.toJSON (
+          lib.recursiveUpdate pkgs.mensam-jumper149.config.default config.services.mensam.config
         );
       };
       nixpkgs.overlays = [
         finalOverlay
       ];
-      systemd.services.homepage = {
+      systemd.services.mensam = {
         wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
         description = "Homepage";
         environment = {
-          HOMEPAGE_CONFIG_FILE = "/etc/homepage.json";
-          HOMEPAGE_LOG_FILE = "/var/log/homepage/access.log";
+          HOMEPAGE_CONFIG_FILE = "/etc/mensam.json";
+          HOMEPAGE_LOG_FILE = "/var/log/mensam/access.log";
           HOMEPAGE_LOG_LEVEL = "LevelInfo";
         };
         restartTriggers = [
-          config.environment.etc."homepage.json".source
+          config.environment.etc."mensam.json".source
         ];
         serviceConfig = {
           DynamicUser = true;
-          ExecStart = "${pkgs.homepage-jumper149.exe}/bin/homepage";
-          LogsDirectory = "homepage";
+          ExecStart = "${pkgs.mensam-jumper149.exe}/bin/mensam";
+          LogsDirectory = "mensam";
         };
       };
     };

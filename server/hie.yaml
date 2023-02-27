@@ -1,10 +1,10 @@
 cradle:
   cabal:
     - path: "source/library"
-      component: "lib:homepage"
+      component: "lib:mensam"
 
     - path: "source/test-application/Main.hs"
-      component: "homepage:exe:homepage-test-application"
+      component: "mensam:exe:mensam-test-application"
 
     - path: "source/executable/Main.hs"
-      component: "homepage:exe:homepage"
+      component: "mensam:exe:mensam"

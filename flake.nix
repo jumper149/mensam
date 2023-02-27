@@ -45,7 +45,7 @@
         fullNativeBuildInputs = __concatMap (x: x.nativeBuildInputs) shells;
         fullShellHook = __concatStringsSep "\n" (map (x: x.shellHook) shells);
       in stdenv.mkDerivation {
-        name = "homepage-development"; # TODO: Necessary to avoid segmentation fault.
+        name = "mensam-development"; # TODO: Necessary to avoid segmentation fault.
         src = ./.;
         installPhase = "touch $out";
         buildInputs = fullBuildInputs ++ additionalBuildInputs;
