@@ -1,6 +1,5 @@
 module Mensam.Server where
 
-import Mensam.Application.Blog.Class
 import Mensam.Application.Configured.Class
 import Mensam.Configuration
 import Mensam.Configuration.BaseUrl
@@ -36,7 +35,7 @@ type WrappedAPI = RequestHash :> API
 hoistServerRunHandlerT :: MonadLogger m => ServerT API (HandlerT m) -> ServerT WrappedAPI m
 hoistServerRunHandlerT handler randomHash = hoistServer (Proxy @API) (runHandlerT randomHash) handler
 
-server :: (MonadBlog m, MonadConfigured m, MonadLogger m, MonadUnliftIO m) => m ()
+server :: (MonadConfigured m, MonadLogger m, MonadUnliftIO m) => m ()
 server = do
   logInfo "Configure warp."
   withPort <- setPort . fromEnum . configPort <$> configuration

@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Homepage.Application
+import Mensam.Application
 
 main :: IO ()
 main = runApplicationT $ pure ()

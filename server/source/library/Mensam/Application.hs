@@ -3,8 +3,6 @@
 
 module Mensam.Application where
 
-import Mensam.Application.Blog
-import Mensam.Application.Blog.Class
 import Mensam.Application.Configured
 import Mensam.Application.Configured.Class
 import Mensam.Application.Environment
@@ -29,7 +27,6 @@ type Transformers =
     :.|> EnvironmentT
     :.|> TimedLoggingT
     :.|> ConfiguredT
-    :.|> BlogT
 
 type ApplicationT :: (Type -> Type) -> Type -> Type
 newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m a}
@@ -39,7 +36,6 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadIO, MonadUnliftIO)
   deriving newtype (MonadLogger)
   deriving newtype (MonadConfigured)
-  deriving newtype (MonadBlog)
 
 runApplicationT ::
   (MonadBaseControlIdentity IO m, MonadUnliftIO m) =>
@@ -56,6 +52,5 @@ runApplicationT app = do
           :..> runAppTimedLoggingT
           . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
-          :..> runAppBlogT
 
   runStackT runTransformers $ unApplicationT app

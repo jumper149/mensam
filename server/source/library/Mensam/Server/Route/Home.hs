@@ -2,16 +2,9 @@ module Mensam.Server.Route.Home where
 
 import Mensam.Application.Configured.Class
 import Mensam.Configuration
-import Mensam.Configuration.Blog
 import Mensam.Configuration.Contact
-import Mensam.Server.Html.Blog
-import Mensam.Server.Html.Depth
 import Mensam.Server.Html.Document
-import Mensam.Server.Route.Blog.Type qualified
-import Mensam.Server.Route.Donate.Type qualified
-import Mensam.Server.Route.Files.Type qualified
 import Mensam.Server.Route.Home.Type
-import Mensam.Server.Route.Type qualified
 import Mensam.Server.Tab
 
 import Control.Monad.Logger.CallStack
@@ -21,7 +14,6 @@ import Data.Maybe
 import Servant
 import Text.Blaze.Html5
 import Text.Blaze.Html5.Attributes
-import Text.Blaze.Html5.Extra
 
 handler ::
   (MonadConfigured m, MonadLogger m) =>
@@ -30,8 +22,6 @@ handler = do
   baseUrl <- configBaseUrl <$> configuration
   contactInformation <- configContactInformation <$> configuration
   revision <- configRevision <$> configuration
-  blogs <- configBlogEntries <$> configuration
-  blogPreviewMaxLength <- configBlogPreviewMaxLength <$> configuration
   logInfo "Serve main page."
   let description = (describeDocument contactInformation $ Just TabHome) {documentDepth = Just 0}
   pure . document baseUrl contactInformation revision description $ do
@@ -57,36 +47,8 @@ handler = do
         , "I also love green tea."
         ]
 
-    h2 "recent Blog"
-    p $ do
-      "You can stay up to date by subscribing to this "
-      a ! hrefWithDepth baseUrl (Just 0) (stringValue $ show $ linkURI blogFeedLink) $ s "RSS" <> "/Atom Feed"
-      "."
-    blogList baseUrl (Just 0) $ recentBlogEntries blogPreviewMaxLength blogs
-    p $ do
-      "The full list of blog articles can be accessed "
-      a ! hrefWithDepth baseUrl (Just 0) (stringValue $ show $ linkURI blogOverviewLink) $ "here"
-      "."
-
-    h2 "shared Files"
-    p $ do
-      "You can download some of my shared files "
-      a ! hrefWithDepth baseUrl (Just 0) (stringValue $ show $ linkURI filesLink) $ "here"
-      "."
-
     h2 "Contact"
     contactHtml contactInformation
-
-    h2 "Donate"
-    p $ do
-      "If you want to support me, you can donate to me "
-      a ! hrefWithDepth baseUrl (Just 0) (stringValue $ show $ linkURI donateLink) $ "here"
-      "."
- where
-  blogFeedLink = Mensam.Server.Route.Blog.Type.routeFeed . Mensam.Server.Route.Type.routeBlog $ allFieldLinks
-  blogOverviewLink = Mensam.Server.Route.Blog.Type.routeOverview . Mensam.Server.Route.Type.routeBlog $ allFieldLinks
-  donateLink = Mensam.Server.Route.Donate.Type.routeDonate . Mensam.Server.Route.Type.routeDonate $ allFieldLinks
-  filesLink = Mensam.Server.Route.Files.Type.routeOverview . Mensam.Server.Route.Type.routeFiles $ allFieldLinks
 
 contactHtml :: ContactInformation -> Html
 contactHtml

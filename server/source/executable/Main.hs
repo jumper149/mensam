@@ -1,3 +1,3 @@
 module Main (main) where
 
-import Homepage (main)
+import Mensam (main)
