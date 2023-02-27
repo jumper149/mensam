@@ -25,7 +25,7 @@
       systemd.services.mensam = {
         wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
-        description = "Homepage";
+        description = "Mensam";
         environment = {
           HOMEPAGE_CONFIG_FILE = "/etc/mensam.json";
           HOMEPAGE_LOG_FILE = "/var/log/mensam/access.log";
