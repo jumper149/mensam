@@ -1,0 +1,35 @@
+{ "port": 8008
+, "base-url":
+  { "scheme": "https"
+  , "authority":
+    { "host": "felixspringer.xyz"
+    , "port": null
+    }
+  , "path":
+    [ "homepage"
+    ]
+  }
+, "contact-information":
+  { "header-icons":
+    { "feed": true
+    , "github": true
+    , "gitlab": false
+    }
+  , "name": "Felix Springer"
+  , "source-url": "https://github.com/jumper149/homepage"
+  , "homepage-label": "felixspringer.xyz"
+  , "donate-information":
+    { "paypal-url": "https://www.paypal.com/donate?hosted_button_id=3LZQ9DCDDFFWU"
+    , "xmr-address": null
+    }
+  , "email-address": "contact@felixspringer.xyz"
+  , "matrix": "@jumper149:matrix.org"
+  , "libera-chat": "jumper149"
+  , "github-username": "jumper149"
+  , "gitlab-username": "jumper149"
+  , "hackage-username": "jumper149"
+  , "aur-username": "jumper149"
+  }
+, "blog-preview-max-length": 5
+, "atom-max-length": null
+}

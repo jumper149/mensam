@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: "source/library"
+      component: "lib:homepage"
+
+    - path: "source/test-application/Main.hs"
+      component: "homepage:exe:homepage-test-application"
+
+    - path: "source/executable/Main.hs"
+      component: "homepage:exe:homepage"

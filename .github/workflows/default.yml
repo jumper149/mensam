@@ -1,0 +1,69 @@
+name: "Default"
+on:
+  push:
+jobs:
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        deployment:
+          [ nixpublic
+          , development
+          ]
+        output:
+          [ packages.x86_64-linux.default
+          , devShells.x86_64-linux.default
+          , subflakes.server.packages.x86_64-linux.default
+          , subflakes.static.packages.x86_64-linux.default
+          , subflakes.config.packages.x86_64-linux.default
+          ]
+    steps:
+    - name: "Set up GitHub Actions"
+      uses: actions/checkout@v3.3.0
+    - name: "Set up Nix"
+      uses: cachix/install-nix-action@v18
+    - name: "Set up Cachix"
+      uses: cachix/cachix-action@v12
+      with:
+        name: jumper149-mensam
+        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+    - name: "Set deployment"
+      run: echo "\"${{ matrix.deployment }}\"" > setup/deployment.json
+    - name: "Build"
+      run: nix build --print-build-logs .\#${{ matrix.output }}
+  check:
+    name: "Check Flake"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Set up GitHub Actions"
+      uses: actions/checkout@v3.3.0
+    - name: "Set up Nix"
+      uses: cachix/install-nix-action@v18
+    - name: "Set up Cachix"
+      uses: cachix/cachix-action@v12
+      with:
+        name: jumper149-mensam
+        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+    - name: "Check"
+      run: nix flake check --keep-going --print-build-logs
+  # TODO: Run weeder using `nix flake check` instead.
+  weeder:
+    name: "Detect dead Haskell code"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Set up GitHub Actions"
+      uses: actions/checkout@v3.3.0
+    - name: "Set up Nix"
+      uses: cachix/install-nix-action@v18
+    - name: "Set up Cachix"
+      uses: cachix/cachix-action@v12
+      with:
+        name: jumper149-mensam
+        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+    - name: "Prepare weeder"
+      run: nix develop "..#subflakes.server.devShells.x86_64-linux.default" --command cabal build all
+      working-directory: ./server
+    - name: "Run weeder"
+      run: nix develop "..#subflakes.server.devShells.x86_64-linux.default" --command weeder
+      working-directory: ./server

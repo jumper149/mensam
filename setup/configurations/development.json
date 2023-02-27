@@ -1,0 +1,30 @@
+{ "port": 8008
+, "base-url":
+  { "scheme": "http"
+  , "authority":
+    { "host": "localhost"
+    , "port": 8008
+    }
+  , "path": [ ]
+  }
+, "contact-information":
+  { "header-icons":
+    { "feed": true
+    , "github": true
+    , "gitlab": true
+    }
+  , "name": "Felix Springer"
+  , "source-url": "https://github.com/jumper149/homepage"
+  , "homepage-label": "felixspringer.xyz"
+  , "donate-information": null
+  , "email-address": "contact@felixspringer.xyz"
+  , "matrix": "@jumper149:matrix.org"
+  , "libera-chat": "jumper149"
+  , "github-username": "jumper149"
+  , "gitlab-username": "jumper149"
+  , "hackage-username": "jumper149"
+  , "aur-username": "jumper149"
+  }
+, "blog-preview-max-length": 5
+, "atom-max-length": null
+}

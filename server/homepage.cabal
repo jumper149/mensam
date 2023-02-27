@@ -1,0 +1,153 @@
+cabal-version: 3.6
+name: homepage
+version: 0
+
+flag cabal2nix
+  default: False
+
+common language
+  default-language: GHC2021
+  default-extensions:
+    DataKinds
+    DeriveAnyClass
+    DerivingStrategies
+    DerivingVia
+    ExplicitNamespaces
+      -- ^ Is not implied by GHC2021, even though it should be.
+    FunctionalDependencies
+    LambdaCase
+    LexicalNegation
+    NumDecimals
+    OverloadedStrings
+  ghc-options:
+    -Weverything
+    -Wno-all-missed-specialisations
+    -Wno-implicit-prelude
+    -Wno-missed-specialisations
+    -Wno-missing-export-lists
+    -Wno-missing-import-lists
+    -Wno-missing-safe-haskell-mode
+    -Wno-unsafe
+    -Wno-unticked-promoted-constructors
+  if flag(cabal2nix)
+    ghc-options:
+      -Werror
+  else
+    ghc-options:
+      -fdefer-typed-holes
+      -fwrite-ide-info
+        -- ^ Generate data for 'weeder'.
+
+common dependencies
+  build-depends:
+    , aeson
+    , base
+    , blaze-html
+    , blaze-markup
+    , bytestring
+    , containers
+    , deriving-aeson
+    , deriving-trans
+    , feed
+    , hashable
+    , http-media
+    , http-types
+    , monad-control
+    , monad-control-identity
+    , monad-logger
+    , mtl
+    , servant
+    , servant-blaze
+    , servant-rawm
+    , servant-rawm-server
+    , servant-server
+    , singletons
+    , singletons-th
+    , text
+    , time
+    , transformers
+    , transformers-base
+    , unix
+    , unliftio
+    , unliftio-core
+    , wai
+    , wai-app-static
+    , wai-control
+    , warp
+
+library
+  import:
+    , dependencies
+    , language
+  exposed-modules:
+    , Homepage
+    , Homepage.Application
+    , Homepage.Application.Blog
+    , Homepage.Application.Blog.Class
+    , Homepage.Application.Configured
+    , Homepage.Application.Configured.Acquisition
+    , Homepage.Application.Configured.Class
+    , Homepage.Application.Environment
+    , Homepage.Application.Environment.Acquisition
+    , Homepage.Application.Environment.Class
+    , Homepage.Application.Logging
+    , Homepage.Configuration
+    , Homepage.Configuration.BaseUrl
+    , Homepage.Configuration.Blog
+    , Homepage.Configuration.Contact
+    , Homepage.Configuration.Files
+    , Homepage.Environment
+    , Homepage.Server
+    , Homepage.Server.Err404
+    , Homepage.Server.FileServer
+    , Homepage.Server.Handler
+    , Homepage.Server.Handler.RequestHash
+    , Homepage.Server.Html.Blog
+    , Homepage.Server.Html.Depth
+    , Homepage.Server.Html.Document
+    , Homepage.Server.Html.Header
+    , Homepage.Server.Route
+    , Homepage.Server.Route.Blog
+    , Homepage.Server.Route.Blog.Atom
+    , Homepage.Server.Route.Blog.Atom.Type
+    , Homepage.Server.Route.Blog.Type
+    , Homepage.Server.Route.Donate
+    , Homepage.Server.Route.Donate.Type
+    , Homepage.Server.Route.Files
+    , Homepage.Server.Route.Files.Type
+    , Homepage.Server.Route.Home
+    , Homepage.Server.Route.Home.Type
+    , Homepage.Server.Route.Redirect
+    , Homepage.Server.Route.Redirect.Type
+    , Homepage.Server.Route.Static
+    , Homepage.Server.Route.Static.Type
+    , Homepage.Server.Route.Type
+    , Homepage.Server.Tab
+  other-modules:
+    , Control.Monad.IO.Unlift.OrphanInstances
+    , Control.Monad.Logger.OrphanInstances
+    , System.Posix.Signals.Patterns
+    , Text.Blaze.Html5.Extra
+  hs-source-dirs: source/library
+
+executable homepage-test-application
+  import:
+    , dependencies
+    , language
+  build-depends:
+    , homepage
+  main-is: Main.hs
+  hs-source-dirs: source/test-application
+  ghc-options:
+    -Wno-unused-packages
+
+executable homepage
+  build-depends:
+    , homepage
+  main-is: Main.hs
+  hs-source-dirs: source/executable
+  default-language: GHC2021
+  default-extensions:
+    NoImplicitPrelude
+  ghc-options:
+    -threaded

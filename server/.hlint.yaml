@@ -1,0 +1,4 @@
+- modules:
+  - name: Control.Monad.Logger
+    within: []
+    message: Use Control.Monad.Logger.CallStack instead
