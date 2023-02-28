@@ -43,7 +43,6 @@ common dependencies
     , aeson
     , base
     , blaze-html
-    , blaze-markup
     , bytestring
     , deriving-aeson
     , deriving-trans
@@ -113,7 +112,6 @@ library
     , Control.Monad.IO.Unlift.OrphanInstances
     , Control.Monad.Logger.OrphanInstances
     , System.Posix.Signals.Patterns
-    , Text.Blaze.Html5.Extra
   hs-source-dirs: source/library
 
 executable mensam-test-application
