@@ -52,6 +52,7 @@ common dependencies
     , monad-control-identity
     , monad-logger
     , mtl
+    , password
     , resource-pool
     , selda
     , selda-sqlite
