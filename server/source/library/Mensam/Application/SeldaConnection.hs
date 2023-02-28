@@ -5,6 +5,7 @@ module Mensam.Application.SeldaConnection where
 
 import Mensam.Application.SeldaConnection.Class
 
+import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
@@ -22,7 +23,7 @@ newtype SeldaConnectionT m a = SeldaConnectionT {unSeldaConnectionT :: ReaderT (
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
 
-instance (MonadIO m) => MonadSeldaConnection (SeldaConnectionT m) where
+instance MonadIO m => MonadSeldaConnection (SeldaConnectionT m) where
   runSeldaTransaction tma = do
     pool <- SeldaConnectionT ask
     lift $ liftIO $ P.withResource pool $ \connection ->
@@ -31,11 +32,25 @@ instance (MonadIO m) => MonadSeldaConnection (SeldaConnectionT m) where
 deriving via
   SeldaConnectionT ((t2 :: (Type -> Type) -> Type -> Type) m)
   instance
-    (MonadIO (t2 m)) => MonadSeldaConnection (ComposeT SeldaConnectionT t2 m)
+    MonadIO (t2 m) => MonadSeldaConnection (ComposeT SeldaConnectionT t2 m)
 
-runSeldaConnectionT :: (MonadIO m, MonadLogger m) => SeldaConnectionT m a -> m a
+runSeldaConnectionT :: (MonadLogger m, MonadUnliftIO m) => SeldaConnectionT m a -> m a
 runSeldaConnectionT tma = do
   let filepath :: FilePath = "mensam-example.sqlite" -- TODO: Configure.
-  logInfo "Create SQLite connection pool for Selda."
-  pool <- liftIO $ P.createPool (sqliteOpen filepath) seldaClose 5 (T.secondsToNominalDiffTime 5) 5
+  logDebug "Initializing SQLite connection pool for Selda."
+  pool <- withRunInIO $ \runInIO -> do
+    let
+      openConnection :: IO (SeldaConnection SQLite)
+      openConnection = runInIO $ do
+        logDebug "Opening SQLite connection."
+        connection <- liftIO $ sqliteOpen filepath
+        logInfo "Opened SQLite connection successfully."
+        pure connection
+      closeConnection :: SeldaConnection SQLite -> IO ()
+      closeConnection connection = runInIO $ do
+        logDebug "Closing SQLite connection."
+        liftIO $ seldaClose connection
+        logInfo "Closed SQLite connection successfully."
+    liftIO $ P.createPool openConnection closeConnection 5 (T.secondsToNominalDiffTime 5) 5
+  logInfo "Initialized SQLite connection pool for Selda successfully."
   runReaderT (unSeldaConnectionT tma) pool
