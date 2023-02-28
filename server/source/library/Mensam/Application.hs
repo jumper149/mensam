@@ -8,6 +8,7 @@ import Mensam.Application.Configured.Class
 import Mensam.Application.Environment
 import Mensam.Application.Environment.Acquisition
 import Mensam.Application.Logging
+import Mensam.Application.SeldaConnection.Class
 
 import Control.Monad.Base
 import Control.Monad.Except
@@ -36,6 +37,7 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadIO, MonadUnliftIO)
   deriving newtype (MonadLogger)
   deriving newtype (MonadConfigured)
+  deriving newtype (MonadSeldaConnection)
 
 runApplicationT ::
   (MonadBaseControlIdentity IO m, MonadUnliftIO m) =>

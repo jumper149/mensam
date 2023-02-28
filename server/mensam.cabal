@@ -53,6 +53,9 @@ common dependencies
     , monad-control-identity
     , monad-logger
     , mtl
+    , resource-pool
+    , selda
+    , selda-sqlite
     , servant
     , servant-blaze
     , servant-rawm
@@ -85,6 +88,8 @@ library
     , Mensam.Application.Environment.Acquisition
     , Mensam.Application.Environment.Class
     , Mensam.Application.Logging
+    , Mensam.Application.SeldaConnection
+    , Mensam.Application.SeldaConnection.Class
     , Mensam.Configuration
     , Mensam.Configuration.BaseUrl
     , Mensam.Configuration.Contact
