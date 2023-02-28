@@ -108,6 +108,7 @@ library
     , Mensam.Server.Route.Static.Type
     , Mensam.Server.Route.Type
     , Mensam.Server.Tab
+    , Mensam.User
   other-modules:
     , Control.Monad.IO.Unlift.OrphanInstances
     , Control.Monad.Logger.OrphanInstances

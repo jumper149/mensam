@@ -36,6 +36,8 @@
         additionalBuildInputs = [
           pkgs.haskell.packages.ghc902.nix-tree
           pkgs.rnix-lsp
+          pkgs.sqlite
+          pkgs.sqlitebrowser
         ];
         shells = [
           self.subflakes.server.devShells.x86_64-linux.default
