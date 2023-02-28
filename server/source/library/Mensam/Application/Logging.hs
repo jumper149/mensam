@@ -46,8 +46,8 @@ runTimedLoggingT maybeFilePath configuredLogLevel = run . withFilter . unTimedLo
 
 runAppTimedLoggingT :: (MonadBaseControl IO m, MonadEnvironment m, MonadIO m) => TimedLoggingT m a -> m a
 runAppTimedLoggingT tma = do
-  maybeLogFile <- environmentVariable $ EnvVar @"HOMEPAGE_LOG_FILE"
-  logLevel <- environmentVariable $ EnvVar @"HOMEPAGE_LOG_LEVEL"
+  maybeLogFile <- environmentVariable $ EnvVar @"MENSAM_LOG_FILE"
+  logLevel <- environmentVariable $ EnvVar @"MENSAM_LOG_LEVEL"
   runTimedLoggingT maybeLogFile logLevel tma
 
 logLine ::

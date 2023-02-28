@@ -81,4 +81,4 @@ checkUnconsumedEnvironment env = do
     anomalies -> logWarn $ "Unconsumed environment contains anomalies: " <> T.pack (show anomalies)
  where
   isSuspicious :: (String, String) -> Bool
-  isSuspicious (identifier, _value) = "HOMEPAGE" `L.isPrefixOf` identifier
+  isSuspicious (identifier, _value) = "MENSAM" `L.isPrefixOf` identifier

@@ -3,14 +3,14 @@
   packages.x86_64-linux.default =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-full" ''
-      HOMEPAGE_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam
+      MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam
     '';
 
   packages.x86_64-linux.mensam-test-application =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-test-application-full" ''
-      export HOMEPAGE_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}"
-      export HOMEPAGE_LOG_LEVEL=LevelWarn
+      export MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}"
+      export MENSAM_LOG_LEVEL=LevelWarn
       ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-test-application
     '';
 

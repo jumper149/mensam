@@ -14,7 +14,7 @@ acquireConfig ::
   m (Maybe Configuration)
 acquireConfig = do
   logInfo "Checking configuration file."
-  configFile <- environmentVariable $ EnvVar @"HOMEPAGE_CONFIG_FILE"
+  configFile <- environmentVariable $ EnvVar @"MENSAM_CONFIG_FILE"
   exists <- liftIO $ fileExist configFile
   if exists
     then do

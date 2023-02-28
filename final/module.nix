@@ -27,9 +27,9 @@
         after = [ "network.target" ];
         description = "Mensam";
         environment = {
-          HOMEPAGE_CONFIG_FILE = "/etc/mensam.json";
-          HOMEPAGE_LOG_FILE = "/var/log/mensam/access.log";
-          HOMEPAGE_LOG_LEVEL = "LevelInfo";
+          MENSAM_CONFIG_FILE = "/etc/mensam.json";
+          MENSAM_LOG_FILE = "/var/log/mensam/access.log";
+          MENSAM_LOG_LEVEL = "LevelInfo";
         };
         restartTriggers = [
           config.environment.etc."mensam.json".source

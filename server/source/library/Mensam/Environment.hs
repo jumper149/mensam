@@ -21,9 +21,9 @@ genSingletons [''EnvVar]
 
 type EnvVarName :: EnvVar -> Symbol
 type family EnvVarName envVar = name | name -> envVar where
-  EnvVarName EnvVarConfigFile = "HOMEPAGE_CONFIG_FILE"
-  EnvVarName EnvVarLogFile = "HOMEPAGE_LOG_FILE"
-  EnvVarName EnvVarLogLevel = "HOMEPAGE_LOG_LEVEL"
+  EnvVarName EnvVarConfigFile = "MENSAM_CONFIG_FILE"
+  EnvVarName EnvVarLogFile = "MENSAM_LOG_FILE"
+  EnvVarName EnvVarLogLevel = "MENSAM_LOG_LEVEL"
 
 type EnvVarValue :: EnvVar -> Type
 type family EnvVarValue envVar = value where
