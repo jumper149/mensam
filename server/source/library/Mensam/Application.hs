@@ -8,6 +8,7 @@ import Mensam.Application.Configured.Class
 import Mensam.Application.Environment
 import Mensam.Application.Environment.Acquisition
 import Mensam.Application.Logging
+import Mensam.Application.SeldaConnection
 import Mensam.Application.SeldaConnection.Class
 
 import Control.Monad.Base
@@ -28,6 +29,7 @@ type Transformers =
     :.|> EnvironmentT
     :.|> TimedLoggingT
     :.|> ConfiguredT
+    :.|> SeldaConnectionT
 
 type ApplicationT :: (Type -> Type) -> Type -> Type
 newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m a}
@@ -54,5 +56,6 @@ runApplicationT app = do
           :..> runAppTimedLoggingT
           . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
+          :..> runSeldaConnectionT
 
   runStackT runTransformers $ unApplicationT app

@@ -37,5 +37,5 @@ runSeldaConnectionT :: (MonadIO m, MonadLogger m) => SeldaConnectionT m a -> m a
 runSeldaConnectionT tma = do
   let filepath :: FilePath = "mensam-example.sqlite" -- TODO: Configure.
   logInfo "Create SQLite connection pool for Selda."
-  pool <- liftIO $ P.createPool (sqliteOpen filepath) seldaClose 5 (T.secondsToNominalDiffTime 0.05) 5
+  pool <- liftIO $ P.createPool (sqliteOpen filepath) seldaClose 5 (T.secondsToNominalDiffTime 5) 5
   runReaderT (unSeldaConnectionT tma) pool
