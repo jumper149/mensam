@@ -9,6 +9,7 @@ import Control.Monad.Logger.CallStack
 import Data.Password.Bcrypt
 import Data.Text qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
+import Data.Time qualified as T
 import Database.Selda qualified as Selda
 import Servant.Auth.Server
 import Servant.Server.Generic
@@ -21,19 +22,28 @@ handler =
     { routeLogin = login
     }
 
+-- TODO: Fix `undefined` branches with HTTP failure.
 login :: (MonadIO m, MonadLogger m) => AuthResult User -> m ResponseLogin
 login authUser =
   case authUser of
     Authenticated user -> do
       logDebug $ "Creating JWT for user: " <> T.pack (show user)
-      eitherJwt <- liftIO $ makeJWT user undefined undefined
+      let timeout :: Maybe T.UTCTime = Nothing
+      logDebug $ "JWT timeout has been set: " <> T.pack (show timeout)
+      eitherJwt <- liftIO $ makeJWT user jwtSettings timeout
       case eitherJwt of
         Left err -> do
-          logInfo $ "Failed to create JWT: " <> T.pack (show err)
+          logError $ "Failed to create JWT: " <> T.pack (show err)
           undefined
-        Right jwt -> do
-          logInfo "Created JWT successfully."
-          pure MkResponseLogin {responseLoginJWT = TL.decodeUtf8 jwt}
+        Right jwtByteString ->
+          case TL.decodeUtf8' jwtByteString of
+            Left err -> do
+              logError $ "Failed to decode JWT as UTF-8: " <> T.pack (show err)
+              undefined
+            Right jwtText -> do
+              logInfo "Created JWT successfully."
+              logInfo "User logged in successfully."
+              pure MkResponseLogin {responseLoginJWT = jwtText}
     failedAuthentication ->
       case failedAuthentication of
         BadPassword -> undefined
