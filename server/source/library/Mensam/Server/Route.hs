@@ -1,6 +1,7 @@
 module Mensam.Server.Route where
 
 import Mensam.Application.Configured.Class
+import Mensam.Application.SeldaConnection.Class
 import Mensam.Server.Route.Home qualified
 import Mensam.Server.Route.Static qualified
 import Mensam.Server.Route.Type
@@ -11,7 +12,7 @@ import Control.Monad.Logger.CallStack
 import Servant.Server.Generic
 
 routes ::
-  (MonadConfigured m, MonadLogger m, MonadUnliftIO m) =>
+  (MonadConfigured m, MonadLogger m, MonadSeldaConnection m, MonadUnliftIO m) =>
   Routes (AsServerT m)
 routes =
   Routes
