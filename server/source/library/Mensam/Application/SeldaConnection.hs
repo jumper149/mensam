@@ -36,7 +36,7 @@ deriving via
 
 runSeldaConnectionT :: (MonadLogger m, MonadUnliftIO m) => SeldaConnectionT m a -> m a
 runSeldaConnectionT tma = do
-  let filepath :: FilePath = "mensam-example.sqlite" -- TODO: Configure.
+  let filepath :: FilePath = "mensam.sqlite" -- TODO: Configure.
   logDebug "Initializing SQLite connection pool for Selda."
   pool <- withRunInIO $ \runInIO -> do
     let
