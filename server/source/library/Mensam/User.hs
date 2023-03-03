@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Mensam.User where
 
@@ -63,15 +62,11 @@ userMartaMustermann =
 type User :: Type
 data User = MkUser
   { userName :: T.Text
-  , userPasswordHash :: PasswordHash Bcrypt -- TODO: Do we want to keep this around?
   , userEmail :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
   deriving anyclass (FromJWT, ToJWT)
-
-deriving newtype instance A.FromJSON (PasswordHash a)
-deriving newtype instance A.ToJSON (PasswordHash a)
 
 instance FromBasicAuthData User where
   fromBasicAuthData BasicAuthData {basicAuthUsername, basicAuthPassword} MkRunLoginInIO {runLoginInIO} = runLoginInIO $ do
@@ -107,14 +102,15 @@ userLogin username password = do
   case matchingUsers of
     [] -> pure NoSuchUser
     [dbUser] -> do
-      let user =
-            MkUser
-              { userName = dbUser_name dbUser
-              , userPasswordHash = PasswordHash $ dbUser_password_hash dbUser
-              , userEmail = dbUser_email dbUser
-              }
+      let
+        user =
+          MkUser
+            { userName = dbUser_name dbUser
+            , userEmail = dbUser_email dbUser
+            }
+        passwordHash = PasswordHash $ dbUser_password_hash dbUser
       logDebug $ "Queried user " <> T.pack (show user) <> " from database for password authentication. Checking password now."
-      case checkPassword password (userPasswordHash user) of
+      case checkPassword password passwordHash of
         PasswordCheckFail -> do
           logInfo "Password authentication failed because of wrong password."
           pure BadPassword

@@ -56,15 +56,14 @@ userCreate request = do
   let user =
         MkUser
           { userName = requestUserCreateName request
-          , userPasswordHash = passwordHash
           , userEmail = requestUserCreateEmail request
           }
   let dbUser =
         MkDbUser
           { dbUser_id = Selda.def
-          , dbUser_name = requestUserCreateName request
-          , dbUser_password_hash = unPasswordHash $ userPasswordHash user
-          , dbUser_email = requestUserCreateEmail request
+          , dbUser_name = userName user
+          , dbUser_password_hash = unPasswordHash passwordHash
+          , dbUser_email = userEmail user
           }
   runSeldaTransaction $
     Selda.insert_ usersTable [dbUser]
