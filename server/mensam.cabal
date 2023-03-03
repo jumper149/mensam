@@ -95,6 +95,7 @@ library
     , Mensam.Configuration
     , Mensam.Configuration.BaseUrl
     , Mensam.Configuration.Contact
+    , Mensam.Database
     , Mensam.Environment
     , Mensam.Server
     , Mensam.Server.Err404

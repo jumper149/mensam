@@ -1,16 +1,13 @@
 module Mensam.Server.Route.User where
 
-import Mensam.Application.SeldaConnection.Class
 import Mensam.Server.Route.User.Type
 import Mensam.User
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
-import Data.Password.Bcrypt
 import Data.Text qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
 import Data.Time qualified as T
-import Database.Selda qualified as Selda
 import Servant.Auth.Server
 import Servant.Server.Generic
 
@@ -49,22 +46,3 @@ login authUser =
         BadPassword -> undefined
         NoSuchUser -> undefined
         Indefinite -> undefined
-
-userCreate :: (MonadIO m, MonadSeldaConnection m) => RequestUserCreate -> m ()
-userCreate request = do
-  passwordHash :: PasswordHash Bcrypt <- hashPassword $ requestUserCreatePassword request
-  let user =
-        MkUser
-          { userName = requestUserCreateName request
-          , userEmail = requestUserCreateEmail request
-          }
-  let dbUser =
-        MkDbUser
-          { dbUser_id = Selda.def
-          , dbUser_name = userName user
-          , dbUser_password_hash = unPasswordHash passwordHash
-          , dbUser_email = userEmail user
-          }
-  runSeldaTransaction $
-    Selda.insert_ usersTable [dbUser]
-  pure ()
