@@ -33,7 +33,7 @@
       src = ./.;
       buildPhase = ''
         set +e
-        INIT_LOG="$(mensam-test-full)"
+        INIT_LOG="$(mensam-test-full || echo "Application exited abnormally.")"
         set -e
         echo "$INIT_LOG"
 
