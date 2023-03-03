@@ -3,9 +3,9 @@
 
 module Mensam.Application.SeldaConnection where
 
-import Mensam.Configuration
 import Mensam.Application.Configured.Class
 import Mensam.Application.SeldaConnection.Class
+import Mensam.Configuration
 
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
