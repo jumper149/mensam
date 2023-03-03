@@ -27,7 +27,7 @@ login authUser =
       logDebug $ "Creating JWT for user: " <> T.pack (show user)
       let timeout :: Maybe T.UTCTime = Nothing
       logDebug $ "JWT timeout has been set: " <> T.pack (show timeout)
-      eitherJwt <- liftIO $ makeJWT user undefined timeout
+      eitherJwt <- liftIO $ makeJWT user jwtSettings timeout
       case eitherJwt of
         Left err -> do
           logError $ "Failed to create JWT: " <> T.pack (show err)

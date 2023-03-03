@@ -30,7 +30,7 @@ data User = MkUser
 instance FromBasicAuthData User where
   fromBasicAuthData BasicAuthData {basicAuthUsername, basicAuthPassword} MkRunLoginInIO {runLoginInIO} = runLoginInIO $ do
     logInfo "Starting password authentication."
-    logDebug $ "Decoding UTF-8 username: " <> T.pack (show basicAuthPassword)
+    logDebug $ "Decoding UTF-8 username: " <> T.pack (show basicAuthUsername)
     case T.decodeUtf8' basicAuthUsername of
       Left err -> do
         logInfo $ "Failed to decode username as UTF-8: " <> T.pack (show err)
@@ -38,7 +38,7 @@ instance FromBasicAuthData User where
       Right username -> do
         logDebug $ "Decoded UTF-8 username: " <> T.pack (show username)
         logDebug "Decoding UTF-8 password."
-        case mkPassword <$> T.decodeUtf8' basicAuthUsername of
+        case mkPassword <$> T.decodeUtf8' basicAuthPassword of
           Left _err -> do
             logInfo "Failed to decode password as UTF-8."
             pure Indefinite
@@ -53,7 +53,7 @@ userLogin ::
   Password ->
   m (AuthResult User)
 userLogin username password = do
-  logDebug $ "Querying user " <> T.pack (show username) <> "from database for password authentication."
+  logDebug $ "Querying user " <> T.pack (show username) <> " from database for password authentication."
   matchingUsers :: [DbUser] <- runSeldaTransaction $ Selda.query $ do
     user <- Selda.select usersTable
     Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal username
@@ -103,3 +103,10 @@ type RunLoginInIO :: Type
 data RunLoginInIO = forall m.
   (MonadLogger m, MonadSeldaConnection m) =>
   MkRunLoginInIO {runLoginInIO :: m (AuthResult User) -> IO (AuthResult User)}
+
+-- TODO: Remove hardcoded JWK from source code.
+jwtSettings :: JWTSettings
+jwtSettings = defaultJWTSettings $ fromSecret "\155\EM\235\181/\128\236M\130\245\173\142\231<\241A\159Ds\238S|m\219\234\188\224\162\n(\212\148\212\147\180E>\138\141\"\161\US\154\173\212Y\FS\213\206\ENQ\196^\172\220\142\167r(\172\r\217\143~\234\179\244\204n\\2\149\n\195\NAKEh\176\130\bUt\141A_BE\146\211\247P\251\&5\231\DC2b\131=\b\GS\211\FS_\138z?A 6\178v\213\191\218\&7\ETB\161N\185\157\229\DC1m]\144\203\155\234\136\FS\148Q\228^\247\140\150g?_\ETX\164f\163\140\170\233{\153\189\248\r)\170'V'\RS\206q\f \222;8>\\\244\166\f\168\209B-\244\241\ACKZs\134f\225\&4\DLE\151\230\215\145]\160Z\t\ACKk\US'\174p\221\&9\ETB\214mV\140\STX\253P\179<BV^Ssp\163\&3\173>P\245T\160\\cr\194\ETX\178.D\253\233'\170y\148\250\232z\229\SYNK\212)>T\NUL2I\165\175\164\170\143\RS"
+
+cookieSettings :: CookieSettings
+cookieSettings = defaultCookieSettings

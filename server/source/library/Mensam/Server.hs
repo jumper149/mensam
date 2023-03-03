@@ -68,8 +68,8 @@ server = do
         context :: Context ContextList
         context =
           MkRunLoginInIO runInIO
-            :. defaultCookieSettings
-            :. defaultJWTSettings undefined
+            :. cookieSettings
+            :. jwtSettings
             :. EmptyContext
       serveWithContextT (Proxy @WrappedAPI) context (liftBase . runInIO) $
         hoistServerRunHandlerT $
