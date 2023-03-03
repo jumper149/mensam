@@ -6,6 +6,14 @@
       MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam
     '';
 
+  packages.x86_64-linux.mensam-init =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    writeScriptBin "mensam-init-full" ''
+      export MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}"
+      export MENSAM_LOG_LEVEL=LevelWarn
+      ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-init
+    '';
+
   packages.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-test-full" ''
@@ -26,6 +34,34 @@
     finalOverlay = overlays.default;
   };
 
+  checks.x86_64-linux.mensam-init =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    stdenv.mkDerivation {
+      name = "mensam-init"; # TODO: Necessary to avoid segmentation fault.
+      src = ./.;
+      buildPhase = ''
+        set +e
+        INIT_LOG="$(mensam-init-full || echo "Application exited abnormally.")"
+        set -e
+        echo "$INIT_LOG"
+
+        if [ -z "$INIT_LOG" ];
+        then
+          echo "Successfully checked log."
+        else
+          echo "Warnings/Errors/Unknowns detected in log."
+          echo "$INIT_LOG"
+          exit 1
+        fi
+      '';
+      installPhase = ''
+        mkdir $out
+      '';
+      buildInputs = [
+        packages.x86_64-linux.mensam-init
+      ];
+    };
+
   checks.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     stdenv.mkDerivation {
@@ -39,9 +75,9 @@
 
         if [ -z "$INIT_LOG" ];
         then
-          echo "Successfully checked the initialization log."
+          echo "Successfully checked log."
         else
-          echo "Warnings/Errors/Unknowns detected in initialization log."
+          echo "Warnings/Errors/Unknowns detected in log."
           echo "$INIT_LOG"
           exit 1
         fi
