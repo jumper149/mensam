@@ -120,25 +120,25 @@ library
     , System.Posix.Signals.Patterns
   hs-source-dirs: source/library
 
-executable mensam-test-application
+executable mensam-test
   import:
     , dependencies
     , language
   build-depends:
     , mensam
   main-is: Main.hs
-  hs-source-dirs: source/test-application
+  hs-source-dirs: source/executable/test
   ghc-options:
     -Wno-unused-packages
 
-executable mensam-init-application
+executable mensam-init
   import:
     , dependencies
     , language
   build-depends:
     , mensam
   main-is: Main.hs
-  hs-source-dirs: source/init-application
+  hs-source-dirs: source/executable/init
   ghc-options:
     -Wno-unused-packages
 
@@ -146,7 +146,7 @@ executable mensam
   build-depends:
     , mensam
   main-is: Main.hs
-  hs-source-dirs: source/executable
+  hs-source-dirs: source/executable/server
   default-language: GHC2021
   default-extensions:
     NoImplicitPrelude

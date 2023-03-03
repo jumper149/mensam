@@ -3,11 +3,11 @@ cradle:
     - path: "source/library"
       component: "lib:mensam"
 
-    - path: "source/test-application/Main.hs"
-      component: "mensam:exe:mensam-test-application"
+    - path: "source/executable/test/Main.hs"
+      component: "mensam:exe:mensam-test"
 
-    - path: "source/test-application/Main.hs"
-      component: "mensam:exe:mensam-init-application"
+    - path: "source/executable/init/Main.hs"
+      component: "mensam:exe:mensam-init"
 
-    - path: "source/executable/Main.hs"
+    - path: "source/executable/server/Main.hs"
       component: "mensam:exe:mensam"

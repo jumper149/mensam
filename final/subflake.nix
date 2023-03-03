@@ -6,12 +6,12 @@
       MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam
     '';
 
-  packages.x86_64-linux.mensam-test-application =
+  packages.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    writeScriptBin "mensam-test-application-full" ''
+    writeScriptBin "mensam-test-full" ''
       export MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}"
       export MENSAM_LOG_LEVEL=LevelWarn
-      ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-test-application
+      ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-test
     '';
 
   overlays.default = final: prev: {
@@ -26,14 +26,14 @@
     finalOverlay = overlays.default;
   };
 
-  checks.x86_64-linux.mensam-test-application =
+  checks.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     stdenv.mkDerivation {
-      name = "mensam-test-application"; # TODO: Necessary to avoid segmentation fault.
+      name = "mensam-test"; # TODO: Necessary to avoid segmentation fault.
       src = ./.;
       buildPhase = ''
         set +e
-        INIT_LOG="$(mensam-test-application-full)"
+        INIT_LOG="$(mensam-test-full)"
         set -e
         echo "$INIT_LOG"
 
@@ -50,7 +50,7 @@
         mkdir $out
       '';
       buildInputs = [
-        packages.x86_64-linux.mensam-test-application
+        packages.x86_64-linux.mensam-test
       ];
     };
 
