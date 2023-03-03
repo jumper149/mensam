@@ -115,7 +115,6 @@ library
     , Mensam.Server.Tab
     , Mensam.User
   other-modules:
-    , Control.Monad.IO.Unlift.OrphanInstances
     , Control.Monad.Logger.OrphanInstances
     , System.Posix.Signals.Patterns
   hs-source-dirs: source/library

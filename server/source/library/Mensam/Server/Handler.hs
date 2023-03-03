@@ -8,7 +8,6 @@ import Mensam.Server.Handler.RequestHash
 
 import Control.Monad.Base
 import Control.Monad.IO.Unlift
-import Control.Monad.IO.Unlift.OrphanInstances ()
 import Control.Monad.Logger.CallStack
 import Control.Monad.Logger.OrphanInstances ()
 import Control.Monad.Trans.Class

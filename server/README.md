@@ -60,16 +60,3 @@ nix build ..#subflakes.server.checks.x86_64-linux.graphmod
 xdot result/graphmod.dot
 zathura result/graphmod.pdf
 ```
-
-### `calligraphy`
-
-The function call graph can be visualised using `calligraphy`.
-
-```
-# Prepare additional information for calligraphy.
-cabal clean
-cabal build all
-
-# Run calligraphy.
-calligraphy --output-stdout | xdot -
-```

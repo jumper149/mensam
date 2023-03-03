@@ -13,15 +13,12 @@
     haskellPackages.shellFor {
       buildInputs = with haskellPackages; [
         cabal-install
-        calligraphy
-        pkgs.findutils
         fourmolu
         ghcid
         haskell-language-server
         hlint
         implicit-hie
         weeder
-        pkgs.xdot
       ];
       packages = haskellPackages: [
         packages.x86_64-linux.default
