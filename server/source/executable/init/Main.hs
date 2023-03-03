@@ -4,4 +4,4 @@ import Mensam.Application
 import Mensam.Database
 
 main :: IO ()
-main = runApplicationT $ initDatabase
+main = runApplicationT initDatabase
