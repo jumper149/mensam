@@ -57,6 +57,8 @@ common dependencies
     , selda
     , selda-sqlite
     , servant
+    , servant-auth
+    , servant-auth-server
     , servant-blaze
     , servant-rawm
     , servant-rawm-server
@@ -105,6 +107,8 @@ library
     , Mensam.Server.Route
     , Mensam.Server.Route.Home
     , Mensam.Server.Route.Home.Type
+    , Mensam.Server.Route.User
+    , Mensam.Server.Route.User.Type
     , Mensam.Server.Route.Static
     , Mensam.Server.Route.Static.Type
     , Mensam.Server.Route.Type

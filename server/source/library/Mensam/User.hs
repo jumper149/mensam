@@ -1,24 +1,19 @@
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Mensam.User where
 
 import Mensam.Application.SeldaConnection.Class
 
-import Control.Monad.IO.Class
+import Data.Aeson qualified as A
 import Data.Kind
 import Data.Maybe
 import Data.Password.Bcrypt
 import Data.Text qualified as T
 import Database.Selda qualified as Selda
 import GHC.Generics
-
-type User :: Type
-data User = MkUser
-  { userName :: T.Text
-  , userPasswordHash :: PasswordHash Bcrypt
-  , userEmail :: T.Text
-  }
-  deriving stock (Eq, Generic, Ord, Read, Show)
+import Servant.Auth.JWT
+import Servant.Auth.Server
 
 type DbUser :: Type
 data DbUser = MkDbUser
@@ -62,55 +57,51 @@ userMartaMustermann =
     , dbUser_email = "marta-mustermann@gmx.com"
     }
 
-type RequestUserCreate :: Type
-data RequestUserCreate = MkRequestUserCreate
-  { requestUserCreateName :: T.Text
-  , requestUserCreatePassword :: Password
-  , requestUserCreateEmail :: T.Text
+type User :: Type
+data User = MkUser
+  { userName :: T.Text
+  , userPasswordHash :: PasswordHash Bcrypt
+  , userEmail :: T.Text
   }
+  deriving stock (Eq, Generic, Ord, Read, Show)
 
-userCreate :: (MonadIO m, MonadSeldaConnection m) => RequestUserCreate -> m ()
-userCreate request = do
-  passwordHash :: PasswordHash Bcrypt <- hashPassword $ requestUserCreatePassword request
-  let user =
-        MkUser
-          { userName = requestUserCreateName request
-          , userPasswordHash = passwordHash
-          , userEmail = requestUserCreateEmail request
-          }
-  let dbUser =
-        MkDbUser
-          { dbUser_id = Selda.def
-          , dbUser_name = requestUserCreateName request
-          , dbUser_password_hash = unPasswordHash $ userPasswordHash user
-          , dbUser_email = requestUserCreateEmail request
-          }
-  runSeldaTransaction $
-    Selda.insert_ usersTable [dbUser]
-  pure ()
+instance ToJWT User
+instance A.ToJSON User where
+  toJSON = undefined
 
-type RequestUserLogin :: Type
-data RequestUserLogin = MkRequestUserLogin
-  { requestUserLoginName :: T.Text
-  , requestUserLoginPassword :: Password
-  }
+instance FromBasicAuthData User where
+  fromBasicAuthData BasicAuthData {basicAuthUsername, basicAuthPassword} (MkRunLoginInIO runLoginInIO) = runLoginInIO $ do
+    let
+      username = undefined basicAuthUsername
+      password = undefined basicAuthPassword
+    userLogin username password
 
-userLogin :: MonadSeldaConnection m => RequestUserLogin -> m User
-userLogin request = do
+type instance BasicAuthCfg = RunLoginInIO
+
+type RunLoginInIO :: Type
+data RunLoginInIO = forall m. MonadSeldaConnection m => MkRunLoginInIO {runLoginInIO :: m (AuthResult User) -> IO (AuthResult User)}
+
+userLogin ::
+  MonadSeldaConnection m =>
+  -- | username
+  T.Text ->
+  Password ->
+  m (AuthResult User)
+userLogin username password = do
   matchingUsers :: [DbUser] <- runSeldaTransaction $ Selda.query $ do
     user <- Selda.select usersTable
-    Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal (requestUserLoginName request)
+    Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal username
     return user
-  user <- case matchingUsers of
-    [] -> error "No user found."
-    [dbUser] ->
-      pure $
-        MkUser
-          { userName = dbUser_name dbUser
-          , userPasswordHash = PasswordHash $ dbUser_password_hash dbUser
-          , userEmail = dbUser_email dbUser
-          }
-    _ : _ -> error "Multiple users found."
-  case checkPassword (requestUserLoginPassword request) (userPasswordHash user) of
-    PasswordCheckFail -> error "Wrong password."
-    PasswordCheckSuccess -> pure user
+  case matchingUsers of
+    [] -> pure NoSuchUser
+    [dbUser] -> do
+      let user =
+            MkUser
+              { userName = dbUser_name dbUser
+              , userPasswordHash = PasswordHash $ dbUser_password_hash dbUser
+              , userEmail = dbUser_email dbUser
+              }
+      case checkPassword password (userPasswordHash user) of
+        PasswordCheckFail -> pure BadPassword
+        PasswordCheckSuccess -> pure $ Authenticated user
+    _ : _ -> pure Indefinite -- error "Multiple users found."

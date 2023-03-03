@@ -1,12 +1,14 @@
 module Mensam.Server where
 
 import Mensam.Application.Configured.Class
+import Mensam.Application.SeldaConnection.Class
 import Mensam.Configuration
 import Mensam.Configuration.BaseUrl
 import Mensam.Server.Handler
 import Mensam.Server.Handler.RequestHash
 import Mensam.Server.Route
 import Mensam.Server.Route.Type
+import Mensam.User
 
 import Control.Monad
 import Control.Monad.Base
@@ -22,6 +24,7 @@ import Network.Wai
 import Network.Wai.Handler.Warp
 import Network.Wai.Trans
 import Servant.API
+import Servant.Auth.Server
 import Servant.Server
 import Servant.Server.Generic
 import System.Posix.Signals
@@ -32,10 +35,13 @@ type API = ToServantApi Routes
 type WrappedAPI :: Type
 type WrappedAPI = RequestHash :> API
 
-hoistServerRunHandlerT :: MonadLogger m => ServerT API (HandlerT m) -> ServerT WrappedAPI m
-hoistServerRunHandlerT handler randomHash = hoistServer (Proxy @API) (runHandlerT randomHash) handler
+type ContextList :: [Type]
+type ContextList = '[BasicAuthCfg, CookieSettings, JWTSettings]
 
-server :: (MonadConfigured m, MonadLogger m, MonadUnliftIO m) => m ()
+hoistServerRunHandlerT :: MonadLogger m => ServerT API (HandlerT m) -> ServerT WrappedAPI m
+hoistServerRunHandlerT handler randomHash = hoistServerWithContext (Proxy @API) (Proxy @ContextList) (runHandlerT randomHash) handler
+
+server :: (MonadConfigured m, MonadLogger m, MonadSeldaConnection m, MonadUnliftIO m) => m ()
 server = do
   logInfo "Configure warp."
   withPort <- setPort . fromEnum . configPort <$> configuration
@@ -57,8 +63,15 @@ server = do
 
   logInfo "Start server."
   withRunInIO $ \runInIO ->
-    runSettings settings . addMiddleware $
-      serveWithContextT (Proxy @WrappedAPI) EmptyContext (liftBase . runInIO) $
+    runSettings settings . addMiddleware $ do
+      let
+        context :: Context ContextList
+        context =
+          MkRunLoginInIO runInIO
+            :. defaultCookieSettings
+            :. defaultJWTSettings undefined
+            :. EmptyContext
+      serveWithContextT (Proxy @WrappedAPI) context (liftBase . runInIO) $
         hoistServerRunHandlerT $
           genericServerT routes
 

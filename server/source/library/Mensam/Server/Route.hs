@@ -4,6 +4,7 @@ import Mensam.Application.Configured.Class
 import Mensam.Server.Route.Home qualified
 import Mensam.Server.Route.Static qualified
 import Mensam.Server.Route.Type
+import Mensam.Server.Route.User qualified
 
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
@@ -15,5 +16,6 @@ routes ::
 routes =
   Routes
     { routeHome = Mensam.Server.Route.Home.handler
+    , routeUser = Mensam.Server.Route.User.handler
     , routeStatic = Mensam.Server.Route.Static.handler
     }
