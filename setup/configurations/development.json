@@ -1,4 +1,5 @@
-{ "port": 8177
+{ "sqlite-path": "mensam.sqlite"
+, "port": 8177
 , "base-url":
   { "scheme": "http"
   , "authority":

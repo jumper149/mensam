@@ -13,6 +13,7 @@ import GHC.Generics
 type Configuration :: Type
 data Configuration = Configuration
   { configRevision :: Maybe T.Text
+  , configSqlitePath :: FilePath
   , configDirectoryStatic :: FilePath
   , configPort :: Word16
   , configBaseUrl :: BaseUrl

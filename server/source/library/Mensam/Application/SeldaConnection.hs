@@ -3,6 +3,8 @@
 
 module Mensam.Application.SeldaConnection where
 
+import Mensam.Configuration
+import Mensam.Application.Configured.Class
 import Mensam.Application.SeldaConnection.Class
 
 import Control.Monad.IO.Unlift
@@ -34,10 +36,10 @@ deriving via
   instance
     MonadIO (t2 m) => MonadSeldaConnection (ComposeT SeldaConnectionT t2 m)
 
-runSeldaConnectionT :: (MonadLogger m, MonadUnliftIO m) => SeldaConnectionT m a -> m a
+runSeldaConnectionT :: (MonadConfigured m, MonadLogger m, MonadUnliftIO m) => SeldaConnectionT m a -> m a
 runSeldaConnectionT tma = do
-  let filepath :: FilePath = "mensam.sqlite" -- TODO: Configure.
   logDebug "Initializing SQLite connection pool for Selda."
+  filepath <- configSqlitePath <$> configuration
   pool <- withRunInIO $ \runInIO -> do
     let
       openConnection :: IO (SeldaConnection SQLite)

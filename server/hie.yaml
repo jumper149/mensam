@@ -6,5 +6,8 @@ cradle:
     - path: "source/test-application/Main.hs"
       component: "mensam:exe:mensam-test-application"
 
+    - path: "source/test-application/Main.hs"
+      component: "mensam:exe:mensam-init-application"
+
     - path: "source/executable/Main.hs"
       component: "mensam:exe:mensam"

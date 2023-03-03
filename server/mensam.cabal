@@ -131,6 +131,17 @@ executable mensam-test-application
   ghc-options:
     -Wno-unused-packages
 
+executable mensam-init-application
+  import:
+    , dependencies
+    , language
+  build-depends:
+    , mensam
+  main-is: Main.hs
+  hs-source-dirs: source/init-application
+  ghc-options:
+    -Wno-unused-packages
+
 executable mensam
   build-depends:
     , mensam
