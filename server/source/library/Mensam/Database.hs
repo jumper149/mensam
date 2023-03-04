@@ -20,10 +20,10 @@ data DbUser = MkDbUser
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
 
-usersTable :: Selda.Table DbUser
-usersTable =
+userTable :: Selda.Table DbUser
+userTable =
   Selda.tableFieldMod
-    "users"
+    "user"
     [ #dbUser_id Selda.:- Selda.autoPrimary
     , #dbUser_name Selda.:- Selda.unique
     ]
@@ -31,4 +31,4 @@ usersTable =
 
 initDatabase :: MonadSeldaConnection m => m ()
 initDatabase = runSeldaTransaction $ do
-  Selda.createTable usersTable
+  Selda.createTable userTable
