@@ -4,10 +4,11 @@ import Control.Monad.Trans.Class
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Elevator
 import Data.Kind
+import Network.Mail.Mime
 
 type MonadEmail :: (Type -> Type) -> Constraint
 class Monad m => MonadEmail m where
-  sendEmail :: String -> m ()
+  sendEmail :: Mail -> m ()
 
 instance
   ( Monad (t m)

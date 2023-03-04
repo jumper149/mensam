@@ -60,6 +60,6 @@ runApplicationT app = do
           . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
           :..> runSeldaConnectionT
-          :..> flip runEmailT ()
+          :..> runAppEmailT
 
   runStackT runTransformers $ unApplicationT app

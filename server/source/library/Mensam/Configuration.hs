@@ -2,6 +2,7 @@ module Mensam.Configuration where
 
 import Mensam.Configuration.BaseUrl
 import Mensam.Configuration.Contact
+import Mensam.Configuration.Email
 
 import Data.Aeson qualified as A
 import Data.Kind
@@ -14,6 +15,7 @@ type Configuration :: Type
 data Configuration = Configuration
   { configRevision :: Maybe T.Text
   , configSqlitePath :: FilePath
+  , configEmailConfig :: Maybe EmailConfig
   , configDirectoryStatic :: FilePath
   , configPort :: Word16
   , configBaseUrl :: BaseUrl

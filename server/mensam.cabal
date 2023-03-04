@@ -48,6 +48,7 @@ common dependencies
     , deriving-trans
     , hashable
     , http-types
+    , mime-mail
     , monad-control
     , monad-control-identity
     , monad-logger
@@ -97,6 +98,7 @@ library
     , Mensam.Configuration
     , Mensam.Configuration.BaseUrl
     , Mensam.Configuration.Contact
+    , Mensam.Configuration.Email
     , Mensam.Database
     , Mensam.Environment
     , Mensam.Server

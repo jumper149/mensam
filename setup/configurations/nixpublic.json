@@ -1,4 +1,5 @@
 { "sqlite-path": "mensam.sqlite"
+, "email-config": null
 , "port": 8177
 , "base-url":
   { "scheme": "https"
