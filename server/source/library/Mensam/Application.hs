@@ -5,6 +5,8 @@ module Mensam.Application where
 
 import Mensam.Application.Configured
 import Mensam.Application.Configured.Class
+import Mensam.Application.Email
+import Mensam.Application.Email.Class
 import Mensam.Application.Environment
 import Mensam.Application.Environment.Acquisition
 import Mensam.Application.Logging
@@ -29,6 +31,7 @@ type Transformers =
     :.|> TimedLoggingT
     :.|> ConfiguredT
     :.|> SeldaConnectionT
+    :.|> EmailT
 
 type ApplicationT :: (Type -> Type) -> Type -> Type
 newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m a}
@@ -39,6 +42,7 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadLogger)
   deriving newtype (MonadConfigured)
   deriving newtype (MonadSeldaConnection)
+  deriving newtype (MonadEmail)
 
 runApplicationT ::
   (MonadBaseControlIdentity IO m, MonadUnliftIO m) =>
@@ -56,5 +60,6 @@ runApplicationT app = do
           . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
           :..> runSeldaConnectionT
+          :..> flip runEmailT ()
 
   runStackT runTransformers $ unApplicationT app

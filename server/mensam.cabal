@@ -86,6 +86,8 @@ library
     , Mensam.Application.Configured
     , Mensam.Application.Configured.Acquisition
     , Mensam.Application.Configured.Class
+    , Mensam.Application.Email
+    , Mensam.Application.Email.Class
     , Mensam.Application.Environment
     , Mensam.Application.Environment.Acquisition
     , Mensam.Application.Environment.Class
