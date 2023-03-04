@@ -91,7 +91,7 @@ userCreate user@MkUser {userName, userEmail} password = do
           , dbUser_password_hash = unPasswordHash passwordHash
           , dbUser_email = userEmail
           }
-  logDebug $ "Inserting new user into database: " <> T.pack (show dbUser)
+  logDebug "Inserting new user into database."
   runSeldaTransaction $
     Selda.insert_ usersTable [dbUser]
   logInfo "Created new user successfully."
