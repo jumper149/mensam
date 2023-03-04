@@ -35,9 +35,7 @@
       selda-sqlite = haskellPrev.callCabal2nix "selda-sqlite" (source.selda.outPath + "/selda-sqlite") {};
       servant = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant" (source.servant.outPath + "/servant") {});
       servant-auth = haskellPrev.callCabal2nix "servant-auth" (source.servant.outPath + "/servant-auth/servant-auth") {};
-      servant-auth-docs = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-auth-docs" (source.servant.outPath + "/servant-auth/servant-auth-docs") {});
       servant-auth-server = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-auth-server" (source.servant.outPath + "/servant-auth/servant-auth-server") {});
-      servant-docs = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-docs" (source.servant.outPath + "/servant-docs") {});
       servant-server = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-server" (source.servant.outPath + "/servant-server") {});
       singletons = haskellPrev.callHackage "singletons" "3.0.2" {};
     });

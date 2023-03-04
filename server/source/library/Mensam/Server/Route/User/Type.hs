@@ -7,7 +7,6 @@ import GHC.Generics
 import Mensam.User
 import Servant.API hiding (BasicAuth)
 import Servant.Auth
-import Servant.Docs
 
 type Routes :: Type -> Type
 data Routes route = Routes
@@ -23,13 +22,6 @@ newtype ResponseLogin = MkResponseLogin
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
 
-instance ToSample ResponseLogin where
-  toSamples _ =
-    singleSample
-      MkResponseLogin
-        { responseLoginJWT = "maxmustermann"
-        }
-
 type RequestRegister :: Type
 data RequestRegister = MkRequestRegister
   { requestRegisterName :: T.Text
@@ -38,12 +30,3 @@ data RequestRegister = MkRequestRegister
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
-
-instance ToSample RequestRegister where
-  toSamples _ =
-    singleSample
-      MkRequestRegister
-        { requestRegisterName = "maxmustermann"
-        , requestRegisterPassword = "Passwort1!"
-        , requestRegisterEmail = "maxmustermann@example.com"
-        }

@@ -58,12 +58,9 @@ common dependencies
     , selda-sqlite
     , servant
     , servant-auth
-    , servant-auth-docs
     , servant-auth-server
-    , servant-docs
     , servant-blaze
     , servant-rawm
-    , servant-rawm-docs
     , servant-rawm-server
     , servant-server
     , singletons
@@ -101,7 +98,6 @@ library
     , Mensam.Database
     , Mensam.Environment
     , Mensam.Server
-    , Mensam.Server.Docs
     , Mensam.Server.Err404
     , Mensam.Server.FileServer
     , Mensam.Server.Handler
