@@ -14,6 +14,8 @@ import Mensam.Application.SeldaPool
 import Mensam.Application.SeldaPool.Class
 
 import Control.Monad.Base
+import Control.Monad.Catch
+import Control.Monad.Catch.OrphanInstances ()
 import Control.Monad.Except
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
@@ -39,6 +41,7 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
   deriving newtype (MonadBase b, MonadBaseControl b, MonadBaseControlIdentity b)
   deriving newtype (MonadIO, MonadUnliftIO)
+  deriving newtype (MonadThrow, MonadCatch, MonadMask)
   deriving newtype (MonadLogger)
   deriving newtype (MonadConfigured)
   deriving newtype (MonadSeldaPool)

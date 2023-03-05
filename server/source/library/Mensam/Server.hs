@@ -12,6 +12,7 @@ import Mensam.User
 
 import Control.Monad
 import Control.Monad.Base
+import Control.Monad.Catch
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
 import Data.ByteString.Char8 qualified as B
@@ -41,7 +42,7 @@ type ContextList = '[BasicAuthCfg, CookieSettings, JWTSettings]
 hoistServerRunHandlerT :: MonadLogger m => ServerT API (HandlerT m) -> ServerT WrappedAPI m
 hoistServerRunHandlerT handler randomHash = hoistServerWithContext (Proxy @API) (Proxy @ContextList) (runHandlerT randomHash) handler
 
-server :: (MonadConfigured m, MonadLogger m, MonadSeldaPool m, MonadUnliftIO m) => m ()
+server :: (MonadConfigured m, MonadLogger m, MonadMask m, MonadSeldaPool m, MonadUnliftIO m) => m ()
 server = do
   logInfo "Configure warp."
   withPort <- setPort . fromEnum . configPort <$> configuration
