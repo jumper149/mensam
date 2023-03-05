@@ -62,12 +62,10 @@ runSeldaPoolT tma = do
   let context =
         MkSeldaPoolContext
           { seldaConnectionPool = pool
-          , seldaTransactionConnection = Nothing
           }
   runReaderT (unSeldaPoolT tma) context
 
 type SeldaPoolContext :: Type
-data SeldaPoolContext = MkSeldaPoolContext
+newtype SeldaPoolContext = MkSeldaPoolContext
   { seldaConnectionPool :: P.Pool (SeldaConnection SQLite)
-  , seldaTransactionConnection :: Maybe (SeldaConnection SQLite)
   }
