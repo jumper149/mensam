@@ -55,7 +55,7 @@ userLogin ::
 userLogin username password = do
   logDebug $ "Querying user " <> T.pack (show username) <> " from database for password authentication."
   matchingUsers :: [DbUser] <- runSeldaTransaction $ Selda.query $ do
-    user <- Selda.select userTable
+    user <- Selda.select tableUser
     Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal username
     return user
   case matchingUsers of
@@ -93,7 +93,7 @@ userCreate user@MkUser {userName, userEmail} password = do
           }
   logDebug "Inserting new user into database."
   runSeldaTransaction $
-    Selda.insert_ userTable [dbUser]
+    Selda.insert_ tableUser [dbUser]
   logInfo "Created new user successfully."
   pure ()
 

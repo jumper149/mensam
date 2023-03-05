@@ -20,8 +20,8 @@ data DbUser = MkDbUser
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
 
-userTable :: Selda.Table DbUser
-userTable =
+tableUser :: Selda.Table DbUser
+tableUser =
   Selda.tableFieldMod
     "user"
     [ #dbUser_id Selda.:- Selda.autoPrimary
@@ -37,8 +37,8 @@ data DbSpace = MkDbSpace
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
 
-spaceTable :: Selda.Table DbSpace
-spaceTable =
+tableSpace :: Selda.Table DbSpace
+tableSpace =
   Selda.tableFieldMod
     "space"
     [ #dbSpace_id Selda.:- Selda.autoPrimary
@@ -55,19 +55,19 @@ data DbSpaceUser = MkDbSpaceUser
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
 
-spaceUserTable :: Selda.Table DbSpaceUser
-spaceUserTable =
+tableSpaceUser :: Selda.Table DbSpaceUser
+tableSpaceUser =
   Selda.tableFieldMod
     "space_user"
     [ #dbSpaceUser_id Selda.:- Selda.autoPrimary
-    , #dbSpaceUser_space Selda.:- Selda.foreignKey spaceTable #dbSpace_id
-    , #dbSpaceUser_user Selda.:- Selda.foreignKey userTable #dbUser_id
+    , #dbSpaceUser_space Selda.:- Selda.foreignKey tableSpace #dbSpace_id
+    , #dbSpaceUser_user Selda.:- Selda.foreignKey tableUser #dbUser_id
     , #dbSpaceUser_space Selda.:+ #dbSpaceUser_user Selda.:- Selda.unique
     ]
     (fromJust . T.stripPrefix "dbSpaceUser_")
 
 initDatabase :: MonadSeldaConnection m => m ()
 initDatabase = runSeldaTransaction $ do
-  Selda.createTable userTable
-  Selda.createTable spaceTable
-  Selda.createTable spaceUserTable
+  Selda.createTable tableUser
+  Selda.createTable tableSpace
+  Selda.createTable tableSpaceUser
