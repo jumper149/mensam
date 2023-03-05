@@ -1,4 +1,4 @@
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Mensam.Application.SeldaConnection where
@@ -22,13 +22,41 @@ import Database.Selda.Backend
 import Database.Selda.SQLite
 
 type SeldaConnectionT :: (Type -> Type) -> Type -> Type
-newtype SeldaConnectionT m a = SeldaConnectionT {unSeldaConnectionT :: ReaderT (P.Pool (SeldaConnection SQLite)) m a}
+newtype SeldaConnectionT m a = SeldaConnectionT {unSeldaConnectionT :: ReaderT SeldaPoolContext m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
+  deriving newtype (MonadIO)
+
+instance MonadUnliftIO m => MonadSelda (SeldaConnectionT m) where
+  type Backend (SeldaConnectionT m) = SQLite
+  withConnection computation = do
+    maybeTransactionConnection <- seldaTransactionConnection <$> SeldaConnectionT ask
+    case maybeTransactionConnection of
+      Just connection -> computation connection
+      Nothing -> do
+        pool <- seldaConnectionPool <$> SeldaConnectionT ask
+        liftWithIdentity $ \runT ->
+          withRunInIO $ \runInIO ->
+            P.withResource pool $ \connection ->
+              runInIO $ runT $ computation connection
+  transact computation = do
+    maybeTransactionConnection <- seldaTransactionConnection <$> SeldaConnectionT ask
+    case maybeTransactionConnection of
+      Just _connection -> computation
+      Nothing -> do
+        pool <- seldaConnectionPool <$> SeldaConnectionT ask
+        liftWithIdentity $ \runT ->
+          withRunInIO $ \runInIO ->
+            P.withResource pool $ \connection ->
+              runInIO $ runT $ SeldaConnectionT $ do
+                let
+                  setTransactionConnection :: SeldaPoolContext -> SeldaPoolContext
+                  setTransactionConnection context = context {seldaTransactionConnection = Just connection}
+                local setTransactionConnection $ unSeldaConnectionT computation
 
 instance MonadIO m => MonadSeldaConnection (SeldaConnectionT m) where
   runSeldaTransaction tma = do
-    pool <- SeldaConnectionT ask
+    pool <- seldaConnectionPool <$> SeldaConnectionT ask
     lift $ liftIO $ P.withResource pool $ \connection ->
       runSeldaT (transaction tma) connection
 
@@ -56,4 +84,15 @@ runSeldaConnectionT tma = do
         logInfo "Closed SQLite connection successfully."
     liftIO $ P.createPool openConnection closeConnection 5 (T.secondsToNominalDiffTime 5) 5
   logInfo "Initialized SQLite connection pool for Selda successfully."
-  runReaderT (unSeldaConnectionT tma) pool
+  let context =
+        MkSeldaPoolContext
+          { seldaConnectionPool = pool
+          , seldaTransactionConnection = Nothing
+          }
+  runReaderT (unSeldaConnectionT tma) context
+
+type SeldaPoolContext :: Type
+data SeldaPoolContext = MkSeldaPoolContext
+  { seldaConnectionPool :: P.Pool (SeldaConnection SQLite)
+  , seldaTransactionConnection :: Maybe (SeldaConnection SQLite)
+  }
