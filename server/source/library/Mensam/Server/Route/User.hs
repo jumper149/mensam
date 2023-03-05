@@ -1,6 +1,6 @@
 module Mensam.Server.Route.User where
 
-import Mensam.Application.SeldaConnection.Class
+import Mensam.Application.SeldaPool.Class
 import Mensam.Server.Route.User.Type
 import Mensam.User
 
@@ -16,7 +16,7 @@ import Servant.Auth.Server
 import Servant.Server.Generic
 
 handler ::
-  (MonadIO m, MonadLogger m, MonadSeldaConnection m) =>
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Routes (AsServerT m)
 handler =
   Routes
@@ -51,7 +51,7 @@ login authUser =
         NoSuchUser -> respond $ WithStatus @401 NoContent
         Indefinite -> respond $ WithStatus @400 NoContent
 
-register :: (MonadIO m, MonadLogger m, MonadSeldaConnection m) => Either String RequestRegister -> m (Union [WithStatus 200 NoContent, WithStatus 400 NoContent])
+register :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => Either String RequestRegister -> m (Union [WithStatus 200 NoContent, WithStatus 400 NoContent])
 register eitherRequest =
   case eitherRequest of
     Left err -> do

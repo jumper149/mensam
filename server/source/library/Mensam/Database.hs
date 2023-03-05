@@ -2,7 +2,7 @@
 
 module Mensam.Database where
 
-import Mensam.Application.SeldaConnection.Class
+import Mensam.Application.SeldaPool.Class
 
 import Data.Kind
 import Data.Maybe
@@ -84,7 +84,7 @@ tableDesk =
     ]
     (fromJust . T.stripPrefix "dbDesk_")
 
-initDatabase :: MonadSeldaConnection m => m ()
+initDatabase :: MonadSeldaPool m => m ()
 initDatabase = runSeldaTransaction $ do
   Selda.createTable tableUser
   Selda.createTable tableSpace

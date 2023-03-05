@@ -3,7 +3,7 @@
 
 module Mensam.User where
 
-import Mensam.Application.SeldaConnection.Class
+import Mensam.Application.SeldaPool.Class
 import Mensam.Database
 
 import Control.Monad.Catch
@@ -48,7 +48,7 @@ instance FromBasicAuthData User where
             userLogin username password
 
 userLogin ::
-  (MonadLogger m, MonadSeldaConnection m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   -- | username
   T.Text ->
   Password ->
@@ -81,7 +81,7 @@ userLogin username password = do
       logError $ "Multiple matching users have been found in the database. This should be impossible: " <> T.pack (show dbUsers)
       pure Indefinite
 
-userCreate :: (MonadIO m, MonadLogger m, MonadSeldaConnection m) => User -> Password -> m ()
+userCreate :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => User -> Password -> m ()
 userCreate user@MkUser {userName, userEmail} password = do
   logDebug $ "Creating new user: " <> T.pack (show user)
   passwordHash :: PasswordHash Bcrypt <- hashPassword password
@@ -101,7 +101,7 @@ type instance BasicAuthCfg = RunLoginInIO
 
 type RunLoginInIO :: Type
 data RunLoginInIO = forall m.
-  (MonadLogger m, MonadSeldaConnection m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   MkRunLoginInIO {runLoginInIO :: m (AuthResult User) -> IO (AuthResult User)}
 
 -- TODO: Remove hardcoded JWK from source code.
@@ -119,7 +119,7 @@ newtype Space = MkSpace
   deriving anyclass (A.FromJSON, A.ToJSON)
   deriving anyclass (FromJWT, ToJWT)
 
-spaceCreate :: (MonadIO m, MonadLogger m, MonadSeldaConnection m) => Space -> m ()
+spaceCreate :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => Space -> m ()
 spaceCreate space@MkSpace {spaceName} = do
   logDebug $ "Creating new space: " <> T.pack (show space)
   let dbSpace =
@@ -140,7 +140,7 @@ newtype Desk = MkDesk
   deriving anyclass (A.FromJSON, A.ToJSON)
   deriving anyclass (FromJWT, ToJWT)
 
-deskCreate :: (MonadIO m, MonadLogger m, MonadSeldaConnection m) => Desk -> T.Text -> m ()
+deskCreate :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => Desk -> T.Text -> m ()
 deskCreate desk@MkDesk {deskName} spaceName = do
   logDebug $ "Creating new desk: " <> T.pack (show (desk, spaceName))
   logDebug "Inserting new space into database."

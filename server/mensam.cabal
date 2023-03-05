@@ -94,8 +94,8 @@ library
     , Mensam.Application.Environment.Acquisition
     , Mensam.Application.Environment.Class
     , Mensam.Application.Logging
-    , Mensam.Application.SeldaConnection
-    , Mensam.Application.SeldaConnection.Class
+    , Mensam.Application.SeldaPool
+    , Mensam.Application.SeldaPool.Class
     , Mensam.Configuration
     , Mensam.Configuration.BaseUrl
     , Mensam.Configuration.Contact

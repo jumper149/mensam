@@ -1,7 +1,7 @@
 module Mensam.Server where
 
 import Mensam.Application.Configured.Class
-import Mensam.Application.SeldaConnection.Class
+import Mensam.Application.SeldaPool.Class
 import Mensam.Configuration
 import Mensam.Configuration.BaseUrl
 import Mensam.Server.Handler
@@ -41,7 +41,7 @@ type ContextList = '[BasicAuthCfg, CookieSettings, JWTSettings]
 hoistServerRunHandlerT :: MonadLogger m => ServerT API (HandlerT m) -> ServerT WrappedAPI m
 hoistServerRunHandlerT handler randomHash = hoistServerWithContext (Proxy @API) (Proxy @ContextList) (runHandlerT randomHash) handler
 
-server :: (MonadConfigured m, MonadLogger m, MonadSeldaConnection m, MonadUnliftIO m) => m ()
+server :: (MonadConfigured m, MonadLogger m, MonadSeldaPool m, MonadUnliftIO m) => m ()
 server = do
   logInfo "Configure warp."
   withPort <- setPort . fromEnum . configPort <$> configuration

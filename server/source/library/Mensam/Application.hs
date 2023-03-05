@@ -10,8 +10,8 @@ import Mensam.Application.Email.Class
 import Mensam.Application.Environment
 import Mensam.Application.Environment.Acquisition
 import Mensam.Application.Logging
-import Mensam.Application.SeldaConnection
-import Mensam.Application.SeldaConnection.Class
+import Mensam.Application.SeldaPool
+import Mensam.Application.SeldaPool.Class
 
 import Control.Monad.Base
 import Control.Monad.Except
@@ -30,7 +30,7 @@ type Transformers =
     :.|> EnvironmentT
     :.|> TimedLoggingT
     :.|> ConfiguredT
-    :.|> SeldaConnectionT
+    :.|> SeldaPoolT
     :.|> EmailT
 
 type ApplicationT :: (Type -> Type) -> Type -> Type
@@ -41,7 +41,7 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadIO, MonadUnliftIO)
   deriving newtype (MonadLogger)
   deriving newtype (MonadConfigured)
-  deriving newtype (MonadSeldaConnection)
+  deriving newtype (MonadSeldaPool)
   deriving newtype (MonadEmail)
 
 runApplicationT ::
@@ -59,7 +59,7 @@ runApplicationT app = do
           :..> runAppTimedLoggingT
           . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
-          :..> runSeldaConnectionT
+          :..> runSeldaPoolT
           :..> runAppEmailT
 
   runStackT runTransformers $ unApplicationT app

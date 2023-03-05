@@ -1,10 +1,10 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Mensam.Application.SeldaConnection where
+module Mensam.Application.SeldaPool where
 
 import Mensam.Application.Configured.Class
-import Mensam.Application.SeldaConnection.Class
+import Mensam.Application.SeldaPool.Class
 import Mensam.Configuration
 
 import Control.Monad.IO.Unlift
@@ -21,52 +21,52 @@ import Database.Selda
 import Database.Selda.Backend
 import Database.Selda.SQLite
 
-type SeldaConnectionT :: (Type -> Type) -> Type -> Type
-newtype SeldaConnectionT m a = SeldaConnectionT {unSeldaConnectionT :: ReaderT SeldaPoolContext m a}
+type SeldaPoolT :: (Type -> Type) -> Type -> Type
+newtype SeldaPoolT m a = SeldaPoolT {unSeldaPoolT :: ReaderT SeldaPoolContext m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
   deriving newtype (MonadIO)
 
-instance MonadUnliftIO m => MonadSelda (SeldaConnectionT m) where
-  type Backend (SeldaConnectionT m) = SQLite
+instance MonadUnliftIO m => MonadSelda (SeldaPoolT m) where
+  type Backend (SeldaPoolT m) = SQLite
   withConnection computation = do
-    maybeTransactionConnection <- seldaTransactionConnection <$> SeldaConnectionT ask
+    maybeTransactionConnection <- seldaTransactionConnection <$> SeldaPoolT ask
     case maybeTransactionConnection of
       Just connection -> computation connection
       Nothing -> do
-        pool <- seldaConnectionPool <$> SeldaConnectionT ask
+        pool <- seldaConnectionPool <$> SeldaPoolT ask
         liftWithIdentity $ \runT ->
           withRunInIO $ \runInIO ->
             P.withResource pool $ \connection ->
               runInIO $ runT $ computation connection
   transact computation = do
-    maybeTransactionConnection <- seldaTransactionConnection <$> SeldaConnectionT ask
+    maybeTransactionConnection <- seldaTransactionConnection <$> SeldaPoolT ask
     case maybeTransactionConnection of
       Just _connection -> computation
       Nothing -> do
-        pool <- seldaConnectionPool <$> SeldaConnectionT ask
+        pool <- seldaConnectionPool <$> SeldaPoolT ask
         liftWithIdentity $ \runT ->
           withRunInIO $ \runInIO ->
             P.withResource pool $ \connection ->
-              runInIO $ runT $ SeldaConnectionT $ do
+              runInIO $ runT $ SeldaPoolT $ do
                 let
                   setTransactionConnection :: SeldaPoolContext -> SeldaPoolContext
                   setTransactionConnection context = context {seldaTransactionConnection = Just connection}
-                local setTransactionConnection $ unSeldaConnectionT computation
+                local setTransactionConnection $ unSeldaPoolT computation
 
-instance MonadIO m => MonadSeldaConnection (SeldaConnectionT m) where
+instance MonadIO m => MonadSeldaPool (SeldaPoolT m) where
   runSeldaTransaction tma = do
-    pool <- seldaConnectionPool <$> SeldaConnectionT ask
+    pool <- seldaConnectionPool <$> SeldaPoolT ask
     lift $ liftIO $ P.withResource pool $ \connection ->
       runSeldaT (transaction tma) connection
 
 deriving via
-  SeldaConnectionT ((t2 :: (Type -> Type) -> Type -> Type) m)
+  SeldaPoolT ((t2 :: (Type -> Type) -> Type -> Type) m)
   instance
-    MonadIO (t2 m) => MonadSeldaConnection (ComposeT SeldaConnectionT t2 m)
+    MonadIO (t2 m) => MonadSeldaPool (ComposeT SeldaPoolT t2 m)
 
-runSeldaConnectionT :: (MonadConfigured m, MonadLogger m, MonadUnliftIO m) => SeldaConnectionT m a -> m a
-runSeldaConnectionT tma = do
+runSeldaPoolT :: (MonadConfigured m, MonadLogger m, MonadUnliftIO m) => SeldaPoolT m a -> m a
+runSeldaPoolT tma = do
   logDebug "Initializing SQLite connection pool for Selda."
   filepath <- configSqlitePath <$> configuration
   pool <- withRunInIO $ \runInIO -> do
@@ -89,7 +89,7 @@ runSeldaConnectionT tma = do
           { seldaConnectionPool = pool
           , seldaTransactionConnection = Nothing
           }
-  runReaderT (unSeldaConnectionT tma) context
+  runReaderT (unSeldaPoolT tma) context
 
 type SeldaPoolContext :: Type
 data SeldaPoolContext = MkSeldaPoolContext

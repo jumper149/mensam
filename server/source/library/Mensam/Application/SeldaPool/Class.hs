@@ -1,4 +1,4 @@
-module Mensam.Application.SeldaConnection.Class where
+module Mensam.Application.SeldaPool.Class where
 
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Compose
@@ -7,16 +7,16 @@ import Data.Kind
 import Database.Selda.Backend
 import Database.Selda.SQLite
 
-type MonadSeldaConnection :: (Type -> Type) -> Constraint
-class Monad m => MonadSeldaConnection m where
+type MonadSeldaPool :: (Type -> Type) -> Constraint
+class Monad m => MonadSeldaPool m where
   runSeldaTransaction :: SeldaT SQLite IO a -> m a
 
 instance
   ( Monad (t m)
   , MonadTrans t
-  , MonadSeldaConnection m
+  , MonadSeldaPool m
   ) =>
-  MonadSeldaConnection (Elevator t m)
+  MonadSeldaPool (Elevator t m)
   where
   runSeldaTransaction = lift . runSeldaTransaction
 
@@ -26,6 +26,6 @@ deriving via
   {-# OVERLAPPABLE #-}
     ( Monad (t1 (t2 m))
     , MonadTrans t1
-    , MonadSeldaConnection (t2 m)
+    , MonadSeldaPool (t2 m)
     ) =>
-    MonadSeldaConnection (ComposeT t1 t2 m)
+    MonadSeldaPool (ComposeT t1 t2 m)
