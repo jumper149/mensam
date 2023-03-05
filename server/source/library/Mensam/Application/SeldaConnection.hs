@@ -17,6 +17,7 @@ import Control.Monad.Trans.Reader
 import Data.Kind
 import Data.Pool qualified as P
 import Data.Time qualified as T
+import Database.Selda
 import Database.Selda.Backend
 import Database.Selda.SQLite
 
@@ -29,7 +30,7 @@ instance MonadIO m => MonadSeldaConnection (SeldaConnectionT m) where
   runSeldaTransaction tma = do
     pool <- SeldaConnectionT ask
     lift $ liftIO $ P.withResource pool $ \connection ->
-      runSeldaT tma connection
+      runSeldaT (transaction tma) connection
 
 deriving via
   SeldaConnectionT ((t2 :: (Type -> Type) -> Type -> Type) m)
