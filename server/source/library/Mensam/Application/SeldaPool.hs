@@ -6,6 +6,7 @@ module Mensam.Application.SeldaPool where
 import Mensam.Application.Configured.Class
 import Mensam.Application.SeldaPool.Class
 import Mensam.Configuration
+import Mensam.Configuration.SQLite
 
 import Control.Monad.Catch
 import Control.Monad.IO.Unlift
@@ -42,13 +43,13 @@ deriving via
 runSeldaPoolT :: (MonadConfigured m, MonadLogger m, MonadUnliftIO m) => SeldaPoolT m a -> m a
 runSeldaPoolT tma = do
   logDebug "Initializing SQLite connection pool for Selda."
-  filepath <- configSqlitePath <$> configuration
+  config <- configSqlite <$> configuration
   pool <- withRunInIO $ \runInIO -> do
     let
       openConnection :: IO (SeldaConnection SQLite)
       openConnection = runInIO $ do
         logDebug "Opening SQLite connection."
-        connection <- liftIO $ sqliteOpen filepath
+        connection <- liftIO $ sqliteOpen $ sqliteFilepath config
         logInfo "Opened SQLite connection successfully."
         pure connection
       closeConnection :: SeldaConnection SQLite -> IO ()
@@ -60,8 +61,8 @@ runSeldaPoolT tma = do
         P.defaultPoolConfig
           openConnection
           closeConnection
-          1 -- Number of seconds, that an unused resource is kept in the pool.
-          10 -- Maximum number of resources open at once.
+          (sqliteConnectionPoolTimeoutSeconds config)
+          (sqliteConnectionPoolMaxNumberOfConnections config)
     P.newPool poolConfig
   logInfo "Initialized SQLite connection pool for Selda successfully."
   let context =

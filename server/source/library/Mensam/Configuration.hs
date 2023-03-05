@@ -3,6 +3,7 @@ module Mensam.Configuration where
 import Mensam.Configuration.BaseUrl
 import Mensam.Configuration.Contact
 import Mensam.Configuration.Email
+import Mensam.Configuration.SQLite
 
 import Data.Aeson qualified as A
 import Data.Kind
@@ -14,7 +15,7 @@ import GHC.Generics
 type Configuration :: Type
 data Configuration = Configuration
   { configRevision :: Maybe T.Text
-  , configSqlitePath :: FilePath
+  , configSqlite :: SQLiteConfig
   , configEmailConfig :: Maybe EmailConfig
   , configDirectoryStatic :: FilePath
   , configPort :: Word16

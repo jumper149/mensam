@@ -1,4 +1,8 @@
-{ "sqlite-path": "mensam.sqlite"
+{ "sqlite":
+  { "filepath": "mensam.sqlite"
+  , "connection-pool-timeout-seconds": 10
+  , "connection-pool-max-number-of-connections": 10
+  }
 , "email-config": null
 , "port": 8177
 , "base-url":
