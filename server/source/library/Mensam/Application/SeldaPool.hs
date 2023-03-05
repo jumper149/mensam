@@ -17,7 +17,6 @@ import Control.Monad.Trans.Control.Identity
 import Control.Monad.Trans.Reader
 import Data.Kind
 import Data.Pool qualified as P
-import Data.Time qualified as T
 import Database.Selda
 import Database.Selda.Backend
 import Database.Selda.SQLite
@@ -57,7 +56,13 @@ runSeldaPoolT tma = do
         logDebug "Closing SQLite connection."
         liftIO $ seldaClose connection
         logInfo "Closed SQLite connection successfully."
-    P.createPool openConnection closeConnection 5 (T.secondsToNominalDiffTime 5) 5
+      poolConfig =
+        P.defaultPoolConfig
+          openConnection
+          closeConnection
+          1 -- Number of seconds, that an unused resource is kept in the pool.
+          10 -- Maximum number of resources open at once.
+    P.newPool poolConfig
   logInfo "Initialized SQLite connection pool for Selda successfully."
   let context =
         MkSeldaPoolContext

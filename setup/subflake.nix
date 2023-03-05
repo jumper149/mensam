@@ -31,6 +31,7 @@
       jose = haskellPrev.callHackage "jose" "0.10" {};
       password = haskellPrev.callCabal2nix "password" (source.password.outPath + "/password") {};
       password-types = haskellPrev.callCabal2nix "password-types" (source.password.outPath + "/password-types") {};
+      resource-pool = haskellPrev.callHackage "resource-pool" "0.4.0.0" {};
       selda = haskellPrev.callCabal2nix "selda" (source.selda.outPath + "/selda") {};
       selda-sqlite = haskellPrev.callCabal2nix "selda-sqlite" (source.selda.outPath + "/selda-sqlite") {};
       servant = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant" (source.servant.outPath + "/servant") {});
