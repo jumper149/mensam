@@ -59,10 +59,9 @@ tableSpaceUser :: Selda.Table DbSpaceUser
 tableSpaceUser =
   Selda.tableFieldMod
     "space_user"
-    [ #dbSpaceUser_id Selda.:- Selda.autoPrimary
+    [ #dbSpaceUser_space Selda.:+ #dbSpaceUser_user Selda.:- Selda.primary
     , #dbSpaceUser_space Selda.:- Selda.foreignKey tableSpace #dbSpace_id
     , #dbSpaceUser_user Selda.:- Selda.foreignKey tableUser #dbUser_id
-    , #dbSpaceUser_space Selda.:+ #dbSpaceUser_user Selda.:- Selda.unique
     ]
     (fromJust . T.stripPrefix "dbSpaceUser_")
 
