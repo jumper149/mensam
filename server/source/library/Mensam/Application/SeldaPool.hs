@@ -29,16 +29,24 @@ newtype SeldaPoolT m a = SeldaPoolT {unSeldaPoolT :: ReaderT SeldaPoolContext m 
   deriving newtype (MonadIO)
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
 
-instance (MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaPoolT m) where
+instance (MonadLogger m, MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaPoolT m) where
   runSeldaTransactionT tma = do
     pool <- seldaConnectionPool <$> SeldaPoolT ask
-    liftWithIdentity $ \runT -> withRunInIO $ \runInIO -> P.withResource pool $ \connection ->
-      runSeldaT (transaction $ unSeldaTransactionT $ mapSeldaTransactionT (runInIO . runT) tma) connection
+    lift $ logDebug "Starting SQLite transaction."
+    result <- liftWithIdentity $ \runT ->
+      withRunInIO $ \runInIO ->
+        P.withResource pool $ \connection ->
+          (`runSeldaT` connection) $
+            transaction $
+              unSeldaTransactionT $
+                mapSeldaTransactionT (runInIO . runT) tma
+    lift $ logInfo "Committed SQLite transaction."
+    pure result
 
 deriving via
   SeldaPoolT ((t2 :: (Type -> Type) -> Type -> Type) m)
   instance
-    (MonadMask (t2 m), MonadUnliftIO (t2 m), MonadIO (ComposeT SeldaPoolT t2 m)) => MonadSeldaPool (ComposeT SeldaPoolT t2 m)
+    (MonadLogger (t2 m), MonadMask (t2 m), MonadUnliftIO (t2 m), MonadIO (ComposeT SeldaPoolT t2 m)) => MonadSeldaPool (ComposeT SeldaPoolT t2 m)
 
 runSeldaPoolT :: (MonadConfigured m, MonadLogger m, MonadUnliftIO m) => SeldaPoolT m a -> m a
 runSeldaPoolT tma = do
