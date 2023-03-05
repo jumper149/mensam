@@ -111,6 +111,6 @@ deskCreate desk@MkDesk {deskName} spaceName = do
             , dbDesk_space
             , dbDesk_name = deskName
             }
-    lift $ logDebug "Inserting new space into database."
+    lift $ logDebug "Inserting new desk into database."
     Selda.insert_ tableDesk [dbDesk]
-  logInfo "Created new space successfully."
+  logInfo "Created new desk successfully."
