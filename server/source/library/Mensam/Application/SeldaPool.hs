@@ -30,7 +30,7 @@ newtype SeldaPoolT m a = SeldaPoolT {unSeldaPoolT :: ReaderT SeldaPoolContext m 
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
 
 instance (MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaPoolT m) where
-  runSeldaTransaction tma = do
+  runSeldaTransactionT tma = do
     pool <- seldaConnectionPool <$> SeldaPoolT ask
     liftWithIdentity $ \runT -> withRunInIO $ \runInIO -> P.withResource pool $ \connection ->
       runSeldaT (transaction $ unSeldaTransactionT $ mapSeldaTransactionT (runInIO . runT) tma) connection

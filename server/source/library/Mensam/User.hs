@@ -56,7 +56,7 @@ userLogin ::
   m (AuthResult User)
 userLogin username password = do
   logDebug $ "Querying user " <> T.pack (show username) <> " from database for password authentication."
-  matchingUsers :: [DbUser] <- runSeldaTransaction $ Selda.query $ do
+  matchingUsers :: [DbUser] <- runSeldaTransactionT $ Selda.query $ do
     user <- Selda.select tableUser
     Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal username
     return user
@@ -94,7 +94,7 @@ userCreate user@MkUser {userName, userEmail} password = do
           , dbUser_email = userEmail
           }
   logDebug "Inserting new user into database."
-  runSeldaTransaction $
+  runSeldaTransactionT $
     Selda.insert_ tableUser [dbUser]
   logInfo "Created new user successfully."
 
@@ -129,7 +129,7 @@ spaceCreate space@MkSpace {spaceName} = do
           , dbSpace_name = spaceName
           }
   logDebug "Inserting new space into database."
-  runSeldaTransaction $
+  runSeldaTransactionT $
     Selda.insert_ tableSpace [dbSpace]
   logInfo "Created new space successfully."
 
@@ -144,7 +144,7 @@ newtype Desk = MkDesk
 deskCreate :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => Desk -> T.Text -> m ()
 deskCreate desk@MkDesk {deskName} spaceName = do
   logDebug $ "Creating new desk: " <> T.pack (show (desk, spaceName))
-  runSeldaTransaction $ do
+  runSeldaTransactionT $ do
     dbDesk_space <- do
       spaceIds <- Selda.query $ do
         space <- Selda.select tableSpace

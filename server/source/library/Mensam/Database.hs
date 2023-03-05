@@ -85,7 +85,7 @@ tableDesk =
     (fromJust . T.stripPrefix "dbDesk_")
 
 initDatabase :: MonadSeldaPool m => m ()
-initDatabase = runSeldaTransaction $ do
+initDatabase = runSeldaTransactionT $ do
   Selda.createTable tableUser
   Selda.createTable tableSpace
   Selda.createTable tableSpaceUser

@@ -19,7 +19,7 @@ import Database.Selda.SQLite
 
 type MonadSeldaPool :: (Type -> Type) -> Constraint
 class (Monad m, MonadMask (SeldaTransactionT m), MonadSelda (SeldaTransactionT m)) => MonadSeldaPool m where
-  runSeldaTransaction :: SeldaTransactionT m a -> m a
+  runSeldaTransactionT :: SeldaTransactionT m a -> m a
 
 instance
   ( Monad (t m)
@@ -30,9 +30,9 @@ instance
   ) =>
   MonadSeldaPool (Elevator t m)
   where
-  runSeldaTransaction transaction =
+  runSeldaTransactionT transaction =
     liftWithIdentity $ \runT ->
-      runSeldaTransaction $
+      runSeldaTransactionT $
         mapSeldaTransactionT runT transaction
 
 deriving via
