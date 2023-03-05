@@ -10,8 +10,8 @@ import Servant.Auth
 
 type Routes :: Type -> Type
 data Routes route = Routes
-  { routeLogin :: route :- "login" :> Auth '[BasicAuth, JWT] User :> UVerb GET '[JSON] [WithStatus 200 ResponseLogin, WithStatus 400 NoContent, WithStatus 401 NoContent, WithStatus 500 NoContent]
-  , routeRegister :: route :- "register" :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister :> UVerb POST '[JSON] [WithStatus 200 NoContent, WithStatus 400 NoContent]
+  { routeLogin :: route :- "login" :> Auth '[BasicAuth, JWT] User :> UVerb GET '[JSON] [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+  , routeRegister :: route :- "register" :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 ()]
   }
   deriving stock (Generic)
 

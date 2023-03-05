@@ -24,7 +24,7 @@ handler =
     , routeRegister = register
     }
 
-login :: (MonadIO m, MonadLogger m) => AuthResult User -> m (Union [WithStatus 200 ResponseLogin, WithStatus 400 NoContent, WithStatus 401 NoContent, WithStatus 500 NoContent])
+login :: (MonadIO m, MonadLogger m) => AuthResult User -> m (Union [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()])
 login authUser =
   case authUser of
     Authenticated user -> do
@@ -35,28 +35,28 @@ login authUser =
       case eitherJwt of
         Left err -> do
           logError $ "Failed to create JWT: " <> T.pack (show err)
-          respond $ WithStatus @500 NoContent
+          respond $ WithStatus @500 ()
         Right jwtByteString ->
           case T.decodeUtf8' $ B.toStrict jwtByteString of
             Left err -> do
               logError $ "Failed to decode JWT as UTF-8: " <> T.pack (show err)
-              respond $ WithStatus @500 NoContent
+              respond $ WithStatus @500 ()
             Right jwtText -> do
               logInfo "Created JWT successfully."
               logInfo "User logged in successfully."
               respond $ WithStatus @200 MkResponseLogin {responseLoginJWT = jwtText}
     failedAuthentication ->
       case failedAuthentication of
-        BadPassword -> respond $ WithStatus @401 NoContent
-        NoSuchUser -> respond $ WithStatus @401 NoContent
-        Indefinite -> respond $ WithStatus @400 NoContent
+        BadPassword -> respond $ WithStatus @401 ()
+        NoSuchUser -> respond $ WithStatus @401 ()
+        Indefinite -> respond $ WithStatus @400 ()
 
-register :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => Either String RequestRegister -> m (Union [WithStatus 200 NoContent, WithStatus 400 NoContent])
+register :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => Either String RequestRegister -> m (Union [WithStatus 200 (), WithStatus 400 ()])
 register eitherRequest =
   case eitherRequest of
     Left err -> do
       logInfo $ "Failed to parse request: " <> T.pack (show err)
-      respond $ WithStatus @400 NoContent
+      respond $ WithStatus @400 ()
     Right request@MkRequestRegister {requestRegisterName, requestRegisterPassword, requestRegisterEmail} -> do
       logDebug $ "Registering new user: " <> T.pack (show request)
       let
@@ -68,4 +68,4 @@ register eitherRequest =
         password = mkPassword requestRegisterPassword
       userCreate user password
       logInfo "Registered new user."
-      respond $ WithStatus @200 NoContent
+      respond $ WithStatus @200 ()
