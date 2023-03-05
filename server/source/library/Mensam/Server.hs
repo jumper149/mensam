@@ -4,10 +4,10 @@ import Mensam.Application.Configured.Class
 import Mensam.Application.SeldaPool.Class
 import Mensam.Configuration
 import Mensam.Configuration.BaseUrl
+import Mensam.Server.API
 import Mensam.Server.Handler
 import Mensam.Server.Handler.RequestHash
 import Mensam.Server.Route
-import Mensam.Server.Route.Type
 import Mensam.User
 
 import Control.Monad
@@ -31,8 +31,6 @@ import Servant.Server.Generic
 import System.Posix.Signals
 import System.Posix.Signals.Patterns
 
-type API :: Type
-type API = ToServantApi Routes
 type WrappedAPI :: Type
 type WrappedAPI = RequestHash :> API
 
