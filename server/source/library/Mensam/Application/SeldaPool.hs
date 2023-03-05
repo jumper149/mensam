@@ -39,21 +39,22 @@ instance (MonadLogger m, MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaP
         throwM $ SqlError $ show msg
       else do
         pool <- seldaConnectionPool <$> SeldaPoolT ask
-        lift $ logDebug "Starting SQLite transaction."
         let transactionComputation =
               liftWithIdentity $ \runT ->
                 withRunInIO $ \runInIO ->
                   P.withResource pool $ \connection ->
-                    (`runSeldaT` connection) $
-                      transaction $
-                        unSeldaTransactionT $
-                          mapSeldaTransactionT (runInIO . runT . localSetAlreadyInTransaction) tma
-        result <- catch transactionComputation $ \case
+                    (`runSeldaT` connection) $ do
+                      lift $ runInIO $ logDebug "Starting SQLite transaction."
+                      result <-
+                        transaction $
+                          unSeldaTransactionT $
+                            mapSeldaTransactionT (runInIO . runT . localSetAlreadyInTransaction) tma
+                      lift $ runInIO $ logInfo "Committed SQLite transaction."
+                      pure result
+        catch transactionComputation $ \case
           (err :: SomeException) -> do
             lift $ logError "SQLite transaction failed and the database was rolled back."
             throwM err
-        lift $ logInfo "Committed SQLite transaction."
-        pure result
    where
     localSetAlreadyInTransaction :: SeldaPoolT m a -> SeldaPoolT m a
     localSetAlreadyInTransaction = SeldaPoolT . local (\context -> context {seldaAlreadyInTransaction = True}) . unSeldaPoolT
