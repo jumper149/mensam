@@ -9,6 +9,7 @@ import Mensam.Database
 import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
+import Control.Monad.Trans.Class
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.Password.Bcrypt
@@ -143,7 +144,6 @@ newtype Desk = MkDesk
 deskCreate :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => Desk -> T.Text -> m ()
 deskCreate desk@MkDesk {deskName} spaceName = do
   logDebug $ "Creating new desk: " <> T.pack (show (desk, spaceName))
-  logDebug "Inserting new space into database."
   runSeldaTransaction $ do
     dbDesk_space <- do
       spaceIds <- Selda.query $ do
@@ -151,14 +151,21 @@ deskCreate desk@MkDesk {deskName} spaceName = do
         Selda.restrict $ space Selda.! #dbSpace_name Selda..== Selda.literal spaceName
         pure $ space Selda.! #dbSpace_id
       case spaceIds of
-        [] -> throwM $ Selda.SqlError "No matching space."
+        [] -> do
+          let msg :: T.Text = "No matching space."
+          lift $ logWarn msg
+          throwM $ Selda.SqlError $ show msg
         [spaceId] -> pure spaceId
-        _ : _ : _ -> throwM $ Selda.SqlError "Multiple matching spaces."
+        _ : _ : _ -> do
+          let msg :: T.Text = "Multiple matching spaces."
+          lift $ logError msg
+          throwM $ Selda.SqlError $ show msg
     let dbDesk =
           MkDbDesk
             { dbDesk_id = Selda.def
             , dbDesk_space
             , dbDesk_name = deskName
             }
+    lift $ logDebug "Inserting new space into database."
     Selda.insert_ tableDesk [dbDesk]
   logInfo "Created new space successfully."
