@@ -57,7 +57,7 @@ runSeldaPoolT tma = do
         logDebug "Closing SQLite connection."
         liftIO $ seldaClose connection
         logInfo "Closed SQLite connection successfully."
-    liftIO $ P.createPool openConnection closeConnection 5 (T.secondsToNominalDiffTime 5) 5
+    P.createPool openConnection closeConnection 5 (T.secondsToNominalDiffTime 5) 5
   logInfo "Initialized SQLite connection pool for Selda successfully."
   let context =
         MkSeldaPoolContext
