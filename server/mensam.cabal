@@ -103,6 +103,7 @@ library
     , Mensam.Application.SeldaPool.Class
     , Mensam.Booking
     , Mensam.Client
+    , Mensam.Client.OrphanInstances
     , Mensam.Configuration
     , Mensam.Configuration.BaseUrl
     , Mensam.Configuration.Contact
