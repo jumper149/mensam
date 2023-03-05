@@ -42,8 +42,10 @@ common dependencies
   build-depends:
     , aeson
     , base
+    , base64
     , blaze-html
     , bytestring
+    , containers
     , deriving-aeson
     , deriving-trans
     , exceptions
@@ -60,10 +62,10 @@ common dependencies
     , selda-sqlite
     , servant
     , servant-auth
-    , servant-auth-client
     , servant-auth-server
     , servant-blaze
     , servant-client
+    , servant-client-core
     , servant-rawm
     , servant-rawm-client
     , servant-rawm-server
