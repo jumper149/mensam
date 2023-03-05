@@ -65,8 +65,28 @@ tableSpaceUser =
     ]
     (fromJust . T.stripPrefix "dbSpaceUser_")
 
+type DbDesk :: Type
+data DbDesk = MkDbDesk
+  { dbDesk_id :: Selda.ID DbDesk
+  , dbDesk_space :: Selda.ID DbSpace
+  , dbDesk_name :: Selda.Text
+  }
+  deriving stock (Generic, Show)
+  deriving anyclass (Selda.SqlRow)
+
+tableDesk :: Selda.Table DbDesk
+tableDesk =
+  Selda.tableFieldMod
+    "desk"
+    [ #dbDesk_id Selda.:- Selda.autoPrimary
+    , #dbDesk_space Selda.:+ #dbDesk_name Selda.:- Selda.unique
+    , #dbDesk_space Selda.:- Selda.foreignKey tableSpace #dbSpace_id
+    ]
+    (fromJust . T.stripPrefix "dbDesk_")
+
 initDatabase :: MonadSeldaConnection m => m ()
 initDatabase = runSeldaTransaction $ do
   Selda.createTable tableUser
   Selda.createTable tableSpace
   Selda.createTable tableSpaceUser
+  Selda.createTable tableDesk
