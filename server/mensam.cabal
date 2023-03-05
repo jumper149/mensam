@@ -96,6 +96,7 @@ library
     , Mensam.Application.Logging
     , Mensam.Application.SeldaPool
     , Mensam.Application.SeldaPool.Class
+    , Mensam.Booking
     , Mensam.Configuration
     , Mensam.Configuration.BaseUrl
     , Mensam.Configuration.Contact
