@@ -38,10 +38,10 @@ deriving via
   instance
     (MonadIO (t2 m), MonadLogger (t2 m)) => MonadEmail (ComposeT EmailT t2 m)
 
-runEmailT :: EmailT m a -> Maybe EmailConfig -> m a
-runEmailT = runReaderT . unEmailT
+runEmailT :: Maybe EmailConfig -> EmailT m a -> m a
+runEmailT config tma = runReaderT (unEmailT tma) config
 
 runAppEmailT :: MonadConfigured m => EmailT m a -> m a
 runAppEmailT tma = do
-  emailConfig <- configEmailConfig <$> configuration
-  runReaderT (unEmailT tma) emailConfig
+  config <- configEmailConfig <$> configuration
+  runEmailT config tma
