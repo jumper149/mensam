@@ -33,13 +33,18 @@ instance (MonadLogger m, MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaP
   runSeldaTransactionT tma = do
     pool <- seldaConnectionPool <$> SeldaPoolT ask
     lift $ logDebug "Starting SQLite transaction."
-    result <- liftWithIdentity $ \runT ->
-      withRunInIO $ \runInIO ->
-        P.withResource pool $ \connection ->
-          (`runSeldaT` connection) $
-            transaction $
-              unSeldaTransactionT $
-                mapSeldaTransactionT (runInIO . runT) tma
+    let transactionComputation =
+          liftWithIdentity $ \runT ->
+            withRunInIO $ \runInIO ->
+              P.withResource pool $ \connection ->
+                (`runSeldaT` connection) $
+                  transaction $
+                    unSeldaTransactionT $
+                      mapSeldaTransactionT (runInIO . runT) tma
+    result <- catch transactionComputation $ \case
+      (err :: SomeException) -> do
+        lift $ logError "SQLite transaction failed and the database was rolled back."
+        throwM err
     lift $ logInfo "Committed SQLite transaction."
     pure result
 
