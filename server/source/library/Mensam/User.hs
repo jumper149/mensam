@@ -6,6 +6,7 @@ module Mensam.User where
 import Mensam.Application.SeldaConnection.Class
 import Mensam.Database
 
+import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Data.Aeson qualified as A
@@ -76,7 +77,7 @@ userLogin username password = do
         PasswordCheckSuccess -> do
           logInfo "Password authentication succeeded."
           pure $ Authenticated user
-    dbUsers@(_ : _) -> do
+    dbUsers@(_ : _ : _) -> do
       logError $ "Multiple matching users have been found in the database. This should be impossible: " <> T.pack (show dbUsers)
       pure Indefinite
 
@@ -95,7 +96,6 @@ userCreate user@MkUser {userName, userEmail} password = do
   runSeldaTransaction $
     Selda.insert_ tableUser [dbUser]
   logInfo "Created new user successfully."
-  pure ()
 
 type instance BasicAuthCfg = RunLoginInIO
 
@@ -110,3 +110,55 @@ jwtSettings = defaultJWTSettings $ fromSecret "\155\EM\235\181/\128\236M\130\245
 
 cookieSettings :: CookieSettings
 cookieSettings = defaultCookieSettings
+
+type Space :: Type
+newtype Space = MkSpace
+  { spaceName :: T.Text
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving anyclass (FromJWT, ToJWT)
+
+spaceCreate :: (MonadIO m, MonadLogger m, MonadSeldaConnection m) => Space -> m ()
+spaceCreate space@MkSpace {spaceName} = do
+  logDebug $ "Creating new space: " <> T.pack (show space)
+  let dbSpace =
+        MkDbSpace
+          { dbSpace_id = Selda.def
+          , dbSpace_name = spaceName
+          }
+  logDebug "Inserting new space into database."
+  runSeldaTransaction $
+    Selda.insert_ tableSpace [dbSpace]
+  logInfo "Created new space successfully."
+
+type Desk :: Type
+newtype Desk = MkDesk
+  { deskName :: T.Text
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving anyclass (FromJWT, ToJWT)
+
+deskCreate :: (MonadIO m, MonadLogger m, MonadSeldaConnection m) => Desk -> T.Text -> m ()
+deskCreate desk@MkDesk {deskName} spaceName = do
+  logDebug $ "Creating new desk: " <> T.pack (show (desk, spaceName))
+  logDebug "Inserting new space into database."
+  runSeldaTransaction $ do
+    dbDesk_space <- do
+      spaceIds <- Selda.query $ do
+        space <- Selda.select tableSpace
+        Selda.restrict $ space Selda.! #dbSpace_name Selda..== Selda.literal spaceName
+        pure $ space Selda.! #dbSpace_id
+      case spaceIds of
+        [] -> throwM $ Selda.SqlError "No matching space."
+        [spaceId] -> pure spaceId
+        _ : _ : _ -> throwM $ Selda.SqlError "Multiple matching spaces."
+    let dbDesk =
+          MkDbDesk
+            { dbDesk_id = Selda.def
+            , dbDesk_space
+            , dbDesk_name = deskName
+            }
+    Selda.insert_ tableDesk [dbDesk]
+  logInfo "Created new space successfully."

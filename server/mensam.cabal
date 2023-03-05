@@ -46,6 +46,7 @@ common dependencies
     , bytestring
     , deriving-aeson
     , deriving-trans
+    , exceptions
     , hashable
     , http-types
     , mime-mail
