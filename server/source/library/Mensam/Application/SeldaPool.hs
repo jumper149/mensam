@@ -31,22 +31,32 @@ newtype SeldaPoolT m a = SeldaPoolT {unSeldaPoolT :: ReaderT SeldaPoolContext m 
 
 instance (MonadLogger m, MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaPoolT m) where
   runSeldaTransactionT tma = do
-    pool <- seldaConnectionPool <$> SeldaPoolT ask
-    lift $ logDebug "Starting SQLite transaction."
-    let transactionComputation =
-          liftWithIdentity $ \runT ->
-            withRunInIO $ \runInIO ->
-              P.withResource pool $ \connection ->
-                (`runSeldaT` connection) $
-                  transaction $
-                    unSeldaTransactionT $
-                      mapSeldaTransactionT (runInIO . runT) tma
-    result <- catch transactionComputation $ \case
-      (err :: SomeException) -> do
-        lift $ logError "SQLite transaction failed and the database was rolled back."
-        throwM err
-    lift $ logInfo "Committed SQLite transaction."
-    pure result
+    alreadyInTransaction <- seldaAlreadyInTransaction <$> SeldaPoolT ask
+    if alreadyInTransaction
+      then do
+        let msg :: Text = "Tried to start nested SQLite transaction. Nested transactions are not allowed to prevent deadlocks."
+        lift $ logError msg
+        throwM $ SqlError $ show msg
+      else do
+        pool <- seldaConnectionPool <$> SeldaPoolT ask
+        lift $ logDebug "Starting SQLite transaction."
+        let transactionComputation =
+              liftWithIdentity $ \runT ->
+                withRunInIO $ \runInIO ->
+                  P.withResource pool $ \connection ->
+                    (`runSeldaT` connection) $
+                      transaction $
+                        unSeldaTransactionT $
+                          mapSeldaTransactionT (runInIO . runT . localSetAlreadyInTransaction) tma
+        result <- catch transactionComputation $ \case
+          (err :: SomeException) -> do
+            lift $ logError "SQLite transaction failed and the database was rolled back."
+            throwM err
+        lift $ logInfo "Committed SQLite transaction."
+        pure result
+   where
+    localSetAlreadyInTransaction :: SeldaPoolT m a -> SeldaPoolT m a
+    localSetAlreadyInTransaction = SeldaPoolT . local (\context -> context {seldaAlreadyInTransaction = True}) . unSeldaPoolT
 
 deriving via
   SeldaPoolT ((t2 :: (Type -> Type) -> Type -> Type) m)
@@ -81,10 +91,12 @@ runSeldaPoolT tma = do
   let context =
         MkSeldaPoolContext
           { seldaConnectionPool = pool
+          , seldaAlreadyInTransaction = False
           }
   runReaderT (unSeldaPoolT tma) context
 
 type SeldaPoolContext :: Type
-newtype SeldaPoolContext = MkSeldaPoolContext
+data SeldaPoolContext = MkSeldaPoolContext
   { seldaConnectionPool :: P.Pool (SeldaConnection SQLite)
+  , seldaAlreadyInTransaction :: Bool
   }
