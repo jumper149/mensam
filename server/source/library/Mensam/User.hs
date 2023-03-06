@@ -44,15 +44,15 @@ instance FromBasicAuthData User where
             pure Indefinite
           Right password -> do
             logDebug "Decoded UTF-8 password."
-            userLogin username password
+            userAuthenticate username password
 
-userLogin ::
+userAuthenticate ::
   (MonadLogger m, MonadSeldaPool m) =>
   -- | username
   T.Text ->
   Password ->
   m (AuthResult User)
-userLogin username password = do
+userAuthenticate username password = do
   logDebug $ "Querying user " <> T.pack (show username) <> " from database for password authentication."
   matchingUsers :: [DbUser] <- runSeldaTransactionT $ Selda.query $ do
     user <- Selda.select tableUser
