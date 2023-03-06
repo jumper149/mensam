@@ -48,8 +48,7 @@ tableSpace =
 
 type DbSpaceUser :: Type
 data DbSpaceUser = MkDbSpaceUser
-  { dbSpaceUser_id :: Selda.ID DbSpaceUser
-  , dbSpaceUser_space :: Selda.ID DbSpace
+  { dbSpaceUser_space :: Selda.ID DbSpace
   , dbSpaceUser_user :: Selda.ID DbUser
   }
   deriving stock (Generic, Show)

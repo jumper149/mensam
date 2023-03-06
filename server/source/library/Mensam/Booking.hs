@@ -71,8 +71,7 @@ spaceAddUser spaceName userName = do
           throwM $ Selda.SqlError $ show msg
     let dbSpaceUser =
           MkDbSpaceUser
-            { dbSpaceUser_id = Selda.def
-            , dbSpaceUser_space
+            { dbSpaceUser_space
             , dbSpaceUser_user
             }
     lift $ logDebug "Inserting new space-user connection into database."
