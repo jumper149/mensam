@@ -23,31 +23,31 @@ instance MimeUnrender HTML Markup where
 
 type AuthData :: [Type] -> Type
 data AuthData xs :: Type where
-  Credentials :: Credentials -> AuthData (BasicAuth ': auths)
-  BearerToken :: JWToken -> AuthData (JWT ': auths)
-  NextAuthData :: AuthData xs -> AuthData (x ': xs)
+  DataBasicAuth :: Credentials -> AuthData (BasicAuth ': auths)
+  DataJWT :: JWToken -> AuthData (JWT ': auths)
+  DataNextAuth :: AuthData xs -> AuthData (x ': xs)
 
 instance HasClient m api => HasClient m (Auth auths a :> api) where
   type Client m (Auth auths a :> api) = AuthData auths -> Client m api
   clientWithRoute Proxy Proxy req = \case
-    Credentials credentials ->
+    DataBasicAuth credentials ->
       clientWithRoute (Proxy @m) (Proxy @api) $
         req {Core.requestHeaders = credentialsAuthorizationHeader credentials <| Core.requestHeaders req}
-    BearerToken token ->
+    DataJWT token ->
       clientWithRoute (Proxy @m) (Proxy @api) $
         req {Core.requestHeaders = jwTokenAuthorizationHeader token <| Core.requestHeaders req}
-    NextAuthData (otherAuthData :: AuthData otherAuths) ->
+    DataNextAuth (otherAuthData :: AuthData otherAuths) ->
       clientWithRoute (Proxy @m) (Proxy @(Auth otherAuths a :> api)) req otherAuthData
   hoistClientMonad Proxy Proxy f cl arg =
     hoistClientMonad (Proxy @m) (Proxy :: Proxy api) f (cl arg)
 
 type Credentials :: Type
-data Credentials = MkCredentials {username :: T.Text, password :: T.Text}
+data Credentials = MkCredentials {credentialsUsername :: T.Text, credentialsPassword :: T.Text}
   deriving stock (Eq, Generic, Ord, Read, Show)
 
 credentialsAuthorizationHeader :: Credentials -> Header
-credentialsAuthorizationHeader MkCredentials {username, password} =
-  ("Authorization",) $ ("Basic " <>) $ T.encodeUtf8 $ T.encodeBase64 $ username <> ":" <> password
+credentialsAuthorizationHeader MkCredentials {credentialsUsername, credentialsPassword} =
+  (hAuthorization,) $ ("Basic " <>) $ T.encodeUtf8 $ T.encodeBase64 $ credentialsUsername <> ":" <> credentialsPassword
 
 type JWToken :: Type
 newtype JWToken = MkJWToken {unJWToken :: T.Text}
@@ -55,4 +55,4 @@ newtype JWToken = MkJWToken {unJWToken :: T.Text}
 
 jwTokenAuthorizationHeader :: JWToken -> Header
 jwTokenAuthorizationHeader MkJWToken {unJWToken} =
-  ("Authorization",) $ ("Bearer " <>) $ T.encodeUtf8 unJWToken
+  (hAuthorization,) $ ("Bearer " <>) $ T.encodeUtf8 unJWToken

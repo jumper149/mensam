@@ -48,16 +48,16 @@ f = do
   liftIO $ print resultRegister
   let credentials =
         MkCredentials
-          { username = name
-          , password = "asdf"
+          { credentialsUsername = name
+          , credentialsPassword = pw
           }
-  resultLogin <- routes // Route.routeUser // Route.User.routeLogin $ Credentials credentials
+  resultLogin <- routes // Route.routeUser // Route.User.routeLogin $ DataBasicAuth credentials
   liftIO $ print resultLogin
   Route.User.MkResponseLogin {Route.User.responseLoginJWT} <-
     case resultLogin of
       Z (I (WithStatus @200 x)) -> pure x
       _ -> undefined
   let token = MkJWToken {unJWToken = responseLoginJWT}
-  nextLoginResult <- routes // Route.routeUser // Route.User.routeLogin $ NextAuthData $ BearerToken token
+  nextLoginResult <- routes // Route.routeUser // Route.User.routeLogin $ DataNextAuth $ DataJWT token
   liftIO $ print nextLoginResult
   pure ()
