@@ -18,15 +18,15 @@ handler ::
   Routes (AsServerT m)
 handler =
   Routes
-    { routeSpaceCreate = createNewSpace
+    { routeSpaceCreate = createSpace
     }
 
-createNewSpace ::
+createSpace ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   AuthResult User ->
   Either String RequestSpaceCreate ->
   m (Union [WithStatus 200 (), WithStatus 400 ()])
-createNewSpace authUser eitherRequest =
+createSpace authUser eitherRequest =
   case authUser of
     Authenticated user -> do
       request <- case eitherRequest of
