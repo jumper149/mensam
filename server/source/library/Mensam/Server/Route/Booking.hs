@@ -7,6 +7,7 @@ import Mensam.User
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
+import Control.Monad.Trans.Class
 import Data.Text qualified as T
 import Servant hiding (BasicAuthResult (..))
 import Servant.Auth.Server
@@ -33,12 +34,13 @@ createNewSpace authUser eitherRequest =
         Right request -> pure request
       logDebug $ "Received request to create space: " <> T.pack (show request)
       let space = MkSpace {spaceName = requestSpaceCreateName request}
-      logDebug $ "Creating space: " <> T.pack (show space)
-      spaceCreate space
-      logInfo "Created space."
-      logDebug $ "Setting user to access this space: " <> T.pack (show user)
-      spaceAddUser (requestSpaceCreateName request) (userName user) True
-      logInfo "Requesting user can now access the space."
+      runSeldaTransactionT $ do
+        lift $ logDebug $ "Creating space: " <> T.pack (show space)
+        spaceCreate space
+        lift $ logInfo "Created space."
+        lift $ logDebug $ "Setting user to access this space: " <> T.pack (show user)
+        spaceAddUser (requestSpaceCreateName request) (userName user) True
+        lift $ logInfo "Requesting user can now access the space."
       respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of

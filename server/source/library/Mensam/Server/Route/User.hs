@@ -24,7 +24,10 @@ handler =
     , routeRegister = register
     }
 
-login :: (MonadIO m, MonadLogger m) => AuthResult User -> m (Union [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()])
+login ::
+  (MonadIO m, MonadLogger m) =>
+  AuthResult User ->
+  m (Union [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()])
 login authUser =
   case authUser of
     Authenticated user -> do
@@ -51,7 +54,10 @@ login authUser =
         NoSuchUser -> respond $ WithStatus @401 ()
         Indefinite -> respond $ WithStatus @400 ()
 
-register :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => Either String RequestRegister -> m (Union [WithStatus 200 (), WithStatus 400 ()])
+register ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  Either String RequestRegister ->
+  m (Union [WithStatus 200 (), WithStatus 400 ()])
 register eitherRequest =
   case eitherRequest of
     Left err -> do
@@ -66,6 +72,6 @@ register eitherRequest =
             , userEmail = requestRegisterEmail
             }
         password = mkPassword requestRegisterPassword
-      userCreate user password
+      runSeldaTransactionT $ userCreate user password
       logInfo "Registered new user."
       respond $ WithStatus @200 ()

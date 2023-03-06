@@ -8,6 +8,7 @@ import Mensam.Database
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
+import Control.Monad.Trans.Class
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.Password.Bcrypt
@@ -44,17 +45,17 @@ instance FromBasicAuthData User where
             pure Indefinite
           Right password -> do
             logDebug "Decoded UTF-8 password."
-            userAuthenticate username password
+            runSeldaTransactionT $ userAuthenticate username password
 
 userAuthenticate ::
   (MonadLogger m, MonadSeldaPool m) =>
   -- | username
   T.Text ->
   Password ->
-  m (AuthResult User)
+  SeldaTransactionT m (AuthResult User)
 userAuthenticate username password = do
-  logDebug $ "Querying user " <> T.pack (show username) <> " from database for password authentication."
-  matchingUsers :: [DbUser] <- runSeldaTransactionT $ Selda.query $ do
+  lift $ logDebug $ "Querying user " <> T.pack (show username) <> " from database for password authentication."
+  matchingUsers :: [DbUser] <- Selda.query $ do
     user <- Selda.select tableUser
     Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal username
     return user
@@ -68,21 +69,25 @@ userAuthenticate username password = do
             , userEmail = dbUser_email dbUser
             }
         passwordHash = PasswordHash $ dbUser_password_hash dbUser
-      logDebug $ "Queried user " <> T.pack (show user) <> " from database for password authentication. Checking password now."
+      lift $ logDebug $ "Queried user " <> T.pack (show user) <> " from database for password authentication. Checking password now."
       case checkPassword password passwordHash of
         PasswordCheckFail -> do
-          logInfo "Password authentication failed because of wrong password."
+          lift $ logInfo "Password authentication failed because of wrong password."
           pure BadPassword
         PasswordCheckSuccess -> do
-          logInfo "Password authentication succeeded."
+          lift $ logInfo "Password authentication succeeded."
           pure $ Authenticated user
     dbUsers@(_ : _ : _) -> do
-      logError $ "Multiple matching users have been found in the database. This should be impossible: " <> T.pack (show dbUsers)
+      lift $ logError $ "Multiple matching users have been found in the database. This should be impossible: " <> T.pack (show dbUsers)
       pure Indefinite
 
-userCreate :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => User -> Password -> m ()
+userCreate ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  User ->
+  Password ->
+  SeldaTransactionT m ()
 userCreate user@MkUser {userName, userEmail} password = do
-  logDebug $ "Creating new user: " <> T.pack (show user)
+  lift $ logDebug $ "Creating new user: " <> T.pack (show user)
   passwordHash :: PasswordHash Bcrypt <- hashPassword password
   let dbUser =
         MkDbUser
@@ -91,10 +96,9 @@ userCreate user@MkUser {userName, userEmail} password = do
           , dbUser_password_hash = unPasswordHash passwordHash
           , dbUser_email = userEmail
           }
-  logDebug "Inserting new user into database."
-  runSeldaTransactionT $
-    Selda.insert_ tableUser [dbUser]
-  logInfo "Created new user successfully."
+  lift $ logDebug "Inserting new user into database."
+  Selda.insert_ tableUser [dbUser]
+  lift $ logInfo "Created new user successfully."
 
 type instance BasicAuthCfg = RunLoginInIO
 
