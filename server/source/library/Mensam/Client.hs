@@ -3,6 +3,7 @@
 module Mensam.Client where
 
 import Mensam.Client.OrphanInstances
+import Mensam.Server.Route.Booking.Type qualified as Route.Booking
 import Mensam.Server.Route.Type qualified as Route
 import Mensam.Server.Route.User.Type qualified as Route.User
 
@@ -38,6 +39,9 @@ f = do
     name :: T.Text = "maxmustermann5"
     pw :: T.Text = "asdf"
     email :: T.Text = "maxmustermann@gmail.com"
+    spacename :: T.Text = "universum"
+
+  liftIO $ putStrLn "Register."
   let requestRegister =
         Route.User.MkRequestRegister
           { Route.User.requestRegisterName = name
@@ -46,6 +50,8 @@ f = do
           }
   resultRegister <- routes // Route.routeUser // Route.User.routeRegister $ requestRegister
   liftIO $ print resultRegister
+
+  liftIO $ putStrLn "Login with BasicAuth."
   let credentials =
         MkCredentials
           { credentialsUsername = name
@@ -53,11 +59,27 @@ f = do
           }
   resultLogin <- routes // Route.routeUser // Route.User.routeLogin $ DataBasicAuth credentials
   liftIO $ print resultLogin
-  Route.User.MkResponseLogin {Route.User.responseLoginJWT} <-
+  responseLogin <-
     case resultLogin of
       Z (I (WithStatus @200 x)) -> pure x
       _ -> undefined
-  let token = MkJWToken {unJWToken = responseLoginJWT}
+
+  liftIO $ putStrLn "Login with JWT."
+  let token = MkJWToken {unJWToken = Route.User.responseLoginJWT responseLogin}
   nextLoginResult <- routes // Route.routeUser // Route.User.routeLogin $ DataNextAuth $ DataJWT token
   liftIO $ print nextLoginResult
+  nextResponseLogin <-
+    case resultLogin of
+      Z (I (WithStatus @200 x)) -> pure x
+      _ -> undefined
+  let nextToken = MkJWToken {unJWToken = Route.User.responseLoginJWT nextResponseLogin}
+
+  liftIO $ putStrLn "Create space."
+  let requestSpaceCreate =
+        Route.Booking.MkRequestSpaceCreate
+          { Route.Booking.requestSpaceCreateName = spacename
+          }
+  resultSpaceCreate <- (routes // Route.routeBooking // Route.Booking.routeSpaceCreate) (DataJWT nextToken) requestSpaceCreate
+  liftIO $ print resultSpaceCreate
+
   pure ()

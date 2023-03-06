@@ -2,6 +2,7 @@ module Mensam.Server.Route where
 
 import Mensam.Application.Configured.Class
 import Mensam.Application.SeldaPool.Class
+import Mensam.Server.Route.Booking qualified
 import Mensam.Server.Route.Home qualified
 import Mensam.Server.Route.Static qualified
 import Mensam.Server.Route.Type
@@ -18,5 +19,6 @@ routes =
   Routes
     { routeHome = Mensam.Server.Route.Home.handler
     , routeUser = Mensam.Server.Route.User.handler
+    , routeBooking = Mensam.Server.Route.Booking.handler
     , routeStatic = Mensam.Server.Route.Static.handler
     }
