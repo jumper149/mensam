@@ -9,7 +9,7 @@ import Servant.API hiding (BasicAuth)
 import Servant.Auth
 
 type Routes :: Type -> Type
-newtype Routes route = Routes
+data Routes route = Routes
   { routeSpaceCreate ::
       route
         :- "space"
@@ -17,12 +17,27 @@ newtype Routes route = Routes
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
           :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 ()]
+  , routeDeskCreate ::
+      route
+        :- "desk"
+          :> "create"
+          :> Auth '[JWT] User
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate
+          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 ()]
   }
   deriving stock (Generic)
 
 type RequestSpaceCreate :: Type
 newtype RequestSpaceCreate = MkRequestSpaceCreate
   { requestSpaceCreateName :: T.Text
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (A.FromJSON, A.ToJSON)
+
+type RequestDeskCreate :: Type
+data RequestDeskCreate = MkRequestDeskCreate
+  { requestDeskCreateName :: T.Text
+  , requestDeskCreateSpaceName :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)

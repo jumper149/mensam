@@ -19,6 +19,7 @@ handler ::
 handler =
   Routes
     { routeSpaceCreate = createSpace
+    , routeDeskCreate = createDesk
     }
 
 createSpace ::
@@ -41,6 +42,31 @@ createSpace authUser eitherRequest =
         lift $ logDebug $ "Setting user to access this space: " <> T.pack (show user)
         spaceAddUser (requestSpaceCreateName request) (userName user) True
         lift $ logInfo "Requesting user can now access the space."
+      respond $ WithStatus @200 ()
+    failedAuthentication ->
+      case failedAuthentication of
+        BadPassword -> undefined -- respond $ WithStatus @401 ()
+        NoSuchUser -> undefined -- respond $ WithStatus @401 ()
+        Indefinite -> respond $ WithStatus @400 ()
+
+createDesk ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  AuthResult User ->
+  Either String RequestDeskCreate ->
+  m (Union [WithStatus 200 (), WithStatus 400 ()])
+createDesk authUser eitherRequest =
+  case authUser of
+    Authenticated user -> do
+      request <- case eitherRequest of
+        Left _err -> undefined
+        Right request -> pure request
+      logDebug $ "Received request to create space: " <> T.pack (show request)
+      let desk = MkDesk {deskName = requestDeskCreateName request}
+      -- TODO: Check if user has permission to create this desk.
+      runSeldaTransactionT $ do
+        lift $ logDebug $ "Creating desk: " <> T.pack (show desk)
+        deskCreate desk (requestDeskCreateSpaceName request)
+        lift $ logInfo "Created desk."
       respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of
