@@ -50,6 +50,7 @@ type DbSpaceUser :: Type
 data DbSpaceUser = MkDbSpaceUser
   { dbSpaceUser_space :: Selda.ID DbSpace
   , dbSpaceUser_user :: Selda.ID DbUser
+  , dbSpaceUser_is_admin :: Bool
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)

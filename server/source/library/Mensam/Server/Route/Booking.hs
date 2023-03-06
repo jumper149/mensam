@@ -37,7 +37,7 @@ createNewSpace authUser eitherRequest =
       spaceCreate space
       logInfo "Created space."
       logDebug $ "Setting user to access this space: " <> T.pack (show user)
-      spaceAddUser (requestSpaceCreateName request) (userName user)
+      spaceAddUser (requestSpaceCreateName request) (userName user) True
       logInfo "Requesting user can now access the space."
       respond $ WithStatus @200 ()
     failedAuthentication ->

@@ -35,8 +35,8 @@ spaceCreate space@MkSpace {spaceName} = do
     Selda.insert_ tableSpace [dbSpace]
   logInfo "Created new space successfully."
 
-spaceAddUser :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => T.Text -> T.Text -> m ()
-spaceAddUser spaceName userName = do
+spaceAddUser :: (MonadIO m, MonadLogger m, MonadSeldaPool m) => T.Text -> T.Text -> Bool -> m ()
+spaceAddUser spaceName userName isAdmin = do
   logDebug $ "Adding user " <> T.pack (show userName) <> " to space " <> T.pack (show spaceName) <> "."
   runSeldaTransactionT $ do
     dbSpaceUser_space <- do
@@ -73,6 +73,7 @@ spaceAddUser spaceName userName = do
           MkDbSpaceUser
             { dbSpaceUser_space
             , dbSpaceUser_user
+            , dbSpaceUser_is_admin = isAdmin
             }
     lift $ logDebug "Inserting new space-user connection into database."
     Selda.insert_ tableSpaceUser [dbSpaceUser]
