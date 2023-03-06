@@ -123,6 +123,8 @@ library
     , Mensam.Server.Html.Document
     , Mensam.Server.Html.Header
     , Mensam.Server.Route
+    , Mensam.Server.Route.Booking
+    , Mensam.Server.Route.Booking.Type
     , Mensam.Server.Route.Home
     , Mensam.Server.Route.Home.Type
     , Mensam.Server.Route.User
