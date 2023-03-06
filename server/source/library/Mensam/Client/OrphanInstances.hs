@@ -47,7 +47,7 @@ data Credentials = MkCredentials {username :: T.Text, password :: T.Text}
 
 credentialsAuthorizationHeader :: Credentials -> Header
 credentialsAuthorizationHeader MkCredentials {username, password} =
-  ("Authorization",) $ ("BasicAuth " <>) $ T.encodeUtf8 $ T.encodeBase64 $ username <> ":" <> password
+  ("Authorization",) $ ("Basic " <>) $ T.encodeUtf8 $ T.encodeBase64 $ username <> ":" <> password
 
 type JWToken :: Type
 newtype JWToken = MkJWToken {unJWToken :: T.Text}

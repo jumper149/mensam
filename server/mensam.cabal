@@ -50,6 +50,7 @@ common dependencies
     , deriving-trans
     , exceptions
     , hashable
+    , http-client
     , http-types
     , mime-mail
     , monad-control
@@ -72,6 +73,7 @@ common dependencies
     , servant-server
     , singletons
     , singletons-th
+    , sop-core
     , text
     , time
     , transformers
