@@ -3,6 +3,7 @@
 
 module Mensam.Client.OrphanInstances where
 
+import Data.ByteString qualified as B
 import Data.Kind
 import Data.Proxy
 import Data.Sequence
@@ -25,6 +26,7 @@ type AuthData :: [Type] -> Type
 data AuthData xs :: Type where
   DataBasicAuth :: Credentials -> AuthData (BasicAuth ': auths)
   DataJWT :: JWToken -> AuthData (JWT ': auths)
+  DataCookie :: Cookies -> AuthData (Cookie ': auths)
   DataNextAuth :: AuthData xs -> AuthData (x ': xs)
 
 instance HasClient m api => HasClient m (Auth auths a :> api) where
@@ -36,6 +38,9 @@ instance HasClient m api => HasClient m (Auth auths a :> api) where
     DataJWT token ->
       clientWithRoute (Proxy @m) (Proxy @api) $
         req {Core.requestHeaders = jwTokenAuthorizationHeader token <| Core.requestHeaders req}
+    DataCookie cookies ->
+      clientWithRoute (Proxy @m) (Proxy @api) $
+        req {Core.requestHeaders = cookiesCookieHeader cookies <| Core.requestHeaders req}
     DataNextAuth (otherAuthData :: AuthData otherAuths) ->
       clientWithRoute (Proxy @m) (Proxy @(Auth otherAuths a :> api)) req otherAuthData
   hoistClientMonad Proxy Proxy f cl arg =
@@ -56,3 +61,10 @@ newtype JWToken = MkJWToken {unJWToken :: T.Text}
 jwTokenAuthorizationHeader :: JWToken -> Header
 jwTokenAuthorizationHeader MkJWToken {unJWToken} =
   (hAuthorization,) $ ("Bearer " <>) $ T.encodeUtf8 unJWToken
+
+type Cookies :: Type
+newtype Cookies = MkCookies {unCookies :: B.ByteString}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+
+cookiesCookieHeader :: Cookies -> Header
+cookiesCookieHeader MkCookies {unCookies} = (hCookie, unCookies)
