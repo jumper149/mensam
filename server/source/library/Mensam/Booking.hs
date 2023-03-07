@@ -53,13 +53,16 @@ spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | name
   T.Text ->
+  -- | visible
+  Bool ->
   SeldaTransactionT m ()
-spaceCreate name = do
+spaceCreate name visible = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
   let dbSpace =
         MkDbSpace
           { dbSpace_id = Selda.def
           , dbSpace_name = name
+          , dbSpace_visible = visible
           }
   Selda.insert_ tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."

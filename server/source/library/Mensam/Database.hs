@@ -33,6 +33,7 @@ type DbSpace :: Type
 data DbSpace = MkDbSpace
   { dbSpace_id :: Selda.ID DbSpace
   , dbSpace_name :: Selda.Text
+  , dbSpace_visible :: Bool
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)

@@ -28,8 +28,9 @@ data Routes route = Routes
   deriving stock (Generic)
 
 type RequestSpaceCreate :: Type
-newtype RequestSpaceCreate = MkRequestSpaceCreate
+data RequestSpaceCreate = MkRequestSpaceCreate
   { requestSpaceCreateName :: T.Text
+  , requestSpaceCreateVisible :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)

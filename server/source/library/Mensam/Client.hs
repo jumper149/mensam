@@ -78,6 +78,7 @@ f = do
   let requestSpaceCreate =
         Route.Booking.MkRequestSpaceCreate
           { Route.Booking.requestSpaceCreateName = spacename
+          , Route.Booking.requestSpaceCreateVisible = True
           }
   resultSpaceCreate <- (routes // Route.routeBooking // Route.Booking.routeSpaceCreate) (DataJWT nextToken) requestSpaceCreate
   liftIO $ print resultSpaceCreate
