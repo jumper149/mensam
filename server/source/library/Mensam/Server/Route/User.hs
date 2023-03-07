@@ -65,13 +65,6 @@ register eitherRequest =
       respond $ WithStatus @400 ()
     Right request@MkRequestRegister {requestRegisterName, requestRegisterPassword, requestRegisterEmail} -> do
       logDebug $ "Registering new user: " <> T.pack (show request)
-      let
-        user =
-          MkUser
-            { userName = requestRegisterName
-            , userEmail = requestRegisterEmail
-            }
-        password = mkPassword requestRegisterPassword
-      runSeldaTransactionT $ userCreate user password
+      runSeldaTransactionT $ userCreate requestRegisterName requestRegisterEmail (mkPassword requestRegisterPassword)
       logInfo "Registered new user."
       respond $ WithStatus @200 ()

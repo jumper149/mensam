@@ -11,6 +11,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Aeson qualified as A
+import Data.Int
 import Data.Kind
 import Data.Password.Bcrypt
 import Data.Text qualified as T
@@ -22,12 +23,18 @@ import Servant.Auth.Server
 
 type User :: Type
 data User = MkUser
-  { userName :: T.Text
+  { userId :: UserId
+  , userName :: T.Text
   , userEmail :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
   deriving anyclass (FromJWT, ToJWT)
+
+type UserId :: Type
+newtype UserId = MkUserId {unUserId :: Int64}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (A.FromJSON, A.ToJSON)
 
 instance FromBasicAuthData User where
   fromBasicAuthData BasicAuthData {basicAuthUsername, basicAuthPassword} MkRunLoginInIO {runLoginInIO} = runLoginInIO $ do
@@ -66,7 +73,8 @@ userAuthenticate username password = do
       let
         user =
           MkUser
-            { userName = dbUser_name dbUser
+            { userId = MkUserId {unUserId = Selda.fromId $ dbUser_id dbUser}
+            , userName = dbUser_name dbUser
             , userEmail = dbUser_email dbUser
             }
         passwordHash = PasswordHash $ dbUser_password_hash dbUser
@@ -81,22 +89,26 @@ userAuthenticate username password = do
 
 userCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  User ->
+  -- | name
+  T.Text ->
+  -- | email
+  T.Text ->
+  -- | password
   Password ->
   SeldaTransactionT m ()
-userCreate user@MkUser {userName, userEmail} password = do
-  lift $ logDebug $ "Creating new user: " <> T.pack (show user)
+userCreate name email password = do
+  lift $ logDebug "Creating user."
   passwordHash :: PasswordHash Bcrypt <- hashPassword password
   let dbUser =
         MkDbUser
           { dbUser_id = Selda.def
-          , dbUser_name = userName
+          , dbUser_name = name
           , dbUser_password_hash = unPasswordHash passwordHash
-          , dbUser_email = userEmail
+          , dbUser_email = email
           }
-  lift $ logDebug "Inserting new user into database."
+  lift $ logDebug "Inserting user into database."
   Selda.insert_ tableUser [dbUser]
-  lift $ logInfo "Created new user successfully."
+  lift $ logInfo "Created user successfully."
 
 type instance BasicAuthCfg = RunLoginInIO
 
