@@ -43,8 +43,11 @@ spaceCreate name = do
 
 spaceAddUser ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  -- | space name
   T.Text ->
+  -- | user name
   T.Text ->
+  -- | user is admin?
   Bool ->
   SeldaTransactionT m ()
 spaceAddUser spaceName userName isAdmin = do
