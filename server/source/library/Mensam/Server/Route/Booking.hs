@@ -56,11 +56,11 @@ createDesk authUser eitherRequest =
         Right request -> pure request
       logDebug $ "Received request to create desk: " <> T.pack (show request)
       runSeldaTransactionT $ do
-        permission <- spaceUserLookup (Left $ requestDeskCreateSpaceName request) (Right $ userId user)
+        permission <- spaceUserLookup (requestDeskCreateSpace request) (Right $ userId user)
         case permission of
           Nothing -> error "No permission."
           Just False -> error "No admin permission."
-          Just True -> deskCreate (requestDeskCreateName request) (Left $ requestDeskCreateSpaceName request)
+          Just True -> deskCreate (requestDeskCreateName request) (requestDeskCreateSpace request)
       respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of

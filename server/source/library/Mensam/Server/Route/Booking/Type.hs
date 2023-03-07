@@ -1,10 +1,13 @@
 module Mensam.Server.Route.Booking.Type where
 
+import Mensam.Database
+import Mensam.Database.Extra qualified as Selda
+import Mensam.User
+
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.Text qualified as T
 import GHC.Generics
-import Mensam.User
 import Servant.API hiding (BasicAuth)
 import Servant.Auth
 
@@ -38,7 +41,7 @@ data RequestSpaceCreate = MkRequestSpaceCreate
 type RequestDeskCreate :: Type
 data RequestDeskCreate = MkRequestDeskCreate
   { requestDeskCreateName :: T.Text
-  , requestDeskCreateSpaceName :: T.Text
+  , requestDeskCreateSpace :: Either T.Text (Selda.Identifier DbSpace)
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
