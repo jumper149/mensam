@@ -112,6 +112,7 @@ library
     , Mensam.Configuration.Email
     , Mensam.Configuration.SQLite
     , Mensam.Database
+    , Mensam.Database.Extra
     , Mensam.Environment
     , Mensam.Server
     , Mensam.Server.API
