@@ -5,6 +5,7 @@ module Mensam.User where
 
 import Mensam.Application.SeldaPool.Class
 import Mensam.Database
+import Mensam.Database.Extra qualified as Selda
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
@@ -55,13 +56,13 @@ userAuthenticate ::
   SeldaTransactionT m (AuthResult User)
 userAuthenticate username password = do
   lift $ logDebug $ "Querying user " <> T.pack (show username) <> " from database for password authentication."
-  matchingUsers :: [DbUser] <- Selda.query $ do
+  maybeUser :: Maybe DbUser <- Selda.queryUnique $ do
     user <- Selda.select tableUser
     Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal username
     return user
-  case matchingUsers of
-    [] -> pure NoSuchUser
-    [dbUser] -> do
+  case maybeUser of
+    Nothing -> pure NoSuchUser
+    Just dbUser -> do
       let
         user =
           MkUser
@@ -77,9 +78,6 @@ userAuthenticate username password = do
         PasswordCheckSuccess -> do
           lift $ logInfo "Password authentication succeeded."
           pure $ Authenticated user
-    dbUsers@(_ : _ : _) -> do
-      lift $ logError $ "Multiple matching users have been found in the database. This should be impossible: " <> T.pack (show dbUsers)
-      pure Indefinite
 
 userCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

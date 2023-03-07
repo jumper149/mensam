@@ -4,6 +4,7 @@ module Mensam.Booking where
 
 import Mensam.Application.SeldaPool.Class
 import Mensam.Database
+import Mensam.Database.Extra qualified as Selda
 
 import Control.Monad.Catch
 import Control.Monad.IO.Class
@@ -47,35 +48,27 @@ spaceAddUser ::
 spaceAddUser spaceName userName isAdmin = do
   lift $ logDebug $ "Adding user " <> T.pack (show userName) <> " to space " <> T.pack (show spaceName) <> "."
   dbSpaceUser_space <- do
-    spaceIds <- Selda.query $ do
+    maybeSpaceId <- Selda.queryUnique $ do
       space <- Selda.select tableSpace
       Selda.restrict $ space Selda.! #dbSpace_name Selda..== Selda.literal spaceName
       pure $ space Selda.! #dbSpace_id
-    case spaceIds of
-      [] -> do
+    case maybeSpaceId of
+      Nothing -> do
         let msg :: T.Text = "No matching space."
         lift $ logWarn msg
         throwM $ Selda.SqlError $ show msg
-      [spaceId] -> pure spaceId
-      _ : _ : _ -> do
-        let msg :: T.Text = "Multiple matching spaces."
-        lift $ logError msg
-        throwM $ Selda.SqlError $ show msg
+      Just spaceId -> pure spaceId
   dbSpaceUser_user <- do
-    userIds <- Selda.query $ do
+    maybeUserId <- Selda.queryUnique $ do
       user <- Selda.select tableUser
       Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal userName
       pure $ user Selda.! #dbUser_id
-    case userIds of
-      [] -> do
+    case maybeUserId of
+      Nothing -> do
         let msg :: T.Text = "No matching user."
         lift $ logWarn msg
         throwM $ Selda.SqlError $ show msg
-      [userId] -> pure userId
-      _ : _ : _ -> do
-        let msg :: T.Text = "Multiple matching users."
-        lift $ logError msg
-        throwM $ Selda.SqlError $ show msg
+      Just userId -> pure userId
   let dbSpaceUser =
         MkDbSpaceUser
           { dbSpaceUser_space
@@ -101,20 +94,16 @@ deskCreate ::
 deskCreate desk@MkDesk {deskName} spaceName = do
   lift $ logDebug $ "Creating new desk: " <> T.pack (show (desk, spaceName))
   dbDesk_space <- do
-    spaceIds <- Selda.query $ do
+    maybeSpaceId <- Selda.queryUnique $ do
       space <- Selda.select tableSpace
       Selda.restrict $ space Selda.! #dbSpace_name Selda..== Selda.literal spaceName
       pure $ space Selda.! #dbSpace_id
-    case spaceIds of
-      [] -> do
+    case maybeSpaceId of
+      Nothing -> do
         let msg :: T.Text = "No matching space."
         lift $ logWarn msg
         throwM $ Selda.SqlError $ show msg
-      [spaceId] -> pure spaceId
-      _ : _ : _ -> do
-        let msg :: T.Text = "Multiple matching spaces."
-        lift $ logError msg
-        throwM $ Selda.SqlError $ show msg
+      Just spaceId -> pure spaceId
   let dbDesk =
         MkDbDesk
           { dbDesk_id = Selda.def
@@ -141,51 +130,39 @@ reservationCreate ::
 reservationCreate spaceName deskName userName timestampBegin timestampEnd = do
   lift $ logDebug "Creating new reservation."
   dbSpace_id <- do
-    spaceIds <- Selda.query $ do
+    maybeSpaceId <- Selda.queryUnique $ do
       space <- Selda.select tableSpace
       Selda.restrict $ space Selda.! #dbSpace_name Selda..== Selda.literal spaceName
       pure $ space Selda.! #dbSpace_id
-    case spaceIds of
-      [] -> do
+    case maybeSpaceId of
+      Nothing -> do
         let msg :: T.Text = "No matching space."
         lift $ logWarn msg
         throwM $ Selda.SqlError $ show msg
-      [spaceId] -> pure spaceId
-      _ : _ : _ -> do
-        let msg :: T.Text = "Multiple matching spaces."
-        lift $ logError msg
-        throwM $ Selda.SqlError $ show msg
+      Just spaceId -> pure spaceId
   dbDesk_id <- do
-    deskIds <- Selda.query $ do
+    maybeDeskId <- Selda.queryUnique $ do
       desk <- Selda.select tableDesk
       Selda.restrict $ desk Selda.! #dbDesk_space Selda..== Selda.literal dbSpace_id
       Selda.restrict $ desk Selda.! #dbDesk_name Selda..== Selda.literal deskName
       pure $ desk Selda.! #dbDesk_id
-    case deskIds of
-      [] -> do
+    case maybeDeskId of
+      Nothing -> do
         let msg :: T.Text = "No matching desk."
         lift $ logWarn msg
         throwM $ Selda.SqlError $ show msg
-      [deskId] -> pure deskId
-      _ : _ : _ -> do
-        let msg :: T.Text = "Multiple matching desks."
-        lift $ logError msg
-        throwM $ Selda.SqlError $ show msg
+      Just deskId -> pure deskId
   dbUser_id <- do
-    userIds <- Selda.query $ do
+    maybeUserId <- Selda.queryUnique $ do
       user <- Selda.select tableUser
       Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal userName
       pure $ user Selda.! #dbUser_id
-    case userIds of
-      [] -> do
+    case maybeUserId of
+      Nothing -> do
         let msg :: T.Text = "No matching user."
         lift $ logWarn msg
         throwM $ Selda.SqlError $ show msg
-      [userId] -> pure userId
-      _ : _ : _ -> do
-        let msg :: T.Text = "Multiple matching users."
-        lift $ logError msg
-        throwM $ Selda.SqlError $ show msg
+      Just userId -> pure userId
   let dbReservation =
         MkDbReservation
           { dbReservation_id = Selda.def
