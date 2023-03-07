@@ -57,7 +57,7 @@ createDesk authUser eitherRequest =
       logDebug $ "Received request to create desk: " <> T.pack (show request)
       -- TODO: Check if user has permission to create this desk.
       runSeldaTransactionT $
-        deskCreate (requestDeskCreateName request) (requestDeskCreateSpaceName request)
+        deskCreate (requestDeskCreateName request) (Left $ requestDeskCreateSpaceName request)
       respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of

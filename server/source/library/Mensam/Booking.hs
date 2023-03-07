@@ -132,21 +132,27 @@ deskCreate ::
   -- | desk name
   T.Text ->
   -- | space name
-  T.Text ->
+  Either T.Text (Selda.Identifier DbSpace) ->
   SeldaTransactionT m ()
-deskCreate deskName spaceName = do
+deskCreate deskName space = do
   lift $ logDebug "Creating new desk."
-  dbDesk_space <- do
-    maybeSpaceId <- Selda.queryUnique $ do
-      space <- Selda.select tableSpace
-      Selda.restrict $ space Selda.! #dbSpace_name Selda..== Selda.literal spaceName
-      pure $ space Selda.! #dbSpace_id
-    case maybeSpaceId of
-      Nothing -> do
-        let msg :: T.Text = "No matching space."
-        lift $ logWarn msg
-        throwM $ Selda.SqlError $ show msg
-      Just spaceId -> pure spaceId
+  dbDesk_space <-
+    case space of
+      Left name -> do
+        lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
+        maybeId <- Selda.queryUnique $ do
+          dbSpace <- Selda.select tableSpace
+          Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal name
+          pure $ dbSpace Selda.! #dbSpace_id
+        case maybeId of
+          Nothing -> do
+            let msg :: T.Text = "No matching space."
+            lift $ logWarn msg
+            throwM $ Selda.SqlError $ show msg
+          Just spaceId -> do
+            lift $ logInfo "Looked up space identifier successfully."
+            pure spaceId
+      Right spaceId -> pure $ Selda.fromIdentifier spaceId
   let dbDesk =
         MkDbDesk
           { dbDesk_id = Selda.def
