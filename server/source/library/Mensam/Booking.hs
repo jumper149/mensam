@@ -82,19 +82,22 @@ spaceAddUser spaceName userName isAdmin = do
   lift $ logInfo "Created new space successfully."
 
 type Desk :: Type
-newtype Desk = MkDesk
-  { deskName :: T.Text
+data Desk = MkDesk
+  { deskId :: Selda.Identifier DbDesk
+  , deskName :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
 
 deskCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  Desk ->
+  -- | desk name
+  T.Text ->
+  -- | space name
   T.Text ->
   SeldaTransactionT m ()
-deskCreate desk@MkDesk {deskName} spaceName = do
-  lift $ logDebug $ "Creating new desk: " <> T.pack (show (desk, spaceName))
+deskCreate deskName spaceName = do
+  lift $ logDebug "Creating new desk."
   dbDesk_space <- do
     maybeSpaceId <- Selda.queryUnique $ do
       space <- Selda.select tableSpace

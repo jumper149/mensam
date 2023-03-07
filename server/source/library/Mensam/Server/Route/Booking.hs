@@ -55,10 +55,9 @@ createDesk authUser eitherRequest =
         Left _err -> undefined
         Right request -> pure request
       logDebug $ "Received request to create desk: " <> T.pack (show request)
-      let desk = MkDesk {deskName = requestDeskCreateName request}
       -- TODO: Check if user has permission to create this desk.
       runSeldaTransactionT $
-        deskCreate desk (requestDeskCreateSpaceName request)
+        deskCreate (requestDeskCreateName request) (requestDeskCreateSpaceName request)
       respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of
