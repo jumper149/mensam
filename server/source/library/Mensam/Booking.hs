@@ -64,6 +64,58 @@ spaceCreate name = do
   Selda.insert_ tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."
 
+spaceUserLookup ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  -- | space name or identifier
+  Either T.Text (Selda.Identifier DbSpace) ->
+  -- | user name or identifier
+  Either T.Text (Selda.Identifier DbUser) ->
+  SeldaTransactionT m (Maybe Bool)
+spaceUserLookup space user = do
+  lift $ logDebug $ "Looking up user " <> T.pack (show user) <> " for space " <> T.pack (show space) <> "."
+  dbSpaceId <-
+    case space of
+      Left name -> do
+        lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
+        maybeId <- Selda.queryUnique $ do
+          dbSpace <- Selda.select tableSpace
+          Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal name
+          pure $ dbSpace Selda.! #dbSpace_id
+        case maybeId of
+          Nothing -> do
+            let msg :: T.Text = "No matching space."
+            lift $ logWarn msg
+            throwM $ Selda.SqlError $ show msg
+          Just spaceId -> do
+            lift $ logInfo "Looked up space identifier successfully."
+            pure spaceId
+      Right spaceId -> pure $ Selda.fromIdentifier spaceId
+  dbUserId <-
+    case user of
+      Left name -> do
+        lift $ logDebug $ "Looking up user identifier with name: " <> T.pack (show name)
+        maybeId <- Selda.queryUnique $ do
+          dbUser <- Selda.select tableUser
+          Selda.restrict $ dbUser Selda.! #dbUser_name Selda..== Selda.literal name
+          pure $ dbUser Selda.! #dbUser_id
+        case maybeId of
+          Nothing -> do
+            let msg :: T.Text = "No matching user."
+            lift $ logWarn msg
+            throwM $ Selda.SqlError $ show msg
+          Just userId -> do
+            lift $ logInfo "Looked up user identifier successfully."
+            pure userId
+      Right identifier -> pure $ Selda.fromIdentifier identifier
+  lift $ logDebug "Look up space-user connection."
+  maybeIsAdmin <- Selda.queryUnique $ do
+    dbSpaceUser <- Selda.select tableSpaceUser
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal dbSpaceId
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal dbUserId
+    pure $ dbSpaceUser Selda.! #dbSpaceUser_is_admin
+  lift $ logInfo "Looked up space-user connection successfully."
+  pure maybeIsAdmin
+
 spaceUserAdd ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | space name or identifier
