@@ -41,7 +41,7 @@ spaceLookup name = do
       lift $ logWarn $ "Failed to look up space. Name doesn't exist: " <> T.pack (show name)
       pure Nothing
     Just dbSpace -> do
-      lift $ logInfo "Looked up space."
+      lift $ logInfo "Looked up space successfully."
       pure $
         Just
           MkSpace
@@ -55,58 +55,69 @@ spaceCreate ::
   T.Text ->
   SeldaTransactionT m ()
 spaceCreate name = do
-  lift $ logDebug "Creating new space."
+  lift $ logDebug $ "Creating space: " <> T.pack (show name)
   let dbSpace =
         MkDbSpace
           { dbSpace_id = Selda.def
           , dbSpace_name = name
           }
-  lift $ logDebug "Inserting new space into database."
   Selda.insert_ tableSpace [dbSpace]
-  lift $ logInfo "Created new space successfully."
+  lift $ logInfo "Created space successfully."
 
-spaceAddUser ::
+spaceUserAdd ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | space name
-  T.Text ->
-  -- | user name
-  T.Text ->
+  -- | space name or identifier
+  Either T.Text (Selda.Identifier DbSpace) ->
+  -- | user name or identifier
+  Either T.Text (Selda.Identifier DbUser) ->
   -- | user is admin?
   Bool ->
   SeldaTransactionT m ()
-spaceAddUser spaceName userName isAdmin = do
-  lift $ logDebug $ "Adding user " <> T.pack (show userName) <> " to space " <> T.pack (show spaceName) <> "."
-  dbSpaceUser_space <- do
-    maybeSpaceId <- Selda.queryUnique $ do
-      space <- Selda.select tableSpace
-      Selda.restrict $ space Selda.! #dbSpace_name Selda..== Selda.literal spaceName
-      pure $ space Selda.! #dbSpace_id
-    case maybeSpaceId of
-      Nothing -> do
-        let msg :: T.Text = "No matching space."
-        lift $ logWarn msg
-        throwM $ Selda.SqlError $ show msg
-      Just spaceId -> pure spaceId
-  dbSpaceUser_user <- do
-    maybeUserId <- Selda.queryUnique $ do
-      user <- Selda.select tableUser
-      Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal userName
-      pure $ user Selda.! #dbUser_id
-    case maybeUserId of
-      Nothing -> do
-        let msg :: T.Text = "No matching user."
-        lift $ logWarn msg
-        throwM $ Selda.SqlError $ show msg
-      Just userId -> pure userId
+spaceUserAdd space user isAdmin = do
+  lift $ logDebug $ "Adding user " <> T.pack (show user) <> " to space " <> T.pack (show space) <> "."
+  dbSpaceUser_space <-
+    case space of
+      Left name -> do
+        lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
+        maybeId <- Selda.queryUnique $ do
+          dbSpace <- Selda.select tableSpace
+          Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal name
+          pure $ dbSpace Selda.! #dbSpace_id
+        case maybeId of
+          Nothing -> do
+            let msg :: T.Text = "No matching space."
+            lift $ logWarn msg
+            throwM $ Selda.SqlError $ show msg
+          Just spaceId -> do
+            lift $ logInfo "Looked up space identifier successfully."
+            pure spaceId
+      Right spaceId -> pure $ Selda.fromIdentifier spaceId
+  dbSpaceUser_user <-
+    case user of
+      Left name -> do
+        lift $ logDebug $ "Looking up user identifier with name: " <> T.pack (show name)
+        maybeId <- Selda.queryUnique $ do
+          dbUser <- Selda.select tableUser
+          Selda.restrict $ dbUser Selda.! #dbUser_name Selda..== Selda.literal name
+          pure $ dbUser Selda.! #dbUser_id
+        case maybeId of
+          Nothing -> do
+            let msg :: T.Text = "No matching user."
+            lift $ logWarn msg
+            throwM $ Selda.SqlError $ show msg
+          Just userId -> do
+            lift $ logInfo "Looked up user identifier successfully."
+            pure userId
+      Right identifier -> pure $ Selda.fromIdentifier identifier
   let dbSpaceUser =
         MkDbSpaceUser
           { dbSpaceUser_space
           , dbSpaceUser_user
           , dbSpaceUser_is_admin = isAdmin
           }
-  lift $ logDebug "Inserting new space-user connection into database."
+  lift $ logDebug "Inserting space-user connection into database."
   Selda.insert_ tableSpaceUser [dbSpaceUser]
-  lift $ logInfo "Created new space successfully."
+  lift $ logInfo "Created space-user connection successfully."
 
 type Desk :: Type
 data Desk = MkDesk
