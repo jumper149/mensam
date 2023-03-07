@@ -170,7 +170,7 @@ spaceUserAdd space user isAdmin = do
           , dbSpaceUser_user
           , dbSpaceUser_is_admin = isAdmin
           }
-  lift $ logDebug "Inserting space-user connection into database."
+  lift $ logDebug "Inserting space-user connection."
   Selda.insert_ tableSpaceUser [dbSpaceUser]
   lift $ logInfo "Created space-user connection successfully."
 
@@ -278,4 +278,4 @@ reservationCreate spaceName deskName userName timestampBegin timestampEnd = do
   lift $ logDebug "Inserting reservation into database."
   Selda.insert_ tableReservation [dbReservation]
   lift $ logInfo "Created reservation successfully."
-  pure undefined
+  pure ()
