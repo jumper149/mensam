@@ -18,22 +18,24 @@ import Database.Selda qualified as Selda
 import GHC.Generics
 
 type Space :: Type
-newtype Space = MkSpace
-  { spaceName :: T.Text
+data Space = MkSpace
+  { spaceId :: Selda.Identifier DbSpace
+  , spaceName :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
 
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  Space ->
+  -- | name
+  T.Text ->
   SeldaTransactionT m ()
-spaceCreate space@MkSpace {spaceName} = do
-  lift $ logDebug $ "Creating new space: " <> T.pack (show space)
+spaceCreate name = do
+  lift $ logDebug "Creating new space."
   let dbSpace =
         MkDbSpace
           { dbSpace_id = Selda.def
-          , dbSpace_name = spaceName
+          , dbSpace_name = name
           }
   lift $ logDebug "Inserting new space into database."
   Selda.insert_ tableSpace [dbSpace]

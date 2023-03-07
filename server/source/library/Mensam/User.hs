@@ -11,7 +11,6 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Aeson qualified as A
-import Data.Int
 import Data.Kind
 import Data.Password.Bcrypt
 import Data.Text qualified as T
@@ -23,18 +22,13 @@ import Servant.Auth.Server
 
 type User :: Type
 data User = MkUser
-  { userId :: UserId
+  { userId :: Selda.Identifier DbUser
   , userName :: T.Text
   , userEmail :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
   deriving anyclass (FromJWT, ToJWT)
-
-type UserId :: Type
-newtype UserId = MkUserId {unUserId :: Int64}
-  deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
 
 instance FromBasicAuthData User where
   fromBasicAuthData BasicAuthData {basicAuthUsername, basicAuthPassword} MkRunLoginInIO {runLoginInIO} = runLoginInIO $ do
@@ -73,7 +67,7 @@ userAuthenticate username password = do
       let
         user =
           MkUser
-            { userId = MkUserId {unUserId = Selda.fromId $ dbUser_id dbUser}
+            { userId = Selda.toIdentifier $ dbUser_id dbUser
             , userName = dbUser_name dbUser
             , userEmail = dbUser_email dbUser
             }

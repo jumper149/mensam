@@ -7,7 +7,6 @@ import Mensam.User
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
-import Control.Monad.Trans.Class
 import Data.Text qualified as T
 import Servant hiding (BasicAuthResult (..))
 import Servant.Auth.Server
@@ -34,14 +33,9 @@ createSpace authUser eitherRequest =
         Left _err -> undefined
         Right request -> pure request
       logDebug $ "Received request to create space: " <> T.pack (show request)
-      let space = MkSpace {spaceName = requestSpaceCreateName request}
       runSeldaTransactionT $ do
-        lift $ logDebug $ "Creating space: " <> T.pack (show space)
-        spaceCreate space
-        lift $ logInfo "Created space."
-        lift $ logDebug $ "Setting user to access this space: " <> T.pack (show user)
+        spaceCreate $ requestSpaceCreateName request
         spaceAddUser (requestSpaceCreateName request) (userName user) True
-        lift $ logInfo "Requesting user can now access the space."
       respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of
@@ -60,13 +54,11 @@ createDesk authUser eitherRequest =
       request <- case eitherRequest of
         Left _err -> undefined
         Right request -> pure request
-      logDebug $ "Received request to create space: " <> T.pack (show request)
+      logDebug $ "Received request to create desk: " <> T.pack (show request)
       let desk = MkDesk {deskName = requestDeskCreateName request}
       -- TODO: Check if user has permission to create this desk.
-      runSeldaTransactionT $ do
-        lift $ logDebug $ "Creating desk: " <> T.pack (show desk)
+      runSeldaTransactionT $
         deskCreate desk (requestDeskCreateSpaceName request)
-        lift $ logInfo "Created desk."
       respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of
