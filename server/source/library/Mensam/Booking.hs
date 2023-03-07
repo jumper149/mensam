@@ -25,6 +25,30 @@ data Space = MkSpace
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
 
+spaceLookup ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  -- | name
+  T.Text ->
+  SeldaTransactionT m (Maybe Space)
+spaceLookup name = do
+  lift $ logDebug $ "Looking up space: " <> T.pack (show name)
+  dbSpaceMaybe <- Selda.queryUnique $ do
+    dbSpace <- Selda.select tableSpace
+    Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal name
+    pure dbSpace
+  case dbSpaceMaybe of
+    Nothing -> do
+      lift $ logWarn $ "Failed to look up space. Name doesn't exist: " <> T.pack (show name)
+      pure Nothing
+    Just dbSpace -> do
+      lift $ logInfo "Looked up space."
+      pure $
+        Just
+          MkSpace
+            { spaceId = Selda.toIdentifier $ dbSpace_id dbSpace
+            , spaceName = dbSpace_name dbSpace
+            }
+
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | name
