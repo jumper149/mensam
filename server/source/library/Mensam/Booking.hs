@@ -25,29 +25,24 @@ data Space = MkSpace
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
 
-spaceLookup ::
+spaceLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | name
   T.Text ->
-  SeldaTransactionT m (Maybe Space)
-spaceLookup name = do
-  lift $ logDebug $ "Looking up space: " <> T.pack (show name)
-  dbSpaceMaybe <- Selda.queryUnique $ do
+  SeldaTransactionT m (Maybe (Selda.Identifier DbSpace))
+spaceLookupId name = do
+  lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
+  maybeDbId <- Selda.queryUnique $ do
     dbSpace <- Selda.select tableSpace
     Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal name
-    pure dbSpace
-  case dbSpaceMaybe of
+    pure $ dbSpace Selda.! #dbSpace_id
+  case maybeDbId of
     Nothing -> do
       lift $ logWarn $ "Failed to look up space. Name doesn't exist: " <> T.pack (show name)
       pure Nothing
-    Just dbSpace -> do
+    Just dbId -> do
       lift $ logInfo "Looked up space successfully."
-      pure $
-        Just
-          MkSpace
-            { spaceId = Selda.toIdentifier $ dbSpace_id dbSpace
-            , spaceName = dbSpace_name dbSpace
-            }
+      pure $ Just $ Selda.toIdentifier dbId
 
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -76,23 +71,16 @@ spaceUserLookup ::
   SeldaTransactionT m (Maybe Bool)
 spaceUserLookup space user = do
   lift $ logDebug $ "Looking up user " <> T.pack (show user) <> " for space " <> T.pack (show space) <> "."
-  dbSpaceId <-
+  spaceIdentifier <-
     case space of
-      Left name -> do
-        lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
-        maybeId <- Selda.queryUnique $ do
-          dbSpace <- Selda.select tableSpace
-          Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal name
-          pure $ dbSpace Selda.! #dbSpace_id
-        case maybeId of
+      Right spaceId -> pure spaceId
+      Left name ->
+        spaceLookupId name >>= \case
+          Just identifier -> pure identifier
           Nothing -> do
-            let msg :: T.Text = "No matching space."
+            let msg :: T.Text = "No matching user."
             lift $ logWarn msg
             throwM $ Selda.SqlError $ show msg
-          Just spaceId -> do
-            lift $ logInfo "Looked up space identifier successfully."
-            pure spaceId
-      Right spaceId -> pure $ Selda.fromIdentifier spaceId
   dbUserId <-
     case user of
       Left name -> do
@@ -113,7 +101,7 @@ spaceUserLookup space user = do
   lift $ logDebug "Look up space-user connection."
   maybeIsAdmin <- Selda.queryUnique $ do
     dbSpaceUser <- Selda.select tableSpaceUser
-    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal dbSpaceId
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.fromIdentifier spaceIdentifier)
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal dbUserId
     pure $ dbSpaceUser Selda.! #dbSpaceUser_is_admin
   lift $ logInfo "Looked up space-user connection successfully."
@@ -130,23 +118,16 @@ spaceUserAdd ::
   SeldaTransactionT m ()
 spaceUserAdd space user isAdmin = do
   lift $ logDebug $ "Adding user " <> T.pack (show user) <> " to space " <> T.pack (show space) <> "."
-  dbSpaceUser_space <-
+  spaceIdentifier <-
     case space of
-      Left name -> do
-        lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
-        maybeId <- Selda.queryUnique $ do
-          dbSpace <- Selda.select tableSpace
-          Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal name
-          pure $ dbSpace Selda.! #dbSpace_id
-        case maybeId of
+      Right spaceId -> pure spaceId
+      Left name ->
+        spaceLookupId name >>= \case
+          Just identifier -> pure identifier
           Nothing -> do
-            let msg :: T.Text = "No matching space."
+            let msg :: T.Text = "No matching user."
             lift $ logWarn msg
             throwM $ Selda.SqlError $ show msg
-          Just spaceId -> do
-            lift $ logInfo "Looked up space identifier successfully."
-            pure spaceId
-      Right spaceId -> pure $ Selda.fromIdentifier spaceId
   dbSpaceUser_user <-
     case user of
       Left name -> do
@@ -166,7 +147,7 @@ spaceUserAdd space user isAdmin = do
       Right identifier -> pure $ Selda.fromIdentifier identifier
   let dbSpaceUser =
         MkDbSpaceUser
-          { dbSpaceUser_space
+          { dbSpaceUser_space = Selda.fromIdentifier spaceIdentifier
           , dbSpaceUser_user
           , dbSpaceUser_is_admin = isAdmin
           }
@@ -186,7 +167,7 @@ deskCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | desk name
   T.Text ->
-  -- | space name
+  -- | space name or identifier
   Either T.Text (Selda.Identifier DbSpace) ->
   SeldaTransactionT m ()
 deskCreate deskName space = do
