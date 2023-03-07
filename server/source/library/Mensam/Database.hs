@@ -84,6 +84,27 @@ tableDesk =
     ]
     (fromJust . T.stripPrefix "dbDesk_")
 
+type DbReservation :: Type
+data DbReservation = MkDbReservation
+  { dbReservation_id :: Selda.ID DbReservation
+  , dbReservation_desk :: Selda.ID DbDesk
+  , dbReservation_user :: Selda.ID DbUser
+  , dbReservation_time_begin :: Selda.UTCTime
+  , dbReservation_time_end :: Selda.UTCTime
+  }
+  deriving stock (Generic, Show)
+  deriving anyclass (Selda.SqlRow)
+
+tableReservation :: Selda.Table DbReservation
+tableReservation =
+  Selda.tableFieldMod
+    "reservation"
+    [ #dbReservation_id Selda.:- Selda.autoPrimary
+    , #dbReservation_desk Selda.:- Selda.foreignKey tableDesk #dbDesk_id
+    , #dbReservation_user Selda.:- Selda.foreignKey tableUser #dbUser_id
+    ]
+    (fromJust . T.stripPrefix "dbReservation_")
+
 initDatabase :: MonadSeldaPool m => m ()
 initDatabase = runSeldaTransactionT $ do
   Selda.createTable tableUser
