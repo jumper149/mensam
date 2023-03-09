@@ -21,14 +21,14 @@ data Routes route = Routes
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
-          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()]
+          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeDeskCreate ::
       route
         :- "desk"
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate
-          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()]
+          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   }
   deriving stock (Generic)
 

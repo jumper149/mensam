@@ -25,7 +25,7 @@ createSpace ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   AuthResult User ->
   Either String RequestSpaceCreate ->
-  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()])
+  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()])
 createSpace authUser eitherRequest =
   case authUser of
     Authenticated user -> do
@@ -46,15 +46,15 @@ createSpace authUser eitherRequest =
           respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of
-        BadPassword -> undefined -- respond $ WithStatus @401 ()
-        NoSuchUser -> undefined -- respond $ WithStatus @401 ()
+        BadPassword -> respond $ WithStatus @401 ()
+        NoSuchUser -> respond $ WithStatus @401 ()
         Indefinite -> respond $ WithStatus @400 ()
 
 createDesk ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   AuthResult User ->
   Either String RequestDeskCreate ->
-  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()])
+  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()])
 createDesk authUser eitherRequest =
   case authUser of
     Authenticated user -> do
@@ -78,6 +78,6 @@ createDesk authUser eitherRequest =
           respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of
-        BadPassword -> undefined -- respond $ WithStatus @401 ()
-        NoSuchUser -> undefined -- respond $ WithStatus @401 ()
+        BadPassword -> respond $ WithStatus @401 ()
+        NoSuchUser -> respond $ WithStatus @401 ()
         Indefinite -> respond $ WithStatus @400 ()
