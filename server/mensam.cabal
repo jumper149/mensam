@@ -118,6 +118,7 @@ library
     , Mensam.Environment
     , Mensam.Server
     , Mensam.Server.API
+    , Mensam.Server.Auth
     , Mensam.Server.Err404
     , Mensam.Server.FileServer
     , Mensam.Server.Handler

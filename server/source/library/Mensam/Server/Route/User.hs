@@ -1,6 +1,7 @@
 module Mensam.Server.Route.User where
 
 import Mensam.Application.SeldaPool.Class
+import Mensam.Server.Auth
 import Mensam.Server.Route.User.Type
 import Mensam.User
 import Mensam.User.Username

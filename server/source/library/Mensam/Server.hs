@@ -5,10 +5,10 @@ import Mensam.Application.SeldaPool.Class
 import Mensam.Configuration
 import Mensam.Configuration.BaseUrl
 import Mensam.Server.API
+import Mensam.Server.Auth
 import Mensam.Server.Handler
 import Mensam.Server.Handler.RequestHash
 import Mensam.Server.Route
-import Mensam.User
 
 import Control.Monad
 import Control.Monad.Base
