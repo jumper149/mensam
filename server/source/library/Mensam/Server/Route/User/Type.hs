@@ -29,7 +29,7 @@ newtype ResponseLogin = MkResponseLogin
 
 type RequestRegister :: Type
 data RequestRegister = MkRequestRegister
-  { requestRegisterName :: T.Text
+  { requestRegisterName :: Username
   , requestRegisterPassword :: T.Text
   , requestRegisterEmail :: T.Text
   }

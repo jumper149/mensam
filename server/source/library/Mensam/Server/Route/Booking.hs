@@ -35,7 +35,7 @@ createSpace authUser eitherRequest =
       logDebug $ "Received request to create space: " <> T.pack (show request)
       runSeldaTransactionT $ do
         spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisible request)
-        spaceUserAdd (Left $ requestSpaceCreateName request) (Left $ userName user) True
+        spaceUserAdd (Left $ requestSpaceCreateName request) (Left $ unUsername $ userName user) True
       respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of

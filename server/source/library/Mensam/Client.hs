@@ -6,6 +6,7 @@ import Mensam.Client.OrphanInstances
 import Mensam.Server.Route.Booking.Type qualified as Route.Booking
 import Mensam.Server.Route.Type qualified as Route
 import Mensam.Server.Route.User.Type qualified as Route.User
+import Mensam.User (Username (MkUsernameUnsafe))
 
 import Control.Monad.IO.Class
 import Data.Proxy
@@ -44,7 +45,7 @@ f = do
   liftIO $ putStrLn "Register."
   let requestRegister =
         Route.User.MkRequestRegister
-          { Route.User.requestRegisterName = name
+          { Route.User.requestRegisterName = MkUsernameUnsafe name
           , Route.User.requestRegisterPassword = pw
           , Route.User.requestRegisterEmail = email
           }

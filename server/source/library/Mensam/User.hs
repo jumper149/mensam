@@ -1,3 +1,4 @@
+{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -8,10 +9,13 @@ import Mensam.Application.SeldaPool.Class
 import Mensam.Database
 import Mensam.Database.Extra qualified as Selda
 
+import Control.Applicative
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Aeson qualified as A
+import Data.Attoparsec.Combinator qualified as P
+import Data.Attoparsec.Text qualified as P
 import Data.Kind
 import Data.Password.Bcrypt
 import Data.Text qualified as T
@@ -25,7 +29,7 @@ import Servant.Auth.Server
 type User :: Type
 data User = MkUser
   { userId :: Selda.Identifier DbUser
-  , userName :: T.Text
+  , userName :: Username
   , userEmail :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -42,28 +46,34 @@ instance FromBasicAuthData User where
       Left err -> do
         logInfo $ "Failed to decode username as UTF-8: " <> T.pack (show err)
         pure NoSuchUser
-      Right username -> do
-        logDebug $ "Decoded UTF-8 username: " <> T.pack (show username)
-        logDebug "Decoding UTF-8 password."
-        case mkPassword <$> T.decodeUtf8' basicAuthPassword of
-          Left _err -> do
-            logInfo "Failed to decode password as UTF-8."
-            pure BadPassword
-          Right password -> do
-            logDebug "Decoded UTF-8 password."
-            runSeldaTransactionT $ userAuthenticate username password
+      Right usernameText -> do
+        logDebug $ "Decoded UTF-8 username: " <> T.pack (show usernameText)
+        logDebug $ "Parsing username: " <> T.pack (show usernameText)
+        case mkUsername usernameText of
+          Left err -> do
+            logInfo $ "Failed parse username: " <> T.pack (show err)
+            pure NoSuchUser
+          Right username -> do
+            logDebug $ "Parsed username: " <> T.pack (show username)
+            logDebug "Decoding UTF-8 password."
+            case mkPassword <$> T.decodeUtf8' basicAuthPassword of
+              Left _err -> do
+                logInfo "Failed to decode password as UTF-8."
+                pure BadPassword
+              Right password -> do
+                logDebug "Decoded UTF-8 password."
+                runSeldaTransactionT $ userAuthenticate username password
 
 userAuthenticate ::
   (MonadLogger m, MonadSeldaPool m) =>
-  -- | username
-  T.Text ->
+  Username ->
   Password ->
   SeldaTransactionT m (AuthResult User)
 userAuthenticate username password = do
   lift $ logDebug $ "Querying user " <> T.pack (show username) <> " from database for password authentication."
   maybeUser :: Maybe DbUser <- Selda.queryUnique $ do
     user <- Selda.select tableUser
-    Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal username
+    Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal (unUsername username)
     return user
   case maybeUser of
     Nothing -> pure NoSuchUser
@@ -72,7 +82,7 @@ userAuthenticate username password = do
         user =
           MkUser
             { userId = Selda.toIdentifier $ dbUser_id dbUser
-            , userName = dbUser_name dbUser
+            , userName = username
             , userEmail = dbUser_email dbUser
             }
         passwordHash = PasswordHash $ dbUser_password_hash dbUser
@@ -87,26 +97,54 @@ userAuthenticate username password = do
 
 userCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | name
-  T.Text ->
+  Username ->
   -- | email
   T.Text ->
   -- | password
   Password ->
   SeldaTransactionT m ()
-userCreate name email password = do
+userCreate username email password = do
   lift $ logDebug "Creating user."
   passwordHash :: PasswordHash Bcrypt <- hashPassword password
   let dbUser =
         MkDbUser
           { dbUser_id = Selda.def
-          , dbUser_name = name
+          , dbUser_name = unUsername username
           , dbUser_password_hash = unPasswordHash passwordHash
           , dbUser_email = email
           }
   lift $ logDebug "Inserting user into database."
   Selda.insert_ tableUser [dbUser]
   lift $ logInfo "Created user successfully."
+
+type Username :: Type
+newtype Username = MkUsernameUnsafe {unUsername :: T.Text}
+  deriving stock (Eq, Generic, Ord)
+
+deriving newtype instance Show Username
+instance Read Username where
+  readsPrec p string = do
+    (usernameText, rest) <- readsPrec @T.Text p string
+    case mkUsername usernameText of
+      Left err -> fail err
+      Right username -> pure (username, rest)
+
+deriving newtype instance A.ToJSON Username
+instance A.FromJSON Username where
+  parseJSON value = do
+    text <- A.parseJSON @T.Text value
+    case mkUsername text of
+      Left err -> fail err
+      Right username -> pure username
+
+mkUsername :: T.Text -> Either String Username
+mkUsername = P.parseOnly $ do
+  let alphanumeric = (P.digit <|> P.letter) P.<?> "unexpected non-alphanumeric character"
+  chars <- P.manyTill alphanumeric P.endOfInput
+  if
+      | length chars > 32 -> fail "too long"
+      | length chars < 4 -> fail "too short"
+      | otherwise -> pure $ MkUsernameUnsafe $ T.pack chars
 
 type instance BasicAuthCfg = RunLoginInIO
 

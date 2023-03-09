@@ -41,6 +41,7 @@ common language
 common dependencies
   build-depends:
     , aeson
+    , attoparsec
     , base
     , base64
     , blaze-html
