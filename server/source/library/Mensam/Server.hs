@@ -11,8 +11,8 @@ import Mensam.Server.Handler.RequestHash
 import Mensam.Server.Route
 
 import Control.Monad
-import Control.Monad.Base
 import Control.Monad.Catch
+import Control.Monad.Error.Class
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
 import Data.ByteString.Char8 qualified as B
@@ -40,7 +40,7 @@ type ContextList = '[BasicAuthCfg, CookieSettings, JWTSettings]
 hoistServerRunHandlerT :: MonadLogger m => ServerT API (HandlerT m) -> ServerT WrappedAPI m
 hoistServerRunHandlerT handler randomHash = hoistServerWithContext (Proxy @API) (Proxy @ContextList) (runHandlerT randomHash) handler
 
-server :: (MonadConfigured m, MonadLogger m, MonadMask m, MonadSeldaPool m, MonadUnliftIO m) => m ()
+server :: forall m. (MonadConfigured m, MonadLogger m, MonadMask m, MonadSeldaPool m, MonadUnliftIO m) => m ()
 server = do
   logInfo "Configure warp."
   withPort <- setPort . fromEnum . configPort <$> configuration
@@ -70,7 +70,23 @@ server = do
             :. cookieSettings
             :. jwtSettings
             :. EmptyContext
-      serveWithContextT (Proxy @WrappedAPI) context (liftBase . runInIO) $
+        runInHandler :: forall a. m a -> Servant.Server.Handler a
+        runInHandler ma =
+          (liftEither =<<) $
+            liftIO $
+              runInIO $
+                catch (Right <$> ma) $
+                  \(err :: SomeException) -> do
+                    logError $ "Handler encountered an exception: " <> T.pack (show err)
+                    pure $
+                      Left
+                        ServerError
+                          { errHTTPCode = 500
+                          , errReasonPhrase = "Internal Server Error"
+                          , errBody = "Encountered an internal error in the HTTP handler."
+                          , errHeaders = mempty
+                          }
+      serveWithContextT (Proxy @WrappedAPI) context runInHandler $
         hoistServerRunHandlerT $
           genericServerT routes
 
