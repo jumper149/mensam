@@ -49,6 +49,7 @@ f = do
           { Route.User.requestRegisterName = name
           , Route.User.requestRegisterPassword = pw
           , Route.User.requestRegisterEmail = email
+          , Route.User.requestRegisterEmailVisible = True
           }
   resultRegister <- routes // Route.routeUser // Route.User.routeRegister $ requestRegister
   liftIO $ print resultRegister

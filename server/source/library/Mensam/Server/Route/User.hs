@@ -64,9 +64,15 @@ register eitherRequest =
     Left err -> do
       logInfo $ "Failed to parse request: " <> T.pack (show err)
       respond $ WithStatus @400 ()
-    Right request@MkRequestRegister {requestRegisterName, requestRegisterPassword, requestRegisterEmail} -> do
+    Right request@MkRequestRegister {requestRegisterName, requestRegisterPassword, requestRegisterEmail, requestRegisterEmailVisible} -> do
       logDebug $ "Registering new user: " <> T.pack (show request)
-      seldaResult <- runSeldaTransactionT $ userCreate requestRegisterName requestRegisterEmail (mkPassword requestRegisterPassword)
+      seldaResult <-
+        runSeldaTransactionT $
+          userCreate
+            requestRegisterName
+            (mkPassword requestRegisterPassword)
+            requestRegisterEmail
+            requestRegisterEmailVisible
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error

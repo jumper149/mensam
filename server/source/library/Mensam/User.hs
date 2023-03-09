@@ -143,11 +143,13 @@ userGet identifier = do
 userCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Username ->
+  Password ->
   -- | email
   T.Text ->
-  Password ->
+  -- | email visible
+  Bool ->
   SeldaTransactionT m ()
-userCreate username email password = do
+userCreate username password email emailVisible = do
   lift $ logDebug "Creating user."
   passwordHash :: PasswordHash Bcrypt <- hashPassword password
   let dbUser =
@@ -156,6 +158,7 @@ userCreate username email password = do
           , dbUser_name = unUsername username
           , dbUser_password_hash = unPasswordHash passwordHash
           , dbUser_email = email
+          , dbUser_email_visible = emailVisible
           }
   lift $ logDebug "Inserting user into database."
   Selda.insert_ tableUser [dbUser]

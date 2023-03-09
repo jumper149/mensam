@@ -16,6 +16,7 @@ data DbUser = MkDbUser
   , dbUser_name :: Selda.Text
   , dbUser_password_hash :: Selda.Text
   , dbUser_email :: Selda.Text
+  , dbUser_email_visible :: Bool
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)

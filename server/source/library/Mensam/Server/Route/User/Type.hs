@@ -45,6 +45,7 @@ data RequestRegister = MkRequestRegister
   { requestRegisterName :: Username
   , requestRegisterPassword :: T.Text
   , requestRegisterEmail :: T.Text
+  , requestRegisterEmailVisible :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
