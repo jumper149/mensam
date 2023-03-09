@@ -95,12 +95,29 @@ userAuthenticate username password = do
           lift $ logInfo "Password authentication succeeded."
           pure $ Authenticated user
 
+userLookupId ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  Username ->
+  SeldaTransactionT m (Maybe (Selda.Identifier DbUser))
+userLookupId username = do
+  lift $ logDebug $ "Looking up user identifier with name: " <> T.pack (show username)
+  maybeDbId <- Selda.queryUnique $ do
+    dbUser <- Selda.select tableUser
+    Selda.restrict $ dbUser Selda.! #dbUser_name Selda..== Selda.literal (unUsername username)
+    pure $ dbUser Selda.! #dbUser_id
+  case maybeDbId of
+    Nothing -> do
+      lift $ logWarn $ "Failed to look up user. Name doesn't exist: " <> T.pack (show username)
+      pure Nothing
+    Just dbId -> do
+      lift $ logInfo "Looked up user successfully."
+      pure $ Just $ Selda.toIdentifier dbId
+
 userCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Username ->
   -- | email
   T.Text ->
-  -- | password
   Password ->
   SeldaTransactionT m ()
 userCreate username email password = do

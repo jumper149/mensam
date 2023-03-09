@@ -5,6 +5,7 @@ module Mensam.Booking where
 import Mensam.Application.SeldaPool.Class
 import Mensam.Database
 import Mensam.Database.Extra qualified as Selda
+import Mensam.User
 
 import Control.Monad.Catch
 import Control.Monad.IO.Class
@@ -67,7 +68,7 @@ spaceUserLookup ::
   -- | space name or identifier
   Either T.Text (Selda.Identifier DbSpace) ->
   -- | user name or identifier
-  Either T.Text (Selda.Identifier DbUser) ->
+  Either Username (Selda.Identifier DbUser) ->
   SeldaTransactionT m (Maybe Bool)
 spaceUserLookup space user = do
   lift $ logDebug $ "Looking up user " <> T.pack (show user) <> " for space " <> T.pack (show space) <> "."
@@ -78,31 +79,24 @@ spaceUserLookup space user = do
         spaceLookupId name >>= \case
           Just identifier -> pure identifier
           Nothing -> do
-            let msg :: T.Text = "No matching user."
+            let msg :: T.Text = "No matching space."
             lift $ logWarn msg
             throwM $ Selda.SqlError $ show msg
-  dbUserId <-
+  userIdentifier <-
     case user of
-      Left name -> do
-        lift $ logDebug $ "Looking up user identifier with name: " <> T.pack (show name)
-        maybeId <- Selda.queryUnique $ do
-          dbUser <- Selda.select tableUser
-          Selda.restrict $ dbUser Selda.! #dbUser_name Selda..== Selda.literal name
-          pure $ dbUser Selda.! #dbUser_id
-        case maybeId of
+      Right userId -> pure userId
+      Left name ->
+        userLookupId name >>= \case
+          Just identifier -> pure identifier
           Nothing -> do
             let msg :: T.Text = "No matching user."
             lift $ logWarn msg
             throwM $ Selda.SqlError $ show msg
-          Just userId -> do
-            lift $ logInfo "Looked up user identifier successfully."
-            pure userId
-      Right identifier -> pure $ Selda.fromIdentifier identifier
   lift $ logDebug "Look up space-user connection."
   maybeIsAdmin <- Selda.queryUnique $ do
     dbSpaceUser <- Selda.select tableSpaceUser
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.fromIdentifier spaceIdentifier)
-    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal dbUserId
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.fromIdentifier userIdentifier)
     pure $ dbSpaceUser Selda.! #dbSpaceUser_is_admin
   lift $ logInfo "Looked up space-user connection successfully."
   pure maybeIsAdmin
@@ -112,7 +106,7 @@ spaceUserAdd ::
   -- | space name or identifier
   Either T.Text (Selda.Identifier DbSpace) ->
   -- | user name or identifier
-  Either T.Text (Selda.Identifier DbUser) ->
+  Either Username (Selda.Identifier DbUser) ->
   -- | user is admin?
   Bool ->
   SeldaTransactionT m ()
@@ -125,30 +119,23 @@ spaceUserAdd space user isAdmin = do
         spaceLookupId name >>= \case
           Just identifier -> pure identifier
           Nothing -> do
-            let msg :: T.Text = "No matching user."
+            let msg :: T.Text = "No matching space."
             lift $ logWarn msg
             throwM $ Selda.SqlError $ show msg
-  dbSpaceUser_user <-
+  userIdentifier <-
     case user of
-      Left name -> do
-        lift $ logDebug $ "Looking up user identifier with name: " <> T.pack (show name)
-        maybeId <- Selda.queryUnique $ do
-          dbUser <- Selda.select tableUser
-          Selda.restrict $ dbUser Selda.! #dbUser_name Selda..== Selda.literal name
-          pure $ dbUser Selda.! #dbUser_id
-        case maybeId of
+      Right userId -> pure userId
+      Left name ->
+        userLookupId name >>= \case
+          Just identifier -> pure identifier
           Nothing -> do
             let msg :: T.Text = "No matching user."
             lift $ logWarn msg
             throwM $ Selda.SqlError $ show msg
-          Just userId -> do
-            lift $ logInfo "Looked up user identifier successfully."
-            pure userId
-      Right identifier -> pure $ Selda.fromIdentifier identifier
   let dbSpaceUser =
         MkDbSpaceUser
           { dbSpaceUser_space = Selda.fromIdentifier spaceIdentifier
-          , dbSpaceUser_user
+          , dbSpaceUser_user = Selda.fromIdentifier userIdentifier
           , dbSpaceUser_is_admin = isAdmin
           }
   lift $ logDebug "Inserting space-user connection."
