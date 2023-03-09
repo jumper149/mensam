@@ -58,7 +58,7 @@ login authUser =
 register ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Either String RequestRegister ->
-  m (Union [WithStatus 200 (), WithStatus 400 ()])
+  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()])
 register eitherRequest =
   case eitherRequest of
     Left err -> do
@@ -66,14 +66,20 @@ register eitherRequest =
       respond $ WithStatus @400 ()
     Right request@MkRequestRegister {requestRegisterName, requestRegisterPassword, requestRegisterEmail} -> do
       logDebug $ "Registering new user: " <> T.pack (show request)
-      runSeldaTransactionT $ userCreate requestRegisterName requestRegisterEmail (mkPassword requestRegisterPassword)
-      logInfo "Registered new user."
-      respond $ WithStatus @200 ()
+      seldaResult <- runSeldaTransactionT $ userCreate requestRegisterName requestRegisterEmail (mkPassword requestRegisterPassword)
+      case seldaResult of
+        SeldaFailure _err -> do
+          -- TODO: Here we can theoretically return a more accurate error
+          logWarn "Failed to register new user."
+          respond $ WithStatus @500 ()
+        SeldaSuccess () -> do
+          logInfo "Registered new user."
+          respond $ WithStatus @200 ()
 
 profile ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Either T.Text Username ->
-  m (Union '[WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 ()])
+  m (Union '[WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 (), WithStatus 500 ()])
 profile eitherUsername =
   case eitherUsername of
     Left err -> do
@@ -81,16 +87,19 @@ profile eitherUsername =
       respond $ WithStatus @400 ()
     Right username -> do
       logDebug $ "Looking up user profile: " <> T.pack (show username)
-      maybeUser <- runSeldaTransactionT $ do
+      seldaResultMaybeUser <- runSeldaTransactionT $ do
         maybeUserIdentifier <- userLookupId username
         case maybeUserIdentifier of
           Nothing -> pure Nothing
           Just userIdentifier -> Just <$> userGet userIdentifier
-      case maybeUser of
-        Nothing -> do
-          logInfo "Failed to look up user profile."
+      case seldaResultMaybeUser of
+        SeldaFailure _err -> do
+          logError "Failed to look up user profile."
+          respond $ WithStatus @500 ()
+        SeldaSuccess Nothing -> do
+          logWarn "Failed to look up user profile."
           respond $ WithStatus @400 ()
-        Just user -> do
+        SeldaSuccess (Just user) -> do
           let response =
                 MkResponseProfile
                   { responseProfileId = T.pack $ show $ userId user

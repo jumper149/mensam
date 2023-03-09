@@ -22,12 +22,12 @@ data Routes route = Routes
       route
         :- "register"
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister
-          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 ()]
+          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()]
   , routeProfile ::
       route
         :- "profile"
           :> QueryParam' '[Lenient, Required] "name" Username
-          :> UVerb POST '[JSON] [WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 ()]
+          :> UVerb POST '[JSON] [WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 (), WithStatus 500 ()]
   }
   deriving stock (Generic)
 

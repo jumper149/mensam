@@ -25,7 +25,7 @@ createSpace ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   AuthResult User ->
   Either String RequestSpaceCreate ->
-  m (Union [WithStatus 200 (), WithStatus 400 ()])
+  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()])
 createSpace authUser eitherRequest =
   case authUser of
     Authenticated user -> do
@@ -33,10 +33,17 @@ createSpace authUser eitherRequest =
         Left _err -> undefined
         Right request -> pure request
       logDebug $ "Received request to create space: " <> T.pack (show request)
-      runSeldaTransactionT $ do
+      seldaResult <- runSeldaTransactionT $ do
         spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisible request)
         spaceUserAdd (Left $ requestSpaceCreateName request) (Right $ userId user) True
-      respond $ WithStatus @200 ()
+      case seldaResult of
+        SeldaFailure _err -> do
+          -- TODO: Here we can theoretically return a more accurate error
+          logWarn "Failed to create space."
+          respond $ WithStatus @500 ()
+        SeldaSuccess () -> do
+          logInfo "Created space."
+          respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of
         BadPassword -> undefined -- respond $ WithStatus @401 ()
@@ -47,7 +54,7 @@ createDesk ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   AuthResult User ->
   Either String RequestDeskCreate ->
-  m (Union [WithStatus 200 (), WithStatus 400 ()])
+  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()])
 createDesk authUser eitherRequest =
   case authUser of
     Authenticated user -> do
@@ -55,13 +62,20 @@ createDesk authUser eitherRequest =
         Left _err -> undefined
         Right request -> pure request
       logDebug $ "Received request to create desk: " <> T.pack (show request)
-      runSeldaTransactionT $ do
+      seldaResult <- runSeldaTransactionT $ do
         permission <- spaceUserLookup (requestDeskCreateSpace request) (Right $ userId user)
         case permission of
           Nothing -> error "No permission."
           Just False -> error "No admin permission."
           Just True -> deskCreate (requestDeskCreateName request) (requestDeskCreateSpace request)
-      respond $ WithStatus @200 ()
+      case seldaResult of
+        SeldaFailure _err -> do
+          -- TODO: Here we can theoretically return a more accurate error
+          logWarn "Failed to create desk."
+          respond $ WithStatus @500 ()
+        SeldaSuccess () -> do
+          logInfo "Created desk."
+          respond $ WithStatus @200 ()
     failedAuthentication ->
       case failedAuthentication of
         BadPassword -> undefined -- respond $ WithStatus @401 ()

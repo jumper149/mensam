@@ -18,6 +18,7 @@ import Control.Monad.Trans.Control.Identity
 import Control.Monad.Trans.Reader
 import Data.Kind
 import Data.Pool qualified as P
+import Data.Text qualified as T
 import Database.Selda
 import Database.Selda.Backend
 import Database.Selda.SQLite
@@ -50,11 +51,11 @@ instance (MonadLogger m, MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaP
                           unSeldaTransactionT $
                             mapSeldaTransactionT (runInIO . runT . localSetAlreadyInTransaction) tma
                       lift $ runInIO $ logInfo "Committed SQLite transaction."
-                      pure result
+                      pure $ SeldaSuccess result
         catch transactionComputation $ \case
           (err :: SomeException) -> do
-            lift $ logError "SQLite transaction failed and the database was rolled back."
-            throwM err
+            lift $ logWarn $ "SQLite transaction failed and the database was rolled back: " <> T.pack (show err)
+            pure $ SeldaFailure err
    where
     localSetAlreadyInTransaction :: SeldaPoolT m a -> SeldaPoolT m a
     localSetAlreadyInTransaction = SeldaPoolT . local (\context -> context {seldaAlreadyInTransaction = True}) . unSeldaPoolT

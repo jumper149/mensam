@@ -106,7 +106,7 @@ tableReservation =
     ]
     (fromJust . T.stripPrefix "dbReservation_")
 
-initDatabase :: MonadSeldaPool m => m ()
+initDatabase :: MonadSeldaPool m => m (SeldaResult ())
 initDatabase = runSeldaTransactionT $ do
   Selda.createTable tableUser
   Selda.createTable tableSpace

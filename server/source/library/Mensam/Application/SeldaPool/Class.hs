@@ -19,7 +19,7 @@ import Database.Selda.SQLite
 
 type MonadSeldaPool :: (Type -> Type) -> Constraint
 class (Monad m, MonadMask (SeldaTransactionT m), MonadSelda (SeldaTransactionT m)) => MonadSeldaPool m where
-  runSeldaTransactionT :: SeldaTransactionT m a -> m a
+  runSeldaTransactionT :: SeldaTransactionT m a -> m (SeldaResult a)
 
 instance
   ( Monad (t m)
@@ -59,3 +59,8 @@ newtype SeldaTransactionT m a = MkSeldaTransactionT {unSeldaTransactionT :: Seld
 
 mapSeldaTransactionT :: (m a -> n b) -> SeldaTransactionT m a -> SeldaTransactionT n b
 mapSeldaTransactionT f = MkSeldaTransactionT . S . mapReaderT f . unS . unSeldaTransactionT
+
+type SeldaResult :: Type -> Type
+data SeldaResult a
+  = SeldaSuccess a
+  | SeldaFailure SomeException

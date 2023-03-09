@@ -10,6 +10,7 @@ import Mensam.Database
 import Mensam.Database.Extra qualified as Selda
 
 import Control.Applicative
+import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
@@ -63,7 +64,14 @@ instance FromBasicAuthData User where
                 pure BadPassword
               Right password -> do
                 logDebug "Decoded UTF-8 password."
-                runSeldaTransactionT $ userAuthenticate username password
+                seldaAuthResult <- runSeldaTransactionT $ userAuthenticate username password
+                case seldaAuthResult of
+                  SeldaFailure err -> do
+                    -- This case should not occur under normal circumstances.
+                    -- The transaction in this case is just a read transaction.
+                    logError "Authentication failed because of a database error."
+                    throwM err
+                  SeldaSuccess authResult -> pure authResult
 
 userAuthenticate ::
   (MonadLogger m, MonadSeldaPool m) =>
@@ -214,7 +222,7 @@ type instance BasicAuthCfg = RunLoginInIO
 
 type RunLoginInIO :: Type
 data RunLoginInIO = forall m.
-  (MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m, MonadThrow m) =>
   MkRunLoginInIO {runLoginInIO :: m (AuthResult User) -> IO (AuthResult User)}
 
 -- TODO: Remove hardcoded JWK from source code.
