@@ -1,5 +1,7 @@
 module Mensam.Configuration.Contact where
 
+import Mensam.Aeson
+
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.Text qualified as T
@@ -24,7 +26,7 @@ data ContactInformation = ContactInformation
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON [A.FieldLabelModifier [A.StripPrefix "contact", A.CamelToKebab], A.RejectUnknownFields] ContactInformation
+    via A.CustomJSON (JSONSettings "" "contact") ContactInformation
 
 type HeaderIcons :: Type
 data HeaderIcons = HeaderIcons
@@ -35,7 +37,7 @@ data HeaderIcons = HeaderIcons
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON [A.FieldLabelModifier [A.StripPrefix "headerIcon", A.CamelToKebab], A.RejectUnknownFields] HeaderIcons
+    via A.CustomJSON (JSONSettings "" "headerIcon") HeaderIcons
 
 type DonateInformation :: Type
 data DonateInformation = DonateInformation
@@ -45,4 +47,4 @@ data DonateInformation = DonateInformation
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON [A.FieldLabelModifier [A.StripPrefix "donate", A.CamelToKebab], A.RejectUnknownFields] DonateInformation
+    via A.CustomJSON (JSONSettings "" "donate") DonateInformation

@@ -1,10 +1,13 @@
 module Mensam.Server.Route.User.Type where
 
+import Mensam.Aeson
+import Mensam.User
+
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.Text qualified as T
+import Deriving.Aeson qualified as A
 import GHC.Generics
-import Mensam.User
 import Servant.API hiding (BasicAuth)
 import Servant.Auth
 
@@ -20,7 +23,9 @@ newtype ResponseLogin = MkResponseLogin
   { responseLoginJWT :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseLogin") ResponseLogin
 
 type RequestRegister :: Type
 data RequestRegister = MkRequestRegister
@@ -29,4 +34,6 @@ data RequestRegister = MkRequestRegister
   , requestRegisterEmail :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") RequestRegister

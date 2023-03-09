@@ -3,6 +3,7 @@
 
 module Mensam.User where
 
+import Mensam.Aeson
 import Mensam.Application.SeldaPool.Class
 import Mensam.Database
 import Mensam.Database.Extra qualified as Selda
@@ -16,6 +17,7 @@ import Data.Password.Bcrypt
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Database.Selda qualified as Selda
+import Deriving.Aeson qualified as A
 import GHC.Generics
 import Servant.Auth.JWT
 import Servant.Auth.Server
@@ -27,7 +29,9 @@ data User = MkUser
   , userEmail :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "user") User
   deriving anyclass (FromJWT, ToJWT)
 
 instance FromBasicAuthData User where

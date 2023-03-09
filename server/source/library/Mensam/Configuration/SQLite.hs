@@ -1,5 +1,7 @@
 module Mensam.Configuration.SQLite where
 
+import Mensam.Aeson
+
 import Data.Aeson qualified as A
 import Data.Kind
 import Deriving.Aeson qualified as A
@@ -16,4 +18,4 @@ data SQLiteConfig = MkSQLiteConfig
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON [A.FieldLabelModifier [A.StripPrefix "sqlite", A.CamelToKebab], A.RejectUnknownFields] SQLiteConfig
+    via A.CustomJSON (JSONSettings "Mk" "sqlite") SQLiteConfig

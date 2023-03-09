@@ -1,5 +1,7 @@
 module Mensam.Configuration.Email where
 
+import Mensam.Aeson
+
 import Data.Aeson qualified as A
 import Data.Kind
 import Deriving.Aeson qualified as A
@@ -13,4 +15,4 @@ data EmailConfig = MkEmailConfig
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON [A.FieldLabelModifier [A.StripPrefix "email", A.CamelToKebab], A.RejectUnknownFields] EmailConfig
+    via A.CustomJSON (JSONSettings "Mk" "email") EmailConfig

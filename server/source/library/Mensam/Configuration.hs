@@ -1,5 +1,6 @@
 module Mensam.Configuration where
 
+import Mensam.Aeson
 import Mensam.Configuration.BaseUrl
 import Mensam.Configuration.Contact
 import Mensam.Configuration.Email
@@ -25,4 +26,4 @@ data Configuration = Configuration
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON [A.FieldLabelModifier [A.StripPrefix "config", A.CamelToKebab], A.RejectUnknownFields] Configuration
+    via A.CustomJSON (JSONSettings "" "config") Configuration

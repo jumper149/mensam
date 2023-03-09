@@ -91,6 +91,7 @@ library
     , language
   exposed-modules:
     , Mensam
+    , Mensam.Aeson
     , Mensam.Application
     , Mensam.Application.Configured
     , Mensam.Application.Configured.Acquisition
