@@ -41,14 +41,14 @@ instance FromBasicAuthData User where
     case T.decodeUtf8' basicAuthUsername of
       Left err -> do
         logInfo $ "Failed to decode username as UTF-8: " <> T.pack (show err)
-        pure Indefinite
+        pure NoSuchUser
       Right username -> do
         logDebug $ "Decoded UTF-8 username: " <> T.pack (show username)
         logDebug "Decoding UTF-8 password."
         case mkPassword <$> T.decodeUtf8' basicAuthPassword of
           Left _err -> do
             logInfo "Failed to decode password as UTF-8."
-            pure Indefinite
+            pure BadPassword
           Right password -> do
             logDebug "Decoded UTF-8 password."
             runSeldaTransactionT $ userAuthenticate username password
