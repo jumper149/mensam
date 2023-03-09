@@ -112,3 +112,4 @@ initDatabase = runSeldaTransactionT $ do
   Selda.createTable tableSpace
   Selda.createTable tableSpaceUser
   Selda.createTable tableDesk
+  Selda.createTable tableReservation
