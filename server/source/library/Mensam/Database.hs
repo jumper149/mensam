@@ -4,6 +4,7 @@ module Mensam.Database where
 
 import Mensam.Application.SeldaPool.Class
 
+import Control.Monad
 import Data.Kind
 import Data.Maybe
 import Data.Text qualified as T
@@ -107,8 +108,8 @@ tableReservation =
     ]
     (fromJust . T.stripPrefix "dbReservation_")
 
-initDatabase :: MonadSeldaPool m => m (SeldaResult ())
-initDatabase = runSeldaTransactionT $ do
+initDatabase :: MonadSeldaPool m => m ()
+initDatabase = void $ runSeldaTransactionT $ do
   Selda.createTable tableUser
   Selda.createTable tableSpace
   Selda.createTable tableSpaceUser
