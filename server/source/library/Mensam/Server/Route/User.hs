@@ -28,9 +28,15 @@ handler =
     }
 
 login ::
-  (MonadIO m, MonadLogger m) =>
+  ( MonadIO m
+  , MonadLogger m
+  , IsMember (WithStatus 200 ResponseLogin) responses
+  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
   AuthResult User ->
-  m (Union [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()])
+  m (Union responses)
 login authUser =
   case authUser of
     Authenticated user -> do
@@ -58,9 +64,15 @@ login authUser =
         Indefinite -> respond $ WithStatus @400 ()
 
 register ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ()) responses
+  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
   Either String RequestRegister ->
-  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()])
+  m (Union responses)
 register eitherRequest =
   case eitherRequest of
     Left err -> do
@@ -85,9 +97,15 @@ register eitherRequest =
           respond $ WithStatus @200 ()
 
 profile ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseProfile) responses
+  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
   Either T.Text Username ->
-  m (Union '[WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 (), WithStatus 500 ()])
+  m (Union responses)
 profile eitherUsername =
   case eitherUsername of
     Left err -> do

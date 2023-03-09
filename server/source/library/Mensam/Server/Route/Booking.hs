@@ -22,10 +22,17 @@ handler =
     }
 
 createSpace ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ()) responses
+  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
   AuthResult User ->
   Either String RequestSpaceCreate ->
-  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()])
+  m (Union responses)
 createSpace authUser eitherRequest =
   case authUser of
     Authenticated user -> do
@@ -51,10 +58,17 @@ createSpace authUser eitherRequest =
         Indefinite -> respond $ WithStatus @400 ()
 
 createDesk ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ()) responses
+  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
   AuthResult User ->
   Either String RequestDeskCreate ->
-  m (Union [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()])
+  m (Union responses)
 createDesk authUser eitherRequest =
   case authUser of
     Authenticated user -> do
