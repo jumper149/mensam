@@ -22,6 +22,7 @@ handler =
   Routes
     { routeLogin = login
     , routeRegister = register
+    , routeProfile = profile
     }
 
 login ::
@@ -68,3 +69,33 @@ register eitherRequest =
       runSeldaTransactionT $ userCreate requestRegisterName requestRegisterEmail (mkPassword requestRegisterPassword)
       logInfo "Registered new user."
       respond $ WithStatus @200 ()
+
+profile ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  Either T.Text Username ->
+  m (Union '[WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 ()])
+profile eitherUsername =
+  case eitherUsername of
+    Left err -> do
+      logInfo $ "Failed to parse username: " <> T.pack (show err)
+      respond $ WithStatus @400 ()
+    Right username -> do
+      logDebug $ "Looking up user profile: " <> T.pack (show username)
+      maybeUser <- runSeldaTransactionT $ do
+        maybeUserIdentifier <- userLookupId username
+        case maybeUserIdentifier of
+          Nothing -> pure Nothing
+          Just userIdentifier -> Just <$> userGet userIdentifier
+      case maybeUser of
+        Nothing -> do
+          logInfo "Failed to look up user profile."
+          respond $ WithStatus @400 ()
+        Just user -> do
+          let response =
+                MkResponseProfile
+                  { responseProfileId = T.pack $ show $ userId user
+                  , responseProfileName = userName user
+                  , responseProfileEmail = userEmail user
+                  }
+          logInfo "Looked up user profile."
+          respond $ WithStatus @200 response

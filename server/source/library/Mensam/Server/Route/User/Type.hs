@@ -13,8 +13,21 @@ import Servant.Auth
 
 type Routes :: Type -> Type
 data Routes route = Routes
-  { routeLogin :: route :- "login" :> Auth '[BasicAuth, JWT] User :> UVerb GET '[JSON] [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
-  , routeRegister :: route :- "register" :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 ()]
+  { routeLogin ::
+      route
+        :- "login"
+          :> Auth '[BasicAuth, JWT] User
+          :> UVerb GET '[JSON] [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+  , routeRegister ::
+      route
+        :- "register"
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister
+          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 ()]
+  , routeProfile ::
+      route
+        :- "profile"
+          :> QueryParam' '[Lenient, Required] "name" Username
+          :> UVerb POST '[JSON] [WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 ()]
   }
   deriving stock (Generic)
 
@@ -37,3 +50,14 @@ data RequestRegister = MkRequestRegister
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") RequestRegister
+
+type ResponseProfile :: Type
+data ResponseProfile = MkResponseProfile
+  { responseProfileId :: T.Text -- TODO: Use better type.
+  , responseProfileName :: Username
+  , responseProfileEmail :: T.Text
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseProfile") ResponseProfile

@@ -23,6 +23,7 @@ import Data.Text.Encoding qualified as T
 import Database.Selda qualified as Selda
 import Deriving.Aeson qualified as A
 import GHC.Generics
+import Servant.API
 import Servant.Auth.JWT
 import Servant.Auth.Server
 
@@ -113,6 +114,24 @@ userLookupId username = do
       lift $ logInfo "Looked up user successfully."
       pure $ Just $ Selda.toIdentifier dbId
 
+userGet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  Selda.Identifier DbUser ->
+  SeldaTransactionT m User
+userGet identifier = do
+  lift $ logDebug $ "Get user info with identifier: " <> T.pack (show identifier)
+  dbUser <- Selda.queryOne $ do
+    dbUser <- Selda.select tableUser
+    Selda.restrict $ dbUser Selda.! #dbUser_id Selda..== Selda.literal (Selda.fromIdentifier identifier)
+    pure dbUser
+  lift $ logInfo "Got user info successfully."
+  pure
+    MkUser
+      { userId = Selda.toIdentifier $ dbUser_id dbUser
+      , userName = MkUsernameUnsafe $ dbUser_name dbUser
+      , userEmail = dbUser_email dbUser
+      }
+
 userCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Username ->
@@ -133,6 +152,26 @@ userCreate username email password = do
   lift $ logDebug "Inserting user into database."
   Selda.insert_ tableUser [dbUser]
   lift $ logInfo "Created user successfully."
+
+userProfile ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  Username ->
+  SeldaTransactionT m (Maybe (Selda.Identifier DbUser))
+userProfile username = do
+  lift $ logDebug $ "Looking up user identifier with name: " <> T.pack (show username)
+  maybeDbId <- Selda.queryUnique $ do
+    dbUser <- Selda.select tableUser
+    Selda.restrict $ dbUser Selda.! #dbUser_name Selda..== Selda.literal (unUsername username)
+    pure $ dbUser Selda.! #dbUser_id
+  case maybeDbId of
+    Nothing -> do
+      lift $ logWarn $ "Failed to look up user. Name doesn't exist: " <> T.pack (show username)
+      pure Nothing
+    Just dbId -> do
+      lift $ logInfo "Looked up user successfully."
+      pure $ Just $ Selda.toIdentifier dbId
+
+-- * Soon to be moved away from this module
 
 type Username :: Type
 newtype Username = MkUsernameUnsafe {unUsername :: T.Text}
@@ -162,6 +201,14 @@ mkUsername = P.parseOnly $ do
       | length chars > 32 -> fail "too long"
       | length chars < 4 -> fail "too short"
       | otherwise -> pure $ MkUsernameUnsafe $ T.pack chars
+
+deriving newtype instance ToHttpApiData Username
+instance FromHttpApiData Username where
+  parseUrlPiece input = do
+    text <- parseUrlPiece @T.Text input
+    case mkUsername text of
+      Left err -> Left $ T.pack err
+      Right parsed -> Right parsed
 
 type instance BasicAuthCfg = RunLoginInIO
 
