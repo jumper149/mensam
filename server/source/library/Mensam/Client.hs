@@ -6,7 +6,7 @@ import Mensam.Client.OrphanInstances
 import Mensam.Server.Route.Booking.Type qualified as Route.Booking
 import Mensam.Server.Route.Type qualified as Route
 import Mensam.Server.Route.User.Type qualified as Route.User
-import Mensam.User (Username (MkUsernameUnsafe))
+import Mensam.User (Username (..))
 
 import Control.Monad.IO.Class
 import Data.Proxy
@@ -37,25 +37,30 @@ runF = do
 f :: ClientM ()
 f = do
   let
-    name :: T.Text = "maxmustermann5"
+    name :: Username = MkUsernameUnsafe "maxmustermann5"
     pw :: T.Text = "asdf"
     email :: T.Text = "maxmustermann@gmail.com"
     spacename :: T.Text = "universum"
+    deskname :: T.Text = "neptune"
 
   liftIO $ putStrLn "Register."
   let requestRegister =
         Route.User.MkRequestRegister
-          { Route.User.requestRegisterName = MkUsernameUnsafe name
+          { Route.User.requestRegisterName = name
           , Route.User.requestRegisterPassword = pw
           , Route.User.requestRegisterEmail = email
           }
   resultRegister <- routes // Route.routeUser // Route.User.routeRegister $ requestRegister
   liftIO $ print resultRegister
 
+  liftIO $ putStrLn "Profile."
+  resultProfile <- routes // Route.routeUser // Route.User.routeProfile $ name
+  liftIO $ print resultProfile
+
   liftIO $ putStrLn "Login with BasicAuth."
   let credentials =
         MkCredentials
-          { credentialsUsername = name
+          { credentialsUsername = unUsername name
           , credentialsPassword = pw
           }
   resultLogin <- routes // Route.routeUser // Route.User.routeLogin $ DataBasicAuth credentials
@@ -83,5 +88,14 @@ f = do
           }
   resultSpaceCreate <- (routes // Route.routeBooking // Route.Booking.routeSpaceCreate) (DataJWT nextToken) requestSpaceCreate
   liftIO $ print resultSpaceCreate
+
+  liftIO $ putStrLn "Create desk."
+  let requestDeskCreate =
+        Route.Booking.MkRequestDeskCreate
+          { Route.Booking.requestDeskCreateName = deskname
+          , Route.Booking.requestDeskCreateSpace = Left spacename
+          }
+  resultDeskCreate <- (routes // Route.routeBooking // Route.Booking.routeDeskCreate) (DataJWT nextToken) requestDeskCreate
+  liftIO $ print resultDeskCreate
 
   pure ()
