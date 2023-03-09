@@ -137,6 +137,7 @@ library
     , Mensam.Server.Route.Type
     , Mensam.Server.Tab
     , Mensam.User
+    , Mensam.User.Username
   other-modules:
     , Control.Monad.Catch.OrphanInstances
     , Control.Monad.Logger.OrphanInstances

@@ -2,6 +2,7 @@ module Mensam.Server.Route.User.Type where
 
 import Mensam.Aeson
 import Mensam.User
+import Mensam.User.Username
 
 import Data.Aeson qualified as A
 import Data.Kind

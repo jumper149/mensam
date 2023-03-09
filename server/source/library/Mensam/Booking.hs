@@ -6,6 +6,7 @@ import Mensam.Application.SeldaPool.Class
 import Mensam.Database
 import Mensam.Database.Extra qualified as Selda
 import Mensam.User
+import Mensam.User.Username
 
 import Control.Monad.Catch
 import Control.Monad.IO.Class

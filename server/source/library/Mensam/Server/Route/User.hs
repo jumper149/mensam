@@ -3,6 +3,7 @@ module Mensam.Server.Route.User where
 import Mensam.Application.SeldaPool.Class
 import Mensam.Server.Route.User.Type
 import Mensam.User
+import Mensam.User.Username
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
