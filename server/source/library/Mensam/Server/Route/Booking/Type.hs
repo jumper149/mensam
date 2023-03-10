@@ -1,6 +1,7 @@
 module Mensam.Server.Route.Booking.Type where
 
 import Mensam.Aeson
+import Mensam.Booking
 import Mensam.Database
 import Mensam.Database.Extra qualified as Selda
 import Mensam.User
@@ -22,6 +23,13 @@ data Routes route = Routes
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
           :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+  , routeSpaceList ::
+      route
+        :- "space"
+          :> "list"
+          :> Auth '[JWT] User
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceList
+          :> UVerb POST '[JSON] [WithStatus 200 ResponseSpaceList, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeDeskCreate ::
       route
         :- "desk"
@@ -41,6 +49,24 @@ data RequestSpaceCreate = MkRequestSpaceCreate
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") RequestSpaceCreate
+
+type RequestSpaceList :: Type
+newtype RequestSpaceList = MkRequestSpaceList
+  { requestSpaceList :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") RequestSpaceList
+
+type ResponseSpaceList :: Type
+newtype ResponseSpaceList = MkResponseSpaceList
+  { responseSpaceListSpaces :: [Space]
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") ResponseSpaceList
 
 type RequestDeskCreate :: Type
 data RequestDeskCreate = MkRequestDeskCreate

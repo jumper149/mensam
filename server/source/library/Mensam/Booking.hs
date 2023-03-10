@@ -46,6 +46,26 @@ spaceLookupId name = do
       lift $ logInfo "Looked up space successfully."
       pure $ Just $ Selda.toIdentifier dbId
 
+spaceList ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  Selda.Identifier DbUser ->
+  SeldaTransactionT m [Space]
+spaceList userIdentifier = do
+  lift $ logDebug $ "Looking up spaces visible by user: " <> T.pack (show userIdentifier)
+  dbSpaces <- Selda.query $ do
+    dbSpaceUser <- Selda.select tableSpaceUser
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.fromIdentifier userIdentifier)
+    dbSpace <- Selda.select tableSpace
+    Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_space
+    pure dbSpace
+  lift $ logInfo "Looked up visible spaces successfully."
+  let fromDbSpace space =
+        MkSpace
+          { spaceId = Selda.toIdentifier $ dbSpace_id space
+          , spaceName = dbSpace_name space
+          }
+  pure $ fromDbSpace <$> dbSpaces
+
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | name
