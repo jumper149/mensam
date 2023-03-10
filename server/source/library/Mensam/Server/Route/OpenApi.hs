@@ -118,7 +118,7 @@ addAuthMethods = \case
       addThisScheme =
         addSecurityScheme identifier $
           SecurityScheme
-            { _securitySchemeType = SecuritySchemeHttp $ HttpSchemeBearer $ Just "jwt"
+            { _securitySchemeType = SecuritySchemeHttp $ HttpSchemeBearer $ Just "JWT"
             , _securitySchemeDescription = Just "Bearer Authentication"
             }
       addThisRequirement = addSecurityRequirement $ SecurityRequirement $ HM.singleton identifier []
@@ -130,7 +130,7 @@ addAuthMethods = \case
       addThisScheme =
         addSecurityScheme identifier $
           SecurityScheme
-            { _securitySchemeType = SecuritySchemeHttp $ HttpSchemeBearer $ Just "jwt"
+            { _securitySchemeType = SecuritySchemeHttp $ HttpSchemeBearer $ Just "JWT"
             , _securitySchemeDescription = Just "Cookie Authentication"
             }
       addThisRequirement = addSecurityRequirement $ SecurityRequirement $ HM.singleton identifier []
