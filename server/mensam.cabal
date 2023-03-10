@@ -54,6 +54,8 @@ common dependencies
     , hashable
     , http-client
     , http-types
+    , insert-ordered-containers
+    , lens
     , mime-mail
     , monad-control
     , monad-control-identity
