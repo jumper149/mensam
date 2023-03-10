@@ -38,30 +38,24 @@ login ::
   AuthResult User ->
   m (Union responses)
 login authUser =
-  case authUser of
-    Authenticated user -> do
-      logDebug $ "Creating JWT for user: " <> T.pack (show user)
-      let timeout :: Maybe T.UTCTime = Nothing
-      logDebug $ "JWT timeout has been set: " <> T.pack (show timeout)
-      eitherJwt <- liftIO $ makeJWT user jwtSettings timeout
-      case eitherJwt of
-        Left err -> do
-          logError $ "Failed to create JWT: " <> T.pack (show err)
-          respond $ WithStatus @500 ()
-        Right jwtByteString ->
-          case T.decodeUtf8' $ B.toStrict jwtByteString of
-            Left err -> do
-              logError $ "Failed to decode JWT as UTF-8: " <> T.pack (show err)
-              respond $ WithStatus @500 ()
-            Right jwtText -> do
-              logInfo "Created JWT successfully."
-              logInfo "User logged in successfully."
-              respond $ WithStatus @200 MkResponseLogin {responseLoginJWT = jwtText}
-    failedAuthentication ->
-      case failedAuthentication of
-        BadPassword -> respond $ WithStatus @401 ()
-        NoSuchUser -> respond $ WithStatus @401 ()
-        Indefinite -> respond $ WithStatus @400 ()
+  handleAuth authUser $ \user -> do
+    logDebug $ "Creating JWT for user: " <> T.pack (show user)
+    let timeout :: Maybe T.UTCTime = Nothing
+    logDebug $ "JWT timeout has been set: " <> T.pack (show timeout)
+    eitherJwt <- liftIO $ makeJWT user jwtSettings timeout
+    case eitherJwt of
+      Left err -> do
+        logError $ "Failed to create JWT: " <> T.pack (show err)
+        respond $ WithStatus @500 ()
+      Right jwtByteString ->
+        case T.decodeUtf8' $ B.toStrict jwtByteString of
+          Left err -> do
+            logError $ "Failed to decode JWT as UTF-8: " <> T.pack (show err)
+            respond $ WithStatus @500 ()
+          Right jwtText -> do
+            logInfo "Created JWT successfully."
+            logInfo "User logged in successfully."
+            respond $ WithStatus @200 MkResponseLogin {responseLoginJWT = jwtText}
 
 register ::
   ( MonadIO m

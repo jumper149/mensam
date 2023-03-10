@@ -13,8 +13,31 @@ import Data.Kind
 import Data.Password.Bcrypt
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
-import Servant.API
+import Servant hiding (BasicAuthResult (..))
 import Servant.Auth.Server
+
+handleAuth ::
+  ( MonadLogger m
+  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 401 ()) responses
+  ) =>
+  AuthResult a ->
+  (a -> m (Union responses)) ->
+  m (Union responses)
+handleAuth authResult handler =
+  case authResult of
+    Authenticated authenticated -> do
+      logInfo "Starting handler after successful authentication."
+      handler authenticated
+    BadPassword -> do
+      logInfo "Can't access handler, because authentication failed due to wrong password."
+      respond $ WithStatus @401 ()
+    NoSuchUser -> do
+      logInfo "Can't access handler, because authentication failed due to not existing username."
+      respond $ WithStatus @401 ()
+    Indefinite -> do
+      logInfo "Can't access handler, because authentication failed for some reason."
+      respond $ WithStatus @400 ()
 
 deriving anyclass instance FromJWT User
 deriving anyclass instance ToJWT User
