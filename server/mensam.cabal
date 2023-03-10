@@ -45,6 +45,7 @@ common dependencies
     , base
     , base64
     , blaze-html
+    , blaze-markup
     , bytestring
     , containers
     , deriving-aeson
@@ -58,6 +59,7 @@ common dependencies
     , monad-control-identity
     , monad-logger
     , mtl
+    , openapi3
     , password
     , resource-pool
     , selda
@@ -68,6 +70,7 @@ common dependencies
     , servant-blaze
     , servant-client
     , servant-client-core
+    , servant-openapi3
     , servant-rawm
     , servant-rawm-client
     , servant-rawm-server
@@ -131,6 +134,8 @@ library
     , Mensam.Server.Route.Booking.Type
     , Mensam.Server.Route.Home
     , Mensam.Server.Route.Home.Type
+    , Mensam.Server.Route.OpenApi
+    , Mensam.Server.Route.OpenApi.Type
     , Mensam.Server.Route.User
     , Mensam.Server.Route.User.Type
     , Mensam.Server.Route.Static

@@ -29,6 +29,7 @@
       ghcid = prev.haskell.lib.dontCheck haskellPrev.ghcid;
       http-api-data = haskellPrev.callHackage "http-api-data" "0.5" {};
       jose = haskellPrev.callHackage "jose" "0.10" {};
+      openapi3 = (prev.haskell.lib.dontCheck haskellPrev.openapi3).overrideAttrs (oldAttrs: { meta = oldAttrs.meta // { broken = false; }; });
       password = haskellPrev.callCabal2nix "password" (source.password.outPath + "/password") {};
       password-types = haskellPrev.callCabal2nix "password-types" (source.password.outPath + "/password-types") {};
       resource-pool = haskellPrev.callHackage "resource-pool" "0.4.0.0" {};
