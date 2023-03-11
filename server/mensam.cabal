@@ -121,6 +121,7 @@ library
     , Mensam.Database.Extra
     , Mensam.Database.Schema
     , Mensam.Environment
+    , Mensam.OpenApi
     , Mensam.Server
     , Mensam.Server.API
     , Mensam.Server.Auth
