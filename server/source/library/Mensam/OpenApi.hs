@@ -1,5 +1,4 @@
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Mensam.OpenApi where
@@ -13,19 +12,15 @@ import Mensam.Server.Route.User.Type qualified as User
 import Mensam.User.Username
 
 import Control.Lens
-import Data.Aeson qualified as A
 import Data.HashMap.Strict.InsOrd qualified as HM
 import Data.Kind
 import Data.OpenApi
 import Data.OpenApi qualified as OpenApi (pattern)
-import Data.OpenApi.Internal.ParamSchema
-import Data.OpenApi.Internal.Schema
 import Data.Proxy
 import Data.Text qualified as T
 import Data.Typeable
 import Deriving.Aeson qualified as A
-import GHC.Generics
-import GHC.TypeLits
+import Deriving.Aeson.OrphanInstances qualified as A ()
 import Servant.API
 import Servant.Auth qualified
 import Servant.OpenApi
@@ -34,47 +29,6 @@ import Text.Blaze.Html qualified as Blaze
 
 openapi :: OpenApi
 openapi = toOpenApi $ Proxy @API
-
-instance (ToSchemaOptions t, Generic a, GToSchema (Rep a), Typeable a, Typeable (A.CustomJSON t a)) => ToSchema (A.CustomJSON t a) where
-  declareNamedSchema Proxy = genericDeclareNamedSchema (schemaOptions $ Proxy @t) $ Proxy @a
-instance (ToSchemaOptions t, Generic a, GToParamSchema (Rep a)) => ToParamSchema (A.CustomJSON t a) where
-  toParamSchema Proxy = genericToParamSchema (schemaOptions $ Proxy @t) $ Proxy @a
-
-type ToSchemaOptions :: [Type] -> Constraint
-class ToSchemaOptions xs where
-  schemaOptions :: Proxy xs -> SchemaOptions
-
-instance ToSchemaOptions '[] where
-  schemaOptions Proxy = defaultSchemaOptions
-
-instance ToSchemaOptions xs => ToSchemaOptions (A.UnwrapUnaryRecords ': xs) where
-  schemaOptions Proxy = (schemaOptions $ Proxy @xs) {unwrapUnaryRecords = True}
-
--- instance ToSchemaOptions xs => ToSchemaOptions (A.OmitNothingFields ': xs) where
---  schemaOptions Proxy = (schemaOptions $ Proxy @xs) { omitNothingFields = True }
-
-instance ToSchemaOptions xs => ToSchemaOptions (A.RejectUnknownFields ': xs) where
-  schemaOptions Proxy = schemaOptions $ Proxy @xs
-
-instance (A.StringModifier f, ToSchemaOptions xs) => ToSchemaOptions (A.FieldLabelModifier f ': xs) where
-  schemaOptions Proxy =
-    let next = schemaOptions $ Proxy @xs
-     in next {fieldLabelModifier = fieldLabelModifier next . A.getStringModifier @f}
-
-instance (A.StringModifier f, ToSchemaOptions xs) => ToSchemaOptions (A.ConstructorTagModifier f ': xs) where
-  schemaOptions Proxy =
-    let next = schemaOptions $ Proxy @xs
-     in next {constructorTagModifier = constructorTagModifier next . A.getStringModifier @f}
-
-instance (KnownSymbol t, KnownSymbol c, ToSchemaOptions xs) => ToSchemaOptions (A.SumTaggedObject t c ': xs) where
-  schemaOptions Proxy =
-    (schemaOptions $ Proxy @xs)
-      { sumEncoding =
-          A.TaggedObject
-            { A.tagFieldName = symbolVal $ Proxy @t
-            , A.contentsFieldName = symbolVal $ Proxy @c
-            }
-      }
 
 -- TODO: Implement.
 instance ToSchema OpenApi where
