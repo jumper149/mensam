@@ -2,7 +2,6 @@ module Mensam.Configuration where
 
 import Mensam.Aeson
 import Mensam.Configuration.BaseUrl
-import Mensam.Configuration.Contact
 import Mensam.Configuration.Email
 import Mensam.Configuration.SQLite
 
@@ -21,7 +20,6 @@ data Configuration = Configuration
   , configDirectoryStatic :: FilePath
   , configPort :: Word16
   , configBaseUrl :: BaseUrl
-  , configContactInformation :: ContactInformation
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

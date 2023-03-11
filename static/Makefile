@@ -5,7 +5,7 @@ FAVICON_RESOLUTIONS = 32x32 192x192 512x512
 
 BUILT_FAVICONS = $(patsubst %, $(BUILD)/favicon-%.png, $(FAVICON_RESOLUTIONS))
 BUILT_ICONS = $(patsubst $(SOURCE)%, $(BUILD)%, $(ICONS))
-BUILT_FILES = $(BUILD)/portrait.jpg $(BUILD)/donatePayPalQR.png
+BUILT_FILES =
 
 .PHONY: all
 all: $(BUILD)/favicon.ico $(BUILD)/favicon.png $(BUILT_FAVICONS) $(BUILD)/stylesheet.css $(BUILT_ICONS) $(BUILT_FILES)

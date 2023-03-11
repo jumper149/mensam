@@ -13,22 +13,4 @@
     }
   , "path": [ ]
   }
-, "contact-information":
-  { "header-icons":
-    { "feed": true
-    , "github": true
-    , "gitlab": true
-    }
-  , "name": "Felix Springer"
-  , "source-url": "https://github.com/jumper149/homepage"
-  , "homepage-label": "felixspringer.xyz"
-  , "donate-information": null
-  , "email-address": "contact@felixspringer.xyz"
-  , "matrix": "@jumper149:matrix.org"
-  , "libera-chat": "jumper149"
-  , "github-username": "jumper149"
-  , "gitlab-username": "jumper149"
-  , "hackage-username": "jumper149"
-  , "aur-username": "jumper149"
-  }
 }

@@ -115,7 +115,6 @@ library
     , Mensam.Client.OrphanInstances
     , Mensam.Configuration
     , Mensam.Configuration.BaseUrl
-    , Mensam.Configuration.Contact
     , Mensam.Configuration.Email
     , Mensam.Configuration.SQLite
     , Mensam.Database
@@ -128,14 +127,9 @@ library
     , Mensam.Server.FileServer
     , Mensam.Server.Handler
     , Mensam.Server.Handler.RequestHash
-    , Mensam.Server.Html.Depth
-    , Mensam.Server.Html.Document
-    , Mensam.Server.Html.Header
     , Mensam.Server.Route
     , Mensam.Server.Route.Booking
     , Mensam.Server.Route.Booking.Type
-    , Mensam.Server.Route.Home
-    , Mensam.Server.Route.Home.Type
     , Mensam.Server.Route.OpenApi
     , Mensam.Server.Route.OpenApi.Type
     , Mensam.Server.Route.User
@@ -143,7 +137,6 @@ library
     , Mensam.Server.Route.Static
     , Mensam.Server.Route.Static.Type
     , Mensam.Server.Route.Type
-    , Mensam.Server.Tab
     , Mensam.User
     , Mensam.User.Username
   other-modules:
