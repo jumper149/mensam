@@ -117,6 +117,7 @@ library
     , Mensam.Configuration.BaseUrl
     , Mensam.Configuration.Email
     , Mensam.Configuration.SQLite
+    , Mensam.Database
     , Mensam.Database.Extra
     , Mensam.Database.Schema
     , Mensam.Environment

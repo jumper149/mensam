@@ -2,9 +2,6 @@
 
 module Mensam.Database.Schema where
 
-import Mensam.Application.SeldaPool.Class
-
-import Control.Monad
 import Data.Kind
 import Data.Maybe
 import Data.Text qualified as T
@@ -107,11 +104,3 @@ tableReservation =
     , #dbReservation_user Selda.:- Selda.foreignKey tableUser #dbUser_id
     ]
     (fromJust . T.stripPrefix "dbReservation_")
-
-initDatabase :: MonadSeldaPool m => m ()
-initDatabase = void $ runSeldaTransactionT $ do
-  Selda.createTable tableUser
-  Selda.createTable tableSpace
-  Selda.createTable tableSpaceUser
-  Selda.createTable tableDesk
-  Selda.createTable tableReservation
