@@ -18,21 +18,32 @@ type Routes :: Type -> Type
 data Routes route = Routes
   { routeSpaceCreate ::
       route
-        :- "space"
+        :- Summary "Create Space"
+          :> Description
+              "Create a new space.\n\
+              \You will be an administrator of this newly created space."
+          :> "space"
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
           :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeSpaceList ::
       route
-        :- "space"
+        :- Summary "List Spaces"
+          :> Description
+              "List visible spaces."
+          :> "space"
           :> "list"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceList
           :> UVerb POST '[JSON] [WithStatus 200 ResponseSpaceList, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeDeskCreate ::
       route
-        :- "desk"
+        :- Summary "List Desks"
+          :> Description
+              "Create a new desk.\n\
+              \This desk will belong to the given space."
+          :> "desk"
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate

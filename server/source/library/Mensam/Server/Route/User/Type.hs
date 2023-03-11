@@ -16,17 +16,26 @@ type Routes :: Type -> Type
 data Routes route = Routes
   { routeLogin ::
       route
-        :- "login"
+        :- Summary "Login"
+          :> Description
+              "Login to your user account."
+          :> "login"
           :> Auth '[BasicAuth, JWT] User
           :> UVerb GET '[JSON] [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeRegister ::
       route
-        :- "register"
+        :- Summary "Register"
+          :> Description
+              "Register a new user account."
+          :> "register"
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister
           :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()]
   , routeProfile ::
       route
-        :- "profile"
+        :- Summary "Request User Profile"
+          :> Description
+              "Request information for a user profile."
+          :> "profile"
           :> QueryParam' '[Lenient, Required] "name" Username
           :> UVerb POST '[JSON] [WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 (), WithStatus 500 ()]
   }
