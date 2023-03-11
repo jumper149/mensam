@@ -158,8 +158,16 @@ instance (HasOpenApi api, AuthMethods auths) => HasOpenApi (Servant.Auth.Auth au
 instance HasOpenApi (RawM' a) where
   toOpenApi Proxy = toOpenApi $ Proxy @Raw
 
-instance ToParamSchema Username
-instance ToSchema Username
+instance ToParamSchema Username where
+  toParamSchema Proxy =
+    mempty
+      & type_ ?~ OpenApiString
+      & minLength ?~ 4
+      & maxLength ?~ 32
+      & pattern ?~ "^[a-zA-Z0-9]{4,32}$"
+instance ToSchema Username where
+  declareNamedSchema = pure . NamedSchema (Just "Username") . paramSchemaToSchema
+
 instance ToSchema Space
 instance Typeable a => ToSchema (Selda.Identifier a)
 
