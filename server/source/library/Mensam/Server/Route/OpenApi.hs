@@ -18,6 +18,7 @@ import Data.Aeson qualified as A
 import Data.HashMap.Strict.InsOrd qualified as HM
 import Data.Kind
 import Data.OpenApi
+import Data.OpenApi qualified as OpenApi (pattern)
 import Data.OpenApi.Internal.ParamSchema
 import Data.OpenApi.Internal.Schema
 import Data.Proxy
@@ -213,7 +214,7 @@ instance ToParamSchema Username where
       & type_ ?~ OpenApiString
       & minLength ?~ 4
       & maxLength ?~ 32
-      & pattern ?~ "^[a-zA-Z0-9]{4,32}$"
+      & OpenApi.pattern ?~ "^[a-zA-Z0-9]{4,32}$"
 instance ToSchema Username where
   declareNamedSchema = pure . NamedSchema (Just "Username") . paramSchemaToSchema
 
