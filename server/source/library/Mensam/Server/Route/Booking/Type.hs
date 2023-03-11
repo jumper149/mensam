@@ -48,6 +48,16 @@ data Routes route = Routes
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate
           :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+  , routeDeskList ::
+      route
+        :- Summary "List Desks"
+          :> Description
+              "List desks."
+          :> "desk"
+          :> "list"
+          :> Auth '[JWT] User
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskList
+          :> UVerb POST '[JSON] [WithStatus 200 ResponseDeskList, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   }
   deriving stock (Generic)
 
@@ -88,3 +98,21 @@ data RequestDeskCreate = MkRequestDeskCreate
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") RequestDeskCreate
+
+type RequestDeskList :: Type
+newtype RequestDeskList = MkRequestDeskList
+  { requestDeskListSpace :: Either T.Text (Selda.Identifier DbSpace)
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") RequestDeskList
+
+type ResponseDeskList :: Type
+newtype ResponseDeskList = MkResponseDeskList
+  { responseDeskListDesks :: [Desk]
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") ResponseDeskList

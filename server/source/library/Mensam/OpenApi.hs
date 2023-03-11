@@ -56,6 +56,7 @@ instance ToSchema Username where
 deriving anyclass instance Typeable a => ToSchema (Selda.Identifier a)
 
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
+deriving via A.CustomJSON (JSONSettings "Mk" "desk") Space instance ToSchema Desk
 
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseLogin") User.ResponseLogin instance ToSchema User.ResponseLogin
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") User.RequestRegister instance ToSchema User.RequestRegister
@@ -65,3 +66,5 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") Bookin
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Booking.RequestSpaceList instance ToSchema Booking.RequestSpaceList
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") Booking.ResponseSpaceList instance ToSchema Booking.ResponseSpaceList
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") Booking.RequestDeskCreate instance ToSchema Booking.RequestDeskCreate
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") Booking.RequestDeskList instance ToSchema Booking.RequestDeskList
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Booking.ResponseDeskList instance ToSchema Booking.ResponseDeskList

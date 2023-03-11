@@ -171,6 +171,31 @@ data Desk = MkDesk
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
 
+deskList ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  Selda.Identifier DbSpace ->
+  Selda.Identifier DbUser ->
+  SeldaTransactionT m [Desk]
+deskList spaceIdentifier userIdentifier = do
+  lift $ logDebug $ "Looking up desks visible by user: " <> T.pack (show userIdentifier)
+  dbDesks <- Selda.query $ do
+    dbSpace <- Selda.select tableSpace
+    Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== Selda.literal (Selda.fromIdentifier spaceIdentifier)
+    dbSpaceUser <- Selda.select tableSpaceUser
+    Selda.restrict $
+      (dbSpace Selda.! #dbSpace_visible)
+        Selda..|| (dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.fromIdentifier userIdentifier))
+    dbDesk <- Selda.select tableDesk
+    Selda.restrict $ dbDesk Selda.! #dbDesk_space Selda..== dbSpace Selda.! #dbSpace_id
+    pure dbDesk
+  lift $ logInfo "Looked up visible desks successfully."
+  let fromDbDesk desk =
+        MkDesk
+          { deskId = Selda.toIdentifier $ dbDesk_id desk
+          , deskName = dbDesk_name desk
+          }
+  pure $ fromDbDesk <$> dbDesks
+
 deskCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | desk name

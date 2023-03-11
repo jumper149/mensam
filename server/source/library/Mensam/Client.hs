@@ -37,11 +37,10 @@ runF = do
 f :: ClientM ()
 f = do
   let
-    name :: Username = MkUsernameUnsafe "maxmustermann5"
+    name :: Username = MkUsernameUnsafe "maxmustermann7"
     pw :: T.Text = "asdf"
     email :: T.Text = "maxmustermann@gmail.com"
     spacename :: T.Text = "universum"
-    deskname :: T.Text = "neptune"
 
   liftIO $ putStrLn "Register."
   let requestRegister =
@@ -93,10 +92,27 @@ f = do
   liftIO $ putStrLn "Create desk."
   let requestDeskCreate =
         Route.Booking.MkRequestDeskCreate
-          { Route.Booking.requestDeskCreateName = deskname
+          { Route.Booking.requestDeskCreateName = "neptune"
           , Route.Booking.requestDeskCreateSpace = Left spacename
           }
   resultDeskCreate <- (routes // Route.routeBooking // Route.Booking.routeDeskCreate) (DataJWT nextToken) requestDeskCreate
   liftIO $ print resultDeskCreate
+
+  liftIO $ putStrLn "Create desk."
+  let requestDeskCreate2 =
+        Route.Booking.MkRequestDeskCreate
+          { Route.Booking.requestDeskCreateName = "saturn"
+          , Route.Booking.requestDeskCreateSpace = Left spacename
+          }
+  resultDeskCreate2 <- (routes // Route.routeBooking // Route.Booking.routeDeskCreate) (DataJWT nextToken) requestDeskCreate2
+  liftIO $ print resultDeskCreate2
+
+  liftIO $ putStrLn "List desks."
+  let requestDeskList =
+        Route.Booking.MkRequestDeskList
+          { Route.Booking.requestDeskListSpace = Left spacename
+          }
+  resultDeskList <- (routes // Route.routeBooking // Route.Booking.routeDeskList) (DataJWT nextToken) requestDeskList
+  liftIO $ print resultDeskList
 
   pure ()

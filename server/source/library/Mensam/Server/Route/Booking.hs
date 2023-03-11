@@ -21,6 +21,7 @@ handler =
     { routeSpaceCreate = createSpace
     , routeSpaceList = listSpaces
     , routeDeskCreate = createDesk
+    , routeDeskList = listDesks
     }
 
 createSpace ::
@@ -114,3 +115,39 @@ createDesk authUser eitherRequest =
       SeldaSuccess () -> do
         logInfo "Created desk."
         respond $ WithStatus @200 ()
+
+listDesks ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseDeskList) responses
+  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult User ->
+  Either String RequestDeskList ->
+  m (Union responses)
+listDesks authUser eitherRequest =
+  handleAuth authUser $ \user -> do
+    request <- case eitherRequest of
+      Left _err -> undefined
+      Right request -> pure request
+    logDebug $ "Received request to list desks: " <> T.pack (show request)
+    seldaResult <- runSeldaTransactionT $ do
+      spaceIdentifier <-
+        case requestDeskListSpace request of
+          Left spaceName ->
+            spaceLookupId spaceName >>= \case
+              Nothing -> undefined
+              Just spaceId -> pure spaceId
+          Right spaceId -> pure spaceId
+      deskList spaceIdentifier (userId user)
+    case seldaResult of
+      SeldaFailure _err -> do
+        -- TODO: Here we can theoretically return a more accurate error
+        logWarn "Failed to list desks."
+        respond $ WithStatus @500 ()
+      SeldaSuccess desks -> do
+        logInfo "Listed desks."
+        respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desks}
