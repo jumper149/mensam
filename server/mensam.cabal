@@ -47,6 +47,7 @@ common dependencies
     , blaze-html
     , blaze-markup
     , bytestring
+    , brick
     , containers
     , deriving-aeson
     , deriving-trans
@@ -56,6 +57,7 @@ common dependencies
     , http-types
     , insert-ordered-containers
     , lens
+    , microlens-platform
     , mime-mail
     , monad-control
     , monad-control-identity
@@ -86,6 +88,7 @@ common dependencies
     , transformers-base
     , unix
     , unliftio-core
+    , vty
     , wai
     , wai-app-static
     , wai-control
@@ -112,6 +115,7 @@ library
     , Mensam.Application.SeldaPool.Class
     , Mensam.Booking
     , Mensam.Client
+    , Mensam.Client.Brick
     , Mensam.Client.OrphanInstances
     , Mensam.Configuration
     , Mensam.Configuration.BaseUrl
@@ -176,6 +180,17 @@ executable mensam
     , mensam
   main-is: Main.hs
   hs-source-dirs: source/executable/server
+  default-language: GHC2021
+  default-extensions:
+    NoImplicitPrelude
+  ghc-options:
+    -threaded
+
+executable mensam-client
+  build-depends:
+    , mensam
+  main-is: Main.hs
+  hs-source-dirs: source/executable/client
   default-language: GHC2021
   default-extensions:
     NoImplicitPrelude
