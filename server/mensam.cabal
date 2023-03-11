@@ -145,6 +145,7 @@ library
     , Control.Monad.Catch.OrphanInstances
     , Control.Monad.Logger.OrphanInstances
     , Deriving.Aeson.OrphanInstances
+    , Servant.Auth.OrphanInstances
     , System.Posix.Signals.Patterns
   hs-source-dirs: source/library
 
