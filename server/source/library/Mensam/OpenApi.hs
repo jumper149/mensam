@@ -12,7 +12,6 @@ import Mensam.User.Username
 
 import Control.Lens
 import Data.OpenApi
-import Data.OpenApi qualified as OpenApi (pattern)
 import Data.Proxy
 import Data.Typeable
 import Deriving.Aeson qualified as A
@@ -49,7 +48,7 @@ instance ToParamSchema Username where
       & type_ ?~ OpenApiString
       & minLength ?~ 4
       & maxLength ?~ 32
-      & OpenApi.pattern ?~ "^[a-zA-Z0-9]{4,32}$"
+      & Data.OpenApi.pattern ?~ "^[a-zA-Z0-9]{4,32}$"
 instance ToSchema Username where
   declareNamedSchema = pure . NamedSchema (Just "Username") . paramSchemaToSchema
 
