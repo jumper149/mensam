@@ -2,8 +2,8 @@ module Mensam.Server.Route.Booking.Type where
 
 import Mensam.Aeson
 import Mensam.Booking
-import Mensam.Database
 import Mensam.Database.Extra qualified as Selda
+import Mensam.Database.Schema
 import Mensam.User
 
 import Data.Aeson qualified as A

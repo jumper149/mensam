@@ -5,8 +5,8 @@ module Mensam.User where
 
 import Mensam.Aeson
 import Mensam.Application.SeldaPool.Class
-import Mensam.Database
 import Mensam.Database.Extra qualified as Selda
+import Mensam.Database.Schema
 import Mensam.User.Username
 
 import Control.Monad.IO.Class
