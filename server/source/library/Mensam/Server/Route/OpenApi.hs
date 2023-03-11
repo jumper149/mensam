@@ -1,8 +1,11 @@
 module Mensam.Server.Route.OpenApi where
 
+import Mensam.Application.Configured.Class
+import Mensam.Configuration
 import Mensam.OpenApi qualified
 import Mensam.Server.Route.OpenApi.Type
 
+import Control.Lens
 import Data.OpenApi
 import Data.Text qualified as T
 import Servant.Server.Generic
@@ -12,7 +15,7 @@ import Text.Blaze.Html5.Attributes qualified as Blaze.Attributes
 import Text.Blaze.Internal qualified as Blaze.Internal
 
 handler ::
-  Monad m =>
+  MonadConfigured m =>
   Routes (AsServerT m)
 handler =
   Routes
@@ -20,8 +23,18 @@ handler =
     , routeJson = specification
     }
 
-specification :: Applicative m => m OpenApi
-specification = pure Mensam.OpenApi.openapi
+specification :: MonadConfigured m => m OpenApi
+specification = do
+  config <- configuration
+  let
+    addVersion :: OpenApi -> OpenApi
+    addVersion =
+      case configRevision config of
+        Just revision -> info . version .~ revision
+        Nothing -> id
+  pure $
+    Mensam.OpenApi.openapi
+      & addVersion
 
 render :: Monad m => m Blaze.Html
 render =

@@ -24,7 +24,13 @@ import Servant.RawM
 import Text.Blaze.Html qualified as Blaze
 
 openapi :: OpenApi
-openapi = toOpenApi $ Proxy @API
+openapi =
+  generatedOpenApi
+    & info . title .~ "Mensam API"
+    & info . description ?~ "This is an API for hot desk booking."
+    & info . license ?~ "GNU Affero General Public License v3.0"
+ where
+  generatedOpenApi = toOpenApi $ Proxy @API
 
 -- TODO: Implement.
 instance ToSchema OpenApi where
