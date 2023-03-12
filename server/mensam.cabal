@@ -100,52 +100,52 @@ library
     , language
   exposed-modules:
     , Mensam
-    , Mensam.Aeson
-    , Mensam.Application
-    , Mensam.Application.Configured
-    , Mensam.Application.Configured.Acquisition
-    , Mensam.Application.Configured.Class
-    , Mensam.Application.Email
-    , Mensam.Application.Email.Class
-    , Mensam.Application.Environment
-    , Mensam.Application.Environment.Acquisition
-    , Mensam.Application.Environment.Class
-    , Mensam.Application.Logging
-    , Mensam.Application.SeldaPool
-    , Mensam.Application.SeldaPool.Class
-    , Mensam.Booking
     , Mensam.Client.Brick
     , Mensam.Client.Brick.Type
     , Mensam.Client.Debug
     , Mensam.Client.OrphanInstances
-    , Mensam.Configuration
-    , Mensam.Configuration.BaseUrl
-    , Mensam.Configuration.Email
-    , Mensam.Configuration.SQLite
-    , Mensam.Database
-    , Mensam.Database.Extra
-    , Mensam.Database.Schema
-    , Mensam.Environment
-    , Mensam.OpenApi
-    , Mensam.Server
-    , Mensam.Server.API
-    , Mensam.Server.Auth
-    , Mensam.Server.Err404
-    , Mensam.Server.FileServer
-    , Mensam.Server.Handler
-    , Mensam.Server.Handler.RequestHash
-    , Mensam.Server.Route
-    , Mensam.Server.Route.Booking
-    , Mensam.Server.Route.Booking.Type
-    , Mensam.Server.Route.OpenApi
-    , Mensam.Server.Route.OpenApi.Type
-    , Mensam.Server.Route.User
-    , Mensam.Server.Route.User.Type
-    , Mensam.Server.Route.Static
-    , Mensam.Server.Route.Static.Type
-    , Mensam.Server.Route.Type
-    , Mensam.User
-    , Mensam.User.Username
+    , Mensam.Server.Aeson
+    , Mensam.Server.Application
+    , Mensam.Server.Application.Configured
+    , Mensam.Server.Application.Configured.Acquisition
+    , Mensam.Server.Application.Configured.Class
+    , Mensam.Server.Application.Email
+    , Mensam.Server.Application.Email.Class
+    , Mensam.Server.Application.Environment
+    , Mensam.Server.Application.Environment.Acquisition
+    , Mensam.Server.Application.Environment.Class
+    , Mensam.Server.Application.Logging
+    , Mensam.Server.Application.SeldaPool
+    , Mensam.Server.Application.SeldaPool.Class
+    , Mensam.Server.Booking
+    , Mensam.Server.Configuration
+    , Mensam.Server.Configuration.BaseUrl
+    , Mensam.Server.Configuration.Email
+    , Mensam.Server.Configuration.SQLite
+    , Mensam.Server.Database
+    , Mensam.Server.Database.Extra
+    , Mensam.Server.Database.Schema
+    , Mensam.Server.Environment
+    , Mensam.Server.OpenApi
+    , Mensam.Server.Server
+    , Mensam.Server.Server.API
+    , Mensam.Server.Server.Auth
+    , Mensam.Server.Server.Err404
+    , Mensam.Server.Server.FileServer
+    , Mensam.Server.Server.Handler
+    , Mensam.Server.Server.Handler.RequestHash
+    , Mensam.Server.Server.Route
+    , Mensam.Server.Server.Route.Booking
+    , Mensam.Server.Server.Route.Booking.Type
+    , Mensam.Server.Server.Route.OpenApi
+    , Mensam.Server.Server.Route.OpenApi.Type
+    , Mensam.Server.Server.Route.User
+    , Mensam.Server.Server.Route.User.Type
+    , Mensam.Server.Server.Route.Static
+    , Mensam.Server.Server.Route.Static.Type
+    , Mensam.Server.Server.Route.Type
+    , Mensam.Server.User
+    , Mensam.Server.User.Username
   other-modules:
     , Control.Monad.Catch.OrphanInstances
     , Control.Monad.Logger.OrphanInstances

@@ -1,10 +1,10 @@
 module Mensam.Client.Debug where
 
 import Mensam.Client.OrphanInstances
-import Mensam.Server.Route.Booking.Type qualified as Route.Booking
-import Mensam.Server.Route.Type qualified as Route
-import Mensam.Server.Route.User.Type qualified as Route.User
-import Mensam.User.Username
+import Mensam.Server.Server.Route.Booking.Type qualified as Route.Booking
+import Mensam.Server.Server.Route.Type qualified as Route
+import Mensam.Server.Server.Route.User.Type qualified as Route.User
+import Mensam.Server.User.Username
 
 import Control.Monad.IO.Class
 import Data.Proxy

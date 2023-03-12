@@ -2,7 +2,7 @@
 
 module Mensam.Client.Brick.Type where
 
-import Mensam.Booking
+import Mensam.Server.Booking
 
 import Brick
 import Brick.Forms

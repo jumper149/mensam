@@ -1,7 +1,7 @@
 module Mensam where
 
-import Mensam.Application
-import Mensam.Server
+import Mensam.Server.Application
+import Mensam.Server.Server
 
 main :: IO ()
 main = runApplicationT server
