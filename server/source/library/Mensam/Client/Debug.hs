@@ -38,7 +38,7 @@ f = do
     name :: Username = MkUsernameUnsafe "maxmustermann7"
     pw :: T.Text = "asdf"
     email :: T.Text = "maxmustermann@gmail.com"
-    spacename :: T.Text = "universum"
+    spacename :: T.Text = "solarsystem"
 
   liftIO $ putStrLn "Register."
   let requestRegister =

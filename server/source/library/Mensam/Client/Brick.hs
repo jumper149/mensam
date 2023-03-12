@@ -2,6 +2,7 @@ module Mensam.Client.Brick where
 
 import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
+import Mensam.Server.Route.Booking.Type qualified as Route.Booking
 import Mensam.Server.Route.Type qualified as Route
 import Mensam.Server.Route.User.Type qualified as Route.User
 import Mensam.User.Username
@@ -10,6 +11,7 @@ import Brick
 import Brick.Forms
 import Control.Monad.IO.Class
 import Data.SOP
+import Data.Text qualified as T
 import Graphics.Vty
 import Lens.Micro.Platform
 import Network.HTTP.Client qualified as Network
@@ -39,7 +41,7 @@ draw :: ClientState -> [Widget ClientName]
 draw = \case
   ClientStateLogin form -> [renderForm form]
   ClientStateRegister form -> [renderForm form]
-  ClientStateLoggedIn jwt -> [txt $ "Logged in: " <> jwt]
+  ClientStateLoggedIn jwt spaces -> [txt $ "Logged in: " <> jwt <> "\n" <> T.pack (show spaces)]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
@@ -65,7 +67,7 @@ handleEvent clientEnv = \case
                             }
                 case result of
                   Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) ->
-                    put $ ClientStateLoggedIn jwt
+                    put $ ClientStateLoggedIn jwt []
                   _ -> pure ()
                 pure ()
           _ -> zoom clientStateLoginForm $ handleFormEvent event
@@ -90,6 +92,20 @@ handleEvent clientEnv = \case
                   _ -> pure ()
                 pure ()
           _ -> zoom clientStateRegisterForm $ handleFormEvent event
+      ClientStateLoggedIn jwt spaces ->
+        case event of
+          VtyEvent (EvKey KEnter []) -> do
+            result <-
+              liftIO $
+                flip runClientM clientEnv $
+                  (routes // Route.routeBooking // Route.Booking.routeSpaceList)
+                    (DataJWT $ MkJWToken jwt)
+                    (Route.Booking.MkRequestSpaceList ())
+            case result of
+              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) ->
+                put $ ClientStateLoggedIn jwt xs
+              _ -> pure ()
+            pure ()
       _ -> pure ()
 
 routes :: Route.Routes (AsClientT ClientM)

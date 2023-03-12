@@ -2,6 +2,8 @@
 
 module Mensam.Client.Brick.Type where
 
+import Mensam.Booking
+
 import Brick
 import Brick.Forms
 import Data.Kind
@@ -64,5 +66,5 @@ type ClientState :: Type
 data ClientState
   = ClientStateLogin {_clientStateLoginForm :: Form LoginInfo () ClientName}
   | ClientStateRegister {_clientStateRegisterForm :: Form RegisterInfo () ClientName}
-  | ClientStateLoggedIn {_clientStateJwt :: T.Text}
+  | ClientStateLoggedIn {_clientStateJwt :: T.Text, _clientStateSpaces :: [Space]}
 makeLenses ''ClientState
