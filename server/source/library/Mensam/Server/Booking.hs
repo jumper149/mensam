@@ -2,7 +2,6 @@
 
 module Mensam.Server.Booking where
 
-import Mensam.API.Aeson
 import Mensam.API.Desk
 import Mensam.API.Space
 import Mensam.API.User
@@ -77,21 +76,11 @@ spaceCreate name visible = do
 
 spaceUserLookup ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  NameOrIdentifier T.Text IdentifierSpace ->
+  IdentifierSpace ->
   IdentifierUser ->
   SeldaTransactionT m (Maybe Bool)
-spaceUserLookup space userIdentifier = do
-  lift $ logDebug $ "Looking up user " <> T.pack (show userIdentifier) <> " for space " <> T.pack (show space) <> "."
-  spaceIdentifier <-
-    case space of
-      Identifier spaceId -> pure spaceId
-      Name name ->
-        spaceLookupId name >>= \case
-          Just identifier -> pure identifier
-          Nothing -> do
-            let msg :: T.Text = "No matching space."
-            lift $ logWarn msg
-            throwM $ Selda.SqlError $ show msg
+spaceUserLookup spaceIdentifier userIdentifier = do
+  lift $ logDebug $ "Looking up user " <> T.pack (show userIdentifier) <> " for space " <> T.pack (show spaceIdentifier) <> "."
   lift $ logDebug "Look up space-user connection."
   maybeIsAdmin <- Selda.queryUnique $ do
     dbSpaceUser <- Selda.select tableSpaceUser
@@ -149,31 +138,14 @@ deskCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | desk name
   T.Text ->
-  NameOrIdentifier T.Text IdentifierSpace ->
+  IdentifierSpace ->
   SeldaTransactionT m ()
-deskCreate deskName space = do
+deskCreate deskName spaceIdentifier = do
   lift $ logDebug "Creating new desk."
-  dbDesk_space <-
-    case space of
-      Name name -> do
-        lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
-        maybeId <- Selda.queryUnique $ do
-          dbSpace <- Selda.select tableSpace
-          Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal name
-          pure $ dbSpace Selda.! #dbSpace_id
-        case maybeId of
-          Nothing -> do
-            let msg :: T.Text = "No matching space."
-            lift $ logWarn msg
-            throwM $ Selda.SqlError $ show msg
-          Just spaceId -> do
-            lift $ logInfo "Looked up space identifier successfully."
-            pure spaceId
-      Identifier spaceId -> pure $ Selda.toId $ unIdentifierSpace spaceId
   let dbDesk =
         MkDbDesk
           { dbDesk_id = Selda.def
-          , dbDesk_space
+          , dbDesk_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbDesk_name = deskName
           }
   lift $ logDebug "Inserting new desk into database."

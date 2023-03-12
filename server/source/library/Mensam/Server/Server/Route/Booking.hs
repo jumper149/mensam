@@ -113,11 +113,21 @@ createDesk authUser eitherRequest =
       Right request -> pure request
     logDebug $ "Received request to create desk: " <> T.pack (show request)
     seldaResult <- runSeldaTransactionT $ do
-      permission <- spaceUserLookup (requestDeskCreateSpace request) (userId user)
+      spaceIdentifier <-
+        case requestDeskCreateSpace request of
+          Identifier spaceId -> pure spaceId
+          Name name ->
+            spaceLookupId name >>= \case
+              Just identifier -> pure identifier
+              Nothing -> do
+                let msg :: T.Text = "No matching space."
+                lift $ logWarn msg
+                throwM $ Selda.SqlError $ show msg
+      permission <- spaceUserLookup spaceIdentifier (userId user)
       case permission of
         Nothing -> error "No permission."
         Just False -> error "No admin permission."
-        Just True -> deskCreate (requestDeskCreateName request) (requestDeskCreateSpace request)
+        Just True -> deskCreate (requestDeskCreateName request) spaceIdentifier
     case seldaResult of
       SeldaFailure _err -> do
         -- TODO: Here we can theoretically return a more accurate error
