@@ -92,7 +92,7 @@ handleEvent clientEnv = \case
                   _ -> pure ()
                 pure ()
           _ -> zoom clientStateRegisterForm $ handleFormEvent event
-      ClientStateLoggedIn jwt spaces ->
+      ClientStateLoggedIn jwt _spaces ->
         case event of
           VtyEvent (EvKey KEnter []) -> do
             result <-
@@ -106,7 +106,7 @@ handleEvent clientEnv = \case
                 put $ ClientStateLoggedIn jwt xs
               _ -> pure ()
             pure ()
-      _ -> pure ()
+          _ -> pure ()
 
 routes :: Route.Routes (AsClientT ClientM)
 routes = client $ Proxy @(NamedRoutes Route.Routes)
