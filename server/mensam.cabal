@@ -114,8 +114,8 @@ library
     , Mensam.Application.SeldaPool
     , Mensam.Application.SeldaPool.Class
     , Mensam.Booking
-    , Mensam.Client
     , Mensam.Client.Brick
+    , Mensam.Client.Debug
     , Mensam.Client.OrphanInstances
     , Mensam.Configuration
     , Mensam.Configuration.BaseUrl

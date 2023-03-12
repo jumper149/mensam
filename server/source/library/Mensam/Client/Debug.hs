@@ -1,6 +1,6 @@
 {-# LANGUAGE MonoLocalBinds #-}
 
-module Mensam.Client where
+module Mensam.Client.Debug where
 
 import Mensam.Client.OrphanInstances
 import Mensam.Server.Route.Booking.Type qualified as Route.Booking
