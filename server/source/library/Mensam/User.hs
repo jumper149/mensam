@@ -1,4 +1,3 @@
-{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE OverloadedLabels #-}
 
 module Mensam.User where

@@ -1,4 +1,3 @@
-{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Mensam.Server.Handler where

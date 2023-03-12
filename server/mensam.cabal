@@ -18,6 +18,8 @@ common language
     LambdaCase
     LexicalNegation
     NumDecimals
+    GADTs
+    TypeFamilies
     OverloadedStrings
   ghc-options:
     -Weverything

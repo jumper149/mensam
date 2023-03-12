@@ -1,5 +1,3 @@
-{-# LANGUAGE TypeFamilies #-}
-
 module Mensam.Application.Environment.Acquisition where
 
 import Mensam.Environment

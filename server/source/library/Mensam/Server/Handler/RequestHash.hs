@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Mensam.Server.Handler.RequestHash where

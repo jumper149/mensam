@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Mensam.Client.OrphanInstances where

@@ -1,4 +1,3 @@
-{-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Servant.Auth.OrphanInstances () where

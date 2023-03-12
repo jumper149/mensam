@@ -1,5 +1,3 @@
-{-# LANGUAGE MonoLocalBinds #-}
-
 module Mensam.Client.Debug where
 
 import Mensam.Client.OrphanInstances
