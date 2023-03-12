@@ -2,6 +2,7 @@
 
 module Mensam.Server.Booking where
 
+import Mensam.API.Desk
 import Mensam.API.Space
 import Mensam.API.User
 import Mensam.API.User.Username
@@ -14,12 +15,9 @@ import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
-import Data.Aeson qualified as A
-import Data.Kind
 import Data.Text qualified as T
 import Data.Time qualified as T
 import Database.Selda qualified as Selda
-import GHC.Generics
 
 spaceLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -157,14 +155,6 @@ spaceUserAdd space user isAdmin = do
   Selda.insert_ tableSpaceUser [dbSpaceUser]
   lift $ logInfo "Created space-user connection successfully."
 
-type Desk :: Type
-data Desk = MkDesk
-  { deskId :: Selda.Identifier DbDesk
-  , deskName :: T.Text
-  }
-  deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
-
 deskList ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
@@ -185,7 +175,7 @@ deskList spaceIdentifier userIdentifier = do
   lift $ logInfo "Looked up visible desks successfully."
   let fromDbDesk desk =
         MkDesk
-          { deskId = Selda.toIdentifier $ dbDesk_id desk
+          { deskId = MkIdentifierDesk $ Selda.fromId @DbDesk $ dbDesk_id desk
           , deskName = dbDesk_name desk
           }
   pure $ fromDbDesk <$> dbDesks

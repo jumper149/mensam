@@ -4,17 +4,15 @@ module Mensam.Server.OpenApi where
 
 import Mensam.API.API
 import Mensam.API.Aeson
+import Mensam.API.Desk
 import Mensam.API.Route.Booking.Type qualified as Booking
 import Mensam.API.Route.User.Type qualified as User
 import Mensam.API.Space
 import Mensam.API.User.Username
-import Mensam.Server.Booking
-import Mensam.Server.Database.Extra qualified as Selda
 
 import Control.Lens
 import Data.OpenApi
 import Data.Proxy
-import Data.Typeable
 import Deriving.Aeson qualified as A
 import Deriving.Aeson.OrphanInstances qualified as A ()
 import Servant.API
@@ -52,8 +50,6 @@ instance ToParamSchema Username where
       & Data.OpenApi.pattern ?~ "^[a-zA-Z0-9]{4,32}$"
 instance ToSchema Username where
   declareNamedSchema = pure . NamedSchema (Just "Username") . paramSchemaToSchema
-
-deriving anyclass instance Typeable a => ToSchema (Selda.Identifier a)
 
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
 deriving anyclass instance ToSchema IdentifierSpace

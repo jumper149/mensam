@@ -1,21 +1,7 @@
 module Mensam.Server.Database.Extra where
 
 import Control.Monad.Catch
-import Data.Aeson qualified as A
-import Data.Int
-import Data.Kind
 import Database.Selda
-
-type Identifier :: Type -> Type
-newtype Identifier a = MkIdentifier {unIdentifier :: Int64}
-  deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
-
-toIdentifier :: ID a -> Identifier a
-toIdentifier = MkIdentifier . fromId
-
-fromIdentifier :: Identifier a -> ID a
-fromIdentifier = toId . unIdentifier
 
 -- | Run 'query', but throw an error when there are multiple results.
 queryUnique :: (MonadSelda m, MonadThrow m, Result a) => Query (Backend m) a -> m (Maybe (Res a))

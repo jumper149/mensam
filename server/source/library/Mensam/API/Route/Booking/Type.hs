@@ -1,9 +1,9 @@
 module Mensam.API.Route.Booking.Type where
 
 import Mensam.API.Aeson
+import Mensam.API.Desk
 import Mensam.API.Space
 import Mensam.API.User
-import Mensam.Server.Booking
 
 import Data.Aeson qualified as A
 import Data.Kind
