@@ -1,10 +1,9 @@
 module Mensam.API.Route.Booking.Type where
 
 import Mensam.API.Aeson
+import Mensam.API.Space
 import Mensam.API.User
 import Mensam.Server.Booking
-import Mensam.Server.Database.Extra qualified as Selda
-import Mensam.Server.Database.Schema
 
 import Data.Aeson qualified as A
 import Data.Kind
@@ -92,7 +91,7 @@ newtype ResponseSpaceList = MkResponseSpaceList
 type RequestDeskCreate :: Type
 data RequestDeskCreate = MkRequestDeskCreate
   { requestDeskCreateName :: T.Text
-  , requestDeskCreateSpace :: Either T.Text (Selda.Identifier DbSpace)
+  , requestDeskCreateSpace :: Either T.Text IdentifierSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -101,7 +100,7 @@ data RequestDeskCreate = MkRequestDeskCreate
 
 type RequestDeskList :: Type
 newtype RequestDeskList = MkRequestDeskList
-  { requestDeskListSpace :: Either T.Text (Selda.Identifier DbSpace)
+  { requestDeskListSpace :: Either T.Text IdentifierSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

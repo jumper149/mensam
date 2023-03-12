@@ -2,6 +2,7 @@
 
 module Mensam.Server.Booking where
 
+import Mensam.API.Space
 import Mensam.API.User
 import Mensam.API.User.Username
 import Mensam.Server.Application.SeldaPool.Class
@@ -20,19 +21,11 @@ import Data.Time qualified as T
 import Database.Selda qualified as Selda
 import GHC.Generics
 
-type Space :: Type
-data Space = MkSpace
-  { spaceId :: Selda.Identifier DbSpace
-  , spaceName :: T.Text
-  }
-  deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
-
 spaceLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | name
   T.Text ->
-  SeldaTransactionT m (Maybe (Selda.Identifier DbSpace))
+  SeldaTransactionT m (Maybe IdentifierSpace)
 spaceLookupId name = do
   lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
   maybeDbId <- Selda.queryUnique $ do
@@ -45,7 +38,7 @@ spaceLookupId name = do
       pure Nothing
     Just dbId -> do
       lift $ logInfo "Looked up space successfully."
-      pure $ Just $ Selda.toIdentifier dbId
+      pure $ Just $ MkIdentifierSpace $ Selda.fromId @DbSpace dbId
 
 spaceList ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -62,7 +55,7 @@ spaceList userIdentifier = do
   lift $ logInfo "Looked up visible spaces successfully."
   let fromDbSpace space =
         MkSpace
-          { spaceId = Selda.toIdentifier $ dbSpace_id space
+          { spaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id space
           , spaceName = dbSpace_name space
           }
   pure $ fromDbSpace <$> dbSpaces
@@ -88,7 +81,7 @@ spaceCreate name visible = do
 spaceUserLookup ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | space name or identifier
-  Either T.Text (Selda.Identifier DbSpace) ->
+  Either T.Text IdentifierSpace ->
   -- | user name or identifier
   Either Username IdentifierUser ->
   SeldaTransactionT m (Maybe Bool)
@@ -117,7 +110,7 @@ spaceUserLookup space user = do
   lift $ logDebug "Look up space-user connection."
   maybeIsAdmin <- Selda.queryUnique $ do
     dbSpaceUser <- Selda.select tableSpaceUser
-    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.fromIdentifier spaceIdentifier)
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
     pure $ dbSpaceUser Selda.! #dbSpaceUser_is_admin
   lift $ logInfo "Looked up space-user connection successfully."
@@ -126,7 +119,7 @@ spaceUserLookup space user = do
 spaceUserAdd ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | space name or identifier
-  Either T.Text (Selda.Identifier DbSpace) ->
+  Either T.Text IdentifierSpace ->
   -- | user name or identifier
   Either Username IdentifierUser ->
   -- | user is admin?
@@ -156,7 +149,7 @@ spaceUserAdd space user isAdmin = do
             throwM $ Selda.SqlError $ show msg
   let dbSpaceUser =
         MkDbSpaceUser
-          { dbSpaceUser_space = Selda.fromIdentifier spaceIdentifier
+          { dbSpaceUser_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbSpaceUser_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
           , dbSpaceUser_is_admin = isAdmin
           }
@@ -174,14 +167,14 @@ data Desk = MkDesk
 
 deskList ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  Selda.Identifier DbSpace ->
+  IdentifierSpace ->
   IdentifierUser ->
   SeldaTransactionT m [Desk]
 deskList spaceIdentifier userIdentifier = do
   lift $ logDebug $ "Looking up desks visible by user: " <> T.pack (show userIdentifier)
   dbDesks <- Selda.query $ do
     dbSpace <- Selda.select tableSpace
-    Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== Selda.literal (Selda.fromIdentifier spaceIdentifier)
+    Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
     dbSpaceUser <- Selda.select tableSpaceUser
     Selda.restrict $
       (dbSpace Selda.! #dbSpace_visible)
@@ -202,7 +195,7 @@ deskCreate ::
   -- | desk name
   T.Text ->
   -- | space name or identifier
-  Either T.Text (Selda.Identifier DbSpace) ->
+  Either T.Text IdentifierSpace ->
   SeldaTransactionT m ()
 deskCreate deskName space = do
   lift $ logDebug "Creating new desk."
@@ -222,7 +215,7 @@ deskCreate deskName space = do
           Just spaceId -> do
             lift $ logInfo "Looked up space identifier successfully."
             pure spaceId
-      Right spaceId -> pure $ Selda.fromIdentifier spaceId
+      Right spaceId -> pure $ Selda.toId $ unIdentifierSpace spaceId
   let dbDesk =
         MkDbDesk
           { dbDesk_id = Selda.def

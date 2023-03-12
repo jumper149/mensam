@@ -6,6 +6,7 @@ import Mensam.API.API
 import Mensam.API.Aeson
 import Mensam.API.Route.Booking.Type qualified as Booking
 import Mensam.API.Route.User.Type qualified as User
+import Mensam.API.Space
 import Mensam.API.User.Username
 import Mensam.Server.Booking
 import Mensam.Server.Database.Extra qualified as Selda
@@ -55,6 +56,7 @@ instance ToSchema Username where
 deriving anyclass instance Typeable a => ToSchema (Selda.Identifier a)
 
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
+deriving anyclass instance ToSchema IdentifierSpace
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Space instance ToSchema Desk
 
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseLogin") User.ResponseLogin instance ToSchema User.ResponseLogin
