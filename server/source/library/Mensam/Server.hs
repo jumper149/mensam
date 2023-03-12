@@ -1,4 +1,4 @@
-module Mensam where
+module Mensam.Server where
 
 import Mensam.Server.Application
 import Mensam.Server.Server

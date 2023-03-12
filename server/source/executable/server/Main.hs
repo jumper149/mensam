@@ -1,3 +1,3 @@
 module Main (main) where
 
-import Mensam (main)
+import Mensam.Server (main)

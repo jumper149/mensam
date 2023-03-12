@@ -1,3 +1,3 @@
 module Main (main) where
 
-import Mensam.Client.Brick (main)
+import Mensam.Client (main)

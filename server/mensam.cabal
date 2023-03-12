@@ -99,11 +99,12 @@ library
     , dependencies
     , language
   exposed-modules:
-    , Mensam
+    , Mensam.Client
     , Mensam.Client.Brick
     , Mensam.Client.Brick.Type
     , Mensam.Client.Debug
     , Mensam.Client.OrphanInstances
+    , Mensam.Server
     , Mensam.Server.Aeson
     , Mensam.Server.Application
     , Mensam.Server.Application.Configured
