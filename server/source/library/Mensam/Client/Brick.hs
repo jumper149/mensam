@@ -25,7 +25,7 @@ main = do
     app =
       App
         { appDraw = draw
-        , appChooseCursor = chooseCursor
+        , appChooseCursor = showFirstCursor
         , appHandleEvent = handleEvent clientEnv
         , appStartEvent = pure ()
         , appAttrMap = \_ -> attrMap defAttr []
@@ -91,12 +91,6 @@ handleEvent clientEnv = \case
                 pure ()
           _ -> zoom clientStateRegisterForm $ handleFormEvent event
       _ -> pure ()
-
-chooseCursor :: ClientState -> [CursorLocation ClientName] -> Maybe (CursorLocation ClientName)
-chooseCursor _clientState cursors =
-  case cursors of
-    [] -> Nothing
-    x : _ -> pure x
 
 routes :: Route.Routes (AsClientT ClientM)
 routes = client $ Proxy @(NamedRoutes Route.Routes)
