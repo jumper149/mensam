@@ -1,10 +1,10 @@
 module Mensam.Server.Server.Route.Booking where
 
 import Mensam.API.Route.Booking.Type
+import Mensam.API.User
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Booking
 import Mensam.Server.Server.Auth
-import Mensam.Server.User
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack

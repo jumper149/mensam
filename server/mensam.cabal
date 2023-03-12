@@ -106,6 +106,7 @@ library
     , Mensam.API.Route.User.Type
     , Mensam.API.Route.Static.Type
     , Mensam.API.Route.Type
+    , Mensam.API.User
     , Mensam.API.User.Username
     , Mensam.Client
     , Mensam.Client.Brick

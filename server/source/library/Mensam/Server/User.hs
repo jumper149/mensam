@@ -2,7 +2,7 @@
 
 module Mensam.Server.User where
 
-import Mensam.API.Aeson
+import Mensam.API.User
 import Mensam.API.User.Username
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
@@ -11,24 +11,11 @@ import Mensam.Server.Database.Schema
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
-import Data.Aeson qualified as A
 import Data.Kind
 import Data.Password.Bcrypt
 import Data.Text qualified as T
 import Database.Selda qualified as Selda
-import Deriving.Aeson qualified as A
 import GHC.Generics
-
-type User :: Type
-data User = MkUser
-  { userId :: Selda.Identifier DbUser
-  , userName :: Username
-  , userEmail :: T.Text
-  }
-  deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving
-    (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "Mk" "user") User
 
 type AuthenticationError :: Type
 data AuthenticationError
@@ -53,7 +40,7 @@ userAuthenticate username password = do
       let
         user =
           MkUser
-            { userId = Selda.toIdentifier $ dbUser_id dbUser
+            { userId = MkIdentifierUser $ Selda.fromId $ dbUser_id dbUser
             , userName = username
             , userEmail = dbUser_email dbUser
             }
@@ -70,7 +57,7 @@ userAuthenticate username password = do
 userLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Username ->
-  SeldaTransactionT m (Maybe (Selda.Identifier DbUser))
+  SeldaTransactionT m (Maybe IdentifierUser)
 userLookupId username = do
   lift $ logDebug $ "Looking up user identifier with name: " <> T.pack (show username)
   maybeDbId <- Selda.queryUnique $ do
@@ -83,22 +70,22 @@ userLookupId username = do
       pure Nothing
     Just dbId -> do
       lift $ logInfo "Looked up user successfully."
-      pure $ Just $ Selda.toIdentifier dbId
+      pure $ Just $ MkIdentifierUser $ Selda.fromId dbId
 
 userGet ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  Selda.Identifier DbUser ->
+  IdentifierUser ->
   SeldaTransactionT m User
 userGet identifier = do
   lift $ logDebug $ "Get user info with identifier: " <> T.pack (show identifier)
   dbUser <- Selda.queryOne $ do
     dbUser <- Selda.select tableUser
-    Selda.restrict $ dbUser Selda.! #dbUser_id Selda..== Selda.literal (Selda.fromIdentifier identifier)
+    Selda.restrict $ dbUser Selda.! #dbUser_id Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser identifier)
     pure dbUser
   lift $ logInfo "Got user info successfully."
   pure
     MkUser
-      { userId = Selda.toIdentifier $ dbUser_id dbUser
+      { userId = MkIdentifierUser $ Selda.fromId $ dbUser_id dbUser
       , userName = MkUsernameUnsafe $ dbUser_name dbUser
       , userEmail = dbUser_email dbUser
       }
@@ -130,7 +117,7 @@ userCreate username password email emailVisible = do
 userProfile ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Username ->
-  SeldaTransactionT m (Maybe (Selda.Identifier DbUser))
+  SeldaTransactionT m (Maybe IdentifierUser)
 userProfile username = do
   lift $ logDebug $ "Looking up user identifier with name: " <> T.pack (show username)
   maybeDbId <- Selda.queryUnique $ do
@@ -143,4 +130,4 @@ userProfile username = do
       pure Nothing
     Just dbId -> do
       lift $ logInfo "Looked up user successfully."
-      pure $ Just $ Selda.toIdentifier dbId
+      pure $ Just $ MkIdentifierUser $ Selda.fromId @DbUser dbId
