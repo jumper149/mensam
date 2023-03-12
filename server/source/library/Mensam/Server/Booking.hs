@@ -6,11 +6,9 @@ import Mensam.API.Aeson
 import Mensam.API.Desk
 import Mensam.API.Space
 import Mensam.API.User
-import Mensam.API.User.Username
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
-import Mensam.Server.User
 
 import Control.Monad.Catch
 import Control.Monad.IO.Class
@@ -80,11 +78,10 @@ spaceCreate name visible = do
 spaceUserLookup ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   NameOrIdentifier T.Text IdentifierSpace ->
-  -- | user name or identifier
-  Either Username IdentifierUser ->
+  IdentifierUser ->
   SeldaTransactionT m (Maybe Bool)
-spaceUserLookup space user = do
-  lift $ logDebug $ "Looking up user " <> T.pack (show user) <> " for space " <> T.pack (show space) <> "."
+spaceUserLookup space userIdentifier = do
+  lift $ logDebug $ "Looking up user " <> T.pack (show userIdentifier) <> " for space " <> T.pack (show space) <> "."
   spaceIdentifier <-
     case space of
       Identifier spaceId -> pure spaceId
@@ -93,16 +90,6 @@ spaceUserLookup space user = do
           Just identifier -> pure identifier
           Nothing -> do
             let msg :: T.Text = "No matching space."
-            lift $ logWarn msg
-            throwM $ Selda.SqlError $ show msg
-  userIdentifier <-
-    case user of
-      Right userId -> pure userId
-      Left name ->
-        userLookupId name >>= \case
-          Just identifier -> pure identifier
-          Nothing -> do
-            let msg :: T.Text = "No matching user."
             lift $ logWarn msg
             throwM $ Selda.SqlError $ show msg
   lift $ logDebug "Look up space-user connection."
@@ -118,13 +105,12 @@ spaceUserAdd ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | space name or identifier
   Either T.Text IdentifierSpace ->
-  -- | user name or identifier
-  Either Username IdentifierUser ->
+  IdentifierUser ->
   -- | user is admin?
   Bool ->
   SeldaTransactionT m ()
-spaceUserAdd space user isAdmin = do
-  lift $ logDebug $ "Adding user " <> T.pack (show user) <> " to space " <> T.pack (show space) <> "."
+spaceUserAdd space userIdentifier isAdmin = do
+  lift $ logDebug $ "Adding user " <> T.pack (show userIdentifier) <> " to space " <> T.pack (show space) <> "."
   spaceIdentifier <-
     case space of
       Right spaceId -> pure spaceId
@@ -133,16 +119,6 @@ spaceUserAdd space user isAdmin = do
           Just identifier -> pure identifier
           Nothing -> do
             let msg :: T.Text = "No matching space."
-            lift $ logWarn msg
-            throwM $ Selda.SqlError $ show msg
-  userIdentifier <-
-    case user of
-      Right userId -> pure userId
-      Left name ->
-        userLookupId name >>= \case
-          Just identifier -> pure identifier
-          Nothing -> do
-            let msg :: T.Text = "No matching user."
             lift $ logWarn msg
             throwM $ Selda.SqlError $ show msg
   let dbSpaceUser =

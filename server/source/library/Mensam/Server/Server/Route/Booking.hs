@@ -45,7 +45,7 @@ createSpace authUser eitherRequest =
     logDebug $ "Received request to create space: " <> T.pack (show request)
     seldaResult <- runSeldaTransactionT $ do
       spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisible request)
-      spaceUserAdd (Left $ requestSpaceCreateName request) (Right $ userId user) True
+      spaceUserAdd (Left $ requestSpaceCreateName request) (userId user) True
     case seldaResult of
       SeldaFailure _err -> do
         -- TODO: Here we can theoretically return a more accurate error
@@ -103,7 +103,7 @@ createDesk authUser eitherRequest =
       Right request -> pure request
     logDebug $ "Received request to create desk: " <> T.pack (show request)
     seldaResult <- runSeldaTransactionT $ do
-      permission <- spaceUserLookup (requestDeskCreateSpace request) (Right $ userId user)
+      permission <- spaceUserLookup (requestDeskCreateSpace request) (userId user)
       case permission of
         Nothing -> error "No permission."
         Just False -> error "No admin permission."
