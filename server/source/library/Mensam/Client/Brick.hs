@@ -19,8 +19,8 @@ import Servant
 import Servant.Client
 import Servant.RawM.Client ()
 
-main :: IO ()
-main = do
+runBrick :: IO ()
+runBrick = do
   clientEnv <- clientEnvDefault
   let
     app :: App ClientState () ClientName
