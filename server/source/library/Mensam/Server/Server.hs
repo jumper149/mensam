@@ -1,10 +1,10 @@
 module Mensam.Server.Server where
 
+import Mensam.API.API
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Configuration
 import Mensam.Server.Configuration.BaseUrl
-import Mensam.Server.Server.API
 import Mensam.Server.Server.Auth
 import Mensam.Server.Server.Handler
 import Mensam.Server.Server.Handler.RequestHash

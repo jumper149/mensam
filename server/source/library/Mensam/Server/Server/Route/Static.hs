@@ -1,10 +1,10 @@
 module Mensam.Server.Server.Route.Static where
 
+import Mensam.API.Route.Static.Type
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Configuration
 import Mensam.Server.Server.Err404
 import Mensam.Server.Server.FileServer
-import Mensam.Server.Server.Route.Static.Type
 
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack

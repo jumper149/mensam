@@ -1,11 +1,11 @@
 module Mensam.Server.Server.Route where
 
+import Mensam.API.Route.Type
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Server.Route.Booking qualified
 import Mensam.Server.Server.Route.OpenApi qualified
 import Mensam.Server.Server.Route.Static qualified
-import Mensam.Server.Server.Route.Type
 import Mensam.Server.Server.Route.User qualified
 
 import Control.Monad.IO.Unlift

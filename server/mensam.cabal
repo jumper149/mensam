@@ -99,7 +99,13 @@ library
     , dependencies
     , language
   exposed-modules:
+    , Mensam.API.API
     , Mensam.API.Aeson
+    , Mensam.API.Route.Booking.Type
+    , Mensam.API.Route.OpenApi.Type
+    , Mensam.API.Route.User.Type
+    , Mensam.API.Route.Static.Type
+    , Mensam.API.Route.Type
     , Mensam.API.User.Username
     , Mensam.Client
     , Mensam.Client.Brick
@@ -130,7 +136,6 @@ library
     , Mensam.Server.Environment
     , Mensam.Server.OpenApi
     , Mensam.Server.Server
-    , Mensam.Server.Server.API
     , Mensam.Server.Server.Auth
     , Mensam.Server.Server.Err404
     , Mensam.Server.Server.FileServer
@@ -138,14 +143,9 @@ library
     , Mensam.Server.Server.Handler.RequestHash
     , Mensam.Server.Server.Route
     , Mensam.Server.Server.Route.Booking
-    , Mensam.Server.Server.Route.Booking.Type
     , Mensam.Server.Server.Route.OpenApi
-    , Mensam.Server.Server.Route.OpenApi.Type
     , Mensam.Server.Server.Route.User
-    , Mensam.Server.Server.Route.User.Type
     , Mensam.Server.Server.Route.Static
-    , Mensam.Server.Server.Route.Static.Type
-    , Mensam.Server.Server.Route.Type
     , Mensam.Server.User
   other-modules:
     , Control.Monad.Catch.OrphanInstances

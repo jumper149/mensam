@@ -1,9 +1,9 @@
 module Mensam.Server.Server.Route.Booking where
 
+import Mensam.API.Route.Booking.Type
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Booking
 import Mensam.Server.Server.Auth
-import Mensam.Server.Server.Route.Booking.Type
 import Mensam.Server.User
 
 import Control.Monad.IO.Class

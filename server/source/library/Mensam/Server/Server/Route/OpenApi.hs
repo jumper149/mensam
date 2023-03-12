@@ -1,9 +1,9 @@
 module Mensam.Server.Server.Route.OpenApi where
 
+import Mensam.API.Route.OpenApi.Type
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Configuration
 import Mensam.Server.OpenApi qualified
-import Mensam.Server.Server.Route.OpenApi.Type
 
 import Control.Lens
 import Data.OpenApi
