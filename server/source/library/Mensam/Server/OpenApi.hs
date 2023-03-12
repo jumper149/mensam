@@ -2,13 +2,13 @@
 
 module Mensam.Server.OpenApi where
 
-import Mensam.Server.Aeson
+import Mensam.API.Aeson
+import Mensam.API.User.Username
 import Mensam.Server.Booking
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Server.API
 import Mensam.Server.Server.Route.Booking.Type qualified as Booking
 import Mensam.Server.Server.Route.User.Type qualified as User
-import Mensam.Server.User.Username
 
 import Control.Lens
 import Data.OpenApi

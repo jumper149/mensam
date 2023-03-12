@@ -1,8 +1,8 @@
 module Mensam.Server.Server.Route.User.Type where
 
-import Mensam.Server.Aeson
+import Mensam.API.Aeson
+import Mensam.API.User.Username
 import Mensam.Server.User
-import Mensam.Server.User.Username
 
 import Data.Aeson qualified as A
 import Data.Kind

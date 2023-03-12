@@ -1,4 +1,4 @@
-module Mensam.Server.Aeson where
+module Mensam.API.Aeson where
 
 import Data.Kind
 import Deriving.Aeson qualified as A

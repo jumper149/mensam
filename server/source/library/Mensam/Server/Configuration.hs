@@ -1,6 +1,6 @@
 module Mensam.Server.Configuration where
 
-import Mensam.Server.Aeson
+import Mensam.API.Aeson
 import Mensam.Server.Configuration.BaseUrl
 import Mensam.Server.Configuration.Email
 import Mensam.Server.Configuration.SQLite

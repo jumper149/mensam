@@ -2,9 +2,9 @@
 
 module Mensam.Server.Server.Auth where
 
+import Mensam.API.User.Username
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.User
-import Mensam.Server.User.Username
 
 import Control.Monad.Catch
 import Control.Monad.Logger.CallStack

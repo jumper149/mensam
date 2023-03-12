@@ -1,10 +1,10 @@
 module Mensam.Server.Server.Route.User where
 
+import Mensam.API.User.Username
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Server.Auth
 import Mensam.Server.Server.Route.User.Type
 import Mensam.Server.User
-import Mensam.Server.User.Username
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack

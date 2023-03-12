@@ -99,13 +99,14 @@ library
     , dependencies
     , language
   exposed-modules:
+    , Mensam.API.Aeson
+    , Mensam.API.User.Username
     , Mensam.Client
     , Mensam.Client.Brick
     , Mensam.Client.Brick.Type
     , Mensam.Client.Debug
     , Mensam.Client.OrphanInstances
     , Mensam.Server
-    , Mensam.Server.Aeson
     , Mensam.Server.Application
     , Mensam.Server.Application.Configured
     , Mensam.Server.Application.Configured.Acquisition
@@ -146,7 +147,6 @@ library
     , Mensam.Server.Server.Route.Static.Type
     , Mensam.Server.Server.Route.Type
     , Mensam.Server.User
-    , Mensam.Server.User.Username
   other-modules:
     , Control.Monad.Catch.OrphanInstances
     , Control.Monad.Logger.OrphanInstances

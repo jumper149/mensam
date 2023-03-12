@@ -1,11 +1,11 @@
 module Mensam.Client.Brick where
 
+import Mensam.API.User.Username
 import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
 import Mensam.Server.Server.Route.Booking.Type qualified as Route.Booking
 import Mensam.Server.Server.Route.Type qualified as Route
 import Mensam.Server.Server.Route.User.Type qualified as Route.User
-import Mensam.Server.User.Username
 
 import Brick
 import Brick.Forms

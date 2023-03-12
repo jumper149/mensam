@@ -1,6 +1,6 @@
 module Mensam.Server.Configuration.Email where
 
-import Mensam.Server.Aeson
+import Mensam.API.Aeson
 
 import Data.Aeson qualified as A
 import Data.Kind

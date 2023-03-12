@@ -2,11 +2,11 @@
 
 module Mensam.Server.Booking where
 
+import Mensam.API.User.Username
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
 import Mensam.Server.User
-import Mensam.Server.User.Username
 
 import Control.Monad.Catch
 import Control.Monad.IO.Class

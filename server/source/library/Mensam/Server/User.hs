@@ -2,11 +2,11 @@
 
 module Mensam.Server.User where
 
-import Mensam.Server.Aeson
+import Mensam.API.Aeson
+import Mensam.API.User.Username
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
-import Mensam.Server.User.Username
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
