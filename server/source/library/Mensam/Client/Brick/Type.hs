@@ -32,14 +32,8 @@ loginFormInitial =
       , _loginInfoPassword = ""
       }
 
-type ClientState :: Type -> Type
-data ClientState e
-  = ClientStateLogin {_clientStateLoginForm :: Form LoginInfo e ClientName}
+type ClientState :: Type
+data ClientState
+  = ClientStateLogin {_clientStateLoginForm :: Form LoginInfo () ClientName}
   | ClientStateLoggedIn {_clientStateJwt :: T.Text}
 makeLenses ''ClientState
-
-type ClientEvent :: Type
-data ClientEvent
-  = ClientEventLoginRequire
-  | ClientEventLoginSend
-  deriving stock (Eq, Ord, Show)

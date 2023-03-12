@@ -22,7 +22,7 @@ main :: IO ()
 main = do
   clientEnv <- clientEnvDefault
   let
-    app :: App (ClientState ClientEvent) ClientEvent ClientName
+    app :: App ClientState () ClientName
     app =
       App
         { appDraw = draw
@@ -31,20 +31,19 @@ main = do
         , appStartEvent = pure ()
         , appAttrMap = \_ -> attrMap defAttr []
         }
-    initialState :: ClientState ClientEvent
+    initialState :: ClientState
     initialState = ClientStateLogin loginFormInitial
   _finalState <- defaultMain app initialState
   pure ()
 
-draw :: ClientState ClientEvent -> [Widget ClientName]
+draw :: ClientState -> [Widget ClientName]
 draw = \case
   ClientStateLogin form -> [renderForm form]
   _ -> [txt "Hello"]
 
-handleEvent :: ClientEnv -> BrickEvent ClientName ClientEvent -> EventM ClientName (ClientState ClientEvent) ()
+handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
   VtyEvent (EvKey KEsc []) -> halt
-  -- AppEvent ClientEventLoginRequire -> halt
   event -> do
     clientState <- get
     case clientState of
@@ -70,7 +69,7 @@ handleEvent clientEnv = \case
           _ -> zoom clientStateLoginForm $ handleFormEvent event
       _ -> pure ()
 
-chooseCursor :: ClientState ClientEvent -> [CursorLocation ClientName] -> Maybe (CursorLocation ClientName)
+chooseCursor :: ClientState -> [CursorLocation ClientName] -> Maybe (CursorLocation ClientName)
 chooseCursor _clientState cursors =
   case cursors of
     [] -> Nothing
