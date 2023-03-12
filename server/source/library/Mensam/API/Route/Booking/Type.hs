@@ -92,7 +92,7 @@ newtype ResponseSpaceList = MkResponseSpaceList
 type RequestDeskCreate :: Type
 data RequestDeskCreate = MkRequestDeskCreate
   { requestDeskCreateName :: T.Text
-  , requestDeskCreateSpace :: Either T.Text IdentifierSpace
+  , requestDeskCreateSpace :: NameOrIdentifier T.Text IdentifierSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -101,7 +101,7 @@ data RequestDeskCreate = MkRequestDeskCreate
 
 type RequestDeskList :: Type
 newtype RequestDeskList = MkRequestDeskList
-  { requestDeskListSpace :: Either T.Text IdentifierSpace
+  { requestDeskListSpace :: NameOrIdentifier T.Text IdentifierSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

@@ -2,6 +2,7 @@
 
 module Mensam.Server.Booking where
 
+import Mensam.API.Aeson
 import Mensam.API.Desk
 import Mensam.API.Space
 import Mensam.API.User
@@ -78,8 +79,7 @@ spaceCreate name visible = do
 
 spaceUserLookup ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | space name or identifier
-  Either T.Text IdentifierSpace ->
+  NameOrIdentifier T.Text IdentifierSpace ->
   -- | user name or identifier
   Either Username IdentifierUser ->
   SeldaTransactionT m (Maybe Bool)
@@ -87,8 +87,8 @@ spaceUserLookup space user = do
   lift $ logDebug $ "Looking up user " <> T.pack (show user) <> " for space " <> T.pack (show space) <> "."
   spaceIdentifier <-
     case space of
-      Right spaceId -> pure spaceId
-      Left name ->
+      Identifier spaceId -> pure spaceId
+      Name name ->
         spaceLookupId name >>= \case
           Just identifier -> pure identifier
           Nothing -> do
@@ -184,14 +184,13 @@ deskCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | desk name
   T.Text ->
-  -- | space name or identifier
-  Either T.Text IdentifierSpace ->
+  NameOrIdentifier T.Text IdentifierSpace ->
   SeldaTransactionT m ()
 deskCreate deskName space = do
   lift $ logDebug "Creating new desk."
   dbDesk_space <-
     case space of
-      Left name -> do
+      Name name -> do
         lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
         maybeId <- Selda.queryUnique $ do
           dbSpace <- Selda.select tableSpace
@@ -205,7 +204,7 @@ deskCreate deskName space = do
           Just spaceId -> do
             lift $ logInfo "Looked up space identifier successfully."
             pure spaceId
-      Right spaceId -> pure $ Selda.toId $ unIdentifierSpace spaceId
+      Identifier spaceId -> pure $ Selda.toId $ unIdentifierSpace spaceId
   let dbDesk =
         MkDbDesk
           { dbDesk_id = Selda.def

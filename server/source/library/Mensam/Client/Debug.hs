@@ -1,5 +1,6 @@
 module Mensam.Client.Debug where
 
+import Mensam.API.Aeson
 import Mensam.API.Route.Booking.Type qualified as Route.Booking
 import Mensam.API.Route.Type qualified as Route
 import Mensam.API.Route.User.Type qualified as Route.User
@@ -91,7 +92,7 @@ f = do
   let requestDeskCreate =
         Route.Booking.MkRequestDeskCreate
           { Route.Booking.requestDeskCreateName = "neptune"
-          , Route.Booking.requestDeskCreateSpace = Left spacename
+          , Route.Booking.requestDeskCreateSpace = Name spacename
           }
   resultDeskCreate <- (routes // Route.routeBooking // Route.Booking.routeDeskCreate) (DataJWT nextToken) requestDeskCreate
   liftIO $ print resultDeskCreate
@@ -100,7 +101,7 @@ f = do
   let requestDeskCreate2 =
         Route.Booking.MkRequestDeskCreate
           { Route.Booking.requestDeskCreateName = "saturn"
-          , Route.Booking.requestDeskCreateSpace = Left spacename
+          , Route.Booking.requestDeskCreateSpace = Name spacename
           }
   resultDeskCreate2 <- (routes // Route.routeBooking // Route.Booking.routeDeskCreate) (DataJWT nextToken) requestDeskCreate2
   liftIO $ print resultDeskCreate2
@@ -108,7 +109,7 @@ f = do
   liftIO $ putStrLn "List desks."
   let requestDeskList =
         Route.Booking.MkRequestDeskList
-          { Route.Booking.requestDeskListSpace = Left spacename
+          { Route.Booking.requestDeskListSpace = Name spacename
           }
   resultDeskList <- (routes // Route.routeBooking // Route.Booking.routeDeskList) (DataJWT nextToken) requestDeskList
   liftIO $ print resultDeskList

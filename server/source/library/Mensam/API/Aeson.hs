@@ -2,6 +2,7 @@ module Mensam.API.Aeson where
 
 import Data.Kind
 import Deriving.Aeson qualified as A
+import GHC.Generics
 import GHC.TypeLits
 
 type JSONSettings :: Symbol -> Symbol -> [Type]
@@ -17,3 +18,10 @@ type JSONSettings constructorPrefix fieldPrefix =
        ]
    , A.RejectUnknownFields
    ]
+
+type NameOrIdentifier :: Type -> Type -> Type
+data NameOrIdentifier name identifier
+  = Name name
+  | Identifier identifier
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving (A.FromJSON, A.ToJSON) via (A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier))

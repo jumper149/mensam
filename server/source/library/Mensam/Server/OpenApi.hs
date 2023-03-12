@@ -51,6 +51,7 @@ instance ToParamSchema Username where
 instance ToSchema Username where
   declareNamedSchema = pure . NamedSchema (Just "Username") . paramSchemaToSchema
 
+deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
 deriving anyclass instance ToSchema IdentifierSpace
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Space instance ToSchema Desk

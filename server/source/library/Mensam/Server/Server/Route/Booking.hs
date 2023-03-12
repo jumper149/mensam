@@ -1,5 +1,6 @@
 module Mensam.Server.Server.Route.Booking where
 
+import Mensam.API.Aeson
 import Mensam.API.Route.Booking.Type
 import Mensam.API.User
 import Mensam.Server.Application.SeldaPool.Class
@@ -137,11 +138,11 @@ listDesks authUser eitherRequest =
     seldaResult <- runSeldaTransactionT $ do
       spaceIdentifier <-
         case requestDeskListSpace request of
-          Left spaceName ->
+          Name spaceName ->
             spaceLookupId spaceName >>= \case
               Nothing -> undefined
               Just spaceId -> pure spaceId
-          Right spaceId -> pure spaceId
+          Identifier spaceId -> pure spaceId
       deskList spaceIdentifier (userId user)
     case seldaResult of
       SeldaFailure _err -> do
