@@ -12,15 +12,13 @@ common language
     DeriveAnyClass
     DerivingStrategies
     DerivingVia
-    ExplicitNamespaces
-      -- ^ Is not implied by GHC2021, even though it should be.
     FunctionalDependencies
+    GADTs
     LambdaCase
     LexicalNegation
     NumDecimals
-    GADTs
-    TypeFamilies
     OverloadedStrings
+    TypeFamilies
   ghc-options:
     -Weverything
     -Wno-all-missed-specialisations
