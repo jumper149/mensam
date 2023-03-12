@@ -20,7 +20,7 @@ data Routes route = Routes
         :- Summary "Create Space"
           :> Description
               "Create a new space.\n\
-              \You will be an administrator of this newly created space."
+              \You will be an administrator of this newly created space.\n"
           :> "space"
           :> "create"
           :> Auth '[JWT] User
@@ -30,7 +30,7 @@ data Routes route = Routes
       route
         :- Summary "List Spaces"
           :> Description
-              "List visible spaces."
+              "List visible spaces.\n"
           :> "space"
           :> "list"
           :> Auth '[JWT] User
@@ -38,10 +38,11 @@ data Routes route = Routes
           :> UVerb POST '[JSON] [WithStatus 200 ResponseSpaceList, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeDeskCreate ::
       route
-        :- Summary "List Desks"
+        :- Summary "Create Desk"
           :> Description
               "Create a new desk.\n\
-              \This desk will belong to the given space."
+              \This desk will belong to the given space.\n\
+              \You have to be an administrator for that space to create desks.\n"
           :> "desk"
           :> "create"
           :> Auth '[JWT] User
@@ -51,7 +52,7 @@ data Routes route = Routes
       route
         :- Summary "List Desks"
           :> Description
-              "List desks."
+              "List desks.\n"
           :> "desk"
           :> "list"
           :> Auth '[JWT] User

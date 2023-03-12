@@ -13,14 +13,14 @@ data Routes route = Routes
       route
         :- Summary "View API documentation"
           :> Description
-              "View the OpenAPI documentation in a human-readabable format."
+              "View the OpenAPI documentation in a human-readabable format.\n"
           :> "openapi"
           :> Get '[HTML] Html
   , routeJson ::
       route
         :- Summary "OpenAPI definition"
           :> Description
-              "This OpenAPI definition is automatically generated."
+              "This OpenAPI definition is automatically generated.\n"
           :> "openapi"
           :> "json"
           :> Get '[JSON] OpenApi

@@ -18,7 +18,7 @@ data Routes route = Routes
       route
         :- Summary "Login"
           :> Description
-              "Login to your user account."
+              "Login to your user account.\n"
           :> "login"
           :> Auth '[BasicAuth, JWT] User
           :> UVerb GET '[JSON] [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
@@ -26,7 +26,7 @@ data Routes route = Routes
       route
         :- Summary "Register"
           :> Description
-              "Register a new user account."
+              "Register a new user account.\n"
           :> "register"
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister
           :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()]
@@ -34,7 +34,7 @@ data Routes route = Routes
       route
         :- Summary "Request User Profile"
           :> Description
-              "Request information for a user profile."
+              "Request information for a user profile.\n"
           :> "profile"
           :> QueryParam' '[Lenient, Required] "name" Username
           :> UVerb POST '[JSON] [WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 (), WithStatus 500 ()]
