@@ -4,6 +4,7 @@ import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
 import Mensam.Server.Route.Type qualified as Route
 import Mensam.Server.Route.User.Type qualified as Route.User
+import Mensam.User.Username
 
 import Brick
 import Brick.Forms
@@ -38,13 +39,13 @@ draw :: ClientState -> [Widget ClientName]
 draw = \case
   ClientStateLogin form -> [renderForm form]
   ClientStateRegister form -> [renderForm form]
-  _ -> [txt "Hello"]
+  ClientStateLoggedIn jwt -> [txt $ "Logged in: " <> jwt]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
   VtyEvent (EvKey KEsc []) -> halt
-  VtyEvent (EvKey (KChar '1') [MAlt]) -> put $ ClientStateRegister registerFormInitial
-  VtyEvent (EvKey (KChar '2') [MAlt]) -> put $ ClientStateLogin loginFormInitial
+  VtyEvent (EvKey (KChar '1') [MMeta]) -> put $ ClientStateRegister registerFormInitial
+  VtyEvent (EvKey (KChar '2') [MMeta]) -> put $ ClientStateLogin loginFormInitial
   event -> do
     clientState <- get
     case clientState of
@@ -78,7 +79,7 @@ handleEvent clientEnv = \case
                     flip runClientM clientEnv $
                       routes // Route.routeUser // Route.User.routeRegister $
                         Route.User.MkRequestRegister
-                          { Route.User.requestRegisterName = undefined $ registerInfo ^. registerInfoUsername
+                          { Route.User.requestRegisterName = MkUsernameUnsafe $ registerInfo ^. registerInfoUsername
                           , Route.User.requestRegisterPassword = registerInfo ^. registerInfoPassword
                           , Route.User.requestRegisterEmail = registerInfo ^. registerInfoEmail
                           , Route.User.requestRegisterEmailVisible = registerInfo ^. registerInfoEmailVisible
@@ -88,7 +89,7 @@ handleEvent clientEnv = \case
                     put $ ClientStateLogin loginFormInitial
                   _ -> pure ()
                 pure ()
-          _ -> zoom clientStateLoginForm $ handleFormEvent event
+          _ -> zoom clientStateRegisterForm $ handleFormEvent event
       _ -> pure ()
 
 chooseCursor :: ClientState -> [CursorLocation ClientName] -> Maybe (CursorLocation ClientName)
