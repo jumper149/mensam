@@ -103,24 +103,13 @@ spaceUserLookup space userIdentifier = do
 
 spaceUserAdd ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | space name or identifier
-  Either T.Text IdentifierSpace ->
+  IdentifierSpace ->
   IdentifierUser ->
   -- | user is admin?
   Bool ->
   SeldaTransactionT m ()
-spaceUserAdd space userIdentifier isAdmin = do
-  lift $ logDebug $ "Adding user " <> T.pack (show userIdentifier) <> " to space " <> T.pack (show space) <> "."
-  spaceIdentifier <-
-    case space of
-      Right spaceId -> pure spaceId
-      Left name ->
-        spaceLookupId name >>= \case
-          Just identifier -> pure identifier
-          Nothing -> do
-            let msg :: T.Text = "No matching space."
-            lift $ logWarn msg
-            throwM $ Selda.SqlError $ show msg
+spaceUserAdd spaceIdentifier userIdentifier isAdmin = do
+  lift $ logDebug $ "Adding user " <> T.pack (show userIdentifier) <> " to space " <> T.pack (show spaceIdentifier) <> "."
   let dbSpaceUser =
         MkDbSpaceUser
           { dbSpaceUser_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier

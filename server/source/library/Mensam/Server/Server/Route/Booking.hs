@@ -7,9 +7,12 @@ import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Booking
 import Mensam.Server.Server.Auth
 
+import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
+import Control.Monad.Trans.Class
 import Data.Text qualified as T
+import Database.Selda qualified as Selda
 import Servant hiding (BasicAuthResult (..))
 import Servant.Auth.Server
 import Servant.Server.Generic
@@ -45,7 +48,14 @@ createSpace authUser eitherRequest =
     logDebug $ "Received request to create space: " <> T.pack (show request)
     seldaResult <- runSeldaTransactionT $ do
       spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisible request)
-      spaceUserAdd (Left $ requestSpaceCreateName request) (userId user) True
+      spaceIdentifier <-
+        spaceLookupId (requestSpaceCreateName request) >>= \case
+          Just identifier -> pure identifier
+          Nothing -> do
+            let msg :: T.Text = "No matching space even though it was just created."
+            lift $ logError msg
+            throwM $ Selda.SqlError $ show msg
+      spaceUserAdd spaceIdentifier (userId user) True
     case seldaResult of
       SeldaFailure _err -> do
         -- TODO: Here we can theoretically return a more accurate error
