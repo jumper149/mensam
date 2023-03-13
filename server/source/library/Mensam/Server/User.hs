@@ -17,6 +17,7 @@ import Data.Text qualified as T
 import Database.Selda qualified as Selda
 import GHC.Generics
 import Text.Email.Parser
+import Text.Email.Text
 
 type AuthenticationError :: Type
 data AuthenticationError

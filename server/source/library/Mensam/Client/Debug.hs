@@ -4,7 +4,6 @@ import Mensam.API.Aeson
 import Mensam.API.Route.Booking.Type qualified as Route.Booking
 import Mensam.API.Route.Type qualified as Route
 import Mensam.API.Route.User.Type qualified as Route.User
-import Mensam.API.User
 import Mensam.API.User.Username
 import Mensam.Client.OrphanInstances
 
@@ -17,6 +16,7 @@ import Servant
 import Servant.Client
 import Servant.RawM.Client ()
 import Text.Email.Parser
+import Text.Email.Text
 
 routes :: Route.Routes (AsClientT ClientM)
 routes = client $ Proxy @(NamedRoutes Route.Routes)

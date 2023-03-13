@@ -3,7 +3,6 @@ module Mensam.Client.Brick where
 import Mensam.API.Route.Booking.Type qualified as Route.Booking
 import Mensam.API.Route.Type qualified as Route
 import Mensam.API.Route.User.Type qualified as Route.User
-import Mensam.API.User
 import Mensam.API.User.Username
 import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
@@ -19,6 +18,7 @@ import Network.HTTP.Client qualified as Network
 import Servant
 import Servant.Client
 import Servant.RawM.Client ()
+import Text.Email.Text
 
 runBrick :: IO ()
 runBrick = do

@@ -157,6 +157,8 @@ library
     , Deriving.Aeson.OrphanInstances
     , Servant.Auth.OrphanInstances
     , System.Posix.Signals.Patterns
+    , Text.Email.OrphanInstances
+    , Text.Email.Text
   hs-source-dirs: source/library
 
 executable mensam-test
