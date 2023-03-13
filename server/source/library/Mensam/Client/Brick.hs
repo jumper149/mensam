@@ -1,5 +1,6 @@
 module Mensam.Client.Brick where
 
+import Mensam.API.Order
 import Mensam.API.Route.Booking.Type qualified as Route.Booking
 import Mensam.API.Route.Type qualified as Route
 import Mensam.API.Route.User.Type qualified as Route.User
@@ -101,7 +102,7 @@ handleEvent clientEnv = \case
                 flip runClientM clientEnv $
                   (routes // Route.routeBooking // Route.Booking.routeSpaceList)
                     (DataJWT $ MkJWToken jwt)
-                    (Route.Booking.MkRequestSpaceList ())
+                    (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
             case result of
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) ->
                 put $ ClientStateLoggedIn jwt xs

@@ -5,6 +5,7 @@ module Mensam.Server.OpenApi where
 import Mensam.API.API
 import Mensam.API.Aeson
 import Mensam.API.Desk
+import Mensam.API.Order
 import Mensam.API.Route.Booking.Type qualified as Booking
 import Mensam.API.Route.User.Type qualified as User
 import Mensam.API.Space
@@ -56,6 +57,12 @@ deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
 deriving anyclass instance ToSchema IdentifierSpace
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Space instance ToSchema Desk
+
+deriving via A.CustomJSON (JSONSettings "" "") Order instance ToSchema Order
+deriving via A.CustomJSON (JSONSettings "Mk" "orderByCategory") (OrderByCategory a) instance ToSchema a => ToSchema (OrderByCategory a)
+
+deriving via A.CustomJSON (JSONSettings "SpaceOrderCategory" "") SpaceOrderCategory instance ToSchema SpaceOrderCategory
+deriving newtype instance ToSchema a => ToSchema (OrderByCategories a)
 
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseLogin") User.ResponseLogin instance ToSchema User.ResponseLogin
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") User.RequestRegister instance ToSchema User.RequestRegister

@@ -3,6 +3,7 @@
 module Mensam.Server.Booking where
 
 import Mensam.API.Desk
+import Mensam.API.Order
 import Mensam.API.Space
 import Mensam.API.User
 import Mensam.Server.Application.SeldaPool.Class
@@ -39,14 +40,19 @@ spaceLookupId name = do
 spaceList ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
+  OrderByCategories SpaceOrderCategory ->
   SeldaTransactionT m [Space]
-spaceList userIdentifier = do
+spaceList userIdentifier spaceOrder = do
   lift $ logDebug $ "Looking up spaces visible by user: " <> T.pack (show userIdentifier)
   dbSpaces <- Selda.query $ do
     dbSpaceUser <- Selda.select tableSpaceUser
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
     dbSpace <- Selda.select tableSpace
     Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_space
+    let categorySelector = \case
+          SpaceOrderCategoryId -> Selda.MkSomeCol $ dbSpace Selda.! #dbSpace_id
+          SpaceOrderCategoryName -> Selda.MkSomeCol $ dbSpace Selda.! #dbSpace_name
+    Selda.orderFlexible categorySelector spaceOrder
     pure dbSpace
   lift $ logInfo "Looked up visible spaces successfully."
   let fromDbSpace space =

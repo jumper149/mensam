@@ -2,6 +2,7 @@ module Mensam.API.Route.Booking.Type where
 
 import Mensam.API.Aeson
 import Mensam.API.Desk
+import Mensam.API.Order
 import Mensam.API.Space
 import Mensam.API.User
 
@@ -73,7 +74,7 @@ data RequestSpaceCreate = MkRequestSpaceCreate
 
 type RequestSpaceList :: Type
 newtype RequestSpaceList = MkRequestSpaceList
-  { requestSpaceList :: ()
+  { requestSpaceListOrder :: OrderByCategories SpaceOrderCategory
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
