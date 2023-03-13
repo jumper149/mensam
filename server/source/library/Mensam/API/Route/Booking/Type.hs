@@ -26,7 +26,7 @@ data Routes route = Routes
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
-          :> UVerb PUT '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+          :> UVerb PUT '[JSON] [WithStatus 201 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeSpaceList ::
       route
         :- Summary "List Spaces"
@@ -48,7 +48,7 @@ data Routes route = Routes
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate
-          :> UVerb PUT '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+          :> UVerb PUT '[JSON] [WithStatus 201 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeDeskList ::
       route
         :- Summary "List Desks"

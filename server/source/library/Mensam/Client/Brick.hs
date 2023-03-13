@@ -89,7 +89,7 @@ handleEvent clientEnv = \case
                           , Route.User.requestRegisterEmailVisible = registerInfo ^. registerInfoEmailVisible
                           }
                 case result of
-                  Right (Z (I (WithStatus @200 ()))) ->
+                  Right (Z (I (WithStatus @201 ()))) ->
                     put $ ClientStateLogin loginFormInitial
                   _ -> pure ()
                 pure ()

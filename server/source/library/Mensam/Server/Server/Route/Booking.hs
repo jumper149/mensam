@@ -32,7 +32,7 @@ createSpace ::
   ( MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
-  , IsMember (WithStatus 200 ()) responses
+  , IsMember (WithStatus 201 ()) responses
   , IsMember (WithStatus 400 ()) responses
   , IsMember (WithStatus 401 ()) responses
   , IsMember (WithStatus 500 ()) responses
@@ -63,7 +63,7 @@ createSpace authUser eitherRequest =
         respond $ WithStatus @500 ()
       SeldaSuccess () -> do
         logInfo "Created space."
-        respond $ WithStatus @200 ()
+        respond $ WithStatus @201 ()
 
 listSpaces ::
   ( MonadIO m
@@ -98,7 +98,7 @@ createDesk ::
   ( MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
-  , IsMember (WithStatus 200 ()) responses
+  , IsMember (WithStatus 201 ()) responses
   , IsMember (WithStatus 400 ()) responses
   , IsMember (WithStatus 401 ()) responses
   , IsMember (WithStatus 500 ()) responses
@@ -135,7 +135,7 @@ createDesk authUser eitherRequest =
         respond $ WithStatus @500 ()
       SeldaSuccess () -> do
         logInfo "Created desk."
-        respond $ WithStatus @200 ()
+        respond $ WithStatus @201 ()
 
 listDesks ::
   ( MonadIO m

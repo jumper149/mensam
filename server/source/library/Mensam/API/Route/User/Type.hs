@@ -30,7 +30,7 @@ data Routes route = Routes
               "Register a new user account.\n"
           :> "register"
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister
-          :> UVerb PUT '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()]
+          :> UVerb POST '[JSON] [WithStatus 201 (), WithStatus 400 (), WithStatus 500 ()]
   , routeProfile ::
       route
         :- Summary "Request User Profile"

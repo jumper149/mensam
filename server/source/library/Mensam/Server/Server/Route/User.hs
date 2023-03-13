@@ -62,7 +62,7 @@ register ::
   ( MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
-  , IsMember (WithStatus 200 ()) responses
+  , IsMember (WithStatus 201 ()) responses
   , IsMember (WithStatus 400 ()) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -89,7 +89,7 @@ register eitherRequest =
           respond $ WithStatus @500 ()
         SeldaSuccess () -> do
           logInfo "Registered new user."
-          respond $ WithStatus @200 ()
+          respond $ WithStatus @201 ()
 
 profile ::
   ( MonadIO m
