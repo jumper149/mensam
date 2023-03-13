@@ -30,7 +30,7 @@ data Routes route = Routes
               "Register a new user account.\n"
           :> "register"
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister
-          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()]
+          :> UVerb PUT '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 500 ()]
   , routeProfile ::
       route
         :- Summary "Request User Profile"
@@ -38,7 +38,7 @@ data Routes route = Routes
               "Request information for a user profile.\n"
           :> "profile"
           :> QueryParam' '[Lenient, Required] "name" Username
-          :> UVerb POST '[JSON] [WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 (), WithStatus 500 ()]
+          :> UVerb GET '[JSON] [WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 (), WithStatus 500 ()]
   }
   deriving stock (Generic)
 

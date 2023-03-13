@@ -25,7 +25,7 @@ data Routes route = Routes
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
-          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+          :> UVerb PUT '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeSpaceList ::
       route
         :- Summary "List Spaces"
@@ -35,7 +35,7 @@ data Routes route = Routes
           :> "list"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceList
-          :> UVerb POST '[JSON] [WithStatus 200 ResponseSpaceList, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+          :> UVerb GET '[JSON] [WithStatus 200 ResponseSpaceList, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeDeskCreate ::
       route
         :- Summary "Create Desk"
@@ -47,7 +47,7 @@ data Routes route = Routes
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate
-          :> UVerb POST '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+          :> UVerb PUT '[JSON] [WithStatus 200 (), WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   , routeDeskList ::
       route
         :- Summary "List Desks"
@@ -57,7 +57,7 @@ data Routes route = Routes
           :> "list"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskList
-          :> UVerb POST '[JSON] [WithStatus 200 ResponseDeskList, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+          :> UVerb GET '[JSON] [WithStatus 200 ResponseDeskList, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   }
   deriving stock (Generic)
 
