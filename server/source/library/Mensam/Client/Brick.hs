@@ -10,6 +10,8 @@ import Mensam.Client.OrphanInstances
 
 import Brick
 import Brick.Forms
+import Brick.Widgets.Border
+import Brick.Widgets.Center
 import Control.Monad.IO.Class
 import Data.SOP
 import Data.Text qualified as T
@@ -41,9 +43,9 @@ runBrick = do
 
 draw :: ClientState -> [Widget ClientName]
 draw = \case
-  ClientStateLogin form -> [renderForm form]
-  ClientStateRegister form -> [renderForm form]
-  ClientStateLoggedIn jwt spaces -> [txt $ "Logged in: " <> jwt <> "\n" <> T.pack (show spaces)]
+  ClientStateLogin form -> [centerLayer $ border $ renderForm form, hCenter $ txt "Login"]
+  ClientStateRegister form -> [centerLayer $ border $ renderForm form, hCenter $ txt "Register"]
+  ClientStateLoggedIn jwt spaces -> [centerLayer $ border $ txt $ T.pack $ show spaces, txt $ "Logged in: " <> jwt]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
