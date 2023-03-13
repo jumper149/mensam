@@ -56,7 +56,8 @@ instance ToSchema Username where
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
 deriving anyclass instance ToSchema IdentifierSpace
-deriving via A.CustomJSON (JSONSettings "Mk" "desk") Space instance ToSchema Desk
+deriving via A.CustomJSON (JSONSettings "Mk" "desk") Desk instance ToSchema Desk
+deriving anyclass instance ToSchema IdentifierDesk
 
 deriving via A.CustomJSON (JSONSettings "" "") Order instance ToSchema Order
 deriving via A.CustomJSON (JSONSettings "Mk" "orderByCategory") (OrderByCategory a) instance ToSchema a => ToSchema (OrderByCategory a)
