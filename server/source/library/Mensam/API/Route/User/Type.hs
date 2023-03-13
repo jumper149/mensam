@@ -11,6 +11,7 @@ import Deriving.Aeson qualified as A
 import GHC.Generics
 import Servant.API hiding (BasicAuth)
 import Servant.Auth
+import Text.Email.Parser
 
 type Routes :: Type -> Type
 data Routes route = Routes
@@ -54,7 +55,7 @@ type RequestRegister :: Type
 data RequestRegister = MkRequestRegister
   { requestRegisterName :: Username
   , requestRegisterPassword :: T.Text
-  , requestRegisterEmail :: T.Text
+  , requestRegisterEmail :: EmailAddress
   , requestRegisterEmailVisible :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -66,7 +67,7 @@ type ResponseProfile :: Type
 data ResponseProfile = MkResponseProfile
   { responseProfileId :: T.Text -- TODO: Use better type.
   , responseProfileName :: Username
-  , responseProfileEmail :: T.Text
+  , responseProfileEmail :: EmailAddress
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

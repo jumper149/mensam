@@ -16,6 +16,7 @@ import Data.Password.Bcrypt
 import Data.Text qualified as T
 import Database.Selda qualified as Selda
 import GHC.Generics
+import Text.Email.Parser
 
 type AuthenticationError :: Type
 data AuthenticationError
@@ -42,7 +43,7 @@ userAuthenticate username password = do
           MkUser
             { userId = MkIdentifierUser $ Selda.fromId $ dbUser_id dbUser
             , userName = username
-            , userEmail = dbUser_email dbUser
+            , userEmail = fromTextUnsafe $ dbUser_email dbUser
             }
         passwordHash = PasswordHash $ dbUser_password_hash dbUser
       lift $ logDebug $ "Queried user " <> T.pack (show user) <> " from database for password authentication. Checking password now."
@@ -87,19 +88,18 @@ userGet identifier = do
     MkUser
       { userId = MkIdentifierUser $ Selda.fromId $ dbUser_id dbUser
       , userName = MkUsernameUnsafe $ dbUser_name dbUser
-      , userEmail = dbUser_email dbUser
+      , userEmail = fromTextUnsafe $ dbUser_email dbUser
       }
 
 userCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Username ->
   Password ->
-  -- | email
-  T.Text ->
-  -- | email visible
+  EmailAddress ->
+  -- | email address visible
   Bool ->
   SeldaTransactionT m ()
-userCreate username password email emailVisible = do
+userCreate username password emailAddress emailAddressVisible = do
   lift $ logDebug "Creating user."
   passwordHash :: PasswordHash Bcrypt <- hashPassword password
   let dbUser =
@@ -107,8 +107,8 @@ userCreate username password email emailVisible = do
           { dbUser_id = Selda.def
           , dbUser_name = unUsername username
           , dbUser_password_hash = unPasswordHash passwordHash
-          , dbUser_email = email
-          , dbUser_email_visible = emailVisible
+          , dbUser_email = toText emailAddress
+          , dbUser_email_visible = emailAddressVisible
           }
   lift $ logDebug "Inserting user into database."
   Selda.insert_ tableUser [dbUser]

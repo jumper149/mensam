@@ -3,6 +3,7 @@ module Mensam.Client.Brick where
 import Mensam.API.Route.Booking.Type qualified as Route.Booking
 import Mensam.API.Route.Type qualified as Route
 import Mensam.API.Route.User.Type qualified as Route.User
+import Mensam.API.User
 import Mensam.API.User.Username
 import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
@@ -83,7 +84,7 @@ handleEvent clientEnv = \case
                         Route.User.MkRequestRegister
                           { Route.User.requestRegisterName = MkUsernameUnsafe $ registerInfo ^. registerInfoUsername
                           , Route.User.requestRegisterPassword = registerInfo ^. registerInfoPassword
-                          , Route.User.requestRegisterEmail = registerInfo ^. registerInfoEmail
+                          , Route.User.requestRegisterEmail = fromTextUnsafe $ registerInfo ^. registerInfoEmail
                           , Route.User.requestRegisterEmailVisible = registerInfo ^. registerInfoEmailVisible
                           }
                 case result of

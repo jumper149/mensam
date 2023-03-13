@@ -20,6 +20,7 @@ import Servant.Auth.OrphanInstances ()
 import Servant.OpenApi
 import Servant.RawM
 import Text.Blaze.Html qualified as Blaze
+import Text.Email.Parser
 
 openapi :: OpenApi
 openapi =
@@ -50,6 +51,14 @@ instance ToParamSchema Username where
       & Data.OpenApi.pattern ?~ "^[a-zA-Z0-9]{4,32}$"
 instance ToSchema Username where
   declareNamedSchema = pure . NamedSchema (Just "Username") . paramSchemaToSchema
+
+instance ToSchema EmailAddress where
+  declareNamedSchema Proxy =
+    pure $
+      NamedSchema (Just "EmailAddress") $
+        mempty
+          & type_ ?~ OpenApiString
+          & format ?~ "email"
 
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space

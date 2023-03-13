@@ -4,6 +4,7 @@ import Mensam.API.Aeson
 import Mensam.API.Route.Booking.Type qualified as Route.Booking
 import Mensam.API.Route.Type qualified as Route
 import Mensam.API.Route.User.Type qualified as Route.User
+import Mensam.API.User
 import Mensam.API.User.Username
 import Mensam.Client.OrphanInstances
 
@@ -15,6 +16,7 @@ import Network.HTTP.Client qualified as Network
 import Servant
 import Servant.Client
 import Servant.RawM.Client ()
+import Text.Email.Parser
 
 routes :: Route.Routes (AsClientT ClientM)
 routes = client $ Proxy @(NamedRoutes Route.Routes)
@@ -38,7 +40,7 @@ f = do
   let
     name :: Username = MkUsernameUnsafe "maxmustermann7"
     pw :: T.Text = "asdf"
-    email :: T.Text = "maxmustermann@gmail.com"
+    email :: EmailAddress = fromTextUnsafe "maxmustermann@gmail.com"
     spacename :: T.Text = "solarsystem"
 
   liftIO $ putStrLn "Register."

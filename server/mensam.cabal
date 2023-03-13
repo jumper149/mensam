@@ -51,6 +51,7 @@ common dependencies
     , containers
     , deriving-aeson
     , deriving-trans
+    , email-validate
     , exceptions
     , hashable
     , http-client
