@@ -4,6 +4,7 @@ import Mensam.API.Order
 import Mensam.API.Route.Booking.Type qualified as Route.Booking
 import Mensam.API.Route.Type qualified as Route
 import Mensam.API.Route.User.Type qualified as Route.User
+import Mensam.API.Space
 import Mensam.API.User.Username
 import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
@@ -12,6 +13,7 @@ import Brick
 import Brick.Forms
 import Brick.Widgets.Border
 import Brick.Widgets.Center
+import Brick.Widgets.Table
 import Control.Monad.IO.Class
 import Data.SOP
 import Data.Text qualified as T
@@ -45,7 +47,7 @@ draw :: ClientState -> [Widget ClientName]
 draw = \case
   ClientStateLogin form -> [centerLayer $ border $ renderForm form, hCenter $ txt "Login"]
   ClientStateRegister form -> [centerLayer $ border $ renderForm form, hCenter $ txt "Register"]
-  ClientStateLoggedIn jwt spaces -> [centerLayer $ border $ txt $ T.pack $ show spaces, txt $ "Logged in: " <> jwt]
+  ClientStateLoggedIn jwt spaces -> [centerLayer $ renderTable $ table ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces), txt $ "Logged in: " <> jwt]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
