@@ -45,9 +45,9 @@ runBrick = do
 
 draw :: ClientState -> [Widget ClientName]
 draw = \case
-  ClientStateLogin form -> [centerLayer $ border $ renderForm form, hCenter $ txt "Login"]
-  ClientStateRegister form -> [centerLayer $ border $ renderForm form, hCenter $ txt "Register"]
-  ClientStateLoggedIn jwt spaces -> [centerLayer $ renderTable $ table ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces), txt $ "Logged in: " <> jwt]
+  ClientStateLogin form -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Login"]
+  ClientStateRegister form -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Register"]
+  ClientStateLoggedIn jwt spaces -> [hCenter (txt "Logged in") <=> hCenter (txt jwt) <=> borderWithLabel (txt "Spaces") (padBottom Max $ padRight Max $ renderTable $ table $ [txt "id", txt "name"] : ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces))]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
