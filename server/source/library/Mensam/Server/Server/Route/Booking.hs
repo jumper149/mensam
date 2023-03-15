@@ -195,20 +195,23 @@ createReservation authUser eitherRequest = do
         permission <- spaceUserLookup (deskSpace desk) (userId user)
         case permission of
           Nothing -> error "No permission."
-          Just _ ->
-            reservationCreate
-              deskIdentifier
-              (userId user)
-              (requestReservationCreateTimeBegin request)
-              (requestReservationCreateTimeEnd request)
-        pure undefined
+          Just _ -> do
+            reservations <- reservationList deskIdentifier (Just $ requestReservationCreateTimeEnd request) (Just $ requestReservationCreateTimeBegin request)
+            case reservations of
+              _ : _ -> error "Already reserved."
+              [] ->
+                reservationCreate
+                  deskIdentifier
+                  (userId user)
+                  (requestReservationCreateTimeBegin request)
+                  (requestReservationCreateTimeEnd request)
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to create desk."
+          logWarn "Failed to create reservation."
           respond $ WithStatus @500 ()
         SeldaSuccess () -> do
-          logInfo "Created desk."
+          logInfo "Created reservation."
           respond $ WithStatus @201 $ MkResponseReservationCreate ()
 
 handleBadRequestBody ::

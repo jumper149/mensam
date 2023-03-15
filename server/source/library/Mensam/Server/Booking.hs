@@ -13,6 +13,7 @@ import Mensam.Server.Database.Schema
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
+import Data.Kind
 import Data.Text qualified as T
 import Data.Time qualified as T
 import Database.Selda qualified as Selda
@@ -194,6 +195,39 @@ deskGet identifier = do
       , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space dbDesk
       , deskName = dbDesk_name dbDesk
       }
+
+-- | List all reservations of a desk, that overlap with the given time window.
+reservationList ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierDesk ->
+  -- | minimum timestamp begin
+  Maybe T.UTCTime ->
+  -- | maximum timestamp end
+  Maybe T.UTCTime ->
+  SeldaTransactionT m [Reservation]
+reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd = do
+  lift $ logDebug $ "Looking up reservations: " <> T.pack (show (deskIdentifier, maybeTimestampBegin, maybeTimestampEnd))
+  dbReservations <- Selda.query $ do
+    dbReservation <- Selda.select tableReservation
+    Selda.restrict $ dbReservation Selda.! #dbReservation_desk Selda..== Selda.literal (Selda.toId @DbDesk $ unIdentifierDesk deskIdentifier)
+    case maybeTimestampBegin of
+      Nothing -> pure ()
+      Just timestampBegin ->
+        Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..> Selda.literal timestampBegin
+    case maybeTimestampEnd of
+      Nothing -> pure ()
+      Just timestampBegin ->
+        Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..< Selda.literal timestampBegin
+    pure dbReservation
+  lift $ logInfo "Looked up reservations successfully."
+  let toReservation
+        MkDbReservation
+          {
+          } = MkReservation ()
+  pure $ toReservation <$> dbReservations
+
+type Reservation :: Type
+newtype Reservation = MkReservation ()
 
 reservationCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

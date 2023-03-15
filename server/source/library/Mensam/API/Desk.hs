@@ -11,8 +11,8 @@ import GHC.Generics
 type Desk :: Type
 data Desk = MkDesk
   { deskId :: IdentifierDesk
-  , deskName :: T.Text
   , deskSpace :: IdentifierSpace
+  , deskName :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
