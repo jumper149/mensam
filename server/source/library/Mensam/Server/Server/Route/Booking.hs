@@ -190,7 +190,11 @@ createReservation authUser eitherRequest = do
                 Nothing -> undefined
                 Just deskId -> pure deskId
             Identifier deskId -> pure deskId
-        reservationCreate deskIdentifier (userId user) (requestReservationCreateTimeBegin request) (requestReservationCreateTimeEnd request)
+        reservationCreate
+          deskIdentifier
+          (userId user)
+          (requestReservationCreateTimeBegin request)
+          (requestReservationCreateTimeEnd request)
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
