@@ -1,6 +1,7 @@
 module Mensam.Server.Server.Route.Booking where
 
 import Mensam.API.Aeson
+import Mensam.API.Desk
 import Mensam.API.Route.Booking.Type
 import Mensam.API.User
 import Mensam.Server.Application.SeldaPool.Class
@@ -190,11 +191,17 @@ createReservation authUser eitherRequest = do
                 Nothing -> undefined
                 Just deskId -> pure deskId
             Identifier deskId -> pure deskId
-        reservationCreate
-          deskIdentifier
-          (userId user)
-          (requestReservationCreateTimeBegin request)
-          (requestReservationCreateTimeEnd request)
+        desk <- deskGet deskIdentifier
+        permission <- spaceUserLookup (deskSpace desk) (userId user)
+        case permission of
+          Nothing -> error "No permission."
+          Just _ ->
+            reservationCreate
+              deskIdentifier
+              (userId user)
+              (requestReservationCreateTimeBegin request)
+              (requestReservationCreateTimeEnd request)
+        pure undefined
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error

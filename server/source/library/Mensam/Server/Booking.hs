@@ -154,6 +154,7 @@ deskList spaceIdentifier userIdentifier = do
   let fromDbDesk desk =
         MkDesk
           { deskId = MkIdentifierDesk $ Selda.fromId @DbDesk $ dbDesk_id desk
+          , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space desk
           , deskName = dbDesk_name desk
           }
   pure $ fromDbDesk <$> dbDesks
@@ -175,6 +176,24 @@ deskCreate deskName spaceIdentifier = do
   lift $ logDebug "Inserting desk into database."
   Selda.insert_ tableDesk [dbDesk]
   lift $ logInfo "Created desk successfully."
+
+deskGet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierDesk ->
+  SeldaTransactionT m Desk
+deskGet identifier = do
+  lift $ logDebug $ "Get desk info with identifier: " <> T.pack (show identifier)
+  dbDesk <- Selda.queryOne $ do
+    dbDesk <- Selda.select tableDesk
+    Selda.restrict $ dbDesk Selda.! #dbDesk_id Selda..== Selda.literal (Selda.toId @DbDesk $ unIdentifierDesk identifier)
+    pure dbDesk
+  lift $ logInfo "Got desk info successfully."
+  pure
+    MkDesk
+      { deskId = MkIdentifierDesk $ Selda.fromId $ dbDesk_id dbDesk
+      , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space dbDesk
+      , deskName = dbDesk_name dbDesk
+      }
 
 reservationCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

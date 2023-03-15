@@ -1,5 +1,7 @@
 module Mensam.API.Desk where
 
+import Mensam.API.Space
+
 import Data.Aeson qualified as A
 import Data.Int
 import Data.Kind
@@ -10,6 +12,7 @@ type Desk :: Type
 data Desk = MkDesk
   { deskId :: IdentifierDesk
   , deskName :: T.Text
+  , deskSpace :: IdentifierSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
