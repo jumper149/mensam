@@ -26,6 +26,7 @@ handler =
     , routeSpaceList = listSpaces
     , routeDeskCreate = createDesk
     , routeDeskList = listDesks
+    , routeReservationCreate = createReservation
     }
 
 createSpace ::
@@ -172,3 +173,39 @@ listDesks authUser eitherRequest =
       SeldaSuccess desks -> do
         logInfo "Listed desks."
         respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desks}
+
+createReservation ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 201 ResponseReservationCreate) responses
+  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult User ->
+  Either String RequestReservationCreate ->
+  m (Union responses)
+createReservation authUser eitherRequest = do
+  handleAuth authUser $ \user -> do
+    request <- case eitherRequest of
+      Left _err -> undefined
+      Right request -> pure request
+    logDebug $ "Received request to create reservation: " <> T.pack (show request)
+    seldaResult <- runSeldaTransactionT $ do
+      deskIdentifier <-
+        case requestReservationCreateDesk request of
+          Name deskName ->
+            deskLookupId deskName >>= \case
+              Nothing -> undefined
+              Just deskId -> pure deskId
+          Identifier deskId -> pure deskId
+      reservationCreate deskIdentifier (userId user) (requestReservationCreateTimeBegin request) (requestReservationCreateTimeEnd request)
+    case seldaResult of
+      SeldaFailure _err -> do
+        -- TODO: Here we can theoretically return a more accurate error
+        logWarn "Failed to create desk."
+        respond $ WithStatus @500 ()
+      SeldaSuccess () -> do
+        logInfo "Created desk."
+        respond $ WithStatus @201 $ MkResponseReservationCreate ()

@@ -9,6 +9,7 @@ import Mensam.API.User
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.Text qualified as T
+import Data.Time qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
 import Servant.API hiding (BasicAuth)
@@ -59,6 +60,17 @@ data Routes route = Routes
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskList
           :> UVerb GET '[JSON] [WithStatus 200 ResponseDeskList, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+  , routeReservationCreate ::
+      route
+        :- Summary "Create Reservation"
+          :> Description
+              "Request a desk reservation.\n\
+              \A desk can only be reserved by one user at any time.\n"
+          :> "reservation"
+          :> "create"
+          :> Auth '[JWT] User
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationCreate
+          :> UVerb PUT '[JSON] [WithStatus 201 ResponseReservationCreate, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
   }
   deriving stock (Generic)
 
@@ -117,3 +129,23 @@ newtype ResponseDeskList = MkResponseDeskList
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") ResponseDeskList
+
+type RequestReservationCreate :: Type
+data RequestReservationCreate = MkRequestReservationCreate
+  { requestReservationCreateDesk :: NameOrIdentifier T.Text IdentifierDesk
+  , requestReservationCreateTimeBegin :: T.UTCTime
+  , requestReservationCreateTimeEnd :: T.UTCTime
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") RequestReservationCreate
+
+type ResponseReservationCreate :: Type
+newtype ResponseReservationCreate = MkResponseReservationCreate
+  { responseReservationCreateUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCreate") ResponseReservationCreate

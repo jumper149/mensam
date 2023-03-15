@@ -10,7 +10,6 @@ import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
 
-import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
@@ -115,6 +114,25 @@ spaceUserAdd spaceIdentifier userIdentifier isAdmin = do
   Selda.insert_ tableSpaceUser [dbSpaceUser]
   lift $ logInfo "Created space-user connection successfully."
 
+deskLookupId ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  -- | name
+  T.Text ->
+  SeldaTransactionT m (Maybe IdentifierDesk)
+deskLookupId name = do
+  lift $ logDebug $ "Looking up desk identifier with name: " <> T.pack (show name)
+  maybeDbId <- Selda.queryUnique $ do
+    dbDesk <- Selda.select tableDesk
+    Selda.restrict $ dbDesk Selda.! #dbDesk_name Selda..== Selda.literal name
+    pure $ dbDesk Selda.! #dbDesk_id
+  case maybeDbId of
+    Nothing -> do
+      lift $ logWarn $ "Failed to look up desk. Name doesn't exist: " <> T.pack (show name)
+      pure Nothing
+    Just dbId -> do
+      lift $ logInfo "Looked up desk successfully."
+      pure $ Just $ MkIdentifierDesk $ Selda.fromId @DbDesk dbId
+
 deskList ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
@@ -147,71 +165,33 @@ deskCreate ::
   IdentifierSpace ->
   SeldaTransactionT m ()
 deskCreate deskName spaceIdentifier = do
-  lift $ logDebug "Creating new desk."
+  lift $ logDebug "Creating desk."
   let dbDesk =
         MkDbDesk
           { dbDesk_id = Selda.def
           , dbDesk_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbDesk_name = deskName
           }
-  lift $ logDebug "Inserting new desk into database."
+  lift $ logDebug "Inserting desk into database."
   Selda.insert_ tableDesk [dbDesk]
-  lift $ logInfo "Created new desk successfully."
+  lift $ logInfo "Created desk successfully."
 
 reservationCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | space name
-  T.Text ->
-  -- | desk name
-  T.Text ->
-  -- | user name
-  T.Text ->
+  IdentifierDesk ->
+  IdentifierUser ->
   -- | timestamp begin
   T.UTCTime ->
   -- | timestamp end
   T.UTCTime ->
   SeldaTransactionT m ()
-reservationCreate spaceName deskName userName timestampBegin timestampEnd = do
-  lift $ logDebug "Creating new reservation."
-  dbSpace_id <- do
-    maybeSpaceId <- Selda.queryUnique $ do
-      space <- Selda.select tableSpace
-      Selda.restrict $ space Selda.! #dbSpace_name Selda..== Selda.literal spaceName
-      pure $ space Selda.! #dbSpace_id
-    case maybeSpaceId of
-      Nothing -> do
-        let msg :: T.Text = "No matching space."
-        lift $ logWarn msg
-        throwM $ Selda.SqlError $ show msg
-      Just spaceId -> pure spaceId
-  dbDesk_id <- do
-    maybeDeskId <- Selda.queryUnique $ do
-      desk <- Selda.select tableDesk
-      Selda.restrict $ desk Selda.! #dbDesk_space Selda..== Selda.literal dbSpace_id
-      Selda.restrict $ desk Selda.! #dbDesk_name Selda..== Selda.literal deskName
-      pure $ desk Selda.! #dbDesk_id
-    case maybeDeskId of
-      Nothing -> do
-        let msg :: T.Text = "No matching desk."
-        lift $ logWarn msg
-        throwM $ Selda.SqlError $ show msg
-      Just deskId -> pure deskId
-  dbUser_id <- do
-    maybeUserId <- Selda.queryUnique $ do
-      user <- Selda.select tableUser
-      Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal userName
-      pure $ user Selda.! #dbUser_id
-    case maybeUserId of
-      Nothing -> do
-        let msg :: T.Text = "No matching user."
-        lift $ logWarn msg
-        throwM $ Selda.SqlError $ show msg
-      Just userId -> pure userId
+reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
+  lift $ logDebug "Creating reservation."
   let dbReservation =
         MkDbReservation
           { dbReservation_id = Selda.def
-          , dbReservation_desk = dbDesk_id
-          , dbReservation_user = dbUser_id
+          , dbReservation_desk = Selda.toId @DbDesk $ unIdentifierDesk deskIdentifier
+          , dbReservation_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
           , dbReservation_time_begin = timestampBegin
           , dbReservation_time_end = timestampEnd
           }
