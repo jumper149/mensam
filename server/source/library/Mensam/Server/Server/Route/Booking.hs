@@ -196,15 +196,11 @@ createReservation authUser eitherRequest = do
         case permission of
           Nothing -> error "No permission."
           Just _ -> do
-            reservations <- reservationList deskIdentifier (Just $ requestReservationCreateTimeEnd request) (Just $ requestReservationCreateTimeBegin request)
-            case reservations of
-              _ : _ -> error "Already reserved."
-              [] ->
-                reservationCreate
-                  deskIdentifier
-                  (userId user)
-                  (requestReservationCreateTimeBegin request)
-                  (requestReservationCreateTimeEnd request)
+            reservationCreate
+              deskIdentifier
+              (userId user)
+              (requestReservationCreateTimeBegin request)
+              (requestReservationCreateTimeEnd request)
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error

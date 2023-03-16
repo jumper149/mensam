@@ -10,6 +10,7 @@ import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
 
+import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
@@ -240,6 +241,13 @@ reservationCreate ::
   SeldaTransactionT m ()
 reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   lift $ logDebug "Creating reservation."
+  reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd)
+  case reservations of
+    _ : _ -> do
+      let message :: T.Text = "Desk is already reserved."
+      lift $ logWarn message
+      throwM $ Selda.SqlError $ T.unpack "Desk is already reserved."
+    [] -> lift $ logDebug "Desk is still free."
   let dbReservation =
         MkDbReservation
           { dbReservation_id = Selda.def
@@ -251,4 +259,3 @@ reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   lift $ logDebug "Inserting reservation into database."
   Selda.insert_ tableReservation [dbReservation]
   lift $ logInfo "Created reservation successfully."
-  pure ()
