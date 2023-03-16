@@ -202,10 +202,14 @@ createReservation authUser eitherRequest = do
               (requestReservationCreateTimeBegin request)
               (requestReservationCreateTimeEnd request)
       case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
+        SeldaFailure someException -> do
           logWarn "Failed to create reservation."
-          respond $ WithStatus @500 ()
+          case fromException someException of
+            Just MkSqlErrorMensamDeskAlreadyReserved ->
+              respond $ WithStatus @400 () -- TODO: Send error with "Already reserved.".
+            Nothing -> do
+              -- TODO: Here we can theoretically return a more accurate error
+              respond $ WithStatus @500 ()
         SeldaSuccess () -> do
           logInfo "Created reservation."
           respond $ WithStatus @201 $ MkResponseReservationCreate ()
