@@ -18,6 +18,7 @@ import Data.Kind
 import Data.Text qualified as T
 import Data.Time qualified as T
 import Database.Selda qualified as Selda
+import GHC.Generics
 
 spaceLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -244,9 +245,8 @@ reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd)
   case reservations of
     _ : _ -> do
-      let message :: T.Text = "Desk is already reserved."
-      lift $ logWarn message
-      throwM $ Selda.SqlError $ T.unpack "Desk is already reserved."
+      lift $ logWarn "Desk is already reserved."
+      throwM MkSqlErrorMensamDeskAlreadyReserved
     [] -> lift $ logDebug "Desk is still free."
   let dbReservation =
         MkDbReservation
@@ -259,3 +259,8 @@ reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   lift $ logDebug "Inserting reservation into database."
   Selda.insert_ tableReservation [dbReservation]
   lift $ logInfo "Created reservation successfully."
+
+type SqlErrorMensamDeskAlreadyReserved :: Type
+data SqlErrorMensamDeskAlreadyReserved = MkSqlErrorMensamDeskAlreadyReserved
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
