@@ -9,6 +9,7 @@ import Mensam.API.Order
 import Mensam.API.Route.Booking.Type qualified as Booking
 import Mensam.API.Route.User.Type qualified as User
 import Mensam.API.Space
+import Mensam.API.User
 import Mensam.API.User.Username
 
 import Control.Lens
@@ -52,6 +53,8 @@ instance ToParamSchema Username where
       & Data.OpenApi.pattern ?~ "^[a-zA-Z0-9]{4,32}$"
 instance ToSchema Username where
   declareNamedSchema = pure . NamedSchema (Just "Username") . paramSchemaToSchema
+
+deriving via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth instance ToSchema ErrorBasicAuth
 
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space

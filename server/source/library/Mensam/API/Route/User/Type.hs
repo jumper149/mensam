@@ -22,7 +22,7 @@ data Routes route = Routes
               "Login to your user account.\n"
           :> "login"
           :> Auth '[BasicAuth, JWT] User
-          :> UVerb POST '[JSON] [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 (), WithStatus 500 ()]
+          :> UVerb POST '[JSON] [WithStatus 200 ResponseLogin, WithStatus 400 (), WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
   , routeRegister ::
       route
         :- Summary "Register"

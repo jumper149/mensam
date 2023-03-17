@@ -19,7 +19,7 @@ import Servant.Auth.Server
 handleAuth ::
   ( MonadLogger m
   , IsMember (WithStatus 400 ()) responses
-  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 401 ErrorBasicAuth) responses
   ) =>
   AuthResult a ->
   (a -> m (Union responses)) ->
@@ -31,10 +31,10 @@ handleAuth authResult handler =
       handler authenticated
     BadPassword -> do
       logInfo "Can't access handler, because authentication failed due to wrong password."
-      respond $ WithStatus @401 ()
+      respond $ WithStatus @401 MkErrorBasicAuthPassword
     NoSuchUser -> do
       logInfo "Can't access handler, because authentication failed due to not existing username."
-      respond $ WithStatus @401 ()
+      respond $ WithStatus @401 MkErrorBasicAuthUsername
     Indefinite -> do
       logInfo "Can't access handler, because authentication failed for some reason."
       respond $ WithStatus @400 ()

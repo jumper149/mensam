@@ -36,7 +36,7 @@ createSpace ::
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ()) responses
   , IsMember (WithStatus 400 ()) responses
-  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult User ->
@@ -71,7 +71,7 @@ listSpaces ::
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceList) responses
   , IsMember (WithStatus 400 ()) responses
-  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult User ->
@@ -98,7 +98,7 @@ createDesk ::
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ()) responses
   , IsMember (WithStatus 400 ()) responses
-  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult User ->
@@ -139,7 +139,7 @@ listDesks ::
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseDeskList) responses
   , IsMember (WithStatus 400 ()) responses
-  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult User ->
@@ -173,7 +173,7 @@ createReservation ::
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseReservationCreate) responses
   , IsMember (WithStatus 400 ()) responses
-  , IsMember (WithStatus 401 ()) responses
+  , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult User ->

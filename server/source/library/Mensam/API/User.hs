@@ -26,3 +26,12 @@ type IdentifierUser :: Type
 newtype IdentifierUser = MkIdentifierUser {unIdentifierUser :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
+
+type ErrorBasicAuth :: Type
+data ErrorBasicAuth
+  = MkErrorBasicAuthUsername
+  | MkErrorBasicAuthPassword
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth
