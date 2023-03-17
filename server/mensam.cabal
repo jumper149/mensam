@@ -104,6 +104,7 @@ library
     , Mensam.API.Aeson
     , Mensam.API.Desk
     , Mensam.API.Order
+    , Mensam.API.Reservation
     , Mensam.API.Route.Booking.Type
     , Mensam.API.Route.OpenApi.Type
     , Mensam.API.Route.User.Type
