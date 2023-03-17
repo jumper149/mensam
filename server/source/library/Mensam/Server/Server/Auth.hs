@@ -18,7 +18,6 @@ import Servant.Auth.Server
 
 handleAuth ::
   ( MonadLogger m
-  , IsMember (WithStatus 400 ()) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   ) =>
   AuthResult a ->
@@ -37,7 +36,7 @@ handleAuth authResult handler =
       respond $ WithStatus @401 MkErrorBasicAuthUsername
     Indefinite -> do
       logInfo "Can't access handler, because authentication failed for some reason."
-      respond $ WithStatus @400 ()
+      respond $ WithStatus @401 MkErrorBasicAuthIndefinite
 
 deriving anyclass instance FromJWT User
 deriving anyclass instance ToJWT User

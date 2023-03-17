@@ -35,7 +35,6 @@ login ::
   , MonadIO m
   , MonadLogger m
   , IsMember (WithStatus 200 ResponseLogin) responses
-  , IsMember (WithStatus 400 ()) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>

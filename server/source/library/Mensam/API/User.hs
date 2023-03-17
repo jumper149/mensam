@@ -31,6 +31,7 @@ type ErrorBasicAuth :: Type
 data ErrorBasicAuth
   = MkErrorBasicAuthUsername
   | MkErrorBasicAuthPassword
+  | MkErrorBasicAuthIndefinite
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
