@@ -27,7 +27,7 @@ data Routes route = Routes
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
-          :> UVerb PUT '[JSON] [WithStatus 201 (), WithStatus 400 (), WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
+          :> UVerb PUT '[JSON] [WithStatus 201 (), WithStatus 400 ErrorParseBodyJson, WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
   , routeSpaceList ::
       route
         :- Summary "List Spaces"
@@ -37,7 +37,7 @@ data Routes route = Routes
           :> "list"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceList
-          :> UVerb GET '[JSON] [WithStatus 200 ResponseSpaceList, WithStatus 400 (), WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
+          :> UVerb GET '[JSON] [WithStatus 200 ResponseSpaceList, WithStatus 400 ErrorParseBodyJson, WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
   , routeDeskCreate ::
       route
         :- Summary "Create Desk"
@@ -49,7 +49,7 @@ data Routes route = Routes
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate
-          :> UVerb PUT '[JSON] [WithStatus 201 (), WithStatus 400 (), WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
+          :> UVerb PUT '[JSON] [WithStatus 201 (), WithStatus 400 ErrorParseBodyJson, WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
   , routeDeskList ::
       route
         :- Summary "List Desks"
@@ -59,7 +59,7 @@ data Routes route = Routes
           :> "list"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskList
-          :> UVerb GET '[JSON] [WithStatus 200 ResponseDeskList, WithStatus 400 (), WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
+          :> UVerb GET '[JSON] [WithStatus 200 ResponseDeskList, WithStatus 400 ErrorParseBodyJson, WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
   , routeReservationCreate ::
       route
         :- Summary "Create Reservation"
@@ -70,7 +70,7 @@ data Routes route = Routes
           :> "create"
           :> Auth '[JWT] User
           :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationCreate
-          :> UVerb PUT '[JSON] [WithStatus 201 ResponseReservationCreate, WithStatus 400 (), WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
+          :> UVerb PUT '[JSON] [WithStatus 201 ResponseReservationCreate, WithStatus 400 ErrorParseBodyJson, WithStatus 401 ErrorBasicAuth, WithStatus 409 (), WithStatus 500 ()]
   }
   deriving stock (Generic)
 

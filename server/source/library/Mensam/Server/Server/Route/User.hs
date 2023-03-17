@@ -1,5 +1,6 @@
 module Mensam.Server.Server.Route.User where
 
+import Mensam.API.Aeson
 import Mensam.API.Route.User.Type
 import Mensam.API.User
 import Mensam.API.User.Username
@@ -71,7 +72,7 @@ register ::
   , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ()) responses
-  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   Either String RequestRegister ->
@@ -80,7 +81,7 @@ register eitherRequest =
   case eitherRequest of
     Left err -> do
       logInfo $ "Failed to parse request: " <> T.pack (show err)
-      respond $ WithStatus @400 ()
+      respond $ WithStatus @400 $ MkErrorParseBodyJson err
     Right request@MkRequestRegister {requestRegisterName, requestRegisterPassword, requestRegisterEmail, requestRegisterEmailVisible} -> do
       logDebug $ "Registering new user: " <> T.pack (show request)
       seldaResult <-

@@ -35,7 +35,7 @@ createSpace ::
   , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ()) responses
-  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -70,7 +70,7 @@ listSpaces ::
   , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceList) responses
-  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -97,7 +97,7 @@ createDesk ::
   , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ()) responses
-  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -138,7 +138,7 @@ listDesks ::
   , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseDeskList) responses
-  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -172,8 +172,9 @@ createReservation ::
   , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseReservationCreate) responses
-  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 409 ()) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult User ->
@@ -206,7 +207,7 @@ createReservation authUser eitherRequest = do
           logWarn "Failed to create reservation."
           case fromException someException of
             Just MkSqlErrorMensamDeskAlreadyReserved ->
-              respond $ WithStatus @400 () -- TODO: Send error with "Already reserved.".
+              respond $ WithStatus @409 () -- TODO: Send error with "Already reserved.".
             Nothing -> do
               -- TODO: Here we can theoretically return a more accurate error
               respond $ WithStatus @500 ()
@@ -216,7 +217,7 @@ createReservation authUser eitherRequest = do
 
 handleBadRequestBody ::
   ( MonadLogger m
-  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   ) =>
   Either String a ->
   (a -> m (Union responses)) ->
@@ -225,4 +226,4 @@ handleBadRequestBody parsedRequestBody handler' =
   -- TODO: Rename arguments `handler'` to `handler`
   case parsedRequestBody of
     Right a -> handler' a
-    Left _err -> respond $ WithStatus @400 () -- TODO: Respond with error.
+    Left err -> respond $ WithStatus @400 $ MkErrorParseBodyJson err

@@ -24,4 +24,11 @@ data NameOrIdentifier name identifier
   = Name name
   | Identifier identifier
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving (A.FromJSON, A.ToJSON) via (A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier))
+  deriving (A.FromJSON, A.ToJSON) via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier)
+
+type ErrorParseBodyJson :: Type
+newtype ErrorParseBodyJson = MkErrorParseBodyJson
+  { errorParseBodyJsonError :: String
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving (A.FromJSON, A.ToJSON) via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBodyJson
