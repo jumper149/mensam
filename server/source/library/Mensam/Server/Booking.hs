@@ -2,11 +2,11 @@
 
 module Mensam.Server.Booking where
 
-import Mensam.API.Desk
+import Mensam.API.Data.Desk
+import Mensam.API.Data.Reservation
+import Mensam.API.Data.Space
+import Mensam.API.Data.User
 import Mensam.API.Order
-import Mensam.API.Reservation
-import Mensam.API.Space
-import Mensam.API.User
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema

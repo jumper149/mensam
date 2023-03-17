@@ -1,7 +1,7 @@
-module Mensam.API.Reservation where
+module Mensam.API.Data.Reservation where
 
-import Mensam.API.Desk
-import Mensam.API.User
+import Mensam.API.Data.Desk
+import Mensam.API.Data.User
 
 import Data.Aeson qualified as A
 import Data.Int

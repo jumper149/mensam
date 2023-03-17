@@ -102,17 +102,17 @@ library
   exposed-modules:
     , Mensam.API.API
     , Mensam.API.Aeson
-    , Mensam.API.Desk
+    , Mensam.API.Data.Desk
+    , Mensam.API.Data.Reservation
+    , Mensam.API.Data.Space
+    , Mensam.API.Data.User
+    , Mensam.API.Data.User.Username
     , Mensam.API.Order
-    , Mensam.API.Reservation
     , Mensam.API.Route.Booking.Type
     , Mensam.API.Route.OpenApi.Type
     , Mensam.API.Route.User.Type
     , Mensam.API.Route.Static.Type
     , Mensam.API.Route.Type
-    , Mensam.API.Space
-    , Mensam.API.User
-    , Mensam.API.User.Username
     , Mensam.Client
     , Mensam.Client.Brick
     , Mensam.Client.Brick.Type

@@ -1,6 +1,6 @@
-module Mensam.API.Desk where
+module Mensam.API.Data.Desk where
 
-import Mensam.API.Space
+import Mensam.API.Data.Space
 
 import Data.Aeson qualified as A
 import Data.Int

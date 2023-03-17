@@ -2,8 +2,8 @@
 
 module Mensam.Server.Server.Auth where
 
-import Mensam.API.User
-import Mensam.API.User.Username
+import Mensam.API.Data.User
+import Mensam.API.Data.User.Username
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.User
 

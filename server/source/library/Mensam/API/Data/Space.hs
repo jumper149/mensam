@@ -1,4 +1,4 @@
-module Mensam.API.Space where
+module Mensam.API.Data.Space where
 
 import Mensam.API.Aeson
 

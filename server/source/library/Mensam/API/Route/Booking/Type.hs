@@ -1,11 +1,11 @@
 module Mensam.API.Route.Booking.Type where
 
 import Mensam.API.Aeson
-import Mensam.API.Desk
+import Mensam.API.Data.Desk
+import Mensam.API.Data.Reservation
+import Mensam.API.Data.Space
+import Mensam.API.Data.User
 import Mensam.API.Order
-import Mensam.API.Reservation
-import Mensam.API.Space
-import Mensam.API.User
 
 import Data.Aeson qualified as A
 import Data.Kind

@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiWayIf #-}
 
-module Mensam.API.User.Username where
+module Mensam.API.Data.User.Username where
 
 import Control.Applicative
 import Data.Aeson qualified as A

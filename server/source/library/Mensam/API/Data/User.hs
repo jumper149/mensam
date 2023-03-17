@@ -1,7 +1,7 @@
-module Mensam.API.User where
+module Mensam.API.Data.User where
 
 import Mensam.API.Aeson
-import Mensam.API.User.Username
+import Mensam.API.Data.User.Username
 
 import Data.Aeson qualified as A
 import Data.Int

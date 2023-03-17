@@ -4,14 +4,14 @@ module Mensam.Server.OpenApi where
 
 import Mensam.API.API
 import Mensam.API.Aeson
-import Mensam.API.Desk
+import Mensam.API.Data.Desk
+import Mensam.API.Data.Reservation
+import Mensam.API.Data.Space
+import Mensam.API.Data.User
+import Mensam.API.Data.User.Username
 import Mensam.API.Order
-import Mensam.API.Reservation
 import Mensam.API.Route.Booking.Type qualified as Booking
 import Mensam.API.Route.User.Type qualified as User
-import Mensam.API.Space
-import Mensam.API.User
-import Mensam.API.User.Username
 
 import Control.Lens
 import Data.Aeson qualified as A

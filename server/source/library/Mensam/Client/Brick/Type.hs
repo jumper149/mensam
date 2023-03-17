@@ -2,7 +2,7 @@
 
 module Mensam.Client.Brick.Type where
 
-import Mensam.API.Space
+import Mensam.API.Data.Space
 
 import Brick
 import Brick.Forms

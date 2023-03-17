@@ -1,9 +1,9 @@
 module Mensam.Server.Server.Route.User where
 
 import Mensam.API.Aeson
+import Mensam.API.Data.User
+import Mensam.API.Data.User.Username
 import Mensam.API.Route.User.Type
-import Mensam.API.User
-import Mensam.API.User.Username
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Configuration
