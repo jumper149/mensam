@@ -94,7 +94,7 @@ userCreate ::
   EmailAddress ->
   -- | email address visible
   Bool ->
-  SeldaTransactionT m ()
+  SeldaTransactionT m IdentifierUser
 userCreate username password emailAddress emailAddressVisible = do
   lift $ logDebug "Creating user."
   passwordHash :: PasswordHash Bcrypt <- hashPassword password
@@ -107,8 +107,9 @@ userCreate username password emailAddress emailAddressVisible = do
           , dbUser_email_visible = emailAddressVisible
           }
   lift $ logDebug "Inserting user into database."
-  Selda.insert_ tableUser [dbUser]
+  dbUserId <- Selda.insertWithPK tableUser [dbUser]
   lift $ logInfo "Created user successfully."
+  pure $ MkIdentifierUser $ Selda.fromId @DbUser dbUserId
 
 userProfile ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

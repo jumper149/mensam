@@ -6,6 +6,7 @@ import Mensam.API.API
 import Mensam.API.Aeson
 import Mensam.API.Desk
 import Mensam.API.Order
+import Mensam.API.Reservation
 import Mensam.API.Route.Booking.Type qualified as Booking
 import Mensam.API.Route.User.Type qualified as User
 import Mensam.API.Space
@@ -67,10 +68,14 @@ instance KnownSymbol text => ToSchema (StaticText text) where
 deriving via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth instance ToSchema ErrorBasicAuth
 deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBodyJson instance ToSchema ErrorParseBodyJson
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
+deriving via A.CustomJSON (JSONSettings "Mk" "user") User instance ToSchema User
+deriving anyclass instance ToSchema IdentifierUser
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
 deriving anyclass instance ToSchema IdentifierSpace
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Desk instance ToSchema Desk
 deriving anyclass instance ToSchema IdentifierDesk
+deriving via A.CustomJSON (JSONSettings "Mk" "reservation") Reservation instance ToSchema Reservation
+deriving anyclass instance ToSchema IdentifierReservation
 
 deriving via A.CustomJSON (JSONSettings "" "") Order instance ToSchema Order
 deriving via A.CustomJSON (JSONSettings "Mk" "orderByCategory") (OrderByCategory a) instance ToSchema a => ToSchema (OrderByCategory a)

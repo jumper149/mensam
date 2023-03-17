@@ -4,6 +4,7 @@ module Mensam.Server.Booking where
 
 import Mensam.API.Desk
 import Mensam.API.Order
+import Mensam.API.Reservation
 import Mensam.API.Space
 import Mensam.API.User
 import Mensam.Server.Application.SeldaPool.Class
@@ -168,7 +169,7 @@ deskCreate ::
   -- | desk name
   T.Text ->
   IdentifierSpace ->
-  SeldaTransactionT m ()
+  SeldaTransactionT m IdentifierDesk
 deskCreate deskName spaceIdentifier = do
   lift $ logDebug "Creating desk."
   let dbDesk =
@@ -178,8 +179,9 @@ deskCreate deskName spaceIdentifier = do
           , dbDesk_name = deskName
           }
   lift $ logDebug "Inserting desk into database."
-  Selda.insert_ tableDesk [dbDesk]
+  dbDeskId <- Selda.insertWithPK tableDesk [dbDesk]
   lift $ logInfo "Created desk successfully."
+  pure $ MkIdentifierDesk $ Selda.fromId @DbDesk dbDeskId
 
 deskGet ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -225,12 +227,20 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd = do
   lift $ logInfo "Looked up reservations successfully."
   let toReservation
         MkDbReservation
-          {
-          } = MkReservation ()
+          { dbReservation_id
+          , dbReservation_desk
+          , dbReservation_user
+          , dbReservation_time_begin
+          , dbReservation_time_end
+          } =
+          MkReservation
+            { reservationId = MkIdentifierReservation $ Selda.fromId @DbReservation dbReservation_id
+            , reservationDesk = MkIdentifierDesk $ Selda.fromId @DbDesk dbReservation_desk
+            , reservationUser = MkIdentifierUser $ Selda.fromId @DbUser dbReservation_user
+            , reservationTimeBegin = dbReservation_time_begin
+            , reservationTimeEnd = dbReservation_time_end
+            }
   pure $ toReservation <$> dbReservations
-
-type Reservation :: Type
-newtype Reservation = MkReservation ()
 
 reservationCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -240,7 +250,7 @@ reservationCreate ::
   T.UTCTime ->
   -- | timestamp end
   T.UTCTime ->
-  SeldaTransactionT m ()
+  SeldaTransactionT m IdentifierReservation
 reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   lift $ logDebug "Creating reservation."
   reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd)
@@ -258,8 +268,9 @@ reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
           , dbReservation_time_end = timestampEnd
           }
   lift $ logDebug "Inserting reservation into database."
-  Selda.insert_ tableReservation [dbReservation]
+  dbReservationId <- Selda.insertWithPK tableReservation [dbReservation]
   lift $ logInfo "Created reservation successfully."
+  pure $ MkIdentifierReservation $ Selda.fromId @DbReservation dbReservationId
 
 type SqlErrorMensamDeskAlreadyReserved :: Type
 data SqlErrorMensamDeskAlreadyReserved = MkSqlErrorMensamDeskAlreadyReserved

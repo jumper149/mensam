@@ -3,6 +3,7 @@ module Mensam.API.Route.Booking.Type where
 import Mensam.API.Aeson
 import Mensam.API.Desk
 import Mensam.API.Order
+import Mensam.API.Reservation
 import Mensam.API.Space
 import Mensam.API.User
 
@@ -66,7 +67,7 @@ data Routes route = Routes
           :> UVerb
               PUT
               '[JSON]
-              [ WithStatus 201 ()
+              [ WithStatus 201 IdentifierDesk
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBasicAuth
               , WithStatus 500 ()
@@ -179,7 +180,7 @@ data RequestReservationCreate = MkRequestReservationCreate
 
 type ResponseReservationCreate :: Type
 newtype ResponseReservationCreate = MkResponseReservationCreate
-  { responseReservationCreateUnit :: ()
+  { responseReservationCreateId :: IdentifierReservation
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

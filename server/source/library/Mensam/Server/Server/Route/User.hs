@@ -96,7 +96,7 @@ register eitherRequest =
           -- TODO: Here we can theoretically return a more accurate error
           logWarn "Failed to register new user."
           respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
+        SeldaSuccess _userIdentifier -> do
           logInfo "Registered new user."
           respond $ WithStatus @201 ()
 

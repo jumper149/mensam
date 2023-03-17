@@ -91,7 +91,7 @@ createDesk ::
   ( MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
-  , IsMember (WithStatus 201 ()) responses
+  , IsMember (WithStatus 201 IdentifierDesk) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
@@ -124,9 +124,9 @@ createDesk auth eitherRequest =
           -- TODO: Here we can theoretically return a more accurate error
           logWarn "Failed to create desk."
           respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
+        SeldaSuccess deskIdentifier -> do
           logInfo "Created desk."
-          respond $ WithStatus @201 ()
+          respond $ WithStatus @201 deskIdentifier
 
 listDesks ::
   ( MonadIO m
@@ -206,9 +206,9 @@ createReservation auth eitherRequest = do
             Nothing -> do
               -- TODO: Here we can theoretically return a more accurate error
               respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
+        SeldaSuccess reservationIdentifier -> do
           logInfo "Created reservation."
-          respond $ WithStatus @201 $ MkResponseReservationCreate ()
+          respond $ WithStatus @201 $ MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
 
 handleBadRequestBody ::
   ( MonadLogger m
