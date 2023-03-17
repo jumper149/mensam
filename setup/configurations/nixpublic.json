@@ -15,4 +15,7 @@
     [ "homepage"
     ]
   }
+, "auth":
+  { "timeout-seconds": 86400
+  }
 }

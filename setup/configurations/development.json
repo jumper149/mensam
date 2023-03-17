@@ -13,4 +13,7 @@
     }
   , "path": [ ]
   }
+, "auth":
+  { "timeout-seconds": 120
+  }
 }

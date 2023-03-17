@@ -3,7 +3,9 @@ module Mensam.Server.Server.Route.User where
 import Mensam.API.Route.User.Type
 import Mensam.API.User
 import Mensam.API.User.Username
+import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.SeldaPool.Class
+import Mensam.Server.Configuration
 import Mensam.Server.Server.Auth
 import Mensam.Server.User
 
@@ -19,7 +21,7 @@ import Servant.Auth.Server
 import Servant.Server.Generic
 
 handler ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadConfigured m, MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Routes (AsServerT m)
 handler =
   Routes
@@ -29,7 +31,8 @@ handler =
     }
 
 login ::
-  ( MonadIO m
+  ( MonadConfigured m
+  , MonadIO m
   , MonadLogger m
   , IsMember (WithStatus 200 ResponseLogin) responses
   , IsMember (WithStatus 400 ()) responses
@@ -41,9 +44,15 @@ login ::
 login authUser =
   handleAuth authUser $ \user -> do
     logDebug $ "Creating JWT for user: " <> T.pack (show user)
-    let timeout :: Maybe T.UTCTime = Nothing
-    logDebug $ "JWT timeout has been set: " <> T.pack (show timeout)
-    eitherJwt <- liftIO $ makeJWT user jwtSettings timeout
+    maybeTimeout <- do
+      timeCurrent <- liftIO T.getCurrentTime
+      durationValid <- authTimeoutSeconds . configAuth <$> configuration
+      let maybeTimeExpiration =
+            (`T.addUTCTime` timeCurrent)
+              <$> (T.secondsToNominalDiffTime . fromInteger <$> durationValid)
+      pure maybeTimeExpiration
+    logDebug $ "JWT timeout has been set: " <> T.pack (show maybeTimeout)
+    eitherJwt <- liftIO $ makeJWT user jwtSettings maybeTimeout
     case eitherJwt of
       Left err -> do
         logError $ "Failed to create JWT: " <> T.pack (show err)

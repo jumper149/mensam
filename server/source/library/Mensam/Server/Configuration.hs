@@ -20,8 +20,18 @@ data Configuration = Configuration
   , configDirectoryStatic :: FilePath
   , configPort :: Word16
   , configBaseUrl :: BaseUrl
+  , configAuth :: AuthConfig
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "" "config") Configuration
+
+type AuthConfig :: Type
+newtype AuthConfig = AuthConfig
+  { authTimeoutSeconds :: Maybe Integer
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "" "auth") AuthConfig
