@@ -56,7 +56,7 @@ instance FromBasicAuthData User where
           logDebug $ "Parsing username: " <> T.pack (show usernameText)
           case mkUsername usernameText of
             Left err -> do
-              logInfo $ "Failed parse username: " <> T.pack (show err)
+              logInfo $ "Failed to parse username: " <> T.pack (show err)
               pure NoSuchUser
             Right username -> do
               logDebug $ "Parsed username: " <> T.pack (show username)

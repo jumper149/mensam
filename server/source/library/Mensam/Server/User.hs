@@ -37,7 +37,9 @@ userAuthenticate username password = do
     Selda.restrict $ user Selda.! #dbUser_name Selda..== Selda.literal (unUsername username)
     return user
   case maybeUser of
-    Nothing -> pure $ Left AuthenticationErrorUserDoesNotExist
+    Nothing -> do
+      lift $ logInfo "Password authentication failed because username does not exist."
+      pure $ Left AuthenticationErrorUserDoesNotExist
     Just dbUser -> do
       let
         user =
