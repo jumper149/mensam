@@ -3,7 +3,6 @@ module Mensam.Server.Server.Route.Booking where
 import Mensam.API.Aeson
 import Mensam.API.Desk
 import Mensam.API.Route.Booking.Type
-import Mensam.API.Space
 import Mensam.API.User
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Booking
@@ -35,7 +34,7 @@ createSpace ::
   ( MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
-  , IsMember (WithStatus 201 IdentifierSpace) responses
+  , IsMember (WithStatus 201 ResponseSpaceCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
@@ -58,7 +57,7 @@ createSpace auth eitherRequest =
           respond $ WithStatus @500 ()
         SeldaSuccess spaceIdentifier -> do
           logInfo "Created space."
-          respond $ WithStatus @201 spaceIdentifier
+          respond $ WithStatus @201 MkResponseSpaceCreate {responseSpaceCreateId = spaceIdentifier}
 
 listSpaces ::
   ( MonadIO m
@@ -91,7 +90,7 @@ createDesk ::
   ( MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
-  , IsMember (WithStatus 201 IdentifierDesk) responses
+  , IsMember (WithStatus 201 ResponseDeskCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
@@ -126,7 +125,7 @@ createDesk auth eitherRequest =
           respond $ WithStatus @500 ()
         SeldaSuccess deskIdentifier -> do
           logInfo "Created desk."
-          respond $ WithStatus @201 deskIdentifier
+          respond $ WithStatus @201 MkResponseDeskCreate {responseDeskCreateId = deskIdentifier}
 
 listDesks ::
   ( MonadIO m
@@ -208,7 +207,7 @@ createReservation auth eitherRequest = do
               respond $ WithStatus @500 ()
         SeldaSuccess reservationIdentifier -> do
           logInfo "Created reservation."
-          respond $ WithStatus @201 $ MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
+          respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
 
 handleBadRequestBody ::
   ( MonadLogger m

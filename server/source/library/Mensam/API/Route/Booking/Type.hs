@@ -31,7 +31,7 @@ data Routes route = Routes
           :> UVerb
               PUT
               '[JSON]
-              [ WithStatus 201 IdentifierSpace
+              [ WithStatus 201 ResponseSpaceCreate
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBasicAuth
               , WithStatus 500 ()
@@ -67,7 +67,7 @@ data Routes route = Routes
           :> UVerb
               PUT
               '[JSON]
-              [ WithStatus 201 IdentifierDesk
+              [ WithStatus 201 ResponseDeskCreate
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBasicAuth
               , WithStatus 500 ()
@@ -121,6 +121,15 @@ data RequestSpaceCreate = MkRequestSpaceCreate
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") RequestSpaceCreate
 
+type ResponseSpaceCreate :: Type
+newtype ResponseSpaceCreate = MkResponseSpaceCreate
+  { responseSpaceCreateId :: IdentifierSpace
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") ResponseSpaceCreate
+
 type RequestSpaceList :: Type
 newtype RequestSpaceList = MkRequestSpaceList
   { requestSpaceListOrder :: OrderByCategories SpaceOrderCategory
@@ -148,6 +157,15 @@ data RequestDeskCreate = MkRequestDeskCreate
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") RequestDeskCreate
+
+type ResponseDeskCreate :: Type
+newtype ResponseDeskCreate = MkResponseDeskCreate
+  { responseDeskCreateId :: IdentifierDesk
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") ResponseDeskCreate
 
 type RequestDeskList :: Type
 newtype RequestDeskList = MkRequestDeskList

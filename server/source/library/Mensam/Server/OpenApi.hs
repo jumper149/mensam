@@ -88,9 +88,11 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") User.Requ
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseProfile") User.ResponseProfile instance ToSchema User.ResponseProfile
 
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") Booking.RequestSpaceCreate instance ToSchema Booking.RequestSpaceCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") Booking.ResponseSpaceCreate instance ToSchema Booking.ResponseSpaceCreate
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Booking.RequestSpaceList instance ToSchema Booking.RequestSpaceList
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") Booking.ResponseSpaceList instance ToSchema Booking.ResponseSpaceList
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") Booking.RequestDeskCreate instance ToSchema Booking.RequestDeskCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") Booking.ResponseDeskCreate instance ToSchema Booking.ResponseDeskCreate
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") Booking.RequestDeskList instance ToSchema Booking.RequestDeskList
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Booking.ResponseDeskList instance ToSchema Booking.ResponseDeskList
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") Booking.RequestReservationCreate instance ToSchema Booking.RequestReservationCreate
