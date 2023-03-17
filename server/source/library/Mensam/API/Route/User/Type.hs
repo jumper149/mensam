@@ -22,7 +22,13 @@ data Routes route = Routes
               "Login to your user account.\n"
           :> "login"
           :> Auth '[BasicAuth, JWT] User
-          :> UVerb POST '[JSON] [WithStatus 200 ResponseLogin, WithStatus 401 ErrorBasicAuth, WithStatus 500 ()]
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseLogin
+              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 500 ()
+              ]
   , routeRegister ::
       route
         :- Summary "Register"
@@ -30,7 +36,13 @@ data Routes route = Routes
               "Register a new user account.\n"
           :> "register"
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister
-          :> UVerb POST '[JSON] [WithStatus 201 (), WithStatus 400 ErrorParseBodyJson, WithStatus 500 ()]
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 201 ()
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 500 ()
+              ]
   , routeProfile ::
       route
         :- Summary "Request User Profile"
@@ -38,7 +50,14 @@ data Routes route = Routes
               "Request information for a user profile.\n"
           :> "profile"
           :> QueryParam' '[Lenient, Required] "name" Username
-          :> UVerb GET '[JSON] [WithStatus 200 ResponseProfile, WithStatus 400 (), WithStatus 404 (), WithStatus 500 ()]
+          :> UVerb
+              GET
+              '[JSON]
+              [ WithStatus 200 ResponseProfile
+              , WithStatus 400 ()
+              , WithStatus 404 ()
+              , WithStatus 500 ()
+              ]
   }
   deriving stock (Generic)
 
