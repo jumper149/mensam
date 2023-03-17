@@ -104,7 +104,7 @@ data Routes route = Routes
               [ WithStatus 201 ResponseReservationCreate
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBasicAuth
-              , WithStatus 409 ()
+              , WithStatus 409 (StaticText "Desk is not available within the given time window.")
               , WithStatus 500 ()
               ]
   }

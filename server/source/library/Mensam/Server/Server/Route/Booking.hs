@@ -174,7 +174,7 @@ createReservation ::
   , IsMember (WithStatus 201 ResponseReservationCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
-  , IsMember (WithStatus 409 ()) responses
+  , IsMember (WithStatus 409 (StaticText "Desk is not available within the given time window.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult User ->
@@ -207,7 +207,7 @@ createReservation authUser eitherRequest = do
           logWarn "Failed to create reservation."
           case fromException someException of
             Just MkSqlErrorMensamDeskAlreadyReserved ->
-              respond $ WithStatus @409 () -- TODO: Send error with "Already reserved.".
+              respond $ WithStatus @409 $ MkStaticText @"Desk is not available within the given time window."
             Nothing -> do
               -- TODO: Here we can theoretically return a more accurate error
               respond $ WithStatus @500 ()

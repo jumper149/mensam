@@ -13,10 +13,12 @@ import Mensam.API.User
 import Mensam.API.User.Username
 
 import Control.Lens
+import Data.Aeson qualified as A
 import Data.OpenApi
 import Data.Proxy
 import Deriving.Aeson qualified as A
 import Deriving.Aeson.OrphanInstances qualified as A ()
+import GHC.TypeLits
 import Servant.API
 import Servant.Auth.OrphanInstances ()
 import Servant.OpenApi
@@ -53,6 +55,14 @@ instance ToParamSchema Username where
       & Data.OpenApi.pattern ?~ "^[a-zA-Z0-9]{4,32}$"
 instance ToSchema Username where
   declareNamedSchema = pure . NamedSchema (Just "Username") . paramSchemaToSchema
+
+instance KnownSymbol text => ToParamSchema (StaticText text) where
+  toParamSchema Proxy =
+    mempty
+      & type_ ?~ OpenApiString
+      & enum_ ?~ [A.toJSON $ MkStaticText @text]
+instance KnownSymbol text => ToSchema (StaticText text) where
+  declareNamedSchema = pure . NamedSchema (Just "StaticText") . paramSchemaToSchema
 
 deriving via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth instance ToSchema ErrorBasicAuth
 deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBodyJson instance ToSchema ErrorParseBodyJson
