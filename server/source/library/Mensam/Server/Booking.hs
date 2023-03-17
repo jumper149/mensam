@@ -70,7 +70,7 @@ spaceCreate ::
   T.Text ->
   -- | visible
   Bool ->
-  SeldaTransactionT m ()
+  SeldaTransactionT m IdentifierSpace
 spaceCreate name visible = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
   let dbSpace =
@@ -79,8 +79,9 @@ spaceCreate name visible = do
           , dbSpace_name = name
           , dbSpace_visible = visible
           }
-  Selda.insert_ tableSpace [dbSpace]
+  dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."
+  pure $ MkIdentifierSpace $ Selda.fromId @DbSpace dbSpaceId
 
 spaceUserLookup ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

@@ -3,6 +3,7 @@ module Mensam.Server.Server.Route.Booking where
 import Mensam.API.Aeson
 import Mensam.API.Desk
 import Mensam.API.Route.Booking.Type
+import Mensam.API.Space
 import Mensam.API.User
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Booking
@@ -34,7 +35,7 @@ createSpace ::
   ( MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
-  , IsMember (WithStatus 201 ()) responses
+  , IsMember (WithStatus 201 IdentifierSpace) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
@@ -47,23 +48,17 @@ createSpace auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisible request)
-        spaceIdentifier <-
-          spaceLookupId (requestSpaceCreateName request) >>= \case
-            Just identifier -> pure identifier
-            Nothing -> do
-              let msg :: T.Text = "No matching space even though it was just created."
-              lift $ logError msg
-              throwM $ Selda.SqlError $ show msg
+        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisible request)
         spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) True
+        pure spaceIdentifier
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
           logWarn "Failed to create space."
           respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
+        SeldaSuccess spaceIdentifier -> do
           logInfo "Created space."
-          respond $ WithStatus @201 ()
+          respond $ WithStatus @201 spaceIdentifier
 
 listSpaces ::
   ( MonadIO m

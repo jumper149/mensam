@@ -30,7 +30,7 @@ data Routes route = Routes
           :> UVerb
               PUT
               '[JSON]
-              [ WithStatus 201 ()
+              [ WithStatus 201 IdentifierSpace
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBasicAuth
               , WithStatus 500 ()
