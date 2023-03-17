@@ -38,10 +38,10 @@ handleAuth authResult handler =
       logInfo "Can't access handler, because authentication failed for some reason."
       respond $ WithStatus @401 MkErrorBasicAuthIndefinite
 
-deriving anyclass instance FromJWT User
-deriving anyclass instance ToJWT User
+deriving anyclass instance FromJWT UserAuthenticated
+deriving anyclass instance ToJWT UserAuthenticated
 
-instance FromBasicAuthData User where
+instance FromBasicAuthData UserAuthenticated where
   fromBasicAuthData BasicAuthData {basicAuthUsername, basicAuthPassword} MkRunLoginInIO {runLoginInIO} =
     runLoginInIO $ do
       logInfo "Starting password authentication."
@@ -84,7 +84,7 @@ type instance BasicAuthCfg = RunLoginInIO
 type RunLoginInIO :: Type
 data RunLoginInIO = forall m.
   (MonadLogger m, MonadSeldaPool m, MonadThrow m) =>
-  MkRunLoginInIO {runLoginInIO :: m (AuthResult User) -> IO (AuthResult User)}
+  MkRunLoginInIO {runLoginInIO :: m (AuthResult UserAuthenticated) -> IO (AuthResult UserAuthenticated)}
 
 -- TODO: Remove hardcoded JWK from source code.
 jwtSettings :: JWTSettings

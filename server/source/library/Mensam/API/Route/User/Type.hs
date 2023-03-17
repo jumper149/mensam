@@ -21,7 +21,7 @@ data Routes route = Routes
           :> Description
               "Login to your user account.\n"
           :> "login"
-          :> Auth '[BasicAuth, JWT] User
+          :> Auth '[BasicAuth, JWT] UserAuthenticated
           :> UVerb
               POST
               '[JSON]

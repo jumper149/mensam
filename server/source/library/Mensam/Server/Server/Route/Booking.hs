@@ -39,11 +39,11 @@ createSpace ::
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
-  AuthResult User ->
+  AuthResult UserAuthenticated ->
   Either String RequestSpaceCreate ->
   m (Union responses)
-createSpace authUser eitherRequest =
-  handleAuth authUser $ \user ->
+createSpace auth eitherRequest =
+  handleAuth auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -55,7 +55,7 @@ createSpace authUser eitherRequest =
               let msg :: T.Text = "No matching space even though it was just created."
               lift $ logError msg
               throwM $ Selda.SqlError $ show msg
-        spaceUserAdd spaceIdentifier (userId user) True
+        spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) True
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
@@ -74,15 +74,15 @@ listSpaces ::
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
-  AuthResult User ->
+  AuthResult UserAuthenticated ->
   Either String RequestSpaceList ->
   m (Union responses)
-listSpaces authUser eitherRequest =
-  handleAuth authUser $ \user ->
+listSpaces auth eitherRequest =
+  handleAuth auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to list spaces: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        spaceList (userId user) (requestSpaceListOrder request)
+        spaceList (userAuthenticatedId authenticated) (requestSpaceListOrder request)
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
@@ -101,11 +101,11 @@ createDesk ::
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
-  AuthResult User ->
+  AuthResult UserAuthenticated ->
   Either String RequestDeskCreate ->
   m (Union responses)
-createDesk authUser eitherRequest =
-  handleAuth authUser $ \user ->
+createDesk auth eitherRequest =
+  handleAuth auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create desk: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -119,7 +119,7 @@ createDesk authUser eitherRequest =
                   let msg :: T.Text = "No matching space."
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
-        permission <- spaceUserLookup spaceIdentifier (userId user)
+        permission <- spaceUserLookup spaceIdentifier (userAuthenticatedId authenticated)
         case permission of
           Nothing -> error "No permission."
           Just False -> error "No admin permission."
@@ -142,11 +142,11 @@ listDesks ::
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
-  AuthResult User ->
+  AuthResult UserAuthenticated ->
   Either String RequestDeskList ->
   m (Union responses)
-listDesks authUser eitherRequest =
-  handleAuth authUser $ \user ->
+listDesks auth eitherRequest =
+  handleAuth auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to list desks: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -157,7 +157,7 @@ listDesks authUser eitherRequest =
                 Nothing -> undefined
                 Just spaceId -> pure spaceId
             Identifier spaceId -> pure spaceId
-        deskList spaceIdentifier (userId user)
+        deskList spaceIdentifier (userAuthenticatedId authenticated)
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
@@ -177,11 +177,11 @@ createReservation ::
   , IsMember (WithStatus 409 (StaticText "Desk is not available within the given time window.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
-  AuthResult User ->
+  AuthResult UserAuthenticated ->
   Either String RequestReservationCreate ->
   m (Union responses)
-createReservation authUser eitherRequest = do
-  handleAuth authUser $ \user ->
+createReservation auth eitherRequest = do
+  handleAuth auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create reservation: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -193,13 +193,13 @@ createReservation authUser eitherRequest = do
                 Just deskId -> pure deskId
             Identifier deskId -> pure deskId
         desk <- deskGet deskIdentifier
-        permission <- spaceUserLookup (deskSpace desk) (userId user)
+        permission <- spaceUserLookup (deskSpace desk) (userAuthenticatedId authenticated)
         case permission of
           Nothing -> error "No permission."
           Just _ -> do
             reservationCreate
               deskIdentifier
-              (userId user)
+              (userAuthenticatedId authenticated)
               (requestReservationCreateTimeBegin request)
               (requestReservationCreateTimeEnd request)
       case seldaResult of

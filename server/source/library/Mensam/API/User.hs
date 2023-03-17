@@ -11,6 +11,15 @@ import GHC.Generics
 import Text.Email.OrphanInstances ()
 import Text.Email.Parser
 
+type UserAuthenticated :: Type
+newtype UserAuthenticated = MkUserAuthenticated
+  { userAuthenticatedId :: IdentifierUser
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkUserAuthenticated" "userAuthenticated") UserAuthenticated
+
 type User :: Type
 data User = MkUser
   { userId :: IdentifierUser

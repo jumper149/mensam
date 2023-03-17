@@ -25,7 +25,7 @@ data Routes route = Routes
               \You will be an administrator of this newly created space.\n"
           :> "space"
           :> "create"
-          :> Auth '[JWT] User
+          :> Auth '[JWT] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
           :> UVerb
               PUT
@@ -42,7 +42,7 @@ data Routes route = Routes
               "List visible spaces.\n"
           :> "space"
           :> "list"
-          :> Auth '[JWT] User
+          :> Auth '[JWT] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceList
           :> UVerb
               GET
@@ -61,7 +61,7 @@ data Routes route = Routes
               \You have to be an administrator for that space to create desks.\n"
           :> "desk"
           :> "create"
-          :> Auth '[JWT] User
+          :> Auth '[JWT] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate
           :> UVerb
               PUT
@@ -78,7 +78,7 @@ data Routes route = Routes
               "List desks.\n"
           :> "desk"
           :> "list"
-          :> Auth '[JWT] User
+          :> Auth '[JWT] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskList
           :> UVerb
               GET
@@ -96,7 +96,7 @@ data Routes route = Routes
               \A desk can only be reserved by one user at any time.\n"
           :> "reservation"
           :> "create"
-          :> Auth '[JWT] User
+          :> Auth '[JWT] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationCreate
           :> UVerb
               PUT

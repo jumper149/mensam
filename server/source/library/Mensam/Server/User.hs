@@ -29,7 +29,7 @@ userAuthenticate ::
   (MonadLogger m, MonadSeldaPool m) =>
   Username ->
   Password ->
-  SeldaTransactionT m (Either AuthenticationError User)
+  SeldaTransactionT m (Either AuthenticationError UserAuthenticated)
 userAuthenticate username password = do
   lift $ logDebug $ "Querying user " <> T.pack (show username) <> " from database for password authentication."
   maybeUser :: Maybe DbUser <- Selda.queryUnique $ do
@@ -41,22 +41,15 @@ userAuthenticate username password = do
       lift $ logInfo "Password authentication failed because username does not exist."
       pure $ Left AuthenticationErrorUserDoesNotExist
     Just dbUser -> do
-      let
-        user =
-          MkUser
-            { userId = MkIdentifierUser $ Selda.fromId $ dbUser_id dbUser
-            , userName = username
-            , userEmail = fromTextUnsafe $ dbUser_email dbUser
-            }
-        passwordHash = PasswordHash $ dbUser_password_hash dbUser
-      lift $ logDebug $ "Queried user " <> T.pack (show user) <> " from database for password authentication. Checking password now."
+      let passwordHash = PasswordHash $ dbUser_password_hash dbUser
+      lift $ logDebug "Queried user from database for password authentication. Checking password now."
       case checkPassword password passwordHash of
         PasswordCheckFail -> do
           lift $ logInfo "Password authentication failed because of wrong password."
           pure $ Left AuthenticationErrorWrongPassword
         PasswordCheckSuccess -> do
           lift $ logInfo "Password authentication succeeded."
-          pure $ Right user
+          pure $ Right MkUserAuthenticated {userAuthenticatedId = MkIdentifierUser $ Selda.fromId $ dbUser_id dbUser}
 
 userLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
