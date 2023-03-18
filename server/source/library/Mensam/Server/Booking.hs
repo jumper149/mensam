@@ -209,8 +209,10 @@ reservationList ::
   Maybe T.UTCTime ->
   -- | maximum timestamp end
   Maybe T.UTCTime ->
+  -- | cancelled
+  Maybe Bool ->
   SeldaTransactionT m [Reservation]
-reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd = do
+reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd maybeCancelled = do
   lift $ logDebug $ "Looking up reservations: " <> T.pack (show (deskIdentifier, maybeTimestampBegin, maybeTimestampEnd))
   dbReservations <- Selda.query $ do
     dbReservation <- Selda.select tableReservation
@@ -223,6 +225,10 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd = do
       Nothing -> pure ()
       Just timestampBegin ->
         Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..< Selda.literal timestampBegin
+    case maybeCancelled of
+      Nothing -> pure ()
+      Just cancelled ->
+        Selda.restrict $ dbReservation Selda.! #dbReservation_cancelled Selda..== Selda.literal cancelled
     pure dbReservation
   lift $ logInfo "Looked up reservations successfully."
   let toReservation
@@ -253,7 +259,7 @@ reservationCreate ::
   SeldaTransactionT m IdentifierReservation
 reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   lift $ logDebug "Creating reservation."
-  reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd)
+  reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd) (Just False)
   case reservations of
     _ : _ -> do
       lift $ logWarn "Desk is already reserved."
@@ -266,6 +272,7 @@ reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
           , dbReservation_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
           , dbReservation_time_begin = timestampBegin
           , dbReservation_time_end = timestampEnd
+          , dbReservation_cancelled = False
           }
   lift $ logDebug "Inserting reservation into database."
   dbReservationId <- Selda.insertWithPK tableReservation [dbReservation]

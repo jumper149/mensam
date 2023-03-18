@@ -91,6 +91,7 @@ data DbReservation = MkDbReservation
   , dbReservation_user :: Selda.ID DbUser
   , dbReservation_time_begin :: Selda.UTCTime
   , dbReservation_time_end :: Selda.UTCTime
+  , dbReservation_cancelled :: Bool
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
