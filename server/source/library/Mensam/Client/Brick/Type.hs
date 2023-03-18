@@ -62,9 +62,16 @@ registerFormInitial =
       , _registerInfoEmailVisible = False
       }
 
+type ClientScreenState :: Type
+data ClientScreenState
+  = ClientScreenStateLogin {_clientScreenStateLoginForm :: Form LoginInfo () ClientName}
+  | ClientScreenStateRegister {_clientScreenStateRegisterForm :: Form RegisterInfo () ClientName}
+  | ClientScreenStateLoggedIn {_clientScreenStateJwt :: T.Text, _clientStateSpaces :: [Space]}
+makeLenses ''ClientScreenState
+
 type ClientState :: Type
-data ClientState
-  = ClientStateLogin {_clientStateLoginForm :: Form LoginInfo () ClientName}
-  | ClientStateRegister {_clientStateRegisterForm :: Form RegisterInfo () ClientName}
-  | ClientStateLoggedIn {_clientStateJwt :: T.Text, _clientStateSpaces :: [Space]}
+data ClientState = MkClientState
+  { _clientStateScreenState :: ClientScreenState
+  , _clientStatePopup :: Maybe T.Text
+  }
 makeLenses ''ClientState

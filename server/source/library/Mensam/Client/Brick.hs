@@ -39,25 +39,40 @@ runBrick = do
         , appAttrMap = \_ -> attrMap defAttr []
         }
     initialState :: ClientState
-    initialState = ClientStateLogin loginFormInitial
+    initialState =
+      MkClientState
+        { _clientStateScreenState = ClientScreenStateLogin loginFormInitial
+        , _clientStatePopup = Nothing
+        }
   _finalState <- defaultMain app initialState
   pure ()
 
 draw :: ClientState -> [Widget ClientName]
-draw = \case
-  ClientStateLogin form -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Login"]
-  ClientStateRegister form -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Register"]
-  ClientStateLoggedIn jwt spaces -> [hCenter (txt "Logged in") <=> hCenter (txt jwt) <=> borderWithLabel (txt "Spaces") (padBottom Max $ padRight Max $ renderTable $ table $ [txt "id", txt "name"] : ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces))]
+draw MkClientState {_clientStateScreenState, _clientStatePopup} =
+  case _clientStatePopup of
+    Nothing -> drawScreen _clientStateScreenState
+    Just popup -> [center $ txt popup]
+
+drawScreen :: ClientScreenState -> [Widget ClientName]
+drawScreen = \case
+  ClientScreenStateLogin form -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Login"]
+  ClientScreenStateRegister form -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Register"]
+  ClientScreenStateLoggedIn jwt spaces -> [hCenter (txt "Logged in") <=> hCenter (txt jwt) <=> borderWithLabel (txt "Spaces") (padBottom Max $ padRight Max $ renderTable $ table $ [txt "id", txt "name"] : ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces))]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
   VtyEvent (EvKey KEsc []) -> halt
-  VtyEvent (EvKey (KChar '1') [MMeta]) -> put $ ClientStateRegister registerFormInitial
-  VtyEvent (EvKey (KChar '2') [MMeta]) -> put $ ClientStateLogin loginFormInitial
+  VtyEvent (EvKey (KChar '1') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister registerFormInitial}
+  VtyEvent (EvKey (KChar '2') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin loginFormInitial}
   event -> do
     clientState <- get
     case clientState of
-      ClientStateLogin form ->
+      MkClientState {_clientStatePopup = Just _popup} ->
+        case event of
+          VtyEvent (EvKey KEnter []) ->
+            modify $ \s -> s {_clientStatePopup = Nothing}
+          _ -> pure ()
+      MkClientState {_clientStateScreenState = ClientScreenStateLogin form} ->
         case event of
           VtyEvent (EvKey KEnter []) ->
             case formState form of
@@ -73,11 +88,12 @@ handleEvent clientEnv = \case
                             }
                 case result of
                   Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) ->
-                    put $ ClientStateLoggedIn jwt []
-                  _ -> pure ()
+                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateLoggedIn jwt []}
+                  err ->
+                    modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
-          _ -> zoom clientStateLoginForm $ handleFormEvent event
-      ClientStateRegister form ->
+          _ -> zoom clientStateScreenState $ zoom clientScreenStateLoginForm $ handleFormEvent event
+      MkClientState {_clientStateScreenState = ClientScreenStateRegister form} ->
         case event of
           VtyEvent (EvKey KEnter []) ->
             case formState form of
@@ -94,11 +110,11 @@ handleEvent clientEnv = \case
                           }
                 case result of
                   Right (Z (I (WithStatus @201 ()))) ->
-                    put $ ClientStateLogin loginFormInitial
+                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin loginFormInitial}
                   _ -> pure ()
                 pure ()
-          _ -> zoom clientStateRegisterForm $ handleFormEvent event
-      ClientStateLoggedIn jwt _spaces ->
+          _ -> zoom clientStateScreenState $ zoom clientScreenStateRegisterForm $ handleFormEvent event
+      MkClientState {_clientStateScreenState = ClientScreenStateLoggedIn jwt _spaces} ->
         case event of
           VtyEvent (EvKey KEnter []) -> do
             result <-
@@ -109,7 +125,7 @@ handleEvent clientEnv = \case
                     (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
             case result of
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) ->
-                put $ ClientStateLoggedIn jwt xs
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateLoggedIn jwt xs}
               _ -> pure ()
             pure ()
           _ -> pure ()
