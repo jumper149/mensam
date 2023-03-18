@@ -238,6 +238,7 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd maybeCancel
           , dbReservation_user
           , dbReservation_time_begin
           , dbReservation_time_end
+          , dbReservation_cancelled
           } =
           MkReservation
             { reservationId = MkIdentifierReservation $ Selda.fromId @DbReservation dbReservation_id
@@ -245,6 +246,7 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd maybeCancel
             , reservationUser = MkIdentifierUser $ Selda.fromId @DbUser dbReservation_user
             , reservationTimeBegin = dbReservation_time_begin
             , reservationTimeEnd = dbReservation_time_end
+            , reservationCancelled = dbReservation_cancelled
             }
   pure $ toReservation <$> dbReservations
 

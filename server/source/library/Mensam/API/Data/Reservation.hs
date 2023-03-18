@@ -16,6 +16,7 @@ data Reservation = MkReservation
   , reservationUser :: IdentifierUser
   , reservationTimeBegin :: T.UTCTime
   , reservationTimeEnd :: T.UTCTime
+  , reservationCancelled :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
