@@ -1,7 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Deriving.Aeson.OrphanInstances where
+module Deriving.Aeson.OrphanInstances () where
 
 import Data.Aeson qualified as A
 import Data.Kind
