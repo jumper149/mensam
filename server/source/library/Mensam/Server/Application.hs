@@ -9,6 +9,8 @@ import Mensam.Server.Application.Email.Class
 import Mensam.Server.Application.Environment
 import Mensam.Server.Application.Environment.Acquisition
 import Mensam.Server.Application.Logging
+import Mensam.Server.Application.Secret
+import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool
 import Mensam.Server.Application.SeldaPool.Class
 
@@ -31,6 +33,7 @@ type Transformers =
     :.|> EnvironmentT
     :.|> TimedLoggingT
     :.|> ConfiguredT
+    :.|> SecretT
     :.|> SeldaPoolT
     :.|> EmailT
 
@@ -43,6 +46,7 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
   deriving newtype (MonadLogger)
   deriving newtype (MonadConfigured)
+  deriving newtype (MonadSecret)
   deriving newtype (MonadSeldaPool)
   deriving newtype (MonadEmail)
 
@@ -61,6 +65,7 @@ runApplicationT app = do
           :..> runAppTimedLoggingT
           . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
+          :..> runAppSecretT
           :..> runSeldaPoolT
           :..> runAppEmailT
 

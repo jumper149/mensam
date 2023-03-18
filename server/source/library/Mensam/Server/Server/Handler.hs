@@ -4,6 +4,7 @@ module Mensam.Server.Server.Handler where
 
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Email.Class
+import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Server.Handler.RequestHash
 
@@ -33,6 +34,7 @@ newtype HandlerT m a = HandlerT {unHandlerT :: StackT Transformers m a}
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
   deriving newtype (MonadLogger)
   deriving newtype (MonadConfigured)
+  deriving newtype (MonadSecret)
   deriving newtype (MonadSeldaPool)
   deriving newtype (MonadEmail)
 

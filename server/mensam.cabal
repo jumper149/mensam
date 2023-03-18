@@ -57,6 +57,7 @@ common dependencies
     , http-client
     , http-types
     , insert-ordered-containers
+    , jose
     , lens
     , microlens-platform
     , mime-mail
@@ -129,6 +130,8 @@ library
     , Mensam.Server.Application.Environment.Acquisition
     , Mensam.Server.Application.Environment.Class
     , Mensam.Server.Application.Logging
+    , Mensam.Server.Application.Secret
+    , Mensam.Server.Application.Secret.Class
     , Mensam.Server.Application.SeldaPool
     , Mensam.Server.Application.SeldaPool.Class
     , Mensam.Server.Booking
