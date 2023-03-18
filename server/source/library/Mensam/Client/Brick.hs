@@ -92,7 +92,7 @@ handleEvent clientEnv = \case
                   err ->
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
-          _ -> zoom clientStateScreenState $ zoom clientScreenStateLoginForm $ handleFormEvent event
+          _ -> zoom (clientStateScreenState . clientScreenStateLoginForm) $ handleFormEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateRegister form} ->
         case event of
           VtyEvent (EvKey KEnter []) ->
@@ -113,7 +113,7 @@ handleEvent clientEnv = \case
                     modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin loginFormInitial}
                   _ -> pure ()
                 pure ()
-          _ -> zoom clientStateScreenState $ zoom clientScreenStateRegisterForm $ handleFormEvent event
+          _ -> zoom (clientStateScreenState . clientScreenStateRegisterForm) $ handleFormEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateLoggedIn jwt _spaces} ->
         case event of
           VtyEvent (EvKey KEnter []) -> do
