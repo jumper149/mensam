@@ -56,13 +56,13 @@ draw MkClientState {_clientStateScreenState, _clientStatePopup} =
 drawScreen :: ClientScreenState -> [Widget ClientName]
 drawScreen = \case
   ClientScreenStateLogin (MkScreenLoginState form) -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Login"]
-  ClientScreenStateRegister form -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Register"]
+  ClientScreenStateRegister (MkScreenRegisterState form) -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Register"]
   ClientScreenStateLoggedIn jwt spaces -> [hCenter (txt "Logged in") <=> hCenter (txt jwt) <=> borderWithLabel (txt "Spaces") (padBottom Max $ padRight Max $ renderTable $ table $ [txt "id", txt "name"] : ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces))]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
   VtyEvent (EvKey KEsc []) -> halt
-  VtyEvent (EvKey (KChar '1') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister registerFormInitial}
+  VtyEvent (EvKey (KChar '1') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
   VtyEvent (EvKey (KChar '2') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
   event -> do
     clientState <- get
@@ -93,7 +93,7 @@ handleEvent clientEnv = \case
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
           _ -> zoom (clientStateScreenState . clientScreenStateLogin . screenStateLoginForm) $ handleFormEvent event
-      MkClientState {_clientStateScreenState = ClientScreenStateRegister form} ->
+      MkClientState {_clientStateScreenState = ClientScreenStateRegister (MkScreenRegisterState form)} ->
         case event of
           VtyEvent (EvKey KEnter []) ->
             case formState form of
@@ -113,7 +113,7 @@ handleEvent clientEnv = \case
                     modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
                   _ -> pure ()
                 pure ()
-          _ -> zoom (clientStateScreenState . clientScreenStateRegisterForm) $ handleFormEvent event
+          _ -> zoom (clientStateScreenState . clientScreenStateRegister . screenStateRegisterForm) $ handleFormEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateLoggedIn jwt _spaces} ->
         case event of
           VtyEvent (EvKey KEnter []) -> do

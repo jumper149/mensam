@@ -68,10 +68,16 @@ registerFormInitial =
       , _registerInfoEmailVisible = False
       }
 
+type ScreenRegisterState :: Type
+newtype ScreenRegisterState = MkScreenRegisterState
+  { _screenStateRegisterForm :: Form RegisterInfo () ClientName
+  }
+makeLenses ''ScreenRegisterState
+
 type ClientScreenState :: Type
 data ClientScreenState
   = ClientScreenStateLogin {_clientScreenStateLogin :: ScreenLoginState}
-  | ClientScreenStateRegister {_clientScreenStateRegisterForm :: Form RegisterInfo () ClientName}
+  | ClientScreenStateRegister {_clientScreenStateRegister :: ScreenRegisterState}
   | ClientScreenStateLoggedIn {_clientScreenStateJwt :: T.Text, _clientStateSpaces :: [Space]}
 makeLenses ''ClientScreenState
 
