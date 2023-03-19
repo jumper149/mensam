@@ -52,12 +52,26 @@ draw :: ClientState -> [Widget ClientName]
 draw MkClientState {_clientStateScreenState, _clientStatePopup} =
   case _clientStatePopup of
     Nothing -> drawScreen _clientStateScreenState
-    Just popup -> [center $ txt popup]
+    Just popup -> [center $ borderWithLabel (txt "Error") $ txt popup]
+
+drawHelp :: Widget a
+drawHelp =
+  vBox
+    [ txt title
+    , padTop Max (padLeft Max (txt "Exit (Escape) | Register (Alt-1) | Login (Alt-2) | Spaces (Alt-3)"))
+    ]
+ where
+  title :: T.Text
+  title =
+    "  __  __                             \n\
+    \ |  \\/  | ___  _ _   ___ __ _  _ __  \n\
+    \ | |\\/| |/ -_)| ' \\ (_-// _` || '  \\ \n\
+    \ |_|  |_|\\___||_||_|/__/\\__/_||_|_|_|\n"
 
 drawScreen :: ClientScreenState -> [Widget ClientName]
 drawScreen = \case
-  ClientScreenStateLogin (MkScreenLoginState form) -> [center $ borderWithLabel (txt "Login") $ cropRightTo 60 $ renderForm form]
-  ClientScreenStateRegister (MkScreenRegisterState form) -> [center $ borderWithLabel (txt "Register") $ cropRightTo 60 $ renderForm form]
+  ClientScreenStateLogin (MkScreenLoginState form) -> [centerLayer $ borderWithLabel (txt "Login") $ cropRightTo 60 $ renderForm form, drawHelp]
+  ClientScreenStateRegister (MkScreenRegisterState form) -> [centerLayer $ borderWithLabel (txt "Register") $ cropRightTo 60 $ renderForm form, drawHelp]
   ClientScreenStateLoggedIn spaces -> [borderWithLabel (txt "Spaces") (padBottom Max $ padRight Max $ renderTable $ table $ [txt "id", txt "name"] : ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces))]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
@@ -65,6 +79,7 @@ handleEvent clientEnv = \case
   VtyEvent (EvKey KEsc []) -> halt
   VtyEvent (EvKey (KChar '1') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
   VtyEvent (EvKey (KChar '2') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
+  VtyEvent (EvKey (KChar '3') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLoggedIn []}
   event -> do
     clientState <- get
     case clientState of
