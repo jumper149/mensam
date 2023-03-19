@@ -78,12 +78,13 @@ type ClientScreenState :: Type
 data ClientScreenState
   = ClientScreenStateLogin {_clientScreenStateLogin :: ScreenLoginState}
   | ClientScreenStateRegister {_clientScreenStateRegister :: ScreenRegisterState}
-  | ClientScreenStateLoggedIn {_clientScreenStateJwt :: T.Text, _clientStateSpaces :: [Space]}
+  | ClientScreenStateLoggedIn {_clientStateSpaces :: [Space]}
 makeLenses ''ClientScreenState
 
 type ClientState :: Type
 data ClientState = MkClientState
   { _clientStateScreenState :: ClientScreenState
   , _clientStatePopup :: Maybe T.Text
+  , _clientStateJwt :: Maybe T.Text
   }
 makeLenses ''ClientState

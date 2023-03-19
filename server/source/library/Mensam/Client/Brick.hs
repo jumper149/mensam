@@ -43,6 +43,7 @@ runBrick = do
       MkClientState
         { _clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState {_screenStateLoginForm = loginFormInitial}
         , _clientStatePopup = Nothing
+        , _clientStateJwt = Nothing
         }
   _finalState <- defaultMain app initialState
   pure ()
@@ -57,7 +58,7 @@ drawScreen :: ClientScreenState -> [Widget ClientName]
 drawScreen = \case
   ClientScreenStateLogin (MkScreenLoginState form) -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Login"]
   ClientScreenStateRegister (MkScreenRegisterState form) -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Register"]
-  ClientScreenStateLoggedIn jwt spaces -> [hCenter (txt "Logged in") <=> hCenter (txt jwt) <=> borderWithLabel (txt "Spaces") (padBottom Max $ padRight Max $ renderTable $ table $ [txt "id", txt "name"] : ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces))]
+  ClientScreenStateLoggedIn spaces -> [borderWithLabel (txt "Spaces") (padBottom Max $ padRight Max $ renderTable $ table $ [txt "id", txt "name"] : ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces))]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
@@ -88,7 +89,7 @@ handleEvent clientEnv = \case
                             }
                 case result of
                   Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) ->
-                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateLoggedIn jwt []}
+                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateLoggedIn [], _clientStateJwt = Just jwt}
                   err ->
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
@@ -114,21 +115,24 @@ handleEvent clientEnv = \case
                   _ -> pure ()
                 pure ()
           _ -> zoom (clientStateScreenState . clientScreenStateRegister . screenStateRegisterForm) $ handleFormEvent event
-      MkClientState {_clientStateScreenState = ClientScreenStateLoggedIn jwt _spaces} ->
-        case event of
-          VtyEvent (EvKey KEnter []) -> do
-            result <-
-              liftIO $
-                flip runClientM clientEnv $
-                  (routes // Route.routeBooking // Route.Booking.routeSpaceList)
-                    (DataJWT $ MkJWToken jwt)
-                    (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
-            case result of
-              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) ->
-                modify $ \s -> s {_clientStateScreenState = ClientScreenStateLoggedIn jwt xs}
+      MkClientState {_clientStateScreenState = ClientScreenStateLoggedIn _spaces} ->
+        case clientState ^. clientStateJwt of
+          Just jwt ->
+            case event of
+              VtyEvent (EvKey KEnter []) -> do
+                result <-
+                  liftIO $
+                    flip runClientM clientEnv $
+                      (routes // Route.routeBooking // Route.Booking.routeSpaceList)
+                        (DataJWT $ MkJWToken jwt)
+                        (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
+                case result of
+                  Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) ->
+                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateLoggedIn xs}
+                  _ -> pure ()
+                pure ()
               _ -> pure ()
-            pure ()
-          _ -> pure ()
+          Nothing -> pure ()
 
 routes :: Route.Routes (AsClientT ClientM)
 routes = client $ Proxy @(NamedRoutes Route.Routes)
