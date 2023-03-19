@@ -160,6 +160,7 @@ handleEvent clientEnv = \case
                   err ->
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
+              VtyEvent e -> zoom (clientStateScreenState . clientScreenStateSpaces . screenStateSpacesList) $ handleListEvent e
               _ -> pure ()
           Nothing -> pure ()
 
