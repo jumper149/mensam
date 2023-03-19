@@ -38,6 +38,12 @@ loginFormInitial =
       , _loginInfoPassword = ""
       }
 
+type ScreenLoginState :: Type
+newtype ScreenLoginState = MkScreenLoginState
+  { _screenStateLoginForm :: Form LoginInfo () ClientName
+  }
+makeLenses ''ScreenLoginState
+
 type RegisterInfo :: Type
 data RegisterInfo = MkRegisterInfo
   { _registerInfoUsername :: T.Text
@@ -64,7 +70,7 @@ registerFormInitial =
 
 type ClientScreenState :: Type
 data ClientScreenState
-  = ClientScreenStateLogin {_clientScreenStateLoginForm :: Form LoginInfo () ClientName}
+  = ClientScreenStateLogin {_clientScreenStateLogin :: ScreenLoginState}
   | ClientScreenStateRegister {_clientScreenStateRegisterForm :: Form RegisterInfo () ClientName}
   | ClientScreenStateLoggedIn {_clientScreenStateJwt :: T.Text, _clientStateSpaces :: [Space]}
 makeLenses ''ClientScreenState
