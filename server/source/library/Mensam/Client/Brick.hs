@@ -133,7 +133,8 @@ handleEvent clientEnv = \case
                 case result of
                   Right (Z (I (WithStatus @201 ()))) ->
                     modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
-                  _ -> pure ()
+                  err ->
+                    modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
           _ -> zoom (clientStateScreenState . clientScreenStateRegister . screenStateRegisterForm) $ handleFormEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState _spaces)} ->
@@ -150,7 +151,8 @@ handleEvent clientEnv = \case
                 case result of
                   Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) ->
                     modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState xs)}
-                  _ -> pure ()
+                  err ->
+                    modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
               _ -> pure ()
           Nothing -> pure ()
