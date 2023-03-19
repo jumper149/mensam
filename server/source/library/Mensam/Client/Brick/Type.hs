@@ -74,11 +74,17 @@ newtype ScreenRegisterState = MkScreenRegisterState
   }
 makeLenses ''ScreenRegisterState
 
+type ScreenSpacesState :: Type
+newtype ScreenSpacesState = MkScreenSpacesState
+  { _screenStateSpacesForm :: [Space]
+  }
+makeLenses ''ScreenSpacesState
+
 type ClientScreenState :: Type
 data ClientScreenState
   = ClientScreenStateLogin {_clientScreenStateLogin :: ScreenLoginState}
   | ClientScreenStateRegister {_clientScreenStateRegister :: ScreenRegisterState}
-  | ClientScreenStateLoggedIn {_clientStateSpaces :: [Space]}
+  | ClientScreenStateSpaces {_clientScreenStateSpaces :: ScreenSpacesState}
 makeLenses ''ClientScreenState
 
 type ClientState :: Type
