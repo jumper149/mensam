@@ -56,8 +56,8 @@ draw MkClientState {_clientStateScreenState, _clientStatePopup} =
 
 drawScreen :: ClientScreenState -> [Widget ClientName]
 drawScreen = \case
-  ClientScreenStateLogin (MkScreenLoginState form) -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Login"]
-  ClientScreenStateRegister (MkScreenRegisterState form) -> [centerLayer $ border $ cropRightTo 60 $ renderForm form, hCenter $ txt "Register"]
+  ClientScreenStateLogin (MkScreenLoginState form) -> [center $ borderWithLabel (txt "Login") $ cropRightTo 60 $ renderForm form]
+  ClientScreenStateRegister (MkScreenRegisterState form) -> [center $ borderWithLabel (txt "Register") $ cropRightTo 60 $ renderForm form]
   ClientScreenStateLoggedIn spaces -> [borderWithLabel (txt "Spaces") (padBottom Max $ padRight Max $ renderTable $ table $ [txt "id", txt "name"] : ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces))]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
