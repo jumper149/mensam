@@ -6,7 +6,9 @@ import Mensam.API.Data.Space
 
 import Brick
 import Brick.Forms
+import Brick.Widgets.List
 import Data.Kind
+import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Lens.Micro.Platform
 
@@ -75,9 +77,16 @@ newtype ScreenRegisterState = MkScreenRegisterState
   }
 makeLenses ''ScreenRegisterState
 
+spacesListInitial :: GenericList ClientName Seq.Seq Space
+spacesListInitial =
+  list
+    ClientNameSpacesList
+    mempty
+    1
+
 type ScreenSpacesState :: Type
 newtype ScreenSpacesState = MkScreenSpacesState
-  { _screenStateSpacesForm :: [Space]
+  { _screenStateSpacesList :: GenericList ClientName Seq.Seq Space
   }
 makeLenses ''ScreenSpacesState
 

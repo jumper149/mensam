@@ -83,11 +83,7 @@ drawScreen = \case
     [ borderWithLabel (txt "Spaces") $
         padBottom Max $
           padRight Max $
-            renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> spaceName space) True $
-              list
-                ClientNameSpacesList
-                (Seq.fromList spaces)
-                1
+            renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> spaceName space) True spaces
     ]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
@@ -95,7 +91,7 @@ handleEvent clientEnv = \case
   VtyEvent (EvKey KEsc []) -> halt
   VtyEvent (EvKey (KChar '1') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
   VtyEvent (EvKey (KChar '2') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
-  VtyEvent (EvKey (KChar '3') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces $ MkScreenSpacesState []}
+  VtyEvent (EvKey (KChar '3') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces $ MkScreenSpacesState spacesListInitial}
   event -> do
     clientState <- get
     case clientState of
@@ -120,7 +116,7 @@ handleEvent clientEnv = \case
                             }
                 case result of
                   Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) ->
-                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState []), _clientStateJwt = Just jwt}
+                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState spacesListInitial), _clientStateJwt = Just jwt}
                   err ->
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
@@ -160,7 +156,7 @@ handleEvent clientEnv = \case
                         (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
                 case result of
                   Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) ->
-                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState xs)}
+                    clientStateScreenState . clientScreenStateSpaces . screenStateSpacesList %= listReplace (Seq.fromList xs) (Just 0)
                   err ->
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
