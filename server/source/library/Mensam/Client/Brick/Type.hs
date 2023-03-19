@@ -18,6 +18,7 @@ data ClientName
   | ClientNameRegisterPassword
   | ClientNameRegisterEmail
   | ClientNameRegisterEmailVisible
+  | ClientNameSpacesList
   deriving stock (Eq, Ord, Show)
 
 type LoginInfo :: Type

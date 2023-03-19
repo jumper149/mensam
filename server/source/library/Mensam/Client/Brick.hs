@@ -13,9 +13,10 @@ import Brick
 import Brick.Forms
 import Brick.Widgets.Border
 import Brick.Widgets.Center
-import Brick.Widgets.Table
+import Brick.Widgets.List
 import Control.Monad.IO.Class
 import Data.SOP
+import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Graphics.Vty
 import Lens.Micro.Platform
@@ -78,7 +79,16 @@ drawScreen = \case
     [ centerLayer $ borderWithLabel (txt "Register") $ cropRightTo 60 $ renderForm form
     , drawHelp
     ]
-  ClientScreenStateSpaces (MkScreenSpacesState spaces) -> [borderWithLabel (txt "Spaces") (padBottom Max $ padRight Max $ renderTable $ table $ [txt "id", txt "name"] : ((\space -> [txt $ T.pack $ show $ unIdentifierSpace $ spaceId space, txt $ spaceName space]) <$> spaces))]
+  ClientScreenStateSpaces (MkScreenSpacesState spaces) ->
+    [ borderWithLabel (txt "Spaces") $
+        padBottom Max $
+          padRight Max $
+            renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> spaceName space) True $
+              list
+                ClientNameSpacesList
+                (Seq.fromList spaces)
+                1
+    ]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent clientEnv = \case
