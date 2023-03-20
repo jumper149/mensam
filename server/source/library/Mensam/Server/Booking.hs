@@ -146,12 +146,16 @@ deskList ::
 deskList spaceIdentifier userIdentifier = do
   lift $ logDebug $ "Looking up desks visible by user: " <> T.pack (show userIdentifier)
   dbDesks <- Selda.query $ do
+    dbSpaceUser <- Selda.select tableSpaceUser
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
+
     dbSpace <- Selda.select tableSpace
     Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
-    dbSpaceUser <- Selda.select tableSpaceUser
     Selda.restrict $
       (dbSpace Selda.! #dbSpace_visible)
-        Selda..|| (dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier))
+        Selda..|| (dbSpace Selda.! #dbSpace_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_space)
+
     dbDesk <- Selda.select tableDesk
     Selda.restrict $ dbDesk Selda.! #dbDesk_space Selda..== dbSpace Selda.! #dbSpace_id
     pure dbDesk
