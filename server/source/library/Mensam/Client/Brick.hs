@@ -91,7 +91,24 @@ handleEvent clientEnv = \case
   VtyEvent (EvKey KEsc []) -> halt
   VtyEvent (EvKey (KChar '1') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
   VtyEvent (EvKey (KChar '2') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
-  VtyEvent (EvKey (KChar '3') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces $ MkScreenSpacesState spacesListInitial}
+  VtyEvent (EvKey (KChar '3') [MMeta]) -> do
+    clientState <- get
+    case clientState ^. clientStateJwt of
+      Just jwt -> do
+        result <-
+          liftIO $
+            flip runClientM clientEnv $
+              (routes // Route.routeBooking // Route.Booking.routeSpaceList)
+                (DataJWT $ MkJWToken jwt)
+                (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
+        case result of
+          Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
+            let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
+            modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l)}
+          err ->
+            modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+      Nothing ->
+        modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
   event -> do
     clientState <- get
     case clientState of
@@ -115,8 +132,20 @@ handleEvent clientEnv = \case
                             , credentialsPassword = loginInfo ^. loginInfoPassword
                             }
                 case result of
-                  Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) ->
-                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState spacesListInitial), _clientStateJwt = Just jwt}
+                  Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) -> do
+                    modify $ \s -> s {_clientStateJwt = Just jwt}
+                    resultSpaces <-
+                      liftIO $
+                        flip runClientM clientEnv $
+                          (routes // Route.routeBooking // Route.Booking.routeSpaceList)
+                            (DataJWT $ MkJWToken jwt)
+                            (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
+                    case resultSpaces of
+                      Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
+                        let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
+                        modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l)}
+                      err ->
+                        modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                   err ->
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
