@@ -1,5 +1,6 @@
 module Mensam.Client.Brick where
 
+import Mensam.API.Aeson
 import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
@@ -37,7 +38,12 @@ runBrick = do
         , appChooseCursor = showFirstCursor
         , appHandleEvent = handleEvent clientEnv
         , appStartEvent = pure ()
-        , appAttrMap = \_ -> attrMap defAttr []
+        , appAttrMap = \_ ->
+            attrMap
+              defAttr
+              [ (listAttr, defAttr)
+              , (listSelectedAttr, defAttr `withStyle` standout)
+              ]
         }
     initialState :: ClientState
     initialState =
@@ -172,11 +178,11 @@ handleEvent clientEnv = \case
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
           _ -> zoom (clientStateScreenState . clientScreenStateRegister . screenStateRegisterForm) $ handleFormEvent event
-      MkClientState {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState _spaces)} ->
+      MkClientState {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState spaces)} ->
         case clientState ^. clientStateJwt of
           Just jwt ->
             case event of
-              VtyEvent (EvKey KEnter []) -> do
+              VtyEvent (EvKey (KChar 'r') []) -> do
                 result <-
                   liftIO $
                     flip runClientM clientEnv $
@@ -189,6 +195,21 @@ handleEvent clientEnv = \case
                   err ->
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()
+              VtyEvent (EvKey KEnter []) -> do
+                case listSelectedElement spaces of
+                  Nothing ->
+                    modify $ \s -> s {_clientStatePopup = Just "No space selected."}
+                  Just (_index, space) -> do
+                    result <-
+                      liftIO $
+                        flip runClientM clientEnv $
+                          (routes // Route.routeBooking // Route.Booking.routeDeskList)
+                            (DataJWT $ MkJWToken jwt)
+                            (Route.Booking.MkRequestDeskList $ Identifier $ spaceId space)
+                    case result of
+                      Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) ->
+                        modify $ \s -> s {_clientStatePopup = Just $ "Viewing Desks: " <> T.pack (show desks)}
+                      _ -> modify $ \s -> s {_clientStatePopup = Just $ "Selected space: " <> T.pack (show space)}
               VtyEvent e -> zoom (clientStateScreenState . clientScreenStateSpaces . screenStateSpacesList) $ handleListEvent e
               _ -> pure ()
           Nothing -> pure ()
