@@ -1,6 +1,7 @@
 module Mensam.Client.Brick where
 
 import Mensam.API.Aeson
+import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
@@ -90,6 +91,12 @@ drawScreen = \case
         padBottom Max $
           padRight Max $
             renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> spaceName space) True spaces
+    ]
+  ClientScreenStateDesks (MkScreenDesksState space desks) ->
+    [ borderWithLabel (txt $ "Desks (" <> spaceName space <> ")") $
+        padBottom Max $
+          padRight Max $
+            renderList (\_focus desk -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId desk) <> " ") <> deskName desk) True desks
     ]
 
 handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
@@ -207,10 +214,38 @@ handleEvent clientEnv = \case
                             (DataJWT $ MkJWToken jwt)
                             (Route.Booking.MkRequestDeskList $ Identifier $ spaceId space)
                     case result of
-                      Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) ->
-                        modify $ \s -> s {_clientStatePopup = Just $ "Viewing Desks: " <> T.pack (show desks)}
-                      _ -> modify $ \s -> s {_clientStatePopup = Just $ "Selected space: " <> T.pack (show space)}
+                      Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) -> do
+                        let l = listReplace (Seq.fromList desks) (Just 0) desksListInitial
+                        modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l)}
+                      err ->
+                        modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
               VtyEvent e -> zoom (clientStateScreenState . clientScreenStateSpaces . screenStateSpacesList) $ handleListEvent e
+              _ -> pure ()
+          Nothing -> pure ()
+      MkClientState {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space desks)} ->
+        case clientState ^. clientStateJwt of
+          Just jwt ->
+            case event of
+              VtyEvent (EvKey (KChar 'r') []) -> do
+                result <-
+                  liftIO $
+                    flip runClientM clientEnv $
+                      (routes // Route.routeBooking // Route.Booking.routeDeskList)
+                        (DataJWT $ MkJWToken jwt)
+                        (Route.Booking.MkRequestDeskList $ Identifier $ spaceId space)
+                case result of
+                  Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList xs)))) ->
+                    clientStateScreenState . clientScreenStateDesks . screenStateDesksList %= listReplace (Seq.fromList xs) (Just 0)
+                  err ->
+                    modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+                pure ()
+              VtyEvent (EvKey KEnter []) -> do
+                case listSelectedElement desks of
+                  Nothing ->
+                    modify $ \s -> s {_clientStatePopup = Just "No desk selected."}
+                  Just (_index, desk) -> do
+                    modify $ \s -> s {_clientStatePopup = Just $ "Desk selected: " <> T.pack (show desk)}
+              VtyEvent e -> zoom (clientStateScreenState . clientScreenStateDesks . screenStateDesksList) $ handleListEvent e
               _ -> pure ()
           Nothing -> pure ()
 

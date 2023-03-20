@@ -2,6 +2,7 @@
 
 module Mensam.Client.Brick.Type where
 
+import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
 
 import Brick
@@ -90,11 +91,26 @@ newtype ScreenSpacesState = MkScreenSpacesState
   }
 makeLenses ''ScreenSpacesState
 
+desksListInitial :: GenericList ClientName Seq.Seq Desk
+desksListInitial =
+  list
+    ClientNameSpacesList
+    mempty
+    1
+
+type ScreenDesksState :: Type
+data ScreenDesksState = MkScreenDesksState
+  { _screenStateDesksSpace :: Space
+  , _screenStateDesksList :: GenericList ClientName Seq.Seq Desk
+  }
+makeLenses ''ScreenDesksState
+
 type ClientScreenState :: Type
 data ClientScreenState
   = ClientScreenStateLogin {_clientScreenStateLogin :: ScreenLoginState}
   | ClientScreenStateRegister {_clientScreenStateRegister :: ScreenRegisterState}
   | ClientScreenStateSpaces {_clientScreenStateSpaces :: ScreenSpacesState}
+  | ClientScreenStateDesks {_clientScreenStateDesks :: ScreenDesksState}
 makeLenses ''ClientScreenState
 
 type ClientState :: Type
