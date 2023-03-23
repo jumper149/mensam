@@ -1,6 +1,7 @@
 # Server
 
 The server executable is written in Haskell using wai and servant for the HTTP interface.
+OpenAPI documentation is generated automatically.
 This application uses mtl-style effects.
 
 ## Configuration
