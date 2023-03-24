@@ -114,6 +114,7 @@ library
     , Mensam.API.Route.Api.Booking
     , Mensam.API.Route.Api.OpenApi
     , Mensam.API.Route.Api.User
+    , Mensam.API.Route.OpenApi
     , Mensam.API.Route.Static
     , Mensam.Client
     , Mensam.Client.Brick
@@ -156,6 +157,7 @@ library
     , Mensam.Server.Server.Route.Api.Booking
     , Mensam.Server.Server.Route.Api.OpenApi
     , Mensam.Server.Server.Route.Api.User
+    , Mensam.Server.Server.Route.OpenApi
     , Mensam.Server.Server.Route.Static
     , Mensam.Server.User
   other-modules:

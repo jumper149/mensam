@@ -4,19 +4,10 @@ import Data.Kind
 import Data.OpenApi
 import GHC.Generics
 import Servant.API
-import Servant.HTML.Blaze
-import Text.Blaze.Html
 
 type Routes :: Type -> Type
-data Routes route = Routes
-  { routeRender ::
-      route
-        :- Summary "View API documentation"
-          :> Description
-              "View the OpenAPI documentation in a human-readabable format.\n"
-          :> "openapi"
-          :> Get '[HTML] Html
-  , routeJson ::
+newtype Routes route = Routes
+  { routeJson ::
       route
         :- Summary "OpenAPI definition"
           :> Description
