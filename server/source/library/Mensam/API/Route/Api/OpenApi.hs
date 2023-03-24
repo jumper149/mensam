@@ -13,7 +13,6 @@ newtype Routes route = Routes
           :> Description
               "This OpenAPI definition is automatically generated.\n"
           :> "openapi"
-          :> "json"
           :> Get '[JSON] OpenApi
   }
   deriving stock (Generic)

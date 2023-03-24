@@ -47,6 +47,7 @@ render =
         let
           redoc = Blaze.Internal.customParent $ Blaze.textTag "redoc"
           specUrl = Blaze.customAttribute "spec-url"
-        redoc Blaze.! specUrl "./openapi/json" $ ""
+        -- TODO: Use servant link instead of this hardcoded link.
+        redoc Blaze.! specUrl "./api/openapi" $ ""
         -- TODO: We should host Redoc ourselves.
         Blaze.script Blaze.! Blaze.Attributes.src "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js" $ ""
