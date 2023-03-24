@@ -2,7 +2,6 @@
 
 module Mensam.Server.OpenApi where
 
-import Mensam.API.API
 import Mensam.API.Aeson
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
@@ -10,8 +9,9 @@ import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
-import Mensam.API.Route.Api.Booking qualified as Booking
-import Mensam.API.Route.Api.User qualified as User
+import Mensam.API.Route.Api qualified as Route.Api
+import Mensam.API.Route.Api.Booking qualified as Route.Booking
+import Mensam.API.Route.Api.User qualified as Route.User
 
 import Control.Lens
 import Data.Aeson qualified as A
@@ -23,8 +23,6 @@ import GHC.TypeLits
 import Servant.API
 import Servant.Auth.OrphanInstances ()
 import Servant.OpenApi
-import Servant.RawM
-import Text.Blaze.Html qualified as Blaze
 import Text.Email.OrphanInstances ()
 
 openapi :: OpenApi
@@ -34,18 +32,11 @@ openapi =
     & info . description ?~ "This is an API for hot desk booking."
     & info . license ?~ "GNU Affero General Public License v3.0"
  where
-  generatedOpenApi = toOpenApi $ Proxy @API
+  generatedOpenApi = toOpenApi $ Proxy @(NamedRoutes Route.Api.Routes)
 
 -- TODO: Implement.
 instance ToSchema OpenApi where
   declareNamedSchema Proxy = declareNamedSchema $ Proxy @()
-
--- TODO: Implement.
-instance ToSchema Blaze.Markup where
-  declareNamedSchema Proxy = declareNamedSchema $ Proxy @()
-
-instance HasOpenApi (RawM' a) where
-  toOpenApi Proxy = toOpenApi $ Proxy @Raw
 
 instance ToParamSchema Username where
   toParamSchema Proxy =
@@ -83,17 +74,17 @@ deriving via A.CustomJSON (JSONSettings "Mk" "orderByCategory") (OrderByCategory
 deriving via A.CustomJSON (JSONSettings "SpaceOrderCategory" "") SpaceOrderCategory instance ToSchema SpaceOrderCategory
 deriving newtype instance ToSchema a => ToSchema (OrderByCategories a)
 
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseLogin") User.ResponseLogin instance ToSchema User.ResponseLogin
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") User.RequestRegister instance ToSchema User.RequestRegister
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseProfile") User.ResponseProfile instance ToSchema User.ResponseProfile
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseLogin") Route.User.ResponseLogin instance ToSchema Route.User.ResponseLogin
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") Route.User.RequestRegister instance ToSchema Route.User.RequestRegister
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseProfile") Route.User.ResponseProfile instance ToSchema Route.User.ResponseProfile
 
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") Booking.RequestSpaceCreate instance ToSchema Booking.RequestSpaceCreate
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") Booking.ResponseSpaceCreate instance ToSchema Booking.ResponseSpaceCreate
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Booking.RequestSpaceList instance ToSchema Booking.RequestSpaceList
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") Booking.ResponseSpaceList instance ToSchema Booking.ResponseSpaceList
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") Booking.RequestDeskCreate instance ToSchema Booking.RequestDeskCreate
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") Booking.ResponseDeskCreate instance ToSchema Booking.ResponseDeskCreate
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") Booking.RequestDeskList instance ToSchema Booking.RequestDeskList
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Booking.ResponseDeskList instance ToSchema Booking.ResponseDeskList
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") Booking.RequestReservationCreate instance ToSchema Booking.RequestReservationCreate
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCreate") Booking.ResponseReservationCreate instance ToSchema Booking.ResponseReservationCreate
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") Route.Booking.RequestSpaceCreate instance ToSchema Route.Booking.RequestSpaceCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") Route.Booking.ResponseSpaceCreate instance ToSchema Route.Booking.ResponseSpaceCreate
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Route.Booking.RequestSpaceList instance ToSchema Route.Booking.RequestSpaceList
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") Route.Booking.ResponseSpaceList instance ToSchema Route.Booking.ResponseSpaceList
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") Route.Booking.RequestDeskCreate instance ToSchema Route.Booking.RequestDeskCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") Route.Booking.ResponseDeskCreate instance ToSchema Route.Booking.ResponseDeskCreate
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") Route.Booking.RequestDeskList instance ToSchema Route.Booking.RequestDeskList
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Route.Booking.ResponseDeskList instance ToSchema Route.Booking.ResponseDeskList
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") Route.Booking.RequestReservationCreate instance ToSchema Route.Booking.RequestReservationCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCreate") Route.Booking.ResponseReservationCreate instance ToSchema Route.Booking.ResponseReservationCreate

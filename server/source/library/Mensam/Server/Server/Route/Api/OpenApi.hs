@@ -26,6 +26,16 @@ specification = do
       case configRevision config of
         Just revision -> info . version .~ revision
         Nothing -> id
+    addServer :: OpenApi -> OpenApi
+    addServer = servers .~ [relativeServer]
+     where
+      relativeServer =
+        Server
+          { _serverUrl = ""
+          , _serverDescription = Nothing
+          , _serverVariables = mempty
+          }
   pure $
     Mensam.Server.OpenApi.openapi
       & addVersion
+      & addServer
