@@ -2,39 +2,26 @@ module Mensam.Client.Debug where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.User.Username
-import Mensam.API.Route qualified as Route
-import Mensam.API.Route.Api qualified as Route.Api
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.User qualified as Route.User
+import Mensam.Client.Application
+import Mensam.Client.Application.MensamClient.Class
 import Mensam.Client.OrphanInstances
 
 import Control.Monad.IO.Class
-import Data.Proxy
+import Control.Monad.Trans.Class
 import Data.SOP
 import Data.Text qualified as T
-import Network.HTTP.Client qualified as Network
 import Servant
 import Servant.Client
 import Servant.RawM.Client ()
 import Text.Email.Parser
 import Text.Email.Text
 
-api :: Route.Api.Routes (AsClientT ClientM)
-api = client (Proxy @(NamedRoutes Route.Routes)) // Route.routeApi
-
 runF :: IO ()
-runF = do
-  httpManager <- Network.newManager Network.defaultManagerSettings
-  let baseUrl =
-        BaseUrl
-          { baseUrlScheme = Http
-          , baseUrlHost = "localhost"
-          , baseUrlPort = 8177
-          , baseUrlPath = ""
-          }
-  let clientEnv = mkClientEnv httpManager baseUrl
-  result <- runClientM f clientEnv
-  print result
+runF = runApplicationT $ do
+  result <- mensamCall f
+  lift $ print result
 
 f :: ClientM ()
 f = do
@@ -52,11 +39,11 @@ f = do
           , Route.User.requestRegisterEmail = email
           , Route.User.requestRegisterEmailVisible = True
           }
-  resultRegister <- api // Route.Api.routeUser // Route.User.routeRegister $ requestRegister
+  resultRegister <- endpointRegister requestRegister
   liftIO $ print resultRegister
 
   liftIO $ putStrLn "Profile."
-  resultProfile <- api // Route.Api.routeUser // Route.User.routeProfile $ name
+  resultProfile <- endpointProfile name
   liftIO $ print resultProfile
 
   liftIO $ putStrLn "Login with BasicAuth."
@@ -65,7 +52,7 @@ f = do
           { credentialsUsername = unUsername name
           , credentialsPassword = pw
           }
-  resultLogin <- api // Route.Api.routeUser // Route.User.routeLogin $ DataBasicAuth credentials
+  resultLogin <- endpointLogin $ DataBasicAuth credentials
   liftIO $ print resultLogin
   responseLogin <-
     case resultLogin of
@@ -74,7 +61,7 @@ f = do
 
   liftIO $ putStrLn "Login with JWT."
   let token = MkJWToken {unJWToken = Route.User.responseLoginJWT responseLogin}
-  nextLoginResult <- api // Route.Api.routeUser // Route.User.routeLogin $ DataNextAuth $ DataJWT token
+  nextLoginResult <- endpointLogin $ DataNextAuth $ DataJWT token
   liftIO $ print nextLoginResult
   nextResponseLogin <-
     case resultLogin of
@@ -88,7 +75,7 @@ f = do
           { Route.Booking.requestSpaceCreateName = spacename
           , Route.Booking.requestSpaceCreateVisible = True
           }
-  resultSpaceCreate <- (api // Route.Api.routeBooking // Route.Booking.routeSpaceCreate) (DataJWT nextToken) requestSpaceCreate
+  resultSpaceCreate <- endpointSpaceCreate (DataJWT nextToken) requestSpaceCreate
   liftIO $ print resultSpaceCreate
 
   liftIO $ putStrLn "Create desk."
@@ -97,7 +84,7 @@ f = do
           { Route.Booking.requestDeskCreateName = "neptune"
           , Route.Booking.requestDeskCreateSpace = Name spacename
           }
-  resultDeskCreate <- (api // Route.Api.routeBooking // Route.Booking.routeDeskCreate) (DataJWT nextToken) requestDeskCreate
+  resultDeskCreate <- endpointDeskCreate (DataJWT nextToken) requestDeskCreate
   liftIO $ print resultDeskCreate
 
   liftIO $ putStrLn "Create desk."
@@ -106,7 +93,7 @@ f = do
           { Route.Booking.requestDeskCreateName = "saturn"
           , Route.Booking.requestDeskCreateSpace = Name spacename
           }
-  resultDeskCreate2 <- (api // Route.Api.routeBooking // Route.Booking.routeDeskCreate) (DataJWT nextToken) requestDeskCreate2
+  resultDeskCreate2 <- endpointDeskCreate (DataJWT nextToken) requestDeskCreate2
   liftIO $ print resultDeskCreate2
 
   liftIO $ putStrLn "List desks."
@@ -114,7 +101,7 @@ f = do
         Route.Booking.MkRequestDeskList
           { Route.Booking.requestDeskListSpace = Name spacename
           }
-  resultDeskList <- (api // Route.Api.routeBooking // Route.Booking.routeDeskList) (DataJWT nextToken) requestDeskList
+  resultDeskList <- endpointDeskList (DataJWT nextToken) requestDeskList
   liftIO $ print resultDeskList
 
   pure ()
