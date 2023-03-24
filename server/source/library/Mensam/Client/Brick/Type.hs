@@ -7,25 +7,13 @@ import Mensam.API.Data.Space
 import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
 import Mensam.Client.Brick.Register
+import Mensam.Client.Brick.Spaces
 
 import Brick.Widgets.List
 import Data.Kind
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Lens.Micro.Platform
-
-spacesListInitial :: GenericList ClientName Seq.Seq Space
-spacesListInitial =
-  list
-    ClientNameSpacesList
-    mempty
-    1
-
-type ScreenSpacesState :: Type
-newtype ScreenSpacesState = MkScreenSpacesState
-  { _screenStateSpacesList :: GenericList ClientName Seq.Seq Space
-  }
-makeLenses ''ScreenSpacesState
 
 desksListInitial :: GenericList ClientName Seq.Seq Desk
 desksListInitial =

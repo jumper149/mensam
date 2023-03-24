@@ -12,6 +12,7 @@ import Mensam.Client.Brick.Draw
 import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
 import Mensam.Client.Brick.Register
+import Mensam.Client.Brick.Spaces
 import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
 

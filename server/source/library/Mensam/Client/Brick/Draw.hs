@@ -5,6 +5,7 @@ import Mensam.API.Data.Space
 import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
 import Mensam.Client.Brick.Register
+import Mensam.Client.Brick.Spaces
 import Mensam.Client.Brick.Type
 
 import Brick
@@ -24,12 +25,7 @@ drawScreen :: ClientScreenState -> [Widget ClientName]
 drawScreen = \case
   ClientScreenStateLogin s -> loginDraw s <> [drawHelp]
   ClientScreenStateRegister s -> registerDraw s <> [drawHelp]
-  ClientScreenStateSpaces (MkScreenSpacesState spaces) ->
-    [ borderWithLabel (txt "Spaces") $
-        padBottom Max $
-          padRight Max $
-            renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> spaceName space) True spaces
-    ]
+  ClientScreenStateSpaces s -> spacesDraw s
   ClientScreenStateDesks (MkScreenDesksState space desks) ->
     [ borderWithLabel (txt $ "Desks (" <> spaceName space <> ")") $
         padBottom Max $
