@@ -44,7 +44,7 @@ runAppMensamClientT tma = do
           { baseUrlScheme = Http
           , baseUrlHost = "localhost"
           , baseUrlPort = 8177
-          , baseUrlPath = ""
+          , baseUrlPath = "/api"
           }
   let clientEnv = mkClientEnv manager baseUrl
   logInfo "Created HTTP client environment."
