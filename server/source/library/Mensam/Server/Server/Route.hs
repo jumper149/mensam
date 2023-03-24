@@ -1,6 +1,6 @@
 module Mensam.Server.Server.Route where
 
-import Mensam.API.Route.Type
+import Mensam.API.Route
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class

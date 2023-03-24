@@ -2,9 +2,9 @@ module Mensam.Client.Debug where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.User.Username
-import Mensam.API.Route.Booking.Type qualified as Route.Booking
-import Mensam.API.Route.Type qualified as Route
-import Mensam.API.Route.User.Type qualified as Route.User
+import Mensam.API.Route qualified as Route
+import Mensam.API.Route.Booking qualified as Route.Booking
+import Mensam.API.Route.User qualified as Route.User
 import Mensam.Client.OrphanInstances
 
 import Control.Monad.IO.Class

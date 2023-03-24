@@ -1,4 +1,4 @@
-module Mensam.API.Route.Static.Type where
+module Mensam.API.Route.Static where
 
 import Data.Kind
 import Servant.RawM qualified as RawM

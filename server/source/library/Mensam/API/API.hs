@@ -1,6 +1,6 @@
 module Mensam.API.API where
 
-import Mensam.API.Route.Type
+import Mensam.API.Route
 
 import Data.Kind
 import Servant.API

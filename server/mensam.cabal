@@ -109,11 +109,11 @@ library
     , Mensam.API.Data.User
     , Mensam.API.Data.User.Username
     , Mensam.API.Order
-    , Mensam.API.Route.Booking.Type
-    , Mensam.API.Route.OpenApi.Type
-    , Mensam.API.Route.User.Type
-    , Mensam.API.Route.Static.Type
-    , Mensam.API.Route.Type
+    , Mensam.API.Route
+    , Mensam.API.Route.Booking
+    , Mensam.API.Route.OpenApi
+    , Mensam.API.Route.User
+    , Mensam.API.Route.Static
     , Mensam.Client
     , Mensam.Client.Brick
     , Mensam.Client.Brick.Type

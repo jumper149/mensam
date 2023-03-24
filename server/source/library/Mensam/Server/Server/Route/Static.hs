@@ -1,6 +1,6 @@
 module Mensam.Server.Server.Route.Static where
 
-import Mensam.API.Route.Static.Type
+import Mensam.API.Route.Static
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Configuration
 import Mensam.Server.Server.Err404

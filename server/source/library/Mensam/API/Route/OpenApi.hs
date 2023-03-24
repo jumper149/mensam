@@ -1,4 +1,4 @@
-module Mensam.API.Route.OpenApi.Type where
+module Mensam.API.Route.OpenApi where
 
 import Data.Kind
 import Data.OpenApi

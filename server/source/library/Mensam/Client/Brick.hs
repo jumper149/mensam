@@ -5,9 +5,9 @@ import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
-import Mensam.API.Route.Booking.Type qualified as Route.Booking
-import Mensam.API.Route.Type qualified as Route
-import Mensam.API.Route.User.Type qualified as Route.User
+import Mensam.API.Route qualified as Route
+import Mensam.API.Route.Booking qualified as Route.Booking
+import Mensam.API.Route.User qualified as Route.User
 import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
 

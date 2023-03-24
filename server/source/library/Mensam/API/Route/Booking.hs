@@ -1,4 +1,4 @@
-module Mensam.API.Route.Booking.Type where
+module Mensam.API.Route.Booking where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.Desk

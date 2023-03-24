@@ -1,4 +1,4 @@
-module Mensam.API.Route.User.Type where
+module Mensam.API.Route.User where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.User

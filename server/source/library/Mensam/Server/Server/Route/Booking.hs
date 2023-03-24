@@ -3,7 +3,7 @@ module Mensam.Server.Server.Route.Booking where
 import Mensam.API.Aeson
 import Mensam.API.Data.Desk
 import Mensam.API.Data.User
-import Mensam.API.Route.Booking.Type
+import Mensam.API.Route.Booking
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Booking
 import Mensam.Server.Server.Auth
