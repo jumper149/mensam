@@ -5,10 +5,10 @@ import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
-import Mensam.API.Route qualified as Route
-import Mensam.API.Route.Api qualified as Route.Api
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.User qualified as Route.User
+import Mensam.Client.Application
+import Mensam.Client.Application.MensamClient.Class
 import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
 import Mensam.Client.Brick.Register
@@ -20,28 +20,24 @@ import Brick.Forms
 import Brick.Widgets.Border
 import Brick.Widgets.Center
 import Brick.Widgets.List
-import Control.Monad.IO.Class
 import Data.SOP
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Graphics.Vty
 import Lens.Micro.Platform
-import Network.HTTP.Client qualified as Network
 import Servant
-import Servant.Client
 import Servant.RawM.Client ()
 import Text.Email.Text
 
 runBrick :: IO ()
 runBrick = do
-  clientEnv <- clientEnvDefault
   let
     app :: App ClientState () ClientName
     app =
       App
         { appDraw = draw
         , appChooseCursor = showFirstCursor
-        , appHandleEvent = handleEvent clientEnv
+        , appHandleEvent = handleEvent
         , appStartEvent = pure ()
         , appAttrMap = \_ ->
             attrMap
@@ -97,8 +93,8 @@ drawScreen = \case
             renderList (\_focus desk -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId desk) <> " ") <> deskName desk) True desks
     ]
 
-handleEvent :: ClientEnv -> BrickEvent ClientName () -> EventM ClientName ClientState ()
-handleEvent clientEnv = \case
+handleEvent :: BrickEvent ClientName () -> EventM ClientName ClientState ()
+handleEvent = \case
   VtyEvent (EvKey KEsc []) -> halt
   VtyEvent (EvKey (KChar '1') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
   VtyEvent (EvKey (KChar '2') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
@@ -107,9 +103,9 @@ handleEvent clientEnv = \case
     case clientState ^. clientStateJwt of
       Just jwt -> do
         result <-
-          liftIO $
-            flip runClientM clientEnv $
-              (api // Route.Api.routeBooking // Route.Booking.routeSpaceList)
+          runApplicationT $
+            mensamCall $
+              endpointSpaceList
                 (DataJWT $ MkJWToken jwt)
                 (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
         case result of
@@ -134,9 +130,9 @@ handleEvent clientEnv = \case
             case formState form of
               loginInfo -> do
                 result <-
-                  liftIO $
-                    flip runClientM clientEnv $
-                      api // Route.Api.routeUser // Route.User.routeLogin $
+                  runApplicationT $
+                    mensamCall $
+                      endpointLogin $
                         DataBasicAuth
                           MkCredentials
                             { credentialsUsername = loginInfo ^. loginInfoUsername
@@ -146,9 +142,9 @@ handleEvent clientEnv = \case
                   Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) -> do
                     modify $ \s -> s {_clientStateJwt = Just jwt}
                     resultSpaces <-
-                      liftIO $
-                        flip runClientM clientEnv $
-                          (api // Route.Api.routeBooking // Route.Booking.routeSpaceList)
+                      runApplicationT $
+                        mensamCall $
+                          endpointSpaceList
                             (DataJWT $ MkJWToken jwt)
                             (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
                     case resultSpaces of
@@ -167,9 +163,9 @@ handleEvent clientEnv = \case
             case formState form of
               registerInfo -> do
                 result <-
-                  liftIO $
-                    flip runClientM clientEnv $
-                      api // Route.Api.routeUser // Route.User.routeRegister $
+                  runApplicationT $
+                    mensamCall $
+                      endpointRegister
                         Route.User.MkRequestRegister
                           { Route.User.requestRegisterName = MkUsernameUnsafe $ registerInfo ^. registerInfoUsername
                           , Route.User.requestRegisterPassword = registerInfo ^. registerInfoPassword
@@ -189,9 +185,9 @@ handleEvent clientEnv = \case
             case event of
               VtyEvent (EvKey (KChar 'r') []) -> do
                 result <-
-                  liftIO $
-                    flip runClientM clientEnv $
-                      (api // Route.Api.routeBooking // Route.Booking.routeSpaceList)
+                  runApplicationT $
+                    mensamCall $
+                      endpointSpaceList
                         (DataJWT $ MkJWToken jwt)
                         (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
                 case result of
@@ -206,9 +202,9 @@ handleEvent clientEnv = \case
                     modify $ \s -> s {_clientStatePopup = Just "No space selected."}
                   Just (_index, space) -> do
                     result <-
-                      liftIO $
-                        flip runClientM clientEnv $
-                          (api // Route.Api.routeBooking // Route.Booking.routeDeskList)
+                      runApplicationT $
+                        mensamCall $
+                          endpointDeskList
                             (DataJWT $ MkJWToken jwt)
                             (Route.Booking.MkRequestDeskList $ Identifier $ spaceId space)
                     case result of
@@ -226,9 +222,9 @@ handleEvent clientEnv = \case
             case event of
               VtyEvent (EvKey (KChar 'r') []) -> do
                 result <-
-                  liftIO $
-                    flip runClientM clientEnv $
-                      (api // Route.Api.routeBooking // Route.Booking.routeDeskList)
+                  runApplicationT $
+                    mensamCall $
+                      endpointDeskList
                         (DataJWT $ MkJWToken jwt)
                         (Route.Booking.MkRequestDeskList $ Identifier $ spaceId space)
                 case result of
@@ -246,18 +242,3 @@ handleEvent clientEnv = \case
               VtyEvent e -> zoom (clientStateScreenState . clientScreenStateDesks . screenStateDesksList) $ handleListEvent e
               _ -> pure ()
           Nothing -> pure ()
-
-api :: Route.Api.Routes (AsClientT ClientM)
-api = client (Proxy @(NamedRoutes Route.Routes)) // Route.routeApi
-
-clientEnvDefault :: IO ClientEnv
-clientEnvDefault = do
-  httpManager <- Network.newManager Network.defaultManagerSettings
-  let baseUrl =
-        BaseUrl
-          { baseUrlScheme = Http
-          , baseUrlHost = "localhost"
-          , baseUrlPort = 8177
-          , baseUrlPath = ""
-          }
-  pure $ mkClientEnv httpManager baseUrl
