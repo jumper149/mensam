@@ -117,6 +117,8 @@ library
     , Mensam.API.Route.OpenApi
     , Mensam.API.Route.Static
     , Mensam.Client
+    , Mensam.Client.Application.HttpClient
+    , Mensam.Client.Application.HttpClient.Class
     , Mensam.Client.Brick
     , Mensam.Client.Brick.Type
     , Mensam.Client.Debug
