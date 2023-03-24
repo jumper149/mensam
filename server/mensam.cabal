@@ -123,6 +123,7 @@ library
     , Mensam.Client.Application.MensamClient
     , Mensam.Client.Application.MensamClient.Class
     , Mensam.Client.Brick
+    , Mensam.Client.Brick.Draw
     , Mensam.Client.Brick.Login
     , Mensam.Client.Brick.Names
     , Mensam.Client.Brick.Register

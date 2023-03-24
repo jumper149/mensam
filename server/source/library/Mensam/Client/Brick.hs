@@ -1,7 +1,6 @@
 module Mensam.Client.Brick where
 
 import Mensam.API.Aeson
-import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
@@ -9,6 +8,7 @@ import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application
 import Mensam.Client.Application.MensamClient.Class
+import Mensam.Client.Brick.Draw
 import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
 import Mensam.Client.Brick.Register
@@ -17,8 +17,6 @@ import Mensam.Client.OrphanInstances
 
 import Brick
 import Brick.Forms
-import Brick.Widgets.Border
-import Brick.Widgets.Center
 import Brick.Widgets.List
 import Data.SOP
 import Data.Sequence qualified as Seq
@@ -55,43 +53,6 @@ runBrick = do
         }
   _finalState <- defaultMain app initialState
   pure ()
-
-draw :: ClientState -> [Widget ClientName]
-draw MkClientState {_clientStateScreenState, _clientStatePopup} =
-  case _clientStatePopup of
-    Nothing -> drawScreen _clientStateScreenState
-    Just popup -> [center $ borderWithLabel (txt "Error") $ txt popup]
-
-drawHelp :: Widget a
-drawHelp =
-  vBox
-    [ txt title
-    , padTop Max (padLeft Max (txt "Exit (Escape) | Register (Alt-1) | Login (Alt-2) | Spaces (Alt-3)"))
-    ]
- where
-  title :: T.Text
-  title =
-    "  __  __                             \n\
-    \ |  \\/  | ___  _ _   ___ __ _  _ __  \n\
-    \ | |\\/| |/ -_)| ' \\ (_-// _` || '  \\ \n\
-    \ |_|  |_|\\___||_||_|/__/\\__/_||_|_|_|\n"
-
-drawScreen :: ClientScreenState -> [Widget ClientName]
-drawScreen = \case
-  ClientScreenStateLogin s -> loginDraw s <> [drawHelp]
-  ClientScreenStateRegister s -> registerDraw s <> [drawHelp]
-  ClientScreenStateSpaces (MkScreenSpacesState spaces) ->
-    [ borderWithLabel (txt "Spaces") $
-        padBottom Max $
-          padRight Max $
-            renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> spaceName space) True spaces
-    ]
-  ClientScreenStateDesks (MkScreenDesksState space desks) ->
-    [ borderWithLabel (txt $ "Desks (" <> spaceName space <> ")") $
-        padBottom Max $
-          padRight Max $
-            renderList (\_focus desk -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId desk) <> " ") <> deskName desk) True desks
-    ]
 
 handleEvent :: BrickEvent ClientName () -> EventM ClientName ClientState ()
 handleEvent = \case
