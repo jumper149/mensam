@@ -8,6 +8,7 @@ import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application
 import Mensam.Client.Application.MensamClient.Class
+import Mensam.Client.Brick.Desks
 import Mensam.Client.Brick.Draw
 import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
