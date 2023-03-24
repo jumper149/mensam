@@ -4,6 +4,7 @@ module Mensam.Client.Brick.Type where
 
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
+import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
 
 import Brick
@@ -13,30 +14,6 @@ import Data.Kind
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Lens.Micro.Platform
-
-type LoginInfo :: Type
-data LoginInfo = MkLoginInfo
-  { _loginInfoUsername :: T.Text
-  , _loginInfoPassword :: T.Text
-  }
-makeLenses ''LoginInfo
-
-loginFormInitial :: Form LoginInfo e ClientName
-loginFormInitial =
-  newForm
-    [ (str "Username: " <+>) @@= editTextField loginInfoUsername ClientNameLoginUsername (Just 1)
-    , (str "Password: " <+>) @@= editTextField loginInfoPassword ClientNameLoginPassword (Just 1)
-    ]
-    MkLoginInfo
-      { _loginInfoUsername = ""
-      , _loginInfoPassword = ""
-      }
-
-type ScreenLoginState :: Type
-newtype ScreenLoginState = MkScreenLoginState
-  { _screenStateLoginForm :: Form LoginInfo () ClientName
-  }
-makeLenses ''ScreenLoginState
 
 type RegisterInfo :: Type
 data RegisterInfo = MkRegisterInfo

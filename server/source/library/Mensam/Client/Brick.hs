@@ -9,6 +9,7 @@ import Mensam.API.Route qualified as Route
 import Mensam.API.Route.Api qualified as Route.Api
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.User qualified as Route.User
+import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
 import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
@@ -80,10 +81,7 @@ drawHelp =
 
 drawScreen :: ClientScreenState -> [Widget ClientName]
 drawScreen = \case
-  ClientScreenStateLogin (MkScreenLoginState form) ->
-    [ centerLayer $ borderWithLabel (txt "Login") $ cropRightTo 60 $ renderForm form
-    , drawHelp
-    ]
+  ClientScreenStateLogin s -> loginDraw s <> [drawHelp]
   ClientScreenStateRegister (MkScreenRegisterState form) ->
     [ centerLayer $ borderWithLabel (txt "Register") $ cropRightTo 60 $ renderForm form
     , drawHelp
