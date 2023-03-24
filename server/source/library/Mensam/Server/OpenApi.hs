@@ -34,9 +34,8 @@ openapi =
  where
   generatedOpenApi = toOpenApi $ Proxy @(NamedRoutes Route.Api.Routes)
 
--- TODO: Implement.
 instance ToSchema OpenApi where
-  declareNamedSchema Proxy = declareNamedSchema $ Proxy @()
+  declareNamedSchema Proxy = pure $ NamedSchema (Just "OpenAPI Specification") mempty
 
 instance ToParamSchema Username where
   toParamSchema Proxy =
