@@ -9,9 +9,9 @@ type Routes :: Type -> Type
 newtype Routes route = Routes
   { routeJson ::
       route
-        :- Summary "OpenAPI definition"
+        :- Summary "OpenAPI"
           :> Description
-              "This OpenAPI definition is automatically generated.\n"
+              "This OpenAPI specification is automatically generated from a servant API.\n"
           :> "openapi"
           :> Get '[JSON] OpenApi
   }
