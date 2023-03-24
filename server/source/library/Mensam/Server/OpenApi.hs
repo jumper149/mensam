@@ -10,8 +10,8 @@ import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
-import Mensam.API.Route.Booking qualified as Booking
-import Mensam.API.Route.User qualified as User
+import Mensam.API.Route.Api.Booking qualified as Booking
+import Mensam.API.Route.Api.User qualified as User
 
 import Control.Lens
 import Data.Aeson qualified as A

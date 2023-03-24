@@ -6,8 +6,9 @@ import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
 import Mensam.API.Route qualified as Route
-import Mensam.API.Route.Booking qualified as Route.Booking
-import Mensam.API.Route.User qualified as Route.User
+import Mensam.API.Route.Api qualified as Route.Api
+import Mensam.API.Route.Api.Booking qualified as Route.Booking
+import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
 
@@ -111,7 +112,7 @@ handleEvent clientEnv = \case
         result <-
           liftIO $
             flip runClientM clientEnv $
-              (routes // Route.routeBooking // Route.Booking.routeSpaceList)
+              (api // Route.Api.routeBooking // Route.Booking.routeSpaceList)
                 (DataJWT $ MkJWToken jwt)
                 (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
         case result of
@@ -138,7 +139,7 @@ handleEvent clientEnv = \case
                 result <-
                   liftIO $
                     flip runClientM clientEnv $
-                      routes // Route.routeUser // Route.User.routeLogin $
+                      api // Route.Api.routeUser // Route.User.routeLogin $
                         DataBasicAuth
                           MkCredentials
                             { credentialsUsername = loginInfo ^. loginInfoUsername
@@ -150,7 +151,7 @@ handleEvent clientEnv = \case
                     resultSpaces <-
                       liftIO $
                         flip runClientM clientEnv $
-                          (routes // Route.routeBooking // Route.Booking.routeSpaceList)
+                          (api // Route.Api.routeBooking // Route.Booking.routeSpaceList)
                             (DataJWT $ MkJWToken jwt)
                             (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
                     case resultSpaces of
@@ -171,7 +172,7 @@ handleEvent clientEnv = \case
                 result <-
                   liftIO $
                     flip runClientM clientEnv $
-                      routes // Route.routeUser // Route.User.routeRegister $
+                      api // Route.Api.routeUser // Route.User.routeRegister $
                         Route.User.MkRequestRegister
                           { Route.User.requestRegisterName = MkUsernameUnsafe $ registerInfo ^. registerInfoUsername
                           , Route.User.requestRegisterPassword = registerInfo ^. registerInfoPassword
@@ -193,7 +194,7 @@ handleEvent clientEnv = \case
                 result <-
                   liftIO $
                     flip runClientM clientEnv $
-                      (routes // Route.routeBooking // Route.Booking.routeSpaceList)
+                      (api // Route.Api.routeBooking // Route.Booking.routeSpaceList)
                         (DataJWT $ MkJWToken jwt)
                         (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
                 case result of
@@ -210,7 +211,7 @@ handleEvent clientEnv = \case
                     result <-
                       liftIO $
                         flip runClientM clientEnv $
-                          (routes // Route.routeBooking // Route.Booking.routeDeskList)
+                          (api // Route.Api.routeBooking // Route.Booking.routeDeskList)
                             (DataJWT $ MkJWToken jwt)
                             (Route.Booking.MkRequestDeskList $ Identifier $ spaceId space)
                     case result of
@@ -230,7 +231,7 @@ handleEvent clientEnv = \case
                 result <-
                   liftIO $
                     flip runClientM clientEnv $
-                      (routes // Route.routeBooking // Route.Booking.routeDeskList)
+                      (api // Route.Api.routeBooking // Route.Booking.routeDeskList)
                         (DataJWT $ MkJWToken jwt)
                         (Route.Booking.MkRequestDeskList $ Identifier $ spaceId space)
                 case result of
@@ -249,8 +250,8 @@ handleEvent clientEnv = \case
               _ -> pure ()
           Nothing -> pure ()
 
-routes :: Route.Routes (AsClientT ClientM)
-routes = client $ Proxy @(NamedRoutes Route.Routes)
+api :: Route.Api.Routes (AsClientT ClientM)
+api = client (Proxy @(NamedRoutes Route.Routes)) // Route.routeApi
 
 clientEnvDefault :: IO ClientEnv
 clientEnvDefault = do

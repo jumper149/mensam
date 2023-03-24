@@ -1,23 +1,23 @@
-module Mensam.Server.Server.Route where
+module Mensam.Server.Server.Route.Api where
 
-import Mensam.API.Route
+import Mensam.API.Route.Api
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
-import Mensam.Server.Server.Route.Api qualified
+import Mensam.Server.Server.Route.Api.Booking qualified
 import Mensam.Server.Server.Route.Api.OpenApi qualified
-import Mensam.Server.Server.Route.Static qualified
+import Mensam.Server.Server.Route.Api.User qualified
 
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
 import Servant.Server.Generic
 
-routes ::
+handler ::
   (MonadConfigured m, MonadLogger m, MonadSecret m, MonadSeldaPool m, MonadUnliftIO m) =>
   Routes (AsServerT m)
-routes =
+handler =
   Routes
-    { routeApi = Mensam.Server.Server.Route.Api.handler
-    , routeOpenApi = Mensam.Server.Server.Route.Api.OpenApi.handler
-    , routeStatic = Mensam.Server.Server.Route.Static.handler
+    { routeOpenApi = Mensam.Server.Server.Route.Api.OpenApi.handler
+    , routeUser = Mensam.Server.Server.Route.Api.User.handler
+    , routeBooking = Mensam.Server.Server.Route.Api.Booking.handler
     }
