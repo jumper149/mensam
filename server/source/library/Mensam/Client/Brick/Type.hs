@@ -4,6 +4,7 @@ module Mensam.Client.Brick.Type where
 
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
+import Mensam.Client.Brick.Names
 
 import Brick
 import Brick.Forms
@@ -12,17 +13,6 @@ import Data.Kind
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Lens.Micro.Platform
-
-type ClientName :: Type
-data ClientName
-  = ClientNameLoginUsername
-  | ClientNameLoginPassword
-  | ClientNameRegisterUsername
-  | ClientNameRegisterPassword
-  | ClientNameRegisterEmail
-  | ClientNameRegisterEmailVisible
-  | ClientNameSpacesList
-  deriving stock (Eq, Ord, Show)
 
 type LoginInfo :: Type
 data LoginInfo = MkLoginInfo
