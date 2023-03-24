@@ -6,44 +6,13 @@ import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
 import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
+import Mensam.Client.Brick.Register
 
-import Brick
-import Brick.Forms
 import Brick.Widgets.List
 import Data.Kind
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Lens.Micro.Platform
-
-type RegisterInfo :: Type
-data RegisterInfo = MkRegisterInfo
-  { _registerInfoUsername :: T.Text
-  , _registerInfoPassword :: T.Text
-  , _registerInfoEmail :: T.Text
-  , _registerInfoEmailVisible :: Bool
-  }
-makeLenses ''RegisterInfo
-
-registerFormInitial :: Form RegisterInfo e ClientName
-registerFormInitial =
-  newForm
-    [ (str "Username: " <+>) @@= editTextField registerInfoUsername ClientNameRegisterUsername (Just 1)
-    , (str "Password: " <+>) @@= editTextField registerInfoPassword ClientNameRegisterPassword (Just 1)
-    , (str "Email: " <+>) @@= editTextField registerInfoEmail ClientNameRegisterEmail (Just 1)
-    , checkboxField registerInfoEmailVisible ClientNameRegisterEmailVisible "Email visible"
-    ]
-    MkRegisterInfo
-      { _registerInfoUsername = ""
-      , _registerInfoPassword = ""
-      , _registerInfoEmail = ""
-      , _registerInfoEmailVisible = False
-      }
-
-type ScreenRegisterState :: Type
-newtype ScreenRegisterState = MkScreenRegisterState
-  { _screenStateRegisterForm :: Form RegisterInfo () ClientName
-  }
-makeLenses ''ScreenRegisterState
 
 spacesListInitial :: GenericList ClientName Seq.Seq Space
 spacesListInitial =

@@ -125,6 +125,7 @@ library
     , Mensam.Client.Brick
     , Mensam.Client.Brick.Login
     , Mensam.Client.Brick.Names
+    , Mensam.Client.Brick.Register
     , Mensam.Client.Brick.Type
     , Mensam.Client.Debug
     , Mensam.Client.OrphanInstances
