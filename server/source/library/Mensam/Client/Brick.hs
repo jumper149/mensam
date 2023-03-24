@@ -53,7 +53,9 @@ runBrick = do
         , _clientStatePopup = Nothing
         , _clientStateJwt = Nothing
         }
-  _finalState <- defaultMain app initialState
+    initVty = mkVty defaultConfig
+  vty <- initVty
+  _finalState <- customMain vty initVty Nothing app initialState
   pure ()
 
 handleEvent :: BrickEvent ClientName () -> EventM ClientName ClientState ()

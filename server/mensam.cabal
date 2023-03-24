@@ -118,6 +118,8 @@ library
     , Mensam.API.Route.Static
     , Mensam.Client
     , Mensam.Client.Application
+    , Mensam.Client.Application.Event
+    , Mensam.Client.Application.Event.Class
     , Mensam.Client.Application.HttpClient
     , Mensam.Client.Application.HttpClient.Class
     , Mensam.Client.Application.MensamClient
@@ -125,6 +127,7 @@ library
     , Mensam.Client.Brick
     , Mensam.Client.Brick.Desks
     , Mensam.Client.Brick.Draw
+    , Mensam.Client.Brick.Events
     , Mensam.Client.Brick.Login
     , Mensam.Client.Brick.Names
     , Mensam.Client.Brick.Register
