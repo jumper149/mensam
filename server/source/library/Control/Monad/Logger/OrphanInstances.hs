@@ -8,6 +8,7 @@ import Control.Monad.Trans
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Control.Identity
 import Control.Monad.Trans.Elevator
+import Control.Monad.Trans.Identity
 import Control.Monad.Trans.Reader
 import Data.Kind
 
@@ -15,6 +16,11 @@ deriving via
   ReaderT (Loc -> LogSource -> LogLevel -> LogStr -> IO ())
   instance
     MonadTransControlIdentity LoggingT
+
+deriving via
+  IdentityT
+  instance
+    MonadTransControlIdentity NoLoggingT
 
 instance (Monad (t m), MonadTrans t, MonadLogger m) => MonadLogger (Elevator t m) where
   monadLoggerLog loc logSource logLevel = lift . monadLoggerLog loc logSource logLevel
