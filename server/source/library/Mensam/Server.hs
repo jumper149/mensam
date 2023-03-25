@@ -4,7 +4,7 @@ import Mensam.Server.Application
 import Mensam.Server.Application.Configured
 import Mensam.Server.Application.Environment
 import Mensam.Server.Application.Environment.Acquisition
-import Mensam.Server.Application.Logging (logLine)
+import Mensam.Server.Application.Logging
 import Mensam.Server.Application.SeldaPool
 import Mensam.Server.Database
 import Mensam.Server.Secrets
@@ -26,7 +26,7 @@ initialize = do
 
   runTransparentT $
     runEnvironmentT env . deComposeT $
-      runStdoutLoggingT . deComposeT $ do
+      runAppTimedLoggingT . deComposeT $ do
         traverse_ logLine preLog
         runAppConfiguredT . deComposeT $ do
           logDebug "Initialize secrets."
