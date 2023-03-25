@@ -1,6 +1,7 @@
 module Mensam.Client.Debug where
 
 import Mensam.API.Aeson
+import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.User qualified as Route.User
@@ -30,7 +31,7 @@ f = do
     name :: Username = MkUsernameUnsafe "maxmustermann7"
     pw :: T.Text = "asdf"
     email :: EmailAddress = fromTextUnsafe "maxmustermann@gmail.com"
-    spacename :: T.Text = "solarsystem"
+    spacename :: NameSpace = MkNameSpace "solarsystem"
 
   liftIO $ putStrLn "Register."
   let requestRegister =

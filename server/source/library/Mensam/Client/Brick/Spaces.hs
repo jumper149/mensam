@@ -32,5 +32,5 @@ spacesDraw = \case
     [ borderWithLabel (txt "Spaces") $
         padBottom Max $
           padRight Max $
-            renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> spaceName space) True spaces
+            renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> unNameSpace (spaceName space)) True spaces
     ]

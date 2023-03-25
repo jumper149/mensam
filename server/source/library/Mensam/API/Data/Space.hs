@@ -12,7 +12,7 @@ import GHC.Generics
 type Space :: Type
 data Space = MkSpace
   { spaceId :: IdentifierSpace
-  , spaceName :: T.Text
+  , spaceName :: NameSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
@@ -21,6 +21,11 @@ type IdentifierSpace :: Type
 newtype IdentifierSpace = MkIdentifierSpace {unIdentifierSpace :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (A.FromJSON, A.ToJSON)
+
+type NameSpace :: Type
+newtype NameSpace = MkNameSpace {unNameSpace :: T.Text}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
 
 type SpaceOrderCategory :: Type
 data SpaceOrderCategory

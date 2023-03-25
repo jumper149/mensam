@@ -24,13 +24,13 @@ import GHC.Generics
 spaceLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   -- | name
-  T.Text ->
+  NameSpace ->
   SeldaTransactionT m (Maybe IdentifierSpace)
 spaceLookupId name = do
   lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
   maybeDbId <- Selda.queryUnique $ do
     dbSpace <- Selda.select tableSpace
-    Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal name
+    Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal (unNameSpace name)
     pure $ dbSpace Selda.! #dbSpace_id
   case maybeDbId of
     Nothing -> do
@@ -61,14 +61,13 @@ spaceList userIdentifier spaceOrder = do
   let fromDbSpace space =
         MkSpace
           { spaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id space
-          , spaceName = dbSpace_name space
+          , spaceName = MkNameSpace $ dbSpace_name space
           }
   pure $ fromDbSpace <$> dbSpaces
 
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | name
-  T.Text ->
+  NameSpace ->
   -- | visible
   Bool ->
   SeldaTransactionT m IdentifierSpace
@@ -77,7 +76,7 @@ spaceCreate name visible = do
   let dbSpace =
         MkDbSpace
           { dbSpace_id = Selda.def
-          , dbSpace_name = name
+          , dbSpace_name = unNameSpace name
           , dbSpace_visible = visible
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]

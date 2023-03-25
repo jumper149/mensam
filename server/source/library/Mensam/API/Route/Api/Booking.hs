@@ -113,7 +113,7 @@ data Routes route = Routes
 
 type RequestSpaceCreate :: Type
 data RequestSpaceCreate = MkRequestSpaceCreate
-  { requestSpaceCreateName :: T.Text
+  { requestSpaceCreateName :: NameSpace
   , requestSpaceCreateVisible :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -151,7 +151,7 @@ newtype ResponseSpaceList = MkResponseSpaceList
 type RequestDeskCreate :: Type
 data RequestDeskCreate = MkRequestDeskCreate
   { requestDeskCreateName :: T.Text
-  , requestDeskCreateSpace :: NameOrIdentifier T.Text IdentifierSpace
+  , requestDeskCreateSpace :: NameOrIdentifier NameSpace IdentifierSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -169,7 +169,7 @@ newtype ResponseDeskCreate = MkResponseDeskCreate
 
 type RequestDeskList :: Type
 data RequestDeskList = MkRequestDeskList
-  { requestDeskListSpace :: NameOrIdentifier T.Text IdentifierSpace
+  { requestDeskListSpace :: NameOrIdentifier NameSpace IdentifierSpace
   , requestDeskListTimeBegin :: Maybe T.UTCTime
   , requestDeskListTimeEnd :: Maybe T.UTCTime
   }
@@ -199,7 +199,7 @@ newtype ResponseDeskList = MkResponseDeskList
 
 type RequestReservationCreate :: Type
 data RequestReservationCreate = MkRequestReservationCreate
-  { requestReservationCreateDesk :: NameOrIdentifier (T.Text, T.Text) IdentifierDesk
+  { requestReservationCreateDesk :: NameOrIdentifier (NameSpace, T.Text) IdentifierDesk
   , requestReservationCreateTimeBegin :: T.UTCTime
   , requestReservationCreateTimeEnd :: T.UTCTime
   }

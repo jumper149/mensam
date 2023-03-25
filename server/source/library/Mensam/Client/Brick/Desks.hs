@@ -32,7 +32,7 @@ makeLenses ''ScreenDesksState
 desksDraw :: ScreenDesksState -> [Widget ClientName]
 desksDraw = \case
   MkScreenDesksState {_screenStateDesksSpace = space, _screenStateDesksList = desksWithInfo} ->
-    [ borderWithLabel (txt $ "Desks (" <> spaceName space <> ")") $
+    [ borderWithLabel (txt $ "Desks (" <> unNameSpace (spaceName space) <> ")") $
         padBottom Max $
           padRight Max $
             renderList (\_focus (MkDeskWithInfo {deskWithInfoDesk, deskWithInfoReservations}) -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> deskName deskWithInfoDesk <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
