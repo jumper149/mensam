@@ -39,7 +39,7 @@ envVarParse = \case
 
 envVarDefault :: SEnvVar envVar -> EnvVarValue envVar
 envVarDefault = \case
-  SEnvVarConfigFile -> "./homepage.json"
+  SEnvVarConfigFile -> "./mensam.json"
   SEnvVarLogFile -> Nothing
   SEnvVarLogLevel -> LevelDebug
 
