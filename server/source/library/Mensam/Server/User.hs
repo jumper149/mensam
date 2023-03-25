@@ -106,8 +106,8 @@ userCreate username password emailAddress emailAddressVisible = do
           , dbUser_email = toText emailAddress
           , dbUser_email_visibility =
               if emailAddressVisible
-                then MkDbEmailVisibilityVisible
-                else MkDbEmailVisibilityHidden
+                then MkDbEmailVisibility_visible
+                else MkDbEmailVisibility_hidden
           }
   lift $ logDebug "Inserting user into database."
   dbUserId <- Selda.insertWithPK tableUser [dbUser]

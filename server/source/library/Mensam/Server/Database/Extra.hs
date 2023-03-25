@@ -4,7 +4,12 @@ import Mensam.API.Order
 
 import Control.Monad.Catch
 import Data.Kind
+import Data.Maybe
+import Data.Proxy
+import Data.Text qualified as T
+import Data.Typeable
 import Database.Selda
+import GHC.TypeLits
 
 -- | Run 'query', but throw an error when there are multiple results.
 queryUnique :: (MonadSelda m, MonadThrow m, Result a) => Query (Backend m) a -> m (Maybe (Res a))
@@ -40,3 +45,11 @@ orderFlexible categoryToCol (MkOrderByCategories (c : cs)) =
   translateOrder = \case
     Ascending -> ascending
     Descending -> descending
+
+type SqlEnumStripPrefix :: Symbol -> Type -> Type
+newtype SqlEnumStripPrefix prefix a = MkSqlEnumStripPrefix {unSqlEnumStripPrefix :: a}
+  deriving newtype (Bounded, Enum)
+
+instance (Typeable a, Bounded a, Enum a, Show a, Read a, KnownSymbol prefix) => SqlEnum (SqlEnumStripPrefix prefix a) where
+  toText = fromJust . T.stripPrefix (T.pack (symbolVal $ Proxy @prefix)) . (T.pack . show @a) . unSqlEnumStripPrefix
+  fromText = MkSqlEnumStripPrefix . (read @a . T.unpack) . (T.pack (symbolVal $ Proxy @prefix) <>)

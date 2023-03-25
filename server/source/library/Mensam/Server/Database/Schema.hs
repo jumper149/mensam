@@ -1,6 +1,10 @@
 {-# LANGUAGE OverloadedLabels #-}
 
+{- HLINT ignore "Use camelCase" -}
+
 module Mensam.Server.Database.Schema where
+
+import Mensam.Server.Database.Extra
 
 import Data.Kind
 import Data.Maybe
@@ -21,9 +25,10 @@ data DbUser = MkDbUser
 
 type DbEmailVisibility :: Type
 data DbEmailVisibility
-  = MkDbEmailVisibilityVisible
-  | MkDbEmailVisibilityHidden
+  = MkDbEmailVisibility_visible
+  | MkDbEmailVisibility_hidden
   deriving stock (Bounded, Enum, Read, Show)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbEmailVisibility_" DbEmailVisibility)
   deriving anyclass (Selda.SqlType)
 
 tableUser :: Selda.Table DbUser
