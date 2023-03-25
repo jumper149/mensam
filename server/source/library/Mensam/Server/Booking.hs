@@ -23,7 +23,6 @@ import GHC.Generics
 
 spaceLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | name
   NameSpace ->
   SeldaTransactionT m (Maybe IdentifierSpace)
 spaceLookupId name = do
