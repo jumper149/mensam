@@ -179,7 +179,7 @@ handleEvent = \case
                             )
                     case result of
                       Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) -> do
-                        let l = listReplace (Seq.fromList $ Route.Booking.deskWithInfoDesk <$> desks) (Just 0) desksListInitial
+                        let l = listReplace (Seq.fromList desks) (Just 0) desksListInitial
                         modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l)}
                       err ->
                         modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
@@ -204,7 +204,7 @@ handleEvent = \case
                         )
                 case result of
                   Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList xs)))) ->
-                    clientStateScreenState . clientScreenStateDesks . screenStateDesksList %= listReplace (Seq.fromList $ Route.Booking.deskWithInfoDesk <$> xs) (Just 0)
+                    clientStateScreenState . clientScreenStateDesks . screenStateDesksList %= listReplace (Seq.fromList xs) (Just 0)
                   err ->
                     modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
                 pure ()

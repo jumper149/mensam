@@ -4,6 +4,7 @@ module Mensam.Client.Brick.Desks where
 
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
+import Mensam.API.Route.Api.Booking
 import Mensam.Client.Brick.Names
 
 import Brick
@@ -14,7 +15,7 @@ import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Lens.Micro.Platform
 
-desksListInitial :: GenericList ClientName Seq.Seq Desk
+desksListInitial :: GenericList ClientName Seq.Seq DeskWithInfo
 desksListInitial =
   list
     ClientNameSpacesList
@@ -24,15 +25,15 @@ desksListInitial =
 type ScreenDesksState :: Type
 data ScreenDesksState = MkScreenDesksState
   { _screenStateDesksSpace :: Space
-  , _screenStateDesksList :: GenericList ClientName Seq.Seq Desk
+  , _screenStateDesksList :: GenericList ClientName Seq.Seq DeskWithInfo
   }
 makeLenses ''ScreenDesksState
 
 desksDraw :: ScreenDesksState -> [Widget ClientName]
 desksDraw = \case
-  MkScreenDesksState {_screenStateDesksSpace = space, _screenStateDesksList = desks} ->
+  MkScreenDesksState {_screenStateDesksSpace = space, _screenStateDesksList = desksWithInfo} ->
     [ borderWithLabel (txt $ "Desks (" <> spaceName space <> ")") $
         padBottom Max $
           padRight Max $
-            renderList (\_focus desk -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId desk) <> " ") <> deskName desk) True desks
+            renderList (\_focus (MkDeskWithInfo {deskWithInfoDesk, deskWithInfoReservations}) -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> deskName deskWithInfoDesk <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
     ]
