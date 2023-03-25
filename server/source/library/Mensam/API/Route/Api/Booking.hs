@@ -168,17 +168,29 @@ newtype ResponseDeskCreate = MkResponseDeskCreate
     via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") ResponseDeskCreate
 
 type RequestDeskList :: Type
-newtype RequestDeskList = MkRequestDeskList
+data RequestDeskList = MkRequestDeskList
   { requestDeskListSpace :: NameOrIdentifier T.Text IdentifierSpace
+  , requestDeskListTimeBegin :: Maybe T.UTCTime
+  , requestDeskListTimeEnd :: Maybe T.UTCTime
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") RequestDeskList
 
+type DeskWithInfo :: Type
+data DeskWithInfo = MkDeskWithInfo
+  { deskWithInfoDesk :: Desk
+  , deskWithInfoReservations :: [Reservation]
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "deskWithInfo") DeskWithInfo
+
 type ResponseDeskList :: Type
 newtype ResponseDeskList = MkResponseDeskList
-  { responseDeskListDesks :: [Desk]
+  { responseDeskListDesks :: [DeskWithInfo]
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

@@ -100,6 +100,8 @@ f = do
   let requestDeskList =
         Route.Booking.MkRequestDeskList
           { Route.Booking.requestDeskListSpace = Name spacename
+          , Route.Booking.requestDeskListTimeBegin = Nothing
+          , Route.Booking.requestDeskListTimeEnd = Nothing
           }
   resultDeskList <- endpointDeskList (DataJWT nextToken) requestDeskList
   liftIO $ print resultDeskList

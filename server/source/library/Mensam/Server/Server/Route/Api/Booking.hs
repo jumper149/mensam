@@ -13,6 +13,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Text qualified as T
+import Data.Traversable
 import Database.Selda qualified as Selda
 import Servant hiding (BasicAuthResult (..))
 import Servant.Auth.Server
@@ -151,15 +152,27 @@ listDesks auth eitherRequest =
                 Nothing -> undefined
                 Just spaceId -> pure spaceId
             Identifier spaceId -> pure spaceId
-        deskList spaceIdentifier (userAuthenticatedId authenticated)
+        desks <- deskList spaceIdentifier (userAuthenticatedId authenticated)
+        for desks $ \desk -> do
+          reservations <-
+            reservationList
+              (deskId desk)
+              (requestDeskListTimeBegin request)
+              (requestDeskListTimeEnd request)
+              Nothing
+          pure
+            MkDeskWithInfo
+              { deskWithInfoDesk = desk
+              , deskWithInfoReservations = reservations
+              }
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
           logWarn "Failed to list desks."
           respond $ WithStatus @500 ()
-        SeldaSuccess desks -> do
+        SeldaSuccess desksWithInfo -> do
           logInfo "Listed desks."
-          respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desks}
+          respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
 
 createReservation ::
   ( MonadIO m
