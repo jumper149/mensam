@@ -1,9 +1,10 @@
 module Mensam.Server.Application.Secret.Class where
 
+import Mensam.Server.Secrets
+
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Elevator
-import Crypto.JOSE.JWK qualified as JOSE
 import Data.Kind
 
 type MonadSecret :: (Type -> Type) -> Constraint
@@ -28,8 +29,3 @@ deriving via
     , MonadSecret (t2 m)
     ) =>
     MonadSecret (ComposeT t1 t2 m)
-
-type Secrets :: Type
-newtype Secrets = MkSecrets
-  { secretsJwk :: JOSE.JWK
-  }

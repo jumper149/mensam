@@ -8,6 +8,7 @@ import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Configuration
+import Mensam.Server.Secrets
 import Mensam.Server.Server.Auth
 import Mensam.Server.User
 

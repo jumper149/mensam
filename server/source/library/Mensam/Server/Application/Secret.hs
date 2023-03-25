@@ -5,6 +5,7 @@ module Mensam.Server.Application.Secret where
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Configuration
+import Mensam.Server.Secrets
 
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans

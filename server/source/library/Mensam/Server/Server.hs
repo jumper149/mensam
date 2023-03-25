@@ -6,6 +6,7 @@ import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Configuration
 import Mensam.Server.Configuration.BaseUrl
+import Mensam.Server.Secrets
 import Mensam.Server.Server.Auth
 import Mensam.Server.Server.Handler
 import Mensam.Server.Server.Handler.RequestHash

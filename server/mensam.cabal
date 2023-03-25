@@ -160,6 +160,7 @@ library
     , Mensam.Server.Database.Schema
     , Mensam.Server.Environment
     , Mensam.Server.OpenApi
+    , Mensam.Server.Secrets
     , Mensam.Server.Server
     , Mensam.Server.Server.Auth
     , Mensam.Server.Server.Err404
