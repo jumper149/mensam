@@ -121,18 +121,21 @@ spaceUserAdd spaceIdentifier userIdentifier isAdmin = do
 
 deskLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | name
+  -- | space
+  IdentifierSpace ->
+  -- | desk name
   T.Text ->
   SeldaTransactionT m (Maybe IdentifierDesk)
-deskLookupId name = do
-  lift $ logDebug $ "Looking up desk identifier with name: " <> T.pack (show name)
+deskLookupId spaceIdentifier deskName = do
+  lift $ logDebug $ "Looking up desk identifier with name: " <> T.pack (show (spaceIdentifier, deskName))
   maybeDbId <- Selda.queryUnique $ do
     dbDesk <- Selda.select tableDesk
-    Selda.restrict $ dbDesk Selda.! #dbDesk_name Selda..== Selda.literal name
+    Selda.restrict $ dbDesk Selda.! #dbDesk_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
+    Selda.restrict $ dbDesk Selda.! #dbDesk_name Selda..== Selda.literal deskName
     pure $ dbDesk Selda.! #dbDesk_id
   case maybeDbId of
     Nothing -> do
-      lift $ logWarn $ "Failed to look up desk. Name doesn't exist: " <> T.pack (show name)
+      lift $ logWarn $ "Failed to look up desk. Name doesn't exist: " <> T.pack (show deskName)
       pure Nothing
     Just dbId -> do
       lift $ logInfo "Looked up desk successfully."

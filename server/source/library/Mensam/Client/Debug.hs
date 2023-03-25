@@ -12,6 +12,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Class
 import Data.SOP
 import Data.Text qualified as T
+import Data.Time qualified as T
 import Servant
 import Servant.Client
 import Servant.RawM.Client ()
@@ -105,5 +106,16 @@ f = do
           }
   resultDeskList <- endpointDeskList (DataJWT nextToken) requestDeskList
   liftIO $ print resultDeskList
+
+  liftIO $ putStrLn "Create reservation."
+  currentTime <- liftIO T.getCurrentTime
+  let requestReservationCreate =
+        Route.Booking.MkRequestReservationCreate
+          { Route.Booking.requestReservationCreateDesk = Name (spacename, "saturn")
+          , Route.Booking.requestReservationCreateTimeBegin = currentTime
+          , Route.Booking.requestReservationCreateTimeEnd = T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime` currentTime
+          }
+  resultReservationCreate <- endpointReservationCreate (DataJWT nextToken) requestReservationCreate
+  liftIO $ print resultReservationCreate
 
   pure ()

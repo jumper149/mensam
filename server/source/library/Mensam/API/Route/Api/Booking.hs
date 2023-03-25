@@ -199,7 +199,7 @@ newtype ResponseDeskList = MkResponseDeskList
 
 type RequestReservationCreate :: Type
 data RequestReservationCreate = MkRequestReservationCreate
-  { requestReservationCreateDesk :: NameOrIdentifier T.Text IdentifierDesk
+  { requestReservationCreateDesk :: NameOrIdentifier (T.Text, T.Text) IdentifierDesk
   , requestReservationCreateTimeBegin :: T.UTCTime
   , requestReservationCreateTimeEnd :: T.UTCTime
   }
