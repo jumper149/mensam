@@ -120,17 +120,15 @@ spaceUserAdd spaceIdentifier userIdentifier isAdmin = do
 
 deskLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | space
   IdentifierSpace ->
-  -- | desk name
-  T.Text ->
+  NameDesk ->
   SeldaTransactionT m (Maybe IdentifierDesk)
 deskLookupId spaceIdentifier deskName = do
   lift $ logDebug $ "Looking up desk identifier with name: " <> T.pack (show (spaceIdentifier, deskName))
   maybeDbId <- Selda.queryUnique $ do
     dbDesk <- Selda.select tableDesk
     Selda.restrict $ dbDesk Selda.! #dbDesk_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
-    Selda.restrict $ dbDesk Selda.! #dbDesk_name Selda..== Selda.literal deskName
+    Selda.restrict $ dbDesk Selda.! #dbDesk_name Selda..== Selda.literal (unNameDesk deskName)
     pure $ dbDesk Selda.! #dbDesk_id
   case maybeDbId of
     Nothing -> do
@@ -166,14 +164,13 @@ deskList spaceIdentifier userIdentifier = do
         MkDesk
           { deskId = MkIdentifierDesk $ Selda.fromId @DbDesk $ dbDesk_id desk
           , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space desk
-          , deskName = dbDesk_name desk
+          , deskName = MkNameDesk $ dbDesk_name desk
           }
   pure $ fromDbDesk <$> dbDesks
 
 deskCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  -- | desk name
-  T.Text ->
+  NameDesk ->
   IdentifierSpace ->
   SeldaTransactionT m IdentifierDesk
 deskCreate deskName spaceIdentifier = do
@@ -182,7 +179,7 @@ deskCreate deskName spaceIdentifier = do
         MkDbDesk
           { dbDesk_id = Selda.def
           , dbDesk_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
-          , dbDesk_name = deskName
+          , dbDesk_name = unNameDesk deskName
           }
   lift $ logDebug "Inserting desk into database."
   dbDeskId <- Selda.insertWithPK tableDesk [dbDesk]
@@ -204,7 +201,7 @@ deskGet identifier = do
     MkDesk
       { deskId = MkIdentifierDesk $ Selda.fromId $ dbDesk_id dbDesk
       , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space dbDesk
-      , deskName = dbDesk_name dbDesk
+      , deskName = MkNameDesk $ dbDesk_name dbDesk
       }
 
 -- | List all reservations of a desk, that overlap with the given time window.

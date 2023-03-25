@@ -1,6 +1,7 @@
 module Mensam.Client.Debug where
 
 import Mensam.API.Aeson
+import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
@@ -83,7 +84,7 @@ f = do
   liftIO $ putStrLn "Create desk."
   let requestDeskCreate =
         Route.Booking.MkRequestDeskCreate
-          { Route.Booking.requestDeskCreateName = "neptune"
+          { Route.Booking.requestDeskCreateName = MkNameDesk "neptune"
           , Route.Booking.requestDeskCreateSpace = Name spacename
           }
   resultDeskCreate <- endpointDeskCreate (DataJWT nextToken) requestDeskCreate
@@ -92,7 +93,7 @@ f = do
   liftIO $ putStrLn "Create desk."
   let requestDeskCreate2 =
         Route.Booking.MkRequestDeskCreate
-          { Route.Booking.requestDeskCreateName = "saturn"
+          { Route.Booking.requestDeskCreateName = MkNameDesk "saturn"
           , Route.Booking.requestDeskCreateSpace = Name spacename
           }
   resultDeskCreate2 <- endpointDeskCreate (DataJWT nextToken) requestDeskCreate2
@@ -112,7 +113,7 @@ f = do
   currentTime <- liftIO T.getCurrentTime
   let requestReservationCreate =
         Route.Booking.MkRequestReservationCreate
-          { Route.Booking.requestReservationCreateDesk = Name (spacename, "saturn")
+          { Route.Booking.requestReservationCreateDesk = Name (spacename, MkNameDesk "saturn")
           , Route.Booking.requestReservationCreateTimeBegin = currentTime
           , Route.Booking.requestReservationCreateTimeEnd = T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime` currentTime
           }

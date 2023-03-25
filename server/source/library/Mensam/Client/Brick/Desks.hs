@@ -35,5 +35,5 @@ desksDraw = \case
     [ borderWithLabel (txt $ "Desks (" <> unNameSpace (spaceName space) <> ")") $
         padBottom Max $
           padRight Max $
-            renderList (\_focus (MkDeskWithInfo {deskWithInfoDesk, deskWithInfoReservations}) -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> deskName deskWithInfoDesk <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
+            renderList (\_focus (MkDeskWithInfo {deskWithInfoDesk, deskWithInfoReservations}) -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> unNameDesk (deskName deskWithInfoDesk) <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
     ]

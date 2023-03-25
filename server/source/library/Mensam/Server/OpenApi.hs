@@ -65,6 +65,7 @@ deriving anyclass instance ToSchema IdentifierSpace
 deriving newtype instance ToSchema NameSpace
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Desk instance ToSchema Desk
 deriving anyclass instance ToSchema IdentifierDesk
+deriving newtype instance ToSchema NameDesk
 deriving via A.CustomJSON (JSONSettings "Mk" "reservation") Reservation instance ToSchema Reservation
 deriving anyclass instance ToSchema IdentifierReservation
 

@@ -9,7 +9,6 @@ import Mensam.API.Order
 
 import Data.Aeson qualified as A
 import Data.Kind
-import Data.Text qualified as T
 import Data.Time qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
@@ -150,7 +149,7 @@ newtype ResponseSpaceList = MkResponseSpaceList
 
 type RequestDeskCreate :: Type
 data RequestDeskCreate = MkRequestDeskCreate
-  { requestDeskCreateName :: T.Text
+  { requestDeskCreateName :: NameDesk
   , requestDeskCreateSpace :: NameOrIdentifier NameSpace IdentifierSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -199,7 +198,7 @@ newtype ResponseDeskList = MkResponseDeskList
 
 type RequestReservationCreate :: Type
 data RequestReservationCreate = MkRequestReservationCreate
-  { requestReservationCreateDesk :: NameOrIdentifier (NameSpace, T.Text) IdentifierDesk
+  { requestReservationCreateDesk :: NameOrIdentifier (NameSpace, NameDesk) IdentifierDesk
   , requestReservationCreateTimeBegin :: T.UTCTime
   , requestReservationCreateTimeEnd :: T.UTCTime
   }
