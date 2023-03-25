@@ -14,10 +14,17 @@ data DbUser = MkDbUser
   , dbUser_name :: Selda.Text
   , dbUser_password_hash :: Selda.Text
   , dbUser_email :: Selda.Text
-  , dbUser_email_visible :: Bool
+  , dbUser_email_visibility :: DbEmailVisibility
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
+
+type DbEmailVisibility :: Type
+data DbEmailVisibility
+  = MkDbEmailVisibilityVisible
+  | MkDbEmailVisibilityHidden
+  deriving stock (Bounded, Enum, Read, Show)
+  deriving anyclass (Selda.SqlType)
 
 tableUser :: Selda.Table DbUser
 tableUser =
