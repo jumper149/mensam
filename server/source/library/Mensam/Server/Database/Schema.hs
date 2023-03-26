@@ -44,10 +44,18 @@ type DbSpace :: Type
 data DbSpace = MkDbSpace
   { dbSpace_id :: Selda.ID DbSpace
   , dbSpace_name :: Selda.Text
-  , dbSpace_visible :: Bool
+  , dbSpace_visibility :: DbSpaceVisibility
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
+
+type DbSpaceVisibility :: Type
+data DbSpaceVisibility
+  = MkDbSpaceVisibility_visible
+  | MkDbSpaceVisibility_hidden
+  deriving stock (Bounded, Enum, Read, Show)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceVisibility_" DbSpaceVisibility)
+  deriving anyclass (Selda.SqlType)
 
 tableSpace :: Selda.Table DbSpace
 tableSpace =

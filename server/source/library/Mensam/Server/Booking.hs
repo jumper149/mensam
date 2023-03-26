@@ -76,7 +76,10 @@ spaceCreate name visible = do
         MkDbSpace
           { dbSpace_id = Selda.def
           , dbSpace_name = unNameSpace name
-          , dbSpace_visible = visible
+          , dbSpace_visibility =
+              if visible
+                then MkDbSpaceVisibility_visible
+                else MkDbSpaceVisibility_hidden
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."
@@ -152,7 +155,7 @@ deskList spaceIdentifier userIdentifier = do
     dbSpace <- Selda.select tableSpace
     Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
     Selda.restrict $
-      (dbSpace Selda.! #dbSpace_visible)
+      (dbSpace Selda.! #dbSpace_visibility Selda..== Selda.literal MkDbSpaceVisibility_visible)
         Selda..|| (dbSpace Selda.! #dbSpace_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_space)
 
     dbDesk <- Selda.select tableDesk
