@@ -70,10 +70,18 @@ type DbSpaceUser :: Type
 data DbSpaceUser = MkDbSpaceUser
   { dbSpaceUser_space :: Selda.ID DbSpace
   , dbSpaceUser_user :: Selda.ID DbUser
-  , dbSpaceUser_is_admin :: Bool
+  , dbSpaceUser_permission :: DbSpaceUserPermission
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
+
+type DbSpaceUserPermission :: Type
+data DbSpaceUserPermission
+  = MkDbSpaceUserPermission_admin
+  | MkDbSpaceUserPermission_user
+  deriving stock (Bounded, Enum, Read, Show)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceUserPermission_" DbSpaceUserPermission)
+  deriving anyclass (Selda.SqlType)
 
 tableSpaceUser :: Selda.Table DbSpaceUser
 tableSpaceUser =

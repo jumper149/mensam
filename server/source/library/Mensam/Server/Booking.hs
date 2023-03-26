@@ -93,13 +93,16 @@ spaceUserLookup ::
 spaceUserLookup spaceIdentifier userIdentifier = do
   lift $ logDebug $ "Looking up user " <> T.pack (show userIdentifier) <> " for space " <> T.pack (show spaceIdentifier) <> "."
   lift $ logDebug "Look up space-user connection."
-  maybeIsAdmin <- Selda.queryUnique $ do
+  maybePermission <- Selda.queryUnique $ do
     dbSpaceUser <- Selda.select tableSpaceUser
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
-    pure $ dbSpaceUser Selda.! #dbSpaceUser_is_admin
+    pure $ dbSpaceUser Selda.! #dbSpaceUser_permission
   lift $ logInfo "Looked up space-user connection successfully."
-  pure maybeIsAdmin
+  let permissionToBool = \case
+        MkDbSpaceUserPermission_admin -> True
+        MkDbSpaceUserPermission_user -> False
+  pure $ permissionToBool <$> maybePermission
 
 spaceUserAdd ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -114,7 +117,10 @@ spaceUserAdd spaceIdentifier userIdentifier isAdmin = do
         MkDbSpaceUser
           { dbSpaceUser_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbSpaceUser_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
-          , dbSpaceUser_is_admin = isAdmin
+          , dbSpaceUser_permission =
+              if isAdmin
+                then MkDbSpaceUserPermission_admin
+                else MkDbSpaceUserPermission_user
           }
   lift $ logDebug "Inserting space-user connection."
   Selda.insert_ tableSpaceUser [dbSpaceUser]
