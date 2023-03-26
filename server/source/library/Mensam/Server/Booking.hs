@@ -238,8 +238,12 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd maybeCancel
         Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..< Selda.literal timestampBegin
     case maybeCancelled of
       Nothing -> pure ()
-      Just cancelled ->
-        Selda.restrict $ dbReservation Selda.! #dbReservation_cancelled Selda..== Selda.literal cancelled
+      Just cancelled -> do
+        let status =
+              if cancelled
+                then MkDbReservationStatus_cancelled
+                else MkDbReservationStatus_planned
+        Selda.restrict $ dbReservation Selda.! #dbReservation_status Selda..== Selda.literal status
     pure dbReservation
   lift $ logInfo "Looked up reservations successfully."
   let toReservation
@@ -249,7 +253,7 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd maybeCancel
           , dbReservation_user
           , dbReservation_time_begin
           , dbReservation_time_end
-          , dbReservation_cancelled
+          , dbReservation_status
           } =
           MkReservation
             { reservationId = MkIdentifierReservation $ Selda.fromId @DbReservation dbReservation_id
@@ -257,7 +261,9 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd maybeCancel
             , reservationUser = MkIdentifierUser $ Selda.fromId @DbUser dbReservation_user
             , reservationTimeBegin = dbReservation_time_begin
             , reservationTimeEnd = dbReservation_time_end
-            , reservationCancelled = dbReservation_cancelled
+            , reservationCancelled = case dbReservation_status of
+                MkDbReservationStatus_cancelled -> True
+                MkDbReservationStatus_planned -> False
             }
   pure $ toReservation <$> dbReservations
 
@@ -285,7 +291,7 @@ reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
           , dbReservation_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
           , dbReservation_time_begin = timestampBegin
           , dbReservation_time_end = timestampEnd
-          , dbReservation_cancelled = False
+          , dbReservation_status = MkDbReservationStatus_planned
           }
   lift $ logDebug "Inserting reservation into database."
   dbReservationId <- Selda.insertWithPK tableReservation [dbReservation]

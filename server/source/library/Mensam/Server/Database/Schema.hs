@@ -119,10 +119,18 @@ data DbReservation = MkDbReservation
   , dbReservation_user :: Selda.ID DbUser
   , dbReservation_time_begin :: Selda.UTCTime
   , dbReservation_time_end :: Selda.UTCTime
-  , dbReservation_cancelled :: Bool
+  , dbReservation_status :: DbReservationStatus
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
+
+type DbReservationStatus :: Type
+data DbReservationStatus
+  = MkDbReservationStatus_planned
+  | MkDbReservationStatus_cancelled
+  deriving stock (Bounded, Enum, Read, Show)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbReservationStatus_" DbReservationStatus)
+  deriving anyclass (Selda.SqlType)
 
 tableReservation :: Selda.Table DbReservation
 tableReservation =
