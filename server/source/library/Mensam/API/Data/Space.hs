@@ -36,6 +36,15 @@ data VisibilitySpace
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkVisibilitySpace" "") VisibilitySpace
 
+type AccessibilitySpace :: Type
+data AccessibilitySpace
+  = MkAccessibilitySpaceJoinable
+  | MkAccessibilitySpaceInaccessible
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkAccessibilitySpace" "") AccessibilitySpace
+
 type SpaceOrderCategory :: Type
 data SpaceOrderCategory
   = SpaceOrderCategoryId

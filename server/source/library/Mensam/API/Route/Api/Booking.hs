@@ -131,6 +131,7 @@ type RequestSpaceCreate :: Type
 data RequestSpaceCreate = MkRequestSpaceCreate
   { requestSpaceCreateName :: NameSpace
   , requestSpaceCreateVisibility :: VisibilitySpace
+  , requestSpaceCreateAccessibility :: AccessibilitySpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

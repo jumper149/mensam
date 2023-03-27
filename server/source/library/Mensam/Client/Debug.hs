@@ -77,6 +77,7 @@ f = do
         Route.Booking.MkRequestSpaceCreate
           { Route.Booking.requestSpaceCreateName = spacename
           , Route.Booking.requestSpaceCreateVisibility = MkVisibilitySpaceVisible
+          , Route.Booking.requestSpaceCreateAccessibility = MkAccessibilitySpaceJoinable
           }
   resultSpaceCreate <- endpointSpaceCreate (DataJWT nextToken) requestSpaceCreate
   liftIO $ print resultSpaceCreate
