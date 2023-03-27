@@ -7,6 +7,7 @@
     , "^Mensam.Client.Application.MensamClient.*$"
     , "^Mensam.Client.Debug.runF$"
     , "^Mensam.Server.Booking.spaceGet$"
+    , "^Mensam.Server.Booking.spaceUserPermissionRevoke$"
     , "^Mensam.Server.Database.checkDatabase$"
     , "^Mensam.Server.User.userProfile$"
     ]

@@ -133,7 +133,7 @@ spaceUserPermissionGive ::
   PermissionSpaceUser ->
   SeldaTransactionT m ()
 spaceUserPermissionGive spaceIdentifier userIdentifier permission = do
-  lift $ logDebug $ "Adding user " <> T.pack (show userIdentifier) <> " to space " <> T.pack (show spaceIdentifier) <> "."
+  lift $ logDebug $ "Giving user " <> T.pack (show userIdentifier) <> " permission " <> T.pack (show permission) <> " to space " <> T.pack (show spaceIdentifier) <> "."
   let dbSpaceUser =
         MkDbSpaceUser
           { dbSpaceUser_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
@@ -143,9 +143,34 @@ spaceUserPermissionGive spaceIdentifier userIdentifier permission = do
                 MkPermissionSpaceUserEditDesk -> MkDbSpaceUserPermission_edit_desk
                 MkPermissionSpaceUserCreateReservation -> MkDbSpaceUserPermission_create_reservation
           }
-  lift $ logDebug "Inserting space-user connection."
+  lift $ logDebug "Inserting space-user permission."
   Selda.insert_ tableSpaceUser [dbSpaceUser]
-  lift $ logInfo "Created space-user connection successfully."
+  lift $ logInfo "Gave user a space permission successfully."
+
+spaceUserPermissionRevoke ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  IdentifierUser ->
+  PermissionSpaceUser ->
+  SeldaTransactionT m ()
+spaceUserPermissionRevoke spaceIdentifier userIdentifier permission = do
+  lift $ logDebug $ "Revoking user " <> T.pack (show userIdentifier) <> " permission " <> T.pack (show permission) <> " to space " <> T.pack (show spaceIdentifier) <> "."
+  lift $ logDebug "Deleting space-user permission."
+  count <- Selda.deleteFrom tableSpaceUser $ \dbSpaceUser ->
+    let
+      dbPermission =
+        case permission of
+          MkPermissionSpaceUserEditDesk -> MkDbSpaceUserPermission_edit_desk
+          MkPermissionSpaceUserCreateReservation -> MkDbSpaceUserPermission_create_reservation
+      isSpace = dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
+      isUser = dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
+      isPermission = dbSpaceUser Selda.! #dbSpaceUser_permission Selda..== Selda.literal dbPermission
+     in
+      isSpace Selda..&& isUser Selda..&& isPermission
+  case count of
+    0 -> lift $ logWarn "Space permission for user cannot be revoked, because it has not been given."
+    1 -> lift $ logInfo "Revoked space permission for user successfully."
+    _ -> undefined
 
 deskLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
