@@ -22,6 +22,12 @@
       ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-test
     '';
 
+  packages.x86_64-linux.mensam-openapi =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    writeScriptBin "mensam-openapi-full" ''
+      ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-openapi
+    '';
+
   packages.x86_64-linux.mensam-client =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-client-full" ''
@@ -39,6 +45,23 @@
   nixosModules.default = import ./module.nix {
     finalOverlay = overlays.default;
   };
+
+  checks.x86_64-linux.mensam-openapi-test =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    stdenv.mkDerivation {
+      name = "mensam-openapi-test"; # TODO: Necessary to avoid segmentation fault.
+      src = ./.;
+      buildPhase = ''
+        mensam-openapi-full > generated-openapi.json
+        diff openapi.json generated-openapi.json
+      '';
+      installPhase = ''
+        mkdir $out
+      '';
+      buildInputs = [
+        packages.x86_64-linux.mensam-openapi
+      ];
+    };
 
   checks.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
