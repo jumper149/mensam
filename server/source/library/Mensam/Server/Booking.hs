@@ -282,9 +282,9 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd maybeCancel
             , reservationUser = MkIdentifierUser $ Selda.fromId @DbUser dbReservation_user
             , reservationTimeBegin = dbReservation_time_begin
             , reservationTimeEnd = dbReservation_time_end
-            , reservationCancelled = case dbReservation_status of
-                MkDbReservationStatus_cancelled -> True
-                MkDbReservationStatus_planned -> False
+            , reservationStatus = case dbReservation_status of
+                MkDbReservationStatus_planned -> MkStatusReservationPlanned
+                MkDbReservationStatus_cancelled -> MkStatusReservationCancelled
             }
   pure $ toReservation <$> dbReservations
 

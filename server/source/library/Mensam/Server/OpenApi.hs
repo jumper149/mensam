@@ -71,6 +71,7 @@ deriving via A.CustomJSON (JSONSettings "Mk" "desk") Desk instance ToSchema Desk
 deriving anyclass instance ToSchema IdentifierDesk
 deriving newtype instance ToSchema NameDesk
 deriving via A.CustomJSON (JSONSettings "Mk" "reservation") Reservation instance ToSchema Reservation
+deriving via A.CustomJSON (JSONSettings "MkStatusReservation" "") StatusReservation instance ToSchema StatusReservation
 deriving anyclass instance ToSchema IdentifierReservation
 
 deriving via A.CustomJSON (JSONSettings "" "") Order instance ToSchema Order
