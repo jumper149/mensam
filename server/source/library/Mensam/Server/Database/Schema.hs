@@ -86,8 +86,8 @@ data DbSpaceUser = MkDbSpaceUser
 
 type DbSpaceUserPermission :: Type
 data DbSpaceUserPermission
-  = MkDbSpaceUserPermission_admin
-  | MkDbSpaceUserPermission_user
+  = MkDbSpaceUserPermission_edit_desk
+  | MkDbSpaceUserPermission_create_reservation
   deriving stock (Bounded, Enum, Read, Show)
   deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceUserPermission_" DbSpaceUserPermission)
   deriving anyclass (Selda.SqlType)
@@ -96,7 +96,7 @@ tableSpaceUser :: Selda.Table DbSpaceUser
 tableSpaceUser =
   Selda.tableFieldMod
     "space_user"
-    [ #dbSpaceUser_space Selda.:+ #dbSpaceUser_user Selda.:- Selda.primary
+    [ #dbSpaceUser_space Selda.:+ #dbSpaceUser_user Selda.:+ #dbSpaceUser_permission Selda.:- Selda.primary
     , #dbSpaceUser_space Selda.:- Selda.foreignKey tableSpace #dbSpace_id
     , #dbSpaceUser_user Selda.:- Selda.foreignKey tableUser #dbUser_id
     ]

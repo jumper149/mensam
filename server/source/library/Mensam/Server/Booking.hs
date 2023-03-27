@@ -121,8 +121,8 @@ spaceUserLookup spaceIdentifier userIdentifier = do
     pure $ dbSpaceUser Selda.! #dbSpaceUser_permission
   lift $ logInfo "Looked up space-user connection successfully."
   let permissionToBool = \case
-        MkDbSpaceUserPermission_admin -> True
-        MkDbSpaceUserPermission_user -> False
+        MkDbSpaceUserPermission_edit_desk -> True
+        MkDbSpaceUserPermission_create_reservation -> False
   pure $ permissionToBool <$> maybePermission
 
 spaceUserAdd ::
@@ -140,8 +140,8 @@ spaceUserAdd spaceIdentifier userIdentifier isAdmin = do
           , dbSpaceUser_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
           , dbSpaceUser_permission =
               if isAdmin
-                then MkDbSpaceUserPermission_admin
-                else MkDbSpaceUserPermission_user
+                then MkDbSpaceUserPermission_edit_desk
+                else MkDbSpaceUserPermission_create_reservation
           }
   lift $ logDebug "Inserting space-user connection."
   Selda.insert_ tableSpaceUser [dbSpaceUser]
