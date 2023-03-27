@@ -16,6 +16,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Kind
+import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Time qualified as T
 import Database.Selda qualified as Selda
@@ -106,24 +107,24 @@ spaceCreate name visibility accessibility = do
   lift $ logInfo "Created space successfully."
   pure $ MkIdentifierSpace $ Selda.fromId @DbSpace dbSpaceId
 
-spaceUserLookup ::
+spaceUserPermissions ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
-  SeldaTransactionT m (Maybe Bool)
-spaceUserLookup spaceIdentifier userIdentifier = do
+  SeldaTransactionT m (S.Set PermissionSpaceUser)
+spaceUserPermissions spaceIdentifier userIdentifier = do
   lift $ logDebug $ "Looking up user " <> T.pack (show userIdentifier) <> " for space " <> T.pack (show spaceIdentifier) <> "."
-  lift $ logDebug "Look up space-user connection."
-  maybePermission <- Selda.queryUnique $ do
+  lift $ logDebug "Looking up space permissions."
+  permissions <- Selda.query $ do
     dbSpaceUser <- Selda.select tableSpaceUser
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
     pure $ dbSpaceUser Selda.! #dbSpaceUser_permission
-  lift $ logInfo "Looked up space-user connection successfully."
-  let permissionToBool = \case
-        MkDbSpaceUserPermission_edit_desk -> True
-        MkDbSpaceUserPermission_create_reservation -> False
-  pure $ permissionToBool <$> maybePermission
+  lift $ logInfo "Looked up space permissions successfully."
+  let translatePermission = \case
+        MkDbSpaceUserPermission_edit_desk -> MkPermissionSpaceUserEditDesk
+        MkDbSpaceUserPermission_create_reservation -> MkPermissionSpaceUserCreateReservation
+  pure $ S.fromList $ translatePermission <$> permissions
 
 spaceUserAdd ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

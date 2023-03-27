@@ -2,6 +2,7 @@ module Mensam.Server.Server.Route.Api.Booking where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.Desk
+import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Route.Api.Booking
 import Mensam.Server.Application.SeldaPool.Class
@@ -12,6 +13,7 @@ import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
+import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Traversable
 import Database.Selda qualified as Selda
@@ -152,11 +154,10 @@ createDesk auth eitherRequest =
                   let msg :: T.Text = "No matching space."
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
-        permission <- spaceUserLookup spaceIdentifier (userAuthenticatedId authenticated)
-        case permission of
-          Nothing -> error "No permission."
-          Just False -> error "No admin permission."
-          Just True -> deskCreate (requestDeskCreateName request) spaceIdentifier
+        permissions <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
+        if MkPermissionSpaceUserEditDesk `S.member` permissions
+          then deskCreate (requestDeskCreateName request) spaceIdentifier
+          else error "No permission"
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
@@ -241,15 +242,15 @@ createReservation auth eitherRequest = do
                 Just deskId -> pure deskId
             Identifier deskId -> pure deskId
         desk <- deskGet deskIdentifier
-        permission <- spaceUserLookup (deskSpace desk) (userAuthenticatedId authenticated)
-        case permission of
-          Nothing -> error "No permission."
-          Just _ -> do
+        permissions <- spaceUserPermissions (deskSpace desk) (userAuthenticatedId authenticated)
+        if MkPermissionSpaceUserCreateReservation `S.member` permissions
+          then
             reservationCreate
               deskIdentifier
               (userAuthenticatedId authenticated)
               (requestReservationCreateTimeBegin request)
               (requestReservationCreateTimeEnd request)
+          else error "No permission"
       case seldaResult of
         SeldaFailure someException -> do
           logWarn "Failed to create reservation."

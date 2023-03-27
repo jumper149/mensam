@@ -45,6 +45,15 @@ data AccessibilitySpace
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkAccessibilitySpace" "") AccessibilitySpace
 
+type PermissionSpaceUser :: Type
+data PermissionSpaceUser
+  = MkPermissionSpaceUserEditDesk
+  | MkPermissionSpaceUserCreateReservation
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkPermissionSpaceUser" "") PermissionSpaceUser
+
 type SpaceOrderCategory :: Type
 data SpaceOrderCategory
   = SpaceOrderCategoryId
