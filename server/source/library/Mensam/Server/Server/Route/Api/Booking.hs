@@ -197,7 +197,6 @@ listDesks auth eitherRequest =
               (deskId desk)
               (requestDeskListTimeBegin request)
               (requestDeskListTimeEnd request)
-              Nothing
           pure
             MkDeskWithInfo
               { deskWithInfoDesk = desk

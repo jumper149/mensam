@@ -241,10 +241,8 @@ reservationList ::
   Maybe T.UTCTime ->
   -- | maximum timestamp end
   Maybe T.UTCTime ->
-  -- | cancelled
-  Maybe Bool ->
   SeldaTransactionT m [Reservation]
-reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd maybeCancelled = do
+reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd = do
   lift $ logDebug $ "Looking up reservations: " <> T.pack (show (deskIdentifier, maybeTimestampBegin, maybeTimestampEnd))
   dbReservations <- Selda.query $ do
     dbReservation <- Selda.select tableReservation
@@ -257,14 +255,6 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd maybeCancel
       Nothing -> pure ()
       Just timestampBegin ->
         Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..< Selda.literal timestampBegin
-    case maybeCancelled of
-      Nothing -> pure ()
-      Just cancelled -> do
-        let status =
-              if cancelled
-                then MkDbReservationStatus_cancelled
-                else MkDbReservationStatus_planned
-        Selda.restrict $ dbReservation Selda.! #dbReservation_status Selda..== Selda.literal status
     pure dbReservation
   lift $ logInfo "Looked up reservations successfully."
   let toReservation
@@ -299,8 +289,8 @@ reservationCreate ::
   SeldaTransactionT m IdentifierReservation
 reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   lift $ logDebug "Creating reservation."
-  reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd) (Just False)
-  case reservations of
+  reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd)
+  case filter (\MkReservation {reservationStatus} -> reservationStatus == MkStatusReservationPlanned) reservations of
     _ : _ -> do
       lift $ logWarn "Desk is already reserved."
       throwM MkSqlErrorMensamDeskAlreadyReserved
