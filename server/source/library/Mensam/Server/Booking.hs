@@ -39,6 +39,23 @@ spaceLookupId name = do
       lift $ logInfo "Looked up space successfully."
       pure $ Just $ MkIdentifierSpace $ Selda.fromId @DbSpace dbId
 
+spaceGet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  SeldaTransactionT m Space
+spaceGet identifier = do
+  lift $ logDebug $ "Get space info with identifier: " <> T.pack (show identifier)
+  dbSpace <- Selda.queryOne $ do
+    dbSpace <- Selda.select tableSpace
+    Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
+    pure dbSpace
+  lift $ logInfo "Got space info successfully."
+  pure
+    MkSpace
+      { spaceId = MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
+      , spaceName = MkNameSpace $ dbSpace_name dbSpace
+      }
+
 spaceList ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
@@ -150,6 +167,24 @@ deskLookupId spaceIdentifier deskName = do
       lift $ logInfo "Looked up desk successfully."
       pure $ Just $ MkIdentifierDesk $ Selda.fromId @DbDesk dbId
 
+deskGet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierDesk ->
+  SeldaTransactionT m Desk
+deskGet identifier = do
+  lift $ logDebug $ "Get desk info with identifier: " <> T.pack (show identifier)
+  dbDesk <- Selda.queryOne $ do
+    dbDesk <- Selda.select tableDesk
+    Selda.restrict $ dbDesk Selda.! #dbDesk_id Selda..== Selda.literal (Selda.toId @DbDesk $ unIdentifierDesk identifier)
+    pure dbDesk
+  lift $ logInfo "Got desk info successfully."
+  pure
+    MkDesk
+      { deskId = MkIdentifierDesk $ Selda.fromId $ dbDesk_id dbDesk
+      , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space dbDesk
+      , deskName = MkNameDesk $ dbDesk_name dbDesk
+      }
+
 deskList ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
@@ -197,24 +232,6 @@ deskCreate deskName spaceIdentifier = do
   dbDeskId <- Selda.insertWithPK tableDesk [dbDesk]
   lift $ logInfo "Created desk successfully."
   pure $ MkIdentifierDesk $ Selda.fromId @DbDesk dbDeskId
-
-deskGet ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  IdentifierDesk ->
-  SeldaTransactionT m Desk
-deskGet identifier = do
-  lift $ logDebug $ "Get desk info with identifier: " <> T.pack (show identifier)
-  dbDesk <- Selda.queryOne $ do
-    dbDesk <- Selda.select tableDesk
-    Selda.restrict $ dbDesk Selda.! #dbDesk_id Selda..== Selda.literal (Selda.toId @DbDesk $ unIdentifierDesk identifier)
-    pure dbDesk
-  lift $ logInfo "Got desk info successfully."
-  pure
-    MkDesk
-      { deskId = MkIdentifierDesk $ Selda.fromId $ dbDesk_id dbDesk
-      , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space dbDesk
-      , deskName = MkNameDesk $ dbDesk_name dbDesk
-      }
 
 -- | List all reservations of a desk, that overlap with the given time window.
 reservationList ::
