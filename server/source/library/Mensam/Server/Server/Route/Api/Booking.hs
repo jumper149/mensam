@@ -52,7 +52,7 @@ createSpace auth eitherRequest =
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisibility request) (requestSpaceCreateAccessibility request)
-        spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) True
+        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserEditDesk
         pure spaceIdentifier
       case seldaResult of
         SeldaFailure _err -> do
@@ -90,7 +90,7 @@ joinSpace auth eitherRequest =
                   let msg :: T.Text = "No matching space."
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
-        spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) False
+        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserCreateReservation
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error

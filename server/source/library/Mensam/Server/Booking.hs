@@ -126,23 +126,22 @@ spaceUserPermissions spaceIdentifier userIdentifier = do
         MkDbSpaceUserPermission_create_reservation -> MkPermissionSpaceUserCreateReservation
   pure $ S.fromList $ translatePermission <$> permissions
 
-spaceUserAdd ::
+spaceUserPermissionGive ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
-  -- | user is admin?
-  Bool ->
+  PermissionSpaceUser ->
   SeldaTransactionT m ()
-spaceUserAdd spaceIdentifier userIdentifier isAdmin = do
+spaceUserPermissionGive spaceIdentifier userIdentifier permission = do
   lift $ logDebug $ "Adding user " <> T.pack (show userIdentifier) <> " to space " <> T.pack (show spaceIdentifier) <> "."
   let dbSpaceUser =
         MkDbSpaceUser
           { dbSpaceUser_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbSpaceUser_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
           , dbSpaceUser_permission =
-              if isAdmin
-                then MkDbSpaceUserPermission_edit_desk
-                else MkDbSpaceUserPermission_create_reservation
+              case permission of
+                MkPermissionSpaceUserEditDesk -> MkDbSpaceUserPermission_edit_desk
+                MkPermissionSpaceUserCreateReservation -> MkDbSpaceUserPermission_create_reservation
           }
   lift $ logDebug "Inserting space-user connection."
   Selda.insert_ tableSpaceUser [dbSpaceUser]
