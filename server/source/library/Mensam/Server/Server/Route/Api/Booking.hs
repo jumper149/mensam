@@ -25,6 +25,7 @@ handler ::
 handler =
   Routes
     { routeSpaceCreate = createSpace
+    , routeSpaceJoin = joinSpace
     , routeSpaceList = listSpaces
     , routeDeskCreate = createDesk
     , routeDeskList = listDesks
@@ -59,6 +60,43 @@ createSpace auth eitherRequest =
         SeldaSuccess spaceIdentifier -> do
           logInfo "Created space."
           respond $ WithStatus @201 MkResponseSpaceCreate {responseSpaceCreateId = spaceIdentifier}
+
+joinSpace ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseSpaceJoin) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestSpaceJoin ->
+  m (Union responses)
+joinSpace auth eitherRequest =
+  handleAuth auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to join space: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        spaceIdentifier <-
+          case requestSpaceJoinSpace request of
+            Identifier spaceId -> pure spaceId
+            Name name ->
+              spaceLookupId name >>= \case
+                Just identifier -> pure identifier
+                Nothing -> do
+                  let msg :: T.Text = "No matching space."
+                  lift $ logWarn msg
+                  throwM $ Selda.SqlError $ show msg
+        spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) False
+      case seldaResult of
+        SeldaFailure _err -> do
+          -- TODO: Here we can theoretically return a more accurate error
+          logWarn "Failed to create space."
+          respond $ WithStatus @500 ()
+        SeldaSuccess () -> do
+          logInfo "Created space."
+          respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
 
 listSpaces ::
   ( MonadIO m

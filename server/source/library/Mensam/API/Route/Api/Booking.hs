@@ -35,6 +35,23 @@ data Routes route = Routes
               , WithStatus 401 ErrorBasicAuth
               , WithStatus 500 ()
               ]
+  , routeSpaceJoin ::
+      route
+        :- Summary "Join Space"
+          :> Description
+              "Become a member of a space.\n"
+          :> "space"
+          :> "join"
+          :> Auth '[JWT] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceJoin
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseSpaceJoin
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 500 ()
+              ]
   , routeSpaceList ::
       route
         :- Summary "List Spaces"
@@ -128,6 +145,24 @@ newtype ResponseSpaceCreate = MkResponseSpaceCreate
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") ResponseSpaceCreate
+
+type RequestSpaceJoin :: Type
+newtype RequestSpaceJoin = MkRequestSpaceJoin
+  { requestSpaceJoinSpace :: NameOrIdentifier NameSpace IdentifierSpace
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceJoin") RequestSpaceJoin
+
+type ResponseSpaceJoin :: Type
+newtype ResponseSpaceJoin = MkResponseSpaceJoin
+  { responseSpaceJoinUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceJoin") ResponseSpaceJoin
 
 type RequestSpaceList :: Type
 newtype RequestSpaceList = MkRequestSpaceList
