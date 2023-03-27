@@ -207,6 +207,17 @@ executable mensam-init
   ghc-options:
     -Wno-unused-packages
 
+executable mensam-openapi
+  import:
+    , dependencies
+    , language
+  build-depends:
+    , mensam
+  main-is: Main.hs
+  hs-source-dirs: source/executable/openapi
+  ghc-options:
+    -Wno-unused-packages
+
 executable mensam-server
   build-depends:
     , mensam

@@ -17,6 +17,8 @@ import Control.Lens
 import Data.Aeson qualified as A
 import Data.OpenApi
 import Data.Proxy
+import Data.Text.Lazy.Encoding qualified as TL
+import Data.Text.Lazy.IO qualified as TL
 import Deriving.Aeson qualified as A
 import Deriving.Aeson.OrphanInstances qualified as A ()
 import GHC.TypeLits
@@ -94,3 +96,6 @@ deriving via A.CustomJSON (JSONSettings "Mk" "deskWithInfo") Route.Booking.DeskW
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Route.Booking.ResponseDeskList instance ToSchema Route.Booking.ResponseDeskList
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") Route.Booking.RequestReservationCreate instance ToSchema Route.Booking.RequestReservationCreate
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCreate") Route.Booking.ResponseReservationCreate instance ToSchema Route.Booking.ResponseReservationCreate
+
+openapiJsonStdout :: IO ()
+openapiJsonStdout = TL.putStrLn $ TL.decodeUtf8 $ A.encode Mensam.Server.OpenApi.openapi
