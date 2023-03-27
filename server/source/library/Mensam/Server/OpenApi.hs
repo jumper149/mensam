@@ -66,7 +66,7 @@ deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Sp
 deriving anyclass instance ToSchema IdentifierSpace
 deriving newtype instance ToSchema NameSpace
 deriving via A.CustomJSON (JSONSettings "MkVisibilitySpace" "") VisibilitySpace instance ToSchema VisibilitySpace
-deriving via A.CustomJSON (JSONSettings "MkAccessibilitySpace" "") VisibilitySpace instance ToSchema AccessibilitySpace
+deriving via A.CustomJSON (JSONSettings "MkAccessibilitySpace" "") AccessibilitySpace instance ToSchema AccessibilitySpace
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Desk instance ToSchema Desk
 deriving anyclass instance ToSchema IdentifierDesk
 deriving newtype instance ToSchema NameDesk
