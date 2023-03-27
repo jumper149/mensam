@@ -2,6 +2,8 @@
 
 A desk-booking web application.
 
+View the [OpenAPI specification](https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/jumper149/mensam/main/final/openapi.json).
+
 ## Development
 
 Mensam is built with Nix.
