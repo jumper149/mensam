@@ -49,7 +49,7 @@ createSpace auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisibility request)
+        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisibility request) (requestSpaceCreateAccessibility request)
         spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) True
         pure spaceIdentifier
       case seldaResult of

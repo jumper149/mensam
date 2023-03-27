@@ -68,8 +68,9 @@ spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   NameSpace ->
   VisibilitySpace ->
+  AccessibilitySpace ->
   SeldaTransactionT m IdentifierSpace
-spaceCreate name visibility = do
+spaceCreate name visibility accessibility = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
   let dbSpace =
         MkDbSpace
@@ -79,6 +80,10 @@ spaceCreate name visibility = do
               case visibility of
                 MkVisibilitySpaceVisible -> MkDbSpaceVisibility_visible
                 MkVisibilitySpaceHidden -> MkDbSpaceVisibility_hidden
+          , dbSpace_accessibility =
+              case accessibility of
+                MkAccessibilitySpaceJoinable -> MkDbSpaceAccessibility_joinable
+                MkAccessibilitySpaceInaccessible -> MkDbSpaceAccessibility_inaccessible
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."

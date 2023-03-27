@@ -45,6 +45,7 @@ data DbSpace = MkDbSpace
   { dbSpace_id :: Selda.ID DbSpace
   , dbSpace_name :: Selda.Text
   , dbSpace_visibility :: DbSpaceVisibility
+  , dbSpace_accessibility :: DbSpaceAccessibility
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
@@ -55,6 +56,14 @@ data DbSpaceVisibility
   | MkDbSpaceVisibility_hidden
   deriving stock (Bounded, Enum, Read, Show)
   deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceVisibility_" DbSpaceVisibility)
+  deriving anyclass (Selda.SqlType)
+
+type DbSpaceAccessibility :: Type
+data DbSpaceAccessibility
+  = MkDbSpaceAccessibility_joinable
+  | MkDbSpaceAccessibility_inaccessible
+  deriving stock (Bounded, Enum, Read, Show)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceAccessibility_" DbSpaceAccessibility)
   deriving anyclass (Selda.SqlType)
 
 tableSpace :: Selda.Table DbSpace
