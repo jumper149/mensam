@@ -10,7 +10,7 @@ cradle:
       component: "mensam:exe:mensam-init"
 
     - path: "source/executable/server/Main.hs"
-      component: "mensam:exe:mensam"
+      component: "mensam:exe:mensam-server"
 
     - path: "source/executable/client/Main.hs"
       component: "mensam:exe:mensam-client"

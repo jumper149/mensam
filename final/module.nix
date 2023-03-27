@@ -36,7 +36,7 @@
         ];
         serviceConfig = {
           DynamicUser = true;
-          ExecStart = "${pkgs.mensam-jumper149.exe}/bin/mensam";
+          ExecStart = "${pkgs.mensam-jumper149.exe}/bin/mensam-server";
           LogsDirectory = "mensam";
         };
       };

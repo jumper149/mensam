@@ -207,7 +207,7 @@ executable mensam-init
   ghc-options:
     -Wno-unused-packages
 
-executable mensam
+executable mensam-server
   build-depends:
     , mensam
   main-is: Main.hs

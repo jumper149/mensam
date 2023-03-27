@@ -2,8 +2,8 @@
 
   packages.x86_64-linux.default =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    writeScriptBin "mensam-full" ''
-      MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam
+    writeScriptBin "mensam-server-full" ''
+      MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server
     '';
 
   packages.x86_64-linux.mensam-init =
