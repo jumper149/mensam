@@ -67,19 +67,18 @@ spaceList userIdentifier spaceOrder = do
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   NameSpace ->
-  -- | visible
-  Bool ->
+  VisibilitySpace ->
   SeldaTransactionT m IdentifierSpace
-spaceCreate name visible = do
+spaceCreate name visibility = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
   let dbSpace =
         MkDbSpace
           { dbSpace_id = Selda.def
           , dbSpace_name = unNameSpace name
           , dbSpace_visibility =
-              if visible
-                then MkDbSpaceVisibility_visible
-                else MkDbSpaceVisibility_hidden
+              case visibility of
+                MkVisibilitySpaceVisible -> MkDbSpaceVisibility_visible
+                MkVisibilitySpaceHidden -> MkDbSpaceVisibility_hidden
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."

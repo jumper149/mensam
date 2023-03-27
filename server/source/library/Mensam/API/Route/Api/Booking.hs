@@ -113,7 +113,7 @@ data Routes route = Routes
 type RequestSpaceCreate :: Type
 data RequestSpaceCreate = MkRequestSpaceCreate
   { requestSpaceCreateName :: NameSpace
-  , requestSpaceCreateVisible :: Bool
+  , requestSpaceCreateVisibility :: VisibilitySpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

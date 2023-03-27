@@ -27,6 +27,15 @@ newtype NameSpace = MkNameSpace {unNameSpace :: T.Text}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
 
+type VisibilitySpace :: Type
+data VisibilitySpace
+  = MkVisibilitySpaceVisible
+  | MkVisibilitySpaceHidden
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkVisibilitySpace" "") VisibilitySpace
+
 type SpaceOrderCategory :: Type
 data SpaceOrderCategory
   = SpaceOrderCategoryId
