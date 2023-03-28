@@ -10,6 +10,7 @@ import Mensam.Client.Application
 import Mensam.Client.Application.MensamClient.Class
 import Mensam.Client.Brick.Desks
 import Mensam.Client.Brick.Draw
+import Mensam.Client.Brick.Events
 import Mensam.Client.Brick.Login
 import Mensam.Client.Brick.Names
 import Mensam.Client.Brick.Register
@@ -20,6 +21,7 @@ import Mensam.Client.OrphanInstances
 import Brick
 import Brick.Forms
 import Brick.Widgets.List
+import Control.Concurrent (Chan, newChan)
 import Data.SOP
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
@@ -31,13 +33,14 @@ import Text.Email.Text
 
 runBrick :: IO ()
 runBrick = do
+  chan <- newChan
   let
-    app :: App ClientState () ClientName
+    app :: App ClientState ClientEvent ClientName
     app =
       App
         { appDraw = draw
         , appChooseCursor = showFirstCursor
-        , appHandleEvent = handleEvent
+        , appHandleEvent = handleEvent chan
         , appStartEvent = pure ()
         , appAttrMap = \_ ->
             attrMap
@@ -58,8 +61,12 @@ runBrick = do
   _finalState <- customMain vty initVty Nothing app initialState
   pure ()
 
-handleEvent :: BrickEvent ClientName () -> EventM ClientName ClientState ()
-handleEvent = \case
+handleEvent :: Chan ClientEvent -> BrickEvent ClientName ClientEvent -> EventM ClientName ClientState ()
+handleEvent chan = \case
+  AppEvent event ->
+    case event of
+      ClientEventSwitchToScreenLogin -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
+      ClientEventSwitchToScreenRegister -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
   VtyEvent (EvKey KEsc []) -> halt
   VtyEvent (EvKey (KChar '1') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
   VtyEvent (EvKey (KChar '2') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
@@ -68,7 +75,7 @@ handleEvent = \case
     case clientState ^. clientStateJwt of
       Just jwt -> do
         result <-
-          runApplicationT $
+          runApplicationT chan $
             mensamCall $
               endpointSpaceList
                 (DataJWT $ MkJWToken jwt)
@@ -95,7 +102,7 @@ handleEvent = \case
             case formState form of
               loginInfo -> do
                 result <-
-                  runApplicationT $
+                  runApplicationT chan $
                     mensamCall $
                       endpointLogin $
                         DataBasicAuth
@@ -107,7 +114,7 @@ handleEvent = \case
                   Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) -> do
                     modify $ \s -> s {_clientStateJwt = Just jwt}
                     resultSpaces <-
-                      runApplicationT $
+                      runApplicationT chan $
                         mensamCall $
                           endpointSpaceList
                             (DataJWT $ MkJWToken jwt)
@@ -128,7 +135,7 @@ handleEvent = \case
             case formState form of
               registerInfo -> do
                 result <-
-                  runApplicationT $
+                  runApplicationT chan $
                     mensamCall $
                       endpointRegister
                         Route.User.MkRequestRegister
@@ -152,7 +159,7 @@ handleEvent = \case
                 case event of
                   VtyEvent (EvKey (KChar 'r') []) -> do
                     result <-
-                      runApplicationT $
+                      runApplicationT chan $
                         mensamCall $
                           endpointSpaceList
                             (DataJWT $ MkJWToken jwt)
@@ -170,7 +177,7 @@ handleEvent = \case
                         modify $ \s -> s {_clientStatePopup = Just "No space selected."}
                       Just (_index, space) -> do
                         result <-
-                          runApplicationT $
+                          runApplicationT chan $
                             mensamCall $
                               endpointDeskList
                                 (DataJWT $ MkJWToken jwt)
@@ -194,7 +201,7 @@ handleEvent = \case
                     case formState form of
                       newSpaceInfo -> do
                         result <-
-                          runApplicationT $
+                          runApplicationT chan $
                             mensamCall $
                               endpointSpaceCreate
                                 (DataJWT $ MkJWToken jwt)
@@ -219,7 +226,7 @@ handleEvent = \case
             case event of
               VtyEvent (EvKey (KChar 'r') []) -> do
                 result <-
-                  runApplicationT $
+                  runApplicationT chan $
                     mensamCall $
                       endpointDeskList
                         (DataJWT $ MkJWToken jwt)

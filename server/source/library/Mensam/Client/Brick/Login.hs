@@ -2,6 +2,7 @@
 
 module Mensam.Client.Brick.Login where
 
+import Mensam.Client.Brick.Events
 import Mensam.Client.Brick.Names
 
 import Brick
@@ -32,7 +33,7 @@ loginFormInitial =
 
 type ScreenLoginState :: Type
 newtype ScreenLoginState = MkScreenLoginState
-  { _screenStateLoginForm :: Form LoginInfo () ClientName
+  { _screenStateLoginForm :: Form LoginInfo ClientEvent ClientName
   }
 makeLenses ''ScreenLoginState
 

@@ -2,6 +2,7 @@
 
 module Mensam.Client.Brick.Register where
 
+import Mensam.Client.Brick.Events
 import Mensam.Client.Brick.Names
 
 import Brick
@@ -38,7 +39,7 @@ registerFormInitial =
 
 type ScreenRegisterState :: Type
 newtype ScreenRegisterState = MkScreenRegisterState
-  { _screenStateRegisterForm :: Form RegisterInfo () ClientName
+  { _screenStateRegisterForm :: Form RegisterInfo ClientEvent ClientName
   }
 makeLenses ''ScreenRegisterState
 

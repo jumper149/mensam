@@ -3,6 +3,7 @@
 module Mensam.Client.Brick.Spaces where
 
 import Mensam.API.Data.Space
+import Mensam.Client.Brick.Events
 import Mensam.Client.Brick.Names
 
 import Brick
@@ -46,7 +47,7 @@ newSpaceFormInitial =
 type ScreenSpacesState :: Type
 data ScreenSpacesState = MkScreenSpacesState
   { _screenStateSpacesList :: GenericList ClientName Seq.Seq Space
-  , _screenStateSpacesNewSpaceForm :: Maybe (Form NewSpaceInfo () ClientName)
+  , _screenStateSpacesNewSpaceForm :: Maybe (Form NewSpaceInfo ClientEvent ClientName)
   }
 makeLenses ''ScreenSpacesState
 

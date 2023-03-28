@@ -22,7 +22,7 @@ import Text.Email.Parser
 import Text.Email.Text
 
 runF :: IO ()
-runF = runApplicationT $ do
+runF = runApplicationT undefined $ do
   result <- mensamCall f
   lift $ print result
 
