@@ -9,7 +9,7 @@ import Mensam.Client.Application.MensamClient
 import Mensam.Client.Application.MensamClient.Class
 import Mensam.Client.Brick.Events (ClientEvent)
 
-import Control.Concurrent (Chan)
+import Brick.BChan (BChan)
 import Control.Monad.Except
 import Control.Monad.Logger.CallStack
 import Control.Monad.Logger.OrphanInstances ()
@@ -36,7 +36,7 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
 
 runApplicationT ::
   MonadIO m =>
-  Chan ClientEvent ->
+  BChan ClientEvent ->
   ApplicationT m a ->
   m a
 runApplicationT chan app = do

@@ -5,7 +5,7 @@ module Mensam.Client.Application.Event where
 import Mensam.Client.Application.Event.Class
 import Mensam.Client.Brick.Events
 
-import Control.Concurrent.Chan
+import Brick.BChan
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
@@ -15,14 +15,14 @@ import Control.Monad.Trans.Reader
 import Data.Kind
 
 type EventT :: (Type -> Type) -> Type -> Type
-newtype EventT m a = MkEventT {unEventT :: ReaderT (Chan ClientEvent) m a}
+newtype EventT m a = MkEventT {unEventT :: ReaderT (BChan ClientEvent) m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
 
 instance MonadIO m => MonadEvent (EventT m) where
   sendEvent event = MkEventT $ do
     chan <- ask
-    liftIO $ writeChan chan event
+    liftIO $ writeBChan chan event
   eventChannel = MkEventT ask
 
 deriving via
@@ -30,7 +30,7 @@ deriving via
   instance
     MonadIO (t2 m) => MonadEvent (ComposeT EventT t2 m)
 
-runEventT :: EventT m a -> Chan ClientEvent -> m a
+runEventT :: EventT m a -> BChan ClientEvent -> m a
 runEventT = runReaderT . unEventT
 
 runAppEventT ::
@@ -39,6 +39,6 @@ runAppEventT ::
   m a
 runAppEventT tma = do
   logInfo "Creating new event channel."
-  chan <- liftIO newChan
+  chan <- liftIO $ newBChan 10
   logInfo "Created new event channel."
   runEventT tma chan

@@ -2,7 +2,7 @@ module Mensam.Client.Application.Event.Class where
 
 import Mensam.Client.Brick.Events
 
-import Control.Concurrent.Chan
+import Brick.BChan
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Elevator
@@ -11,7 +11,7 @@ import Data.Kind
 type MonadEvent :: (Type -> Type) -> Constraint
 class Monad m => MonadEvent m where
   sendEvent :: ClientEvent -> m ()
-  eventChannel :: m (Chan ClientEvent)
+  eventChannel :: m (BChan ClientEvent)
 
 instance
   ( Monad (t m)

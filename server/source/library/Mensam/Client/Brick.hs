@@ -7,6 +7,7 @@ import Mensam.API.Order
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application
+import Mensam.Client.Application.Event.Class
 import Mensam.Client.Application.MensamClient.Class
 import Mensam.Client.Brick.Desks
 import Mensam.Client.Brick.Draw
@@ -19,9 +20,9 @@ import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
 
 import Brick
+import Brick.BChan
 import Brick.Forms
 import Brick.Widgets.List
-import Control.Concurrent (Chan, newChan)
 import Data.SOP
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
@@ -33,7 +34,7 @@ import Text.Email.Text
 
 runBrick :: IO ()
 runBrick = do
-  chan <- newChan
+  chan <- newBChan 10
   let
     app :: App ClientState ClientEvent ClientName
     app =
@@ -58,18 +59,37 @@ runBrick = do
         }
     initVty = mkVty defaultConfig
   vty <- initVty
-  _finalState <- customMain vty initVty Nothing app initialState
+  _finalState <- customMain vty initVty (Just chan) app initialState
   pure ()
 
-handleEvent :: Chan ClientEvent -> BrickEvent ClientName ClientEvent -> EventM ClientName ClientState ()
+handleEvent :: BChan ClientEvent -> BrickEvent ClientName ClientEvent -> EventM ClientName ClientState ()
 handleEvent chan = \case
   AppEvent event ->
     case event of
       ClientEventSwitchToScreenLogin -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
       ClientEventSwitchToScreenRegister -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
+      ClientEventSendRequestLogin credentials -> do
+        result <- runApplicationT chan $ mensamCall $ endpointLogin $ DataBasicAuth credentials
+        case result of
+          Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) -> do
+            modify $ \s -> s {_clientStateJwt = Just jwt}
+            resultSpaces <-
+              runApplicationT chan $
+                mensamCall $
+                  endpointSpaceList
+                    (DataJWT $ MkJWToken jwt)
+                    (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
+            case resultSpaces of
+              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
+                let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
+              err ->
+                modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+          err ->
+            modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
   VtyEvent (EvKey KEsc []) -> halt
-  VtyEvent (EvKey (KChar '1') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
-  VtyEvent (EvKey (KChar '2') [MMeta]) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
+  VtyEvent (EvKey (KChar '1') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenRegister
+  VtyEvent (EvKey (KChar '2') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenLogin
   VtyEvent (EvKey (KChar '3') [MMeta]) -> do
     clientState <- get
     case clientState ^. clientStateJwt of
@@ -100,34 +120,14 @@ handleEvent chan = \case
         case event of
           VtyEvent (EvKey KEnter []) ->
             case formState form of
-              loginInfo -> do
-                result <-
-                  runApplicationT chan $
-                    mensamCall $
-                      endpointLogin $
-                        DataBasicAuth
-                          MkCredentials
-                            { credentialsUsername = loginInfo ^. loginInfoUsername
-                            , credentialsPassword = loginInfo ^. loginInfoPassword
-                            }
-                case result of
-                  Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) -> do
-                    modify $ \s -> s {_clientStateJwt = Just jwt}
-                    resultSpaces <-
-                      runApplicationT chan $
-                        mensamCall $
-                          endpointSpaceList
-                            (DataJWT $ MkJWToken jwt)
-                            (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
-                    case resultSpaces of
-                      Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
-                        let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
-                        modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
-                      err ->
-                        modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-                  err ->
-                    modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-                pure ()
+              loginInfo ->
+                runApplicationT chan $
+                  sendEvent $
+                    ClientEventSendRequestLogin $
+                      MkCredentials
+                        { credentialsUsername = loginInfo ^. loginInfoUsername
+                        , credentialsPassword = loginInfo ^. loginInfoPassword
+                        }
           _ -> zoom (clientStateScreenState . clientScreenStateLogin . screenStateLoginForm) $ handleFormEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateRegister (MkScreenRegisterState form)} ->
         case event of
