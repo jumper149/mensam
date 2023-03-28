@@ -2,6 +2,9 @@
 
 module Mensam.Client.Brick.Register where
 
+import Mensam.API.Data.User.Username
+import Mensam.API.Route.Api.User qualified as Route.User
+import Mensam.Client.Application.Event.Class
 import Mensam.Client.Brick.Events
 import Mensam.Client.Brick.Names
 
@@ -9,9 +12,13 @@ import Brick
 import Brick.Forms
 import Brick.Widgets.Border
 import Brick.Widgets.Center
+import Control.Monad.Trans.Class
 import Data.Kind
 import Data.Text qualified as T
+import Graphics.Vty.Input.Events
 import Lens.Micro.Platform
+import Mensam.Client.Application
+import Text.Email.Text
 
 type RegisterInfo :: Type
 data RegisterInfo = MkRegisterInfo
@@ -48,3 +55,19 @@ registerDraw = \case
   MkScreenRegisterState {_screenStateRegisterForm = form} ->
     [ centerLayer $ borderWithLabel (txt "Register") $ cropRightTo 60 $ renderForm form
     ]
+
+registerHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenRegisterState) ()
+registerHandleEvent = \case
+  VtyEvent (EvKey KEnter []) -> do
+    s <- lift get
+    case formState $ _screenStateRegisterForm s of
+      registerInfo -> do
+        sendEvent $
+          ClientEventSendRequestRegister
+            Route.User.MkRequestRegister
+              { Route.User.requestRegisterName = MkUsernameUnsafe $ registerInfo ^. registerInfoUsername
+              , Route.User.requestRegisterPassword = registerInfo ^. registerInfoPassword
+              , Route.User.requestRegisterEmail = fromTextUnsafe $ registerInfo ^. registerInfoEmail
+              , Route.User.requestRegisterEmailVisible = registerInfo ^. registerInfoEmailVisible
+              }
+  event -> lift $ zoom screenStateRegisterForm $ handleFormEvent event

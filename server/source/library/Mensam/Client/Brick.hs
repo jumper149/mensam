@@ -2,7 +2,6 @@ module Mensam.Client.Brick where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.Space
-import Mensam.API.Data.User.Username
 import Mensam.API.Order
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.User qualified as Route.User
@@ -30,7 +29,6 @@ import Graphics.Vty
 import Lens.Micro.Platform
 import Servant
 import Servant.RawM.Client ()
-import Text.Email.Text
 
 runBrick :: IO ()
 runBrick = do
@@ -68,6 +66,22 @@ handleEvent chan = \case
     case event of
       ClientEventSwitchToScreenLogin -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
       ClientEventSwitchToScreenRegister -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
+      ClientEventSwitchToScreenSpaces -> do
+        clientState <- get
+        case clientState ^. clientStateJwt of
+          Just jwt -> do
+            result <-
+              runApplicationT chan $
+                mensamCall $
+                  endpointSpaceList
+                    (DataJWT $ MkJWToken jwt)
+                    (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
+            case result of
+              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
+                let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
+              err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+          Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
       ClientEventSendRequestLogin credentials -> do
         result <- runApplicationT chan $ mensamCall $ endpointLogin $ DataBasicAuth credentials
         case result of
@@ -83,28 +97,13 @@ handleEvent chan = \case
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
                 let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
                 modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
-              err ->
-                modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-          err ->
-            modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-      ClientEventSwitchToScreenSpaces -> do
-        clientState <- get
-        case clientState ^. clientStateJwt of
-          Just jwt -> do
-            result <-
-              runApplicationT chan $
-                mensamCall $
-                  endpointSpaceList
-                    (DataJWT $ MkJWToken jwt)
-                    (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
-            case result of
-              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
-                let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
-                modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
-              err ->
-                modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-          Nothing ->
-            modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
+              err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+          err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+      ClientEventSendRequestRegister request -> do
+        result <- runApplicationT chan $ mensamCall $ endpointRegister request
+        case result of
+          Right (Z (I (WithStatus @201 ()))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenLogin
+          err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
   VtyEvent (EvKey KEsc []) -> halt
   VtyEvent (EvKey (KChar '1') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenRegister
   VtyEvent (EvKey (KChar '2') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenLogin
@@ -119,28 +118,8 @@ handleEvent chan = \case
           _ -> pure ()
       MkClientState {_clientStateScreenState = ClientScreenStateLogin _} ->
         zoom (clientStateScreenState . clientScreenStateLogin) $ runApplicationT chan $ loginHandleEvent event
-      MkClientState {_clientStateScreenState = ClientScreenStateRegister (MkScreenRegisterState form)} ->
-        case event of
-          VtyEvent (EvKey KEnter []) ->
-            case formState form of
-              registerInfo -> do
-                result <-
-                  runApplicationT chan $
-                    mensamCall $
-                      endpointRegister
-                        Route.User.MkRequestRegister
-                          { Route.User.requestRegisterName = MkUsernameUnsafe $ registerInfo ^. registerInfoUsername
-                          , Route.User.requestRegisterPassword = registerInfo ^. registerInfoPassword
-                          , Route.User.requestRegisterEmail = fromTextUnsafe $ registerInfo ^. registerInfoEmail
-                          , Route.User.requestRegisterEmailVisible = registerInfo ^. registerInfoEmailVisible
-                          }
-                case result of
-                  Right (Z (I (WithStatus @201 ()))) ->
-                    modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
-                  err ->
-                    modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-                pure ()
-          _ -> zoom (clientStateScreenState . clientScreenStateRegister . screenStateRegisterForm) $ handleFormEvent event
+      MkClientState {_clientStateScreenState = ClientScreenStateRegister _} ->
+        zoom (clientStateScreenState . clientScreenStateRegister) $ runApplicationT chan $ registerHandleEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState spaces createForm)} ->
         case clientState ^. clientStateJwt of
           Just jwt ->
