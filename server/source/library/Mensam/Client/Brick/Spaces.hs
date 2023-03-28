@@ -3,6 +3,9 @@
 module Mensam.Client.Brick.Spaces where
 
 import Mensam.API.Data.Space
+import Mensam.API.Route.Api.Booking qualified as Route.Booking
+import Mensam.Client.Application
+import Mensam.Client.Application.Event.Class
 import Mensam.Client.Brick.Events
 import Mensam.Client.Brick.Names
 
@@ -11,9 +14,11 @@ import Brick.Forms
 import Brick.Widgets.Border
 import Brick.Widgets.Center
 import Brick.Widgets.List
+import Control.Monad.Trans.Class
 import Data.Kind
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
+import Graphics.Vty.Input.Events
 import Lens.Micro.Platform
 
 spacesListInitial :: GenericList ClientName Seq.Seq Space
@@ -63,3 +68,29 @@ spacesDraw = \case
           padRight Max $
             renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> unNameSpace (spaceName space)) True spaces
     ]
+
+spacesHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenSpacesState) ()
+spacesHandleEvent event = do
+  s <- lift get
+  case formState <$> _screenStateSpacesNewSpaceForm s of
+    Nothing ->
+      case event of
+        VtyEvent (EvKey (KChar 'r') []) -> sendEvent ClientEventSwitchToScreenSpaces
+        VtyEvent (EvKey (KChar 'c') []) -> lift $ screenStateSpacesNewSpaceForm %= const (Just newSpaceFormInitial)
+        VtyEvent (EvKey KEnter []) -> do
+          case listSelectedElement $ _screenStateSpacesList s of
+            Nothing -> pure ()
+            Just (_index, space) -> sendEvent $ ClientEventSwitchToScreenDesks space
+        VtyEvent e -> lift $ zoom screenStateSpacesList $ handleListEvent e
+        _ -> pure ()
+    Just newSpaceInfo ->
+      case event of
+        VtyEvent (EvKey KEnter []) ->
+          sendEvent $
+            ClientEventSendRequestCreateSpace
+              Route.Booking.MkRequestSpaceCreate
+                { Route.Booking.requestSpaceCreateName = MkNameSpace $ newSpaceInfo ^. newSpaceInfoName
+                , Route.Booking.requestSpaceCreateVisibility = newSpaceInfo ^. newSpaceInfoVisibility
+                , Route.Booking.requestSpaceCreateAccessibility = newSpaceInfo ^. newSpaceInfoAccessibility
+                }
+        _ -> lift $ zoom (screenStateSpacesNewSpaceForm . _Just) $ handleFormEvent event

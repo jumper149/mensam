@@ -53,7 +53,7 @@ loginHandleEvent = \case
   VtyEvent (EvKey KEnter []) -> do
     s <- lift get
     case formState $ _screenStateLoginForm s of
-      loginInfo ->
+      loginInfo -> do
         sendEvent $
           ClientEventSendRequestLogin $
             MkCredentials

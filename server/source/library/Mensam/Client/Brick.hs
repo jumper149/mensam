@@ -20,7 +20,6 @@ import Mensam.Client.OrphanInstances
 
 import Brick
 import Brick.BChan
-import Brick.Forms
 import Brick.Widgets.List
 import Data.SOP
 import Data.Sequence qualified as Seq
@@ -82,6 +81,28 @@ handleEvent chan = \case
                 modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
+      ClientEventSwitchToScreenDesks space -> do
+        clientState <- get
+        case clientState ^. clientStateJwt of
+          Just jwt -> do
+            result <-
+              runApplicationT chan $
+                mensamCall $
+                  endpointDeskList
+                    (DataJWT $ MkJWToken jwt)
+                    ( Route.Booking.MkRequestDeskList
+                        { Route.Booking.requestDeskListSpace = Identifier $ spaceId space
+                        , Route.Booking.requestDeskListTimeBegin = Nothing
+                        , Route.Booking.requestDeskListTimeEnd = Nothing
+                        }
+                    )
+            case result of
+              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) -> do
+                let l = listReplace (Seq.fromList desks) (Just 0) desksListInitial
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l)}
+              err ->
+                modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+          Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
       ClientEventSendRequestLogin credentials -> do
         result <- runApplicationT chan $ mensamCall $ endpointLogin $ DataBasicAuth credentials
         case result of
@@ -94,6 +115,15 @@ handleEvent chan = \case
         case result of
           Right (Z (I (WithStatus @201 ()))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenLogin
           err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+      ClientEventSendRequestCreateSpace request -> do
+        clientState <- get
+        case clientState ^. clientStateJwt of
+          Just jwt -> do
+            result <- runApplicationT chan $ mensamCall $ endpointSpaceCreate (DataJWT $ MkJWToken jwt) request
+            case result of
+              Right (Z (I (WithStatus @201 (Route.Booking.MkResponseSpaceCreate _)))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
+              err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+          Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
   VtyEvent (EvKey KEsc []) -> halt
   VtyEvent (EvKey (KChar '1') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenRegister
   VtyEvent (EvKey (KChar '2') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenLogin
@@ -110,63 +140,8 @@ handleEvent chan = \case
         zoom (clientStateScreenState . clientScreenStateLogin) $ runApplicationT chan $ loginHandleEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateRegister _} ->
         zoom (clientStateScreenState . clientScreenStateRegister) $ runApplicationT chan $ registerHandleEvent event
-      MkClientState {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState spaces createForm)} ->
-        case clientState ^. clientStateJwt of
-          Just jwt ->
-            case createForm of
-              Nothing ->
-                case event of
-                  VtyEvent (EvKey (KChar 'r') []) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
-                  VtyEvent (EvKey (KChar 'c') []) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces $ MkScreenSpacesState spaces $ Just newSpaceFormInitial}
-                  VtyEvent (EvKey KEnter []) -> do
-                    case listSelectedElement spaces of
-                      Nothing ->
-                        modify $ \s -> s {_clientStatePopup = Just "No space selected."}
-                      Just (_index, space) -> do
-                        result <-
-                          runApplicationT chan $
-                            mensamCall $
-                              endpointDeskList
-                                (DataJWT $ MkJWToken jwt)
-                                ( Route.Booking.MkRequestDeskList
-                                    { Route.Booking.requestDeskListSpace = Identifier $ spaceId space
-                                    , Route.Booking.requestDeskListTimeBegin = Nothing
-                                    , Route.Booking.requestDeskListTimeEnd = Nothing
-                                    }
-                                )
-                        case result of
-                          Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) -> do
-                            let l = listReplace (Seq.fromList desks) (Just 0) desksListInitial
-                            modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l)}
-                          err ->
-                            modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-                  VtyEvent e -> zoom (clientStateScreenState . clientScreenStateSpaces . screenStateSpacesList) $ handleListEvent e
-                  _ -> pure ()
-              Just form ->
-                case event of
-                  VtyEvent (EvKey KEnter []) ->
-                    case formState form of
-                      newSpaceInfo -> do
-                        result <-
-                          runApplicationT chan $
-                            mensamCall $
-                              endpointSpaceCreate
-                                (DataJWT $ MkJWToken jwt)
-                                Route.Booking.MkRequestSpaceCreate
-                                  { Route.Booking.requestSpaceCreateName = MkNameSpace $ newSpaceInfo ^. newSpaceInfoName
-                                  , Route.Booking.requestSpaceCreateVisibility = newSpaceInfo ^. newSpaceInfoVisibility
-                                  , Route.Booking.requestSpaceCreateAccessibility = newSpaceInfo ^. newSpaceInfoAccessibility
-                                  }
-                        case result of
-                          Right (Z (I (WithStatus @201 (Route.Booking.MkResponseSpaceCreate _identifier)))) ->
-                            -- TODO: Send event to list spaces.
-                            clientStateScreenState . clientScreenStateSpaces . screenStateSpacesNewSpaceForm %= pure Nothing
-                          err ->
-                            modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-                        pure ()
-                  _ ->
-                    zoom (clientStateScreenState . clientScreenStateSpaces . screenStateSpacesNewSpaceForm . _Just) $ handleFormEvent event
-          Nothing -> pure ()
+      MkClientState {_clientStateScreenState = ClientScreenStateSpaces _} ->
+        zoom (clientStateScreenState . clientScreenStateSpaces) $ runApplicationT chan $ spacesHandleEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space desks)} ->
         case clientState ^. clientStateJwt of
           Just jwt ->
