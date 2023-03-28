@@ -7,6 +7,7 @@ import Data.Kind
 type ClientEvent :: Type
 data ClientEvent
   = ClientEventSwitchToScreenLogin
-  | ClientEventSendRequestLogin Credentials
   | ClientEventSwitchToScreenRegister
+  | ClientEventSwitchToScreenSpaces
+  | ClientEventSendRequestLogin Credentials
   deriving stock (Eq, Ord, Show)

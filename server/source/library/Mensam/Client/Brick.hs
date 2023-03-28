@@ -87,27 +87,28 @@ handleEvent chan = \case
                 modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           err ->
             modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+      ClientEventSwitchToScreenSpaces -> do
+        clientState <- get
+        case clientState ^. clientStateJwt of
+          Just jwt -> do
+            result <-
+              runApplicationT chan $
+                mensamCall $
+                  endpointSpaceList
+                    (DataJWT $ MkJWToken jwt)
+                    (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
+            case result of
+              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
+                let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
+              err ->
+                modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+          Nothing ->
+            modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
   VtyEvent (EvKey KEsc []) -> halt
   VtyEvent (EvKey (KChar '1') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenRegister
   VtyEvent (EvKey (KChar '2') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenLogin
-  VtyEvent (EvKey (KChar '3') [MMeta]) -> do
-    clientState <- get
-    case clientState ^. clientStateJwt of
-      Just jwt -> do
-        result <-
-          runApplicationT chan $
-            mensamCall $
-              endpointSpaceList
-                (DataJWT $ MkJWToken jwt)
-                (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
-        case result of
-          Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
-            let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
-            modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
-          err ->
-            modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-      Nothing ->
-        modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
+  VtyEvent (EvKey (KChar '3') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
   event -> do
     clientState <- get
     case clientState of
