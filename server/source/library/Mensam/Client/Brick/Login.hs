@@ -2,15 +2,20 @@
 
 module Mensam.Client.Brick.Login where
 
+import Mensam.Client.Application
+import Mensam.Client.Application.Event.Class
 import Mensam.Client.Brick.Events
 import Mensam.Client.Brick.Names
+import Mensam.Client.OrphanInstances
 
 import Brick
 import Brick.Forms
 import Brick.Widgets.Border
 import Brick.Widgets.Center
+import Control.Monad.Trans.Class
 import Data.Kind
 import Data.Text qualified as T
+import Graphics.Vty.Input.Events
 import Lens.Micro.Platform
 
 type LoginInfo :: Type
@@ -42,3 +47,17 @@ loginDraw = \case
   MkScreenLoginState {_screenStateLoginForm = form} ->
     [ centerLayer $ borderWithLabel (txt "Login") $ cropRightTo 60 $ renderForm form
     ]
+
+loginHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenLoginState) ()
+loginHandleEvent = \case
+  VtyEvent (EvKey KEnter []) -> do
+    s <- lift get
+    case formState $ _screenStateLoginForm s of
+      loginInfo ->
+        sendEvent $
+          ClientEventSendRequestLogin $
+            MkCredentials
+              { credentialsUsername = loginInfo ^. loginInfoUsername
+              , credentialsPassword = loginInfo ^. loginInfoPassword
+              }
+  event -> lift $ zoom screenStateLoginForm $ handleFormEvent event

@@ -117,19 +117,8 @@ handleEvent chan = \case
           VtyEvent (EvKey KEnter []) ->
             modify $ \s -> s {_clientStatePopup = Nothing}
           _ -> pure ()
-      MkClientState {_clientStateScreenState = ClientScreenStateLogin (MkScreenLoginState form)} ->
-        case event of
-          VtyEvent (EvKey KEnter []) ->
-            case formState form of
-              loginInfo ->
-                runApplicationT chan $
-                  sendEvent $
-                    ClientEventSendRequestLogin $
-                      MkCredentials
-                        { credentialsUsername = loginInfo ^. loginInfoUsername
-                        , credentialsPassword = loginInfo ^. loginInfoPassword
-                        }
-          _ -> zoom (clientStateScreenState . clientScreenStateLogin . screenStateLoginForm) $ handleFormEvent event
+      MkClientState {_clientStateScreenState = ClientScreenStateLogin _} ->
+        zoom (clientStateScreenState . clientScreenStateLogin) $ runApplicationT chan $ loginHandleEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateRegister (MkScreenRegisterState form)} ->
         case event of
           VtyEvent (EvKey KEnter []) ->
