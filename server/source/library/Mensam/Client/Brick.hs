@@ -87,17 +87,7 @@ handleEvent chan = \case
         case result of
           Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt)))) -> do
             modify $ \s -> s {_clientStateJwt = Just jwt}
-            resultSpaces <-
-              runApplicationT chan $
-                mensamCall $
-                  endpointSpaceList
-                    (DataJWT $ MkJWToken jwt)
-                    (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
-            case resultSpaces of
-              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
-                let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
-                modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
-              err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+            runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
           err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
       ClientEventSendRequestRegister request -> do
         result <- runApplicationT chan $ mensamCall $ endpointRegister request
@@ -126,19 +116,7 @@ handleEvent chan = \case
             case createForm of
               Nothing ->
                 case event of
-                  VtyEvent (EvKey (KChar 'r') []) -> do
-                    result <-
-                      runApplicationT chan $
-                        mensamCall $
-                          endpointSpaceList
-                            (DataJWT $ MkJWToken jwt)
-                            (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
-                    case result of
-                      Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) ->
-                        clientStateScreenState . clientScreenStateSpaces . screenStateSpacesList %= listReplace (Seq.fromList xs) (Just 0)
-                      err ->
-                        modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-                    pure ()
+                  VtyEvent (EvKey (KChar 'r') []) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
                   VtyEvent (EvKey (KChar 'c') []) -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces $ MkScreenSpacesState spaces $ Just newSpaceFormInitial}
                   VtyEvent (EvKey KEnter []) -> do
                     case listSelectedElement spaces of
