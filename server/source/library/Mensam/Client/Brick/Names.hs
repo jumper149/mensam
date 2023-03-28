@@ -1,5 +1,7 @@
 module Mensam.Client.Brick.Names where
 
+import Mensam.API.Data.Space
+
 import Data.Kind
 
 type ClientName :: Type
@@ -11,4 +13,7 @@ data ClientName
   | ClientNameRegisterEmail
   | ClientNameRegisterEmailVisible
   | ClientNameSpacesList
+  | ClientNameSpacesNewSpaceName
+  | ClientNameSpacesNewSpaceAccessibility AccessibilitySpace
+  | ClientNameSpacesNewSpaceVisibility VisibilitySpace
   deriving stock (Eq, Ord, Show)

@@ -32,7 +32,7 @@ type StatusReservation :: Type
 data StatusReservation
   = MkStatusReservationPlanned
   | MkStatusReservationCancelled
-  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkStatusReservation" "") StatusReservation

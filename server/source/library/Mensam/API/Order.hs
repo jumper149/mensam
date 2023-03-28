@@ -9,7 +9,7 @@ import GHC.Generics
 
 type Order :: Type
 data Order = Ascending | Descending
-  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "" "") Order
