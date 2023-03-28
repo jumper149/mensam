@@ -142,34 +142,5 @@ handleEvent chan = \case
         zoom (clientStateScreenState . clientScreenStateRegister) $ runApplicationT chan $ registerHandleEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateSpaces _} ->
         zoom (clientStateScreenState . clientScreenStateSpaces) $ runApplicationT chan $ spacesHandleEvent event
-      MkClientState {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space desks)} ->
-        case clientState ^. clientStateJwt of
-          Just jwt ->
-            case event of
-              VtyEvent (EvKey (KChar 'r') []) -> do
-                result <-
-                  runApplicationT chan $
-                    mensamCall $
-                      endpointDeskList
-                        (DataJWT $ MkJWToken jwt)
-                        ( Route.Booking.MkRequestDeskList
-                            { Route.Booking.requestDeskListSpace = Identifier $ spaceId space
-                            , Route.Booking.requestDeskListTimeBegin = Nothing
-                            , Route.Booking.requestDeskListTimeEnd = Nothing
-                            }
-                        )
-                case result of
-                  Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList xs)))) ->
-                    clientStateScreenState . clientScreenStateDesks . screenStateDesksList %= listReplace (Seq.fromList xs) (Just 0)
-                  err ->
-                    modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
-                pure ()
-              VtyEvent (EvKey KEnter []) -> do
-                case listSelectedElement desks of
-                  Nothing ->
-                    modify $ \s -> s {_clientStatePopup = Just "No desk selected."}
-                  Just (_index, desk) -> do
-                    modify $ \s -> s {_clientStatePopup = Just $ "Desk selected: " <> T.pack (show desk)}
-              VtyEvent e -> zoom (clientStateScreenState . clientScreenStateDesks . screenStateDesksList) $ handleListEvent e
-              _ -> pure ()
-          Nothing -> pure ()
+      MkClientState {_clientStateScreenState = ClientScreenStateDesks _} ->
+        zoom (clientStateScreenState . clientScreenStateDesks) $ runApplicationT chan $ desksHandleEvent event
