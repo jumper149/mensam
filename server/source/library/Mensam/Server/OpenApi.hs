@@ -57,6 +57,15 @@ instance KnownSymbol text => ToParamSchema (StaticText text) where
 instance KnownSymbol text => ToSchema (StaticText text) where
   declareNamedSchema = pure . NamedSchema (Just "StaticText") . paramSchemaToSchema
 
+instance ToSchema Route.User.Jwt where
+  declareNamedSchema Proxy =
+    pure $
+      NamedSchema (Just "JWT") $
+        mempty
+          & type_ ?~ OpenApiString
+          & format ?~ "jwt"
+          & example ?~ A.String "eyJhbGciOiJIUzUxMiJ9.eyJkYXQiOnsiaWQiOnsidW5JZGVudGlmaWVyVXNlciI6Mn19LCJleHAiOjEuNjgwMzAyMDY3Njc1OTUxMjYyZTl9.6RGNeoQC7nrA4O_IYfaMchojHLk-ScKSBi1f7-R1_qhUdttNIzVJzZfORvt5IzSfo9ye4OnHphDLDiU76qFxEQ"
+
 deriving via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth instance ToSchema ErrorBasicAuth
 deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBodyJson instance ToSchema ErrorParseBodyJson
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)

@@ -2,6 +2,7 @@
 
 module Mensam.Client.UI.Brick.State where
 
+import Mensam.API.Route.Api.User
 import Mensam.Client.UI.Desks
 import Mensam.Client.UI.Login
 import Mensam.Client.UI.Register
@@ -23,6 +24,6 @@ type ClientState :: Type
 data ClientState = MkClientState
   { _clientStateScreenState :: ClientScreenState
   , _clientStatePopup :: Maybe T.Text
-  , _clientStateJwt :: Maybe T.Text
+  , _clientStateJwt :: Maybe Jwt
   }
 makeLenses ''ClientState

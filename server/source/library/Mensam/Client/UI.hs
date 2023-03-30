@@ -72,7 +72,7 @@ handleEvent chan = \case
               runApplicationT chan $
                 mensamCall $
                   endpointSpaceList
-                    (DataJWT $ MkJWToken jwt)
+                    (DataJWT jwt)
                     (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
             case result of
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
@@ -88,7 +88,7 @@ handleEvent chan = \case
               runApplicationT chan $
                 mensamCall $
                   endpointDeskList
-                    (DataJWT $ MkJWToken jwt)
+                    (DataJWT jwt)
                     ( Route.Booking.MkRequestDeskList
                         { Route.Booking.requestDeskListSpace = Identifier $ spaceId space
                         , Route.Booking.requestDeskListTimeBegin = Nothing
@@ -118,7 +118,7 @@ handleEvent chan = \case
         clientState <- get
         case clientState ^. clientStateJwt of
           Just jwt -> do
-            result <- runApplicationT chan $ mensamCall $ endpointSpaceCreate (DataJWT $ MkJWToken jwt) request
+            result <- runApplicationT chan $ mensamCall $ endpointSpaceCreate (DataJWT jwt) request
             case result of
               Right (Z (I (WithStatus @201 (Route.Booking.MkResponseSpaceCreate _)))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}

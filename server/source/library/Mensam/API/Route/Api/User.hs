@@ -63,12 +63,17 @@ data Routes route = Routes
 
 type ResponseLogin :: Type
 newtype ResponseLogin = MkResponseLogin
-  { responseLoginJWT :: T.Text
+  { responseLoginJWT :: Jwt
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseLogin") ResponseLogin
+
+type Jwt :: Type
+newtype Jwt = MkJwt {unJwt :: T.Text}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
 
 type RequestRegister :: Type
 data RequestRegister = MkRequestRegister

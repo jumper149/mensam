@@ -62,14 +62,14 @@ f = do
       _ -> undefined
 
   liftIO $ putStrLn "Login with JWT."
-  let token = MkJWToken {unJWToken = Route.User.responseLoginJWT responseLogin}
+  let token = Route.User.responseLoginJWT responseLogin
   nextLoginResult <- endpointLogin $ DataNextAuth $ DataJWT token
   liftIO $ print nextLoginResult
   nextResponseLogin <-
     case resultLogin of
       Z (I (WithStatus @200 x)) -> pure x
       _ -> undefined
-  let nextToken = MkJWToken {unJWToken = Route.User.responseLoginJWT nextResponseLogin}
+  let nextToken = Route.User.responseLoginJWT nextResponseLogin
 
   liftIO $ putStrLn "Create space."
   let requestSpaceCreate =

@@ -2,6 +2,8 @@
 
 module Mensam.Client.OrphanInstances where
 
+import Mensam.API.Route.Api.User
+
 import Data.ByteString qualified as B
 import Data.Kind
 import Data.Proxy
@@ -24,7 +26,7 @@ instance MimeUnrender HTML Markup where
 type AuthData :: [Type] -> Type
 data AuthData xs :: Type where
   DataBasicAuth :: Credentials -> AuthData (BasicAuth ': auths)
-  DataJWT :: JWToken -> AuthData (JWT ': auths)
+  DataJWT :: Jwt -> AuthData (JWT ': auths)
   DataCookie :: Cookies -> AuthData (Cookie ': auths)
   DataNextAuth :: AuthData xs -> AuthData (x ': xs)
 
@@ -53,13 +55,9 @@ credentialsAuthorizationHeader :: Credentials -> Header
 credentialsAuthorizationHeader MkCredentials {credentialsUsername, credentialsPassword} =
   (hAuthorization,) $ ("Basic " <>) $ T.encodeUtf8 $ T.encodeBase64 $ credentialsUsername <> ":" <> credentialsPassword
 
-type JWToken :: Type
-newtype JWToken = MkJWToken {unJWToken :: T.Text}
-  deriving stock (Eq, Generic, Ord, Read, Show)
-
-jwTokenAuthorizationHeader :: JWToken -> Header
-jwTokenAuthorizationHeader MkJWToken {unJWToken} =
-  (hAuthorization,) $ ("Bearer " <>) $ T.encodeUtf8 unJWToken
+jwTokenAuthorizationHeader :: Jwt -> Header
+jwTokenAuthorizationHeader MkJwt {unJwt = jwt} =
+  (hAuthorization,) $ ("Bearer " <>) $ T.encodeUtf8 jwt
 
 type Cookies :: Type
 newtype Cookies = MkCookies {unCookies :: B.ByteString}
