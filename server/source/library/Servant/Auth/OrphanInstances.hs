@@ -20,39 +20,39 @@ addAuthMethods = \case
   MethodBasicAuth nextMethod ->
     let
       identifier :: T.Text = "BasicAuth"
-      addThisScheme =
-        addSecurityScheme identifier $
-          SecurityScheme
-            { _securitySchemeType = SecuritySchemeHttp HttpSchemeBasic
-            , _securitySchemeDescription = Just "Basic Authentication"
-            }
-      addThisRequirement = addSecurityRequirement $ SecurityRequirement $ HM.singleton identifier []
+      securityScheme =
+        SecurityScheme
+          { _securitySchemeType = SecuritySchemeHttp HttpSchemeBasic
+          , _securitySchemeDescription = Just "Basic Authentication"
+          }
      in
-      addAuthMethods nextMethod . addThisRequirement . addThisScheme
+      addAuthMethods nextMethod
+        . addSecurityRequirement identifier
+        . addSecurityScheme identifier securityScheme
   MethodJWT nextMethod ->
     let
       identifier :: T.Text = "JWT"
-      addThisScheme =
-        addSecurityScheme identifier $
-          SecurityScheme
-            { _securitySchemeType = SecuritySchemeHttp $ HttpSchemeBearer $ Just "JWT"
-            , _securitySchemeDescription = Just "Bearer Authentication"
-            }
-      addThisRequirement = addSecurityRequirement $ SecurityRequirement $ HM.singleton identifier []
+      securityScheme =
+        SecurityScheme
+          { _securitySchemeType = SecuritySchemeHttp $ HttpSchemeBearer $ Just "JWT"
+          , _securitySchemeDescription = Just "Bearer Authentication"
+          }
      in
-      addAuthMethods nextMethod . addThisRequirement . addThisScheme
+      addAuthMethods nextMethod
+        . addSecurityRequirement identifier
+        . addSecurityScheme identifier securityScheme
   MethodCookie nextMethod ->
     let
       identifier :: T.Text = "Cookie"
-      addThisScheme =
-        addSecurityScheme identifier $
-          SecurityScheme
-            { _securitySchemeType = SecuritySchemeHttp $ HttpSchemeBearer $ Just "JWT"
-            , _securitySchemeDescription = Just "Cookie Authentication"
-            }
-      addThisRequirement = addSecurityRequirement $ SecurityRequirement $ HM.singleton identifier []
+      securityScheme =
+        SecurityScheme
+          { _securitySchemeType = SecuritySchemeHttp $ HttpSchemeBearer $ Just "JWT"
+          , _securitySchemeDescription = Just "Cookie Authentication"
+          }
      in
-      addAuthMethods nextMethod . addThisRequirement . addThisScheme
+      addAuthMethods nextMethod
+        . addSecurityRequirement identifier
+        . addSecurityScheme identifier securityScheme
   MethodNone -> id
 
 type AuthMethodList :: [Type] -> Type
@@ -89,5 +89,8 @@ addSecurityScheme securityIdentifier securityScheme openApi =
           }
     }
 
-addSecurityRequirement :: SecurityRequirement -> OpenApi -> OpenApi
-addSecurityRequirement securityRequirement = allOperations . security %~ (securityRequirement :)
+addSecurityRequirement :: T.Text -> OpenApi -> OpenApi
+addSecurityRequirement securityRequirement =
+  allOperations
+    . security
+    %~ ((SecurityRequirement $ HM.singleton securityRequirement []) :)
