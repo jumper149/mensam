@@ -7,7 +7,7 @@ import Mensam.Client.Application.Event.Class
 import Mensam.Client.Application.HttpClient
 import Mensam.Client.Application.MensamClient
 import Mensam.Client.Application.MensamClient.Class
-import Mensam.Client.Brick.Events (ClientEvent)
+import Mensam.Client.UI.Brick.Events (ClientEvent)
 
 import Brick.BChan (BChan)
 import Control.Monad.Except

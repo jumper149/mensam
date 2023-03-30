@@ -1,12 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Mensam.Client.Brick.Register where
+module Mensam.Client.UI.Register where
 
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application.Event.Class
-import Mensam.Client.Brick.Events
-import Mensam.Client.Brick.Names
+import Mensam.Client.UI.Brick.Events
+import Mensam.Client.UI.Brick.Names
 
 import Brick
 import Brick.Forms

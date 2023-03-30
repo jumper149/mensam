@@ -1,13 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Mensam.Client.Brick.Spaces where
+module Mensam.Client.UI.Spaces where
 
 import Mensam.API.Data.Space
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
-import Mensam.Client.Brick.Events
-import Mensam.Client.Brick.Names
+import Mensam.Client.UI.Brick.Events
+import Mensam.Client.UI.Brick.Names
 
 import Brick
 import Brick.Forms

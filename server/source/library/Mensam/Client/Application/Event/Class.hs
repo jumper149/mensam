@@ -1,6 +1,6 @@
 module Mensam.Client.Application.Event.Class where
 
-import Mensam.Client.Brick.Events
+import Mensam.Client.UI.Brick.Events
 
 import Brick.BChan
 import Control.Monad.Trans

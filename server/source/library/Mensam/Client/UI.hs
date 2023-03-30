@@ -1,4 +1,4 @@
-module Mensam.Client.Brick where
+module Mensam.Client.UI where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.Space
@@ -8,15 +8,15 @@ import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
 import Mensam.Client.Application.MensamClient.Class
-import Mensam.Client.Brick.Desks
-import Mensam.Client.Brick.Draw
-import Mensam.Client.Brick.Events
-import Mensam.Client.Brick.Login
-import Mensam.Client.Brick.Names
-import Mensam.Client.Brick.Register
-import Mensam.Client.Brick.Spaces
-import Mensam.Client.Brick.Type
 import Mensam.Client.OrphanInstances
+import Mensam.Client.UI.Brick.Draw
+import Mensam.Client.UI.Brick.Events
+import Mensam.Client.UI.Brick.Names
+import Mensam.Client.UI.Brick.State
+import Mensam.Client.UI.Desks
+import Mensam.Client.UI.Login
+import Mensam.Client.UI.Register
+import Mensam.Client.UI.Spaces
 
 import Brick
 import Brick.BChan
@@ -27,10 +27,9 @@ import Data.Text qualified as T
 import Graphics.Vty
 import Lens.Micro.Platform
 import Servant
-import Servant.RawM.Client ()
 
-runBrick :: IO ()
-runBrick = do
+ui :: IO ()
+ui = do
   chan <- newBChan 10
   let
     app :: App ClientState ClientEvent ClientName

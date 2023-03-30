@@ -1,4 +1,4 @@
-module Mensam.Client.Brick.Names where
+module Mensam.Client.UI.Brick.Names where
 
 import Mensam.API.Data.Space
 

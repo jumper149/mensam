@@ -1,11 +1,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Mensam.Client.Brick.Type where
+module Mensam.Client.UI.Brick.State where
 
-import Mensam.Client.Brick.Desks
-import Mensam.Client.Brick.Login
-import Mensam.Client.Brick.Register
-import Mensam.Client.Brick.Spaces
+import Mensam.Client.UI.Desks
+import Mensam.Client.UI.Login
+import Mensam.Client.UI.Register
+import Mensam.Client.UI.Spaces
 
 import Data.Kind
 import Data.Text qualified as T

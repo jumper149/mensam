@@ -1,17 +1,16 @@
-module Mensam.Client.Brick.Draw where
+module Mensam.Client.UI.Brick.Draw where
 
-import Mensam.Client.Brick.Desks
-import Mensam.Client.Brick.Login
-import Mensam.Client.Brick.Names
-import Mensam.Client.Brick.Register
-import Mensam.Client.Brick.Spaces
-import Mensam.Client.Brick.Type
+import Mensam.Client.UI.Brick.Names
+import Mensam.Client.UI.Brick.State
+import Mensam.Client.UI.Desks
+import Mensam.Client.UI.Login
+import Mensam.Client.UI.Register
+import Mensam.Client.UI.Spaces
 
 import Brick
 import Brick.Widgets.Border
 import Brick.Widgets.Center
 import Data.Text qualified as T
-import Servant.RawM.Client ()
 
 draw :: ClientState -> [Widget ClientName]
 draw MkClientState {_clientStateScreenState, _clientStatePopup} =

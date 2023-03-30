@@ -124,17 +124,17 @@ library
     , Mensam.Client.Application.HttpClient.Class
     , Mensam.Client.Application.MensamClient
     , Mensam.Client.Application.MensamClient.Class
-    , Mensam.Client.Brick
-    , Mensam.Client.Brick.Desks
-    , Mensam.Client.Brick.Draw
-    , Mensam.Client.Brick.Events
-    , Mensam.Client.Brick.Login
-    , Mensam.Client.Brick.Names
-    , Mensam.Client.Brick.Register
-    , Mensam.Client.Brick.Spaces
-    , Mensam.Client.Brick.Type
     , Mensam.Client.Debug
     , Mensam.Client.OrphanInstances
+    , Mensam.Client.UI
+    , Mensam.Client.UI.Brick.Draw
+    , Mensam.Client.UI.Brick.Events
+    , Mensam.Client.UI.Brick.Names
+    , Mensam.Client.UI.Brick.State
+    , Mensam.Client.UI.Desks
+    , Mensam.Client.UI.Login
+    , Mensam.Client.UI.Register
+    , Mensam.Client.UI.Spaces
     , Mensam.Server
     , Mensam.Server.Application
     , Mensam.Server.Application.Configured

@@ -3,7 +3,7 @@
 module Mensam.Client.Application.Event where
 
 import Mensam.Client.Application.Event.Class
-import Mensam.Client.Brick.Events
+import Mensam.Client.UI.Brick.Events
 
 import Brick.BChan
 import Control.Monad.Logger.CallStack

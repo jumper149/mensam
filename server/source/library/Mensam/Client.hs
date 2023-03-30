@@ -1,6 +1,6 @@
 module Mensam.Client where
 
-import Mensam.Client.Brick
+import Mensam.Client.UI
 
 main :: IO ()
-main = runBrick
+main = ui

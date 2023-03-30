@@ -17,7 +17,6 @@ import Data.Text qualified as T
 import Data.Time qualified as T
 import Servant
 import Servant.Client
-import Servant.RawM.Client ()
 import Text.Email.Parser
 import Text.Email.Text
 

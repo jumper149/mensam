@@ -1,4 +1,4 @@
-module Mensam.Client.Brick.Events where
+module Mensam.Client.UI.Brick.Events where
 
 import Mensam.API.Data.Space
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
