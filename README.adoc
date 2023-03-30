@@ -1,11 +1,6 @@
 = Mensam
 
-A desk-booking web application.
-
-View the https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/jumper149/mensam/main/final/openapi.json[OpenAPI specification].
-
-.This section describes the goal of the MVP.
-== Usage
+__**A desk-booking web application.**__
 
 Are you hosting a **coworking space**, a **hot-desk office** or a community space like a **hacker space**?
 
@@ -14,6 +9,14 @@ Your members will be disappointed when they arrive at your location and realize 
 Sometimes there are desks available, but a user has some special requirement like a power outlet or the user just wants to sit close to a window.
 
 In these cases you probably want to set up a desk-booking solution like __Mensam__.
+
+== Documentation
+
+View the https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/jumper149/mensam/main/final/openapi.json[OpenAPI specification].
+
+== Usage
+
+__This section describes the goal of an MVP.__
 
 === Setup
 
