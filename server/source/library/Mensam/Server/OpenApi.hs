@@ -15,6 +15,7 @@ import Mensam.API.Route.Api.User qualified as Route.User
 
 import Control.Lens
 import Data.Aeson qualified as A
+import Data.HashMap.Strict.InsOrd qualified as HMIO
 import Data.OpenApi
 import Data.Proxy
 import Data.Text.Lazy.Encoding qualified as TL
@@ -37,7 +38,26 @@ openapi =
   generatedOpenApi = toOpenApi $ Proxy @(NamedRoutes Route.Api.Routes)
 
 instance ToSchema OpenApi where
-  declareNamedSchema Proxy = pure $ NamedSchema (Just "OpenAPI Specification") mempty
+  declareNamedSchema Proxy =
+    pure $
+      NamedSchema (Just "OpenAPI Specification") $
+        mempty
+          & example ?~ A.toJSON openapiExample
+   where
+    openapiExample :: OpenApi
+    openapiExample =
+      mempty
+        & info . title .~ "Example API"
+        & info . version .~ "1.0.0"
+        & paths
+          .~ HMIO.singleton
+            "/hello_world"
+            ( mempty
+                & get
+                  ?~ ( mempty
+                        & at 200 ?~ "OK"
+                     )
+            )
 
 instance ToParamSchema Username where
   toParamSchema Proxy =
