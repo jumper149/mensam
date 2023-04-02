@@ -98,7 +98,7 @@ handleEvent chan = \case
             case result of
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) -> do
                 let l = listReplace (Seq.fromList desks) (Just 0) desksListInitial
-                modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l False)}
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l False Nothing)}
               err ->
                 modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}

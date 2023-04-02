@@ -33,6 +33,7 @@ data ScreenDesksState = MkScreenDesksState
   { _screenStateDesksSpace :: Space
   , _screenStateDesksList :: GenericList ClientName Seq.Seq DeskWithInfo
   , _screenStateDesksShowHelp :: Bool
+  , _screenStateDesksShowReservations :: Maybe T.Text
   }
 makeLenses ''ScreenDesksState
 
@@ -45,9 +46,17 @@ desksDraw = \case
             txt
               "? - Toggle Help\n\
               \r - Refresh Desks\n\
+              \Enter - Toggle reservations for a desk\n\
               \"
     ]
       <> desksDraw s {_screenStateDesksShowHelp = False}
+  s@MkScreenDesksState {_screenStateDesksShowReservations = Just reservationsTxt} ->
+    [ centerLayer $
+        borderWithLabel (txt "Reservations") $
+          cropRightTo 80 $
+            txt reservationsTxt
+    ]
+      <> desksDraw s {_screenStateDesksShowReservations = Nothing}
   MkScreenDesksState {_screenStateDesksSpace = space, _screenStateDesksList = desksWithInfo} ->
     [ borderWithLabel (txt $ "Desks (" <> unNameSpace (spaceName space) <> ")") $
         padBottom Max $
@@ -59,6 +68,18 @@ desksHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM Cl
 desksHandleEvent = \case
   VtyEvent (EvKey (KChar '?') []) -> lift $ modify $ \s -> s {_screenStateDesksShowHelp = not $ _screenStateDesksShowHelp s}
   VtyEvent (EvKey (KChar 'r') []) -> sendEvent . ClientEventSwitchToScreenDesks . _screenStateDesksSpace =<< lift get
-  VtyEvent (EvKey KEnter []) -> pure () -- TODO: What do we want to do with a selected desk?
+  VtyEvent (EvKey KEnter []) -> do
+    s <- lift get
+    case _screenStateDesksShowReservations s of
+      Just _ -> lift $ put s {_screenStateDesksShowReservations = Nothing}
+      Nothing ->
+        case listSelectedElement $ _screenStateDesksList s of
+          Nothing -> pure ()
+          Just (_index, desk) ->
+            lift $
+              put $
+                s
+                  { _screenStateDesksShowReservations = Just $ T.pack $ show $ deskWithInfoReservations desk
+                  }
   VtyEvent e -> lift $ zoom screenStateDesksList $ handleListEvent e
   _ -> pure ()
