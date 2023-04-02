@@ -12,6 +12,7 @@ import Mensam.Client.UI.Brick.Names
 
 import Brick
 import Brick.Widgets.Border
+import Brick.Widgets.Center
 import Brick.Widgets.List
 import Control.Monad.Trans.Class
 import Data.Kind
@@ -31,11 +32,22 @@ type ScreenDesksState :: Type
 data ScreenDesksState = MkScreenDesksState
   { _screenStateDesksSpace :: Space
   , _screenStateDesksList :: GenericList ClientName Seq.Seq DeskWithInfo
+  , _screenStateDesksShowHelp :: Bool
   }
 makeLenses ''ScreenDesksState
 
 desksDraw :: ScreenDesksState -> [Widget ClientName]
 desksDraw = \case
+  s@MkScreenDesksState {_screenStateDesksShowHelp = True} ->
+    [ centerLayer $
+        borderWithLabel (txt "Help") $
+          cropRightTo 80 $
+            txt
+              "? - Toggle Help\n\
+              \r - Refresh Desks\n\
+              \"
+    ]
+      <> desksDraw s {_screenStateDesksShowHelp = False}
   MkScreenDesksState {_screenStateDesksSpace = space, _screenStateDesksList = desksWithInfo} ->
     [ borderWithLabel (txt $ "Desks (" <> unNameSpace (spaceName space) <> ")") $
         padBottom Max $
@@ -45,6 +57,7 @@ desksDraw = \case
 
 desksHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenDesksState) ()
 desksHandleEvent = \case
+  VtyEvent (EvKey (KChar '?') []) -> lift $ modify $ \s -> s {_screenStateDesksShowHelp = not $ _screenStateDesksShowHelp s}
   VtyEvent (EvKey (KChar 'r') []) -> sendEvent . ClientEventSwitchToScreenDesks . _screenStateDesksSpace =<< lift get
   VtyEvent (EvKey KEnter []) -> pure () -- TODO: What do we want to do with a selected desk?
   VtyEvent e -> lift $ zoom screenStateDesksList $ handleListEvent e
