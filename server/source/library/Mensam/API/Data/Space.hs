@@ -49,6 +49,7 @@ type PermissionSpaceUser :: Type
 data PermissionSpaceUser
   = MkPermissionSpaceUserEditDesk
   | MkPermissionSpaceUserCreateReservation
+  | MkPermissionSpaceUserCancelReservation
   deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)

@@ -126,6 +126,8 @@ deriving via A.CustomJSON (JSONSettings "Mk" "deskWithInfo") Route.Booking.DeskW
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Route.Booking.ResponseDeskList instance ToSchema Route.Booking.ResponseDeskList
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") Route.Booking.RequestReservationCreate instance ToSchema Route.Booking.RequestReservationCreate
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCreate") Route.Booking.ResponseReservationCreate instance ToSchema Route.Booking.ResponseReservationCreate
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCancel") Route.Booking.RequestReservationCancel instance ToSchema Route.Booking.RequestReservationCancel
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCancel") Route.Booking.ResponseReservationCancel instance ToSchema Route.Booking.ResponseReservationCancel
 
 openapiJsonStdout :: IO ()
 openapiJsonStdout = TL.putStrLn $ TL.decodeUtf8 $ A.encode Mensam.Server.OpenApi.openapi

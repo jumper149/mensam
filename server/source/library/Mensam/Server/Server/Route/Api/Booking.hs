@@ -2,6 +2,7 @@ module Mensam.Server.Server.Route.Api.Booking where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.Desk
+import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Route.Api.Booking
@@ -32,6 +33,7 @@ handler =
     , routeDeskCreate = createDesk
     , routeDeskList = listDesks
     , routeReservationCreate = createReservation
+    , routeReservationCancel = cancelReservation
     }
 
 createSpace ::
@@ -91,6 +93,7 @@ joinSpace auth eitherRequest =
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
         spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserCreateReservation
+        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserCancelReservation
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
@@ -252,9 +255,9 @@ createReservation auth eitherRequest = do
               (requestReservationCreateTimeEnd request)
           else error "No permission"
       case seldaResult of
-        SeldaFailure someException -> do
+        SeldaFailure err -> do
           logWarn "Failed to create reservation."
-          case fromException someException of
+          case fromException err of
             Just MkSqlErrorMensamDeskAlreadyReserved ->
               respond $ WithStatus @409 $ MkStaticText @"Desk is not available within the given time window."
             Nothing -> do
@@ -263,6 +266,42 @@ createReservation auth eitherRequest = do
         SeldaSuccess reservationIdentifier -> do
           logInfo "Created reservation."
           respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
+
+cancelReservation ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseReservationCancel) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestReservationCancel ->
+  m (Union responses)
+cancelReservation auth eitherRequest = do
+  handleAuth auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to cancel reservation: " <> T.pack (show request)
+      let reservationIdentifier = requestReservationCancelId request
+      seldaResult <- runSeldaTransactionT $ do
+        reservation <- reservationGet reservationIdentifier
+        permissions <- do
+          desk <- deskGet $ reservationDesk reservation
+          let spaceIdentifier :: IdentifierSpace = deskSpace desk
+          spaceUserPermissions spaceIdentifier $ userAuthenticatedId authenticated
+        if MkPermissionSpaceUserCancelReservation `S.member` permissions
+          then case reservationStatus reservation of
+            MkStatusReservationCancelled -> error "Already cancelled."
+            MkStatusReservationPlanned -> reservationCancel reservationIdentifier
+          else error "No permission."
+      case seldaResult of
+        SeldaFailure _err -> do
+          logWarn "Failed to cancel reservation."
+          respond $ WithStatus @500 ()
+        SeldaSuccess () -> do
+          logInfo "Cancelled reservation."
+          respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
 
 handleBadRequestBody ::
   ( MonadLogger m

@@ -124,6 +124,7 @@ spaceUserPermissions spaceIdentifier userIdentifier = do
   let translatePermission = \case
         MkDbSpaceUserPermission_edit_desk -> MkPermissionSpaceUserEditDesk
         MkDbSpaceUserPermission_create_reservation -> MkPermissionSpaceUserCreateReservation
+        MkDbSpaceUserPermission_cancel_reservation -> MkPermissionSpaceUserCancelReservation
   pure $ S.fromList $ translatePermission <$> permissions
 
 spaceUserPermissionGive ::
@@ -142,6 +143,7 @@ spaceUserPermissionGive spaceIdentifier userIdentifier permission = do
               case permission of
                 MkPermissionSpaceUserEditDesk -> MkDbSpaceUserPermission_edit_desk
                 MkPermissionSpaceUserCreateReservation -> MkDbSpaceUserPermission_create_reservation
+                MkPermissionSpaceUserCancelReservation -> MkDbSpaceUserPermission_cancel_reservation
           }
   lift $ logDebug "Inserting space-user permission."
   Selda.insert_ tableSpaceUser [dbSpaceUser]
@@ -162,6 +164,7 @@ spaceUserPermissionRevoke spaceIdentifier userIdentifier permission = do
         case permission of
           MkPermissionSpaceUserEditDesk -> MkDbSpaceUserPermission_edit_desk
           MkPermissionSpaceUserCreateReservation -> MkDbSpaceUserPermission_create_reservation
+          MkPermissionSpaceUserCancelReservation -> MkDbSpaceUserPermission_cancel_reservation
       isSpace = dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
       isUser = dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
       isPermission = dbSpaceUser Selda.! #dbSpaceUser_permission Selda..== Selda.literal dbPermission
@@ -258,6 +261,29 @@ deskCreate deskName spaceIdentifier = do
   lift $ logInfo "Created desk successfully."
   pure $ MkIdentifierDesk $ Selda.fromId @DbDesk dbDeskId
 
+reservationGet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierReservation ->
+  SeldaTransactionT m Reservation
+reservationGet identifier = do
+  lift $ logDebug $ "Get reservation with identifier: " <> T.pack (show identifier)
+  dbReservation <- Selda.queryOne $ do
+    dbReservation <- Selda.select tableReservation
+    Selda.restrict $ dbReservation Selda.! #dbReservation_id Selda..== Selda.literal (Selda.toId @DbReservation $ unIdentifierReservation identifier)
+    pure dbReservation
+  lift $ logInfo "Got reservation successfully."
+  pure
+    MkReservation
+      { reservationId = MkIdentifierReservation $ Selda.fromId @DbReservation $ dbReservation_id dbReservation
+      , reservationDesk = MkIdentifierDesk $ Selda.fromId @DbDesk $ dbReservation_desk dbReservation
+      , reservationUser = MkIdentifierUser $ Selda.fromId @DbUser $ dbReservation_user dbReservation
+      , reservationTimeBegin = dbReservation_time_begin dbReservation
+      , reservationTimeEnd = dbReservation_time_end dbReservation
+      , reservationStatus = case dbReservation_status dbReservation of
+          MkDbReservationStatus_planned -> MkStatusReservationPlanned
+          MkDbReservationStatus_cancelled -> MkStatusReservationCancelled
+      }
+
 -- | List all reservations of a desk, that overlap with the given time window.
 reservationList ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -315,7 +341,7 @@ reservationCreate ::
 reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   lift $ logDebug "Creating reservation."
   reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd)
-  case filter (\MkReservation {reservationStatus} -> reservationStatus == MkStatusReservationPlanned) reservations of
+  case filter ((== MkStatusReservationPlanned) . reservationStatus) reservations of
     _ : _ -> do
       lift $ logWarn "Desk is already reserved."
       throwM MkSqlErrorMensamDeskAlreadyReserved
@@ -338,3 +364,15 @@ type SqlErrorMensamDeskAlreadyReserved :: Type
 data SqlErrorMensamDeskAlreadyReserved = MkSqlErrorMensamDeskAlreadyReserved
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
+
+reservationCancel ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierReservation ->
+  SeldaTransactionT m ()
+reservationCancel reservationIdentifier = do
+  lift $ logDebug "Cancelling reservation."
+  Selda.update_
+    tableReservation
+    (\dbReservation -> dbReservation Selda.! #dbReservation_id Selda..== Selda.literal (Selda.toId @DbReservation $ unIdentifierReservation reservationIdentifier))
+    (\dbReservation -> dbReservation `Selda.with` [#dbReservation_status Selda.:= Selda.literal MkDbReservationStatus_cancelled])
+  lift $ logInfo "Cancelled reservation successfully."

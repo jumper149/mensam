@@ -124,6 +124,23 @@ data Routes route = Routes
               , WithStatus 409 (StaticText "Desk is not available within the given time window.")
               , WithStatus 500 ()
               ]
+  , routeReservationCancel ::
+      route
+        :- Summary "Cancel Reservation"
+          :> Description
+              "Cancel a desk reservation.\n"
+          :> "reservation"
+          :> "cancel"
+          :> Auth '[JWT] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationCancel
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseReservationCancel
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 500 ()
+              ]
   }
   deriving stock (Generic)
 
@@ -251,3 +268,21 @@ newtype ResponseReservationCreate = MkResponseReservationCreate
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCreate") ResponseReservationCreate
+
+type RequestReservationCancel :: Type
+newtype RequestReservationCancel = MkRequestReservationCancel
+  { requestReservationCancelId :: IdentifierReservation
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCancel") RequestReservationCancel
+
+type ResponseReservationCancel :: Type
+newtype ResponseReservationCancel = MkResponseReservationCancel
+  { responseReservationCancelUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCancel") ResponseReservationCancel

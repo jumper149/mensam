@@ -88,6 +88,7 @@ type DbSpaceUserPermission :: Type
 data DbSpaceUserPermission
   = MkDbSpaceUserPermission_edit_desk
   | MkDbSpaceUserPermission_create_reservation
+  | MkDbSpaceUserPermission_cancel_reservation
   deriving stock (Bounded, Enum, Read, Show)
   deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceUserPermission_" DbSpaceUserPermission)
   deriving anyclass (Selda.SqlType)
