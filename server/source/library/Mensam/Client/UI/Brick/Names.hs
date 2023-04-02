@@ -16,4 +16,5 @@ data ClientName
   | ClientNameSpacesNewSpaceName
   | ClientNameSpacesNewSpaceAccessibility AccessibilitySpace
   | ClientNameSpacesNewSpaceVisibility VisibilitySpace
+  | ClientNameDesksNewDeskName
   deriving stock (Eq, Ord, Show)

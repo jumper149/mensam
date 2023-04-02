@@ -98,7 +98,7 @@ handleEvent chan = \case
             case result of
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) -> do
                 let l = listReplace (Seq.fromList desks) (Just 0) desksListInitial
-                modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l False Nothing)}
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l False Nothing Nothing)}
               err ->
                 modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
@@ -121,6 +121,15 @@ handleEvent chan = \case
             result <- runApplicationT chan $ mensamCall $ endpointSpaceCreate (DataJWT jwt) request
             case result of
               Right (Z (I (WithStatus @201 (Route.Booking.MkResponseSpaceCreate _)))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
+              err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+          Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
+      ClientEventSendRequestCreateDesk space request -> do
+        clientState <- get
+        case clientState ^. clientStateJwt of
+          Just jwt -> do
+            result <- runApplicationT chan $ mensamCall $ endpointDeskCreate (DataJWT jwt) request
+            case result of
+              Right (Z (I (WithStatus @201 (Route.Booking.MkResponseDeskCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
   VtyEvent (EvKey KEsc []) -> halt
