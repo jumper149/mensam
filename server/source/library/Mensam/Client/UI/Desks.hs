@@ -4,6 +4,7 @@ module Mensam.Client.UI.Desks where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.Desk
+import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Route.Api.Booking
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
@@ -18,9 +19,11 @@ import Brick.Widgets.Border
 import Brick.Widgets.Center
 import Brick.Widgets.List
 import Control.Monad.Trans.Class
+import Data.Bifunctor
 import Data.Kind
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
+import Data.Time qualified as T
 import Graphics.Vty.Input.Events
 import Lens.Micro.Platform
 
@@ -52,6 +55,7 @@ data ScreenDesksState = MkScreenDesksState
   , _screenStateDesksList :: GenericList ClientName Seq.Seq DeskWithInfo
   , _screenStateDesksShowHelp :: Bool
   , _screenStateDesksShowReservations :: Maybe T.Text
+  , _screenStateDesksShowDay :: T.Day
   , _screenStateDesksNewDeskForm :: Maybe (Form NewDeskInfo ClientEvent ClientName)
   }
 makeLenses ''ScreenDesksState
@@ -81,12 +85,25 @@ desksDraw = \case
     [ centerLayer $ borderWithLabel (txt "New Desk") $ cropRightTo 80 $ renderForm form
     ]
       <> desksDraw (s {_screenStateDesksNewDeskForm = Nothing})
-  MkScreenDesksState {_screenStateDesksSpace = space, _screenStateDesksList = desksWithInfo} ->
-    [ borderWithLabel (txt $ "Desks (" <> unNameSpace (spaceName space) <> ")") $
-        padBottom Max $
-          padRight Max $
-            renderList (\_focus (MkDeskWithInfo {deskWithInfoDesk, deskWithInfoReservations}) -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> unNameDesk (deskName deskWithInfoDesk) <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
-    ]
+  MkScreenDesksState
+    { _screenStateDesksSpace = space
+    , _screenStateDesksList = desksWithInfo
+    , _screenStateDesksShowDay = day
+    } ->
+      pure $
+        joinBorders $
+          borderWithLabel (txt $ "Desks (" <> unNameSpace (spaceName space) <> ")") $
+            vBox
+              [ padBottom Max $
+                  padRight Max $
+                    renderList (\_focus (MkDeskWithInfo {deskWithInfoDesk, deskWithInfoReservations}) -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> unNameDesk (deskName deskWithInfoDesk) <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
+              , hBorder
+              , let reservations =
+                      case listSelectedElement desksWithInfo of
+                        Nothing -> []
+                        Just (_index, desk) -> deskWithInfoReservations desk
+                 in vLimit 3 $ hCenter $ viewport ClientNameDesksReservationsViewport Horizontal $ visible $ txt $ prettyReservations day reservations
+              ]
 
 desksHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenDesksState) ()
 desksHandleEvent event = do
@@ -122,3 +139,23 @@ desksHandleEvent event = do
                 , Route.Booking.requestDeskCreateSpace = Identifier $ spaceId $ _screenStateDesksSpace s
                 }
         _ -> lift $ zoom (screenStateDesksNewDeskForm . _Just) $ handleFormEvent event
+
+prettyReservations :: T.Day -> [Reservation] -> T.Text
+prettyReservations day reservations = T.pack out
+ where
+  hours :: [Integer] = [0 .. 23]
+  minutes :: [Integer] = [0, 15, 30, 45]
+  diffTimes = T.secondsToDiffTime . (60 *) <$> concatMap (\hour -> (hour * 60 +) <$> minutes) hours
+  diffTimeWindows = zip diffTimes ((+ T.secondsToDiffTime (15 * 60)) <$> diffTimes)
+  utcTimeWindows = bimap (T.UTCTime day) (T.UTCTime day) <$> diffTimeWindows
+  utcTimeWindowReservedByOne (begin, end) MkReservation {reservationTimeBegin, reservationTimeEnd} =
+    reservationTimeBegin < end && reservationTimeEnd >= begin
+  utcTimeWindowReservedByAny window = any (utcTimeWindowReservedByOne window) reservations
+  reserved = utcTimeWindowReservedByAny <$> utcTimeWindows
+  markers = (\x -> if x then '▀' else ' ') <$> reserved
+  out =
+    unlines
+      [ "0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24"
+      , "┠───┴───┴───┼───┴───┴───╂───┴───┴───┼───┴───┴───╂───┴───┴───┼───┴───┴───╂───┴───┴───┼───┴───┴───┨"
+      , markers
+      ]

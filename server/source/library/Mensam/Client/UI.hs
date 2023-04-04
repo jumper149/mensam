@@ -21,9 +21,11 @@ import Mensam.Client.UI.Spaces
 import Brick
 import Brick.BChan
 import Brick.Widgets.List
+import Control.Monad.IO.Class
 import Data.SOP
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
+import Data.Time qualified as T
 import Graphics.Vty
 import Lens.Micro.Platform
 import Servant
@@ -98,7 +100,8 @@ handleEvent chan = \case
             case result of
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) -> do
                 let l = listReplace (Seq.fromList desks) (Just 0) desksListInitial
-                modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l False Nothing Nothing)}
+                currentDay <- T.utctDay <$> liftIO T.getCurrentTime
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l False Nothing currentDay Nothing)}
               err ->
                 modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}

@@ -17,4 +17,5 @@ data ClientName
   | ClientNameSpacesNewSpaceAccessibility AccessibilitySpace
   | ClientNameSpacesNewSpaceVisibility VisibilitySpace
   | ClientNameDesksNewDeskName
+  | ClientNameDesksReservationsViewport
   deriving stock (Eq, Ord, Show)
