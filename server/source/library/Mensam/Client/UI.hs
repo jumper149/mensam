@@ -15,6 +15,7 @@ import Mensam.Client.UI.Brick.Names
 import Mensam.Client.UI.Brick.State
 import Mensam.Client.UI.Desks
 import Mensam.Client.UI.Login
+import Mensam.Client.UI.Menu
 import Mensam.Client.UI.Register
 import Mensam.Client.UI.Spaces
 
@@ -105,6 +106,7 @@ handleEvent chan = \case
               err ->
                 modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
+      ClientEventSwitchToScreenMenu -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateMenu $ MkScreenMenuState menuListInitial}
       ClientEventSendRequestLogin credentials -> do
         result <- runApplicationT chan $ mensamCall $ endpointLogin $ DataBasicAuth credentials
         case result of
@@ -135,10 +137,13 @@ handleEvent chan = \case
               Right (Z (I (WithStatus @201 (Route.Booking.MkResponseDeskCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
-  VtyEvent (EvKey KEsc []) -> halt
-  VtyEvent (EvKey (KChar '1') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenRegister
-  VtyEvent (EvKey (KChar '2') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenLogin
-  VtyEvent (EvKey (KChar '3') [MMeta]) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
+  VtyEvent (EvKey KEsc []) -> do
+    s <- get
+    case _clientStateScreenState s of
+      ClientScreenStateMenu _ ->
+        zoom (clientStateScreenState . clientScreenStateMenu) $ runApplicationT chan $ menuHandleEvent (VtyEvent (EvKey KEsc []))
+      _ -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenMenu
+  VtyEvent (EvKey (KChar 'c') [MCtrl]) -> halt
   event -> do
     clientState <- get
     case clientState of
@@ -155,3 +160,5 @@ handleEvent chan = \case
         zoom (clientStateScreenState . clientScreenStateSpaces) $ runApplicationT chan $ spacesHandleEvent event
       MkClientState {_clientStateScreenState = ClientScreenStateDesks _} ->
         zoom (clientStateScreenState . clientScreenStateDesks) $ runApplicationT chan $ desksHandleEvent event
+      MkClientState {_clientStateScreenState = ClientScreenStateMenu _} ->
+        zoom (clientStateScreenState . clientScreenStateMenu) $ runApplicationT chan $ menuHandleEvent event

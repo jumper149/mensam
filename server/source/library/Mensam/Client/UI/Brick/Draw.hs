@@ -4,6 +4,7 @@ import Mensam.Client.UI.Brick.Names
 import Mensam.Client.UI.Brick.State
 import Mensam.Client.UI.Desks
 import Mensam.Client.UI.Login
+import Mensam.Client.UI.Menu
 import Mensam.Client.UI.Register
 import Mensam.Client.UI.Spaces
 
@@ -24,12 +25,13 @@ drawScreen = \case
   ClientScreenStateRegister s -> registerDraw s <> [drawHelp]
   ClientScreenStateSpaces s -> spacesDraw s
   ClientScreenStateDesks s -> desksDraw s
+  ClientScreenStateMenu s -> menuDraw s
 
 drawHelp :: Widget a
 drawHelp =
   vBox
     [ txt title
-    , padTop Max (padLeft Max (txt " Exit (Escape) | Help (?) | Register (Alt-1) | Login (Alt-2) | Spaces (Alt-3) "))
+    , padTop Max (padLeft Max (txt " Main Menu (Escape) | Help (?) "))
     ]
  where
   title :: T.Text

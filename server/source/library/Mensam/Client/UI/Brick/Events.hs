@@ -13,6 +13,7 @@ data ClientEvent
   | ClientEventSwitchToScreenRegister
   | ClientEventSwitchToScreenSpaces
   | ClientEventSwitchToScreenDesks Space
+  | ClientEventSwitchToScreenMenu
   | ClientEventSendRequestLogin Credentials
   | ClientEventSendRequestRegister Route.User.RequestRegister
   | ClientEventSendRequestCreateSpace Route.Booking.RequestSpaceCreate

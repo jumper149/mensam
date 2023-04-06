@@ -5,6 +5,7 @@ module Mensam.Client.UI.Brick.State where
 import Mensam.API.Route.Api.User
 import Mensam.Client.UI.Desks
 import Mensam.Client.UI.Login
+import Mensam.Client.UI.Menu
 import Mensam.Client.UI.Register
 import Mensam.Client.UI.Spaces
 
@@ -18,6 +19,7 @@ data ClientScreenState
   | ClientScreenStateRegister {_clientScreenStateRegister :: ScreenRegisterState}
   | ClientScreenStateSpaces {_clientScreenStateSpaces :: ScreenSpacesState}
   | ClientScreenStateDesks {_clientScreenStateDesks :: ScreenDesksState}
+  | ClientScreenStateMenu {_clientScreenStateMenu :: ScreenMenuState}
 makeLenses ''ClientScreenState
 
 type ClientState :: Type

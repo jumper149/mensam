@@ -133,6 +133,7 @@ library
     , Mensam.Client.UI.Brick.State
     , Mensam.Client.UI.Desks
     , Mensam.Client.UI.Login
+    , Mensam.Client.UI.Menu
     , Mensam.Client.UI.Register
     , Mensam.Client.UI.Spaces
     , Mensam.Server
