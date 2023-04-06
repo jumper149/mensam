@@ -7,7 +7,7 @@ drawHelp :: Widget a
 drawHelp =
   vBox
     [ txt title
-    , padTop Max (padLeft Max (txt " Main Menu (Escape) | Help (?) "))
+    , padTop Max $ padLeft Max $ txt footer
     ]
 
 title :: T.Text
@@ -16,3 +16,6 @@ title =
   \ |  \\/  | ___  _ _   ___ __ _  _ __  \n\
   \ | |\\/| |/ -_)| ' \\ (_-// _` || '  \\ \n\
   \ |_|  |_|\\___||_||_|/__/\\__/_||_|_|_|\n"
+
+footer :: T.Text
+footer = " Menu (Escape) | Help (?) "

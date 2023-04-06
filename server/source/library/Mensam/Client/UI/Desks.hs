@@ -10,6 +10,7 @@ import Mensam.API.Route.Api.Booking
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
+import Mensam.Client.UI.Brick.Draw
 import Mensam.Client.UI.Brick.Events
 import Mensam.Client.UI.Brick.Names
 
@@ -90,20 +91,23 @@ desksDraw = \case
     , _screenStateDesksList = desksWithInfo
     , _screenStateDesksShowDay = day
     } ->
-      pure $
-        joinBorders $
-          borderWithLabel (txt $ "Desks (" <> unNameSpace (spaceName space) <> ")") $
-            vBox
-              [ padBottom Max $
-                  padRight Max $
-                    renderList (\_focus (MkDeskWithInfo {deskWithInfoDesk, deskWithInfoReservations}) -> txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> unNameDesk (deskName deskWithInfoDesk) <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
-              , hBorder
-              , let reservations =
-                      case listSelectedElement desksWithInfo of
-                        Nothing -> []
-                        Just (_index, desk) -> deskWithInfoReservations desk
-                 in vLimit 3 $ hCenter $ viewport ClientNameDesksReservationsViewport Horizontal $ visible $ txt $ prettyReservations day reservations
-              ]
+      [ vBox
+          [ joinBorders $
+              borderWithLabel (txt $ "Desks (" <> unNameSpace (spaceName space) <> ")") $
+                vBox
+                  [ padBottom Max $
+                      padRight Max $
+                        renderList (\_focus (MkDeskWithInfo {deskWithInfoDesk, deskWithInfoReservations}) -> padRight Max $ txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> unNameDesk (deskName deskWithInfoDesk) <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
+                  , hBorder
+                  , let reservations =
+                          case listSelectedElement desksWithInfo of
+                            Nothing -> []
+                            Just (_index, desk) -> deskWithInfoReservations desk
+                     in vLimit 3 $ hCenter $ viewport ClientNameDesksReservationsViewport Horizontal $ visible $ txt $ prettyReservations day reservations
+                  ]
+          , padLeft Max $ txt footer
+          ]
+      ]
 
 desksHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenDesksState) ()
 desksHandleEvent event = do

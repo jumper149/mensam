@@ -31,11 +31,20 @@ import Data.Time qualified as T
 import Graphics.Vty
 import Lens.Micro.Platform
 import Servant
+import Brick.Forms
 
 ui :: IO ()
 ui = do
   chan <- newBChan 10
   let
+    attr :: Attr
+    attr =
+      Attr
+        { attrStyle = Default
+        , attrForeColor = SetTo brightWhite
+        , attrBackColor = SetTo black
+        , attrURL = Default
+        }
     app :: App ClientState ClientEvent ClientName
     app =
       App
@@ -45,9 +54,12 @@ ui = do
         , appStartEvent = pure ()
         , appAttrMap = \_ ->
             attrMap
-              defAttr
-              [ (listAttr, defAttr)
-              , (listSelectedAttr, defAttr `withStyle` standout)
+              attr
+              [ (formAttr, attr)
+              , (focusedFormInputAttr, attr {attrBackColor = SetTo brightBlack})
+              , (invalidFormInputAttr, attr {attrForeColor = SetTo brightRed})
+              , (listAttr, attr)
+              , (listSelectedAttr, attr `withStyle` standout)
               ]
         }
     initialState :: ClientState
@@ -66,7 +78,7 @@ draw :: ClientState -> [Widget ClientName]
 draw MkClientState {_clientStateScreenState, _clientStatePopup} =
   case _clientStatePopup of
     Nothing -> drawScreen _clientStateScreenState
-    Just popup -> [center $ borderWithLabel (txt "Error") $ txt popup]
+    Just popup -> centerLayer (borderWithLabel (txt "Error") $ txt popup) : drawScreen _clientStateScreenState
  where
   drawScreen :: ClientScreenState -> [Widget ClientName]
   drawScreen = \case

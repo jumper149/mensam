@@ -6,6 +6,7 @@ import Mensam.API.Data.Space
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
+import Mensam.Client.UI.Brick.Draw
 import Mensam.Client.UI.Brick.Events
 import Mensam.Client.UI.Brick.Names
 
@@ -63,10 +64,13 @@ spacesDraw = \case
     ]
       <> spacesDraw (s {_screenStateSpacesNewSpaceForm = Nothing})
   MkScreenSpacesState {_screenStateSpacesList = spaces} ->
-    [ borderWithLabel (txt "Spaces") $
-        padBottom Max $
-          padRight Max $
-            renderList (\_focus space -> txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> unNameSpace (spaceName space)) True spaces
+    [ vBox
+        [ borderWithLabel (txt "Spaces") $
+            padBottom Max $
+              padRight Max $
+                renderList (\_focus space -> padRight Max $ txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> unNameSpace (spaceName space)) True spaces
+        , padLeft Max $ txt footer
+        ]
     ]
 
 spacesHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenSpacesState) ()
