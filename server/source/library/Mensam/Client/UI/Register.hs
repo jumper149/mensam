@@ -33,9 +33,31 @@ makeLenses ''RegisterInfo
 registerFormInitial :: Form RegisterInfo e ClientName
 registerFormInitial =
   newForm
-    [ (str "Username: " <+>) @@= editTextField registerInfoUsername ClientNameRegisterUsername (Just 1)
+    [ (str "Username: " <+>)
+        @@= editField
+          registerInfoUsername
+          ClientNameRegisterUsername
+          (Just 1)
+          id
+          ( \case
+              [line] -> either (const Nothing) (Just . unUsername) $ mkUsername line
+              _ -> Nothing
+          )
+          (txt . T.intercalate "\n")
+          id
     , (str "Password: " <+>) @@= editPasswordField registerInfoPassword ClientNameRegisterPassword
-    , (str "Email: " <+>) @@= editTextField registerInfoEmail ClientNameRegisterEmail (Just 1)
+    , (str "Email: " <+>)
+        @@= editField
+          registerInfoEmail
+          ClientNameRegisterEmail
+          (Just 1)
+          id
+          ( \case
+              [line] -> either (const Nothing) (Just . toText) $ fromText line
+              _ -> Nothing
+          )
+          (txt . T.intercalate "\n")
+          id
     , checkboxField registerInfoEmailVisible ClientNameRegisterEmailVisible "Email visible"
     ]
     MkRegisterInfo

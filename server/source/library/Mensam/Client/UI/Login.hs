@@ -2,6 +2,7 @@
 
 module Mensam.Client.UI.Login where
 
+import Mensam.API.Data.User.Username
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
 import Mensam.Client.OrphanInstances
@@ -29,7 +30,18 @@ makeLenses ''LoginInfo
 loginFormInitial :: Form LoginInfo e ClientName
 loginFormInitial =
   newForm
-    [ (str "Username: " <+>) @@= editTextField loginInfoUsername ClientNameLoginUsername (Just 1)
+    [ (str "Username: " <+>)
+        @@= editField
+          loginInfoUsername
+          ClientNameLoginUsername
+          (Just 1)
+          id
+          ( \case
+              [line] -> either (const Nothing) (Just . unUsername) $ mkUsername line
+              _ -> Nothing
+          )
+          (txt . T.intercalate "\n")
+          id
     , (str "Password: " <+>) @@= editPasswordField loginInfoPassword ClientNameLoginPassword
     ]
     MkLoginInfo

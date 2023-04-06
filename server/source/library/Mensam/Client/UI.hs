@@ -20,6 +20,7 @@ import Mensam.Client.UI.Spaces
 
 import Brick
 import Brick.BChan
+import Brick.Forms
 import Brick.Widgets.Border
 import Brick.Widgets.Center
 import Brick.Widgets.List
@@ -31,7 +32,6 @@ import Data.Time qualified as T
 import Graphics.Vty
 import Lens.Micro.Platform
 import Servant
-import Brick.Forms
 
 ui :: IO ()
 ui = do
