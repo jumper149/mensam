@@ -56,7 +56,7 @@ data ScreenDesksState = MkScreenDesksState
   , _screenStateDesksList :: GenericList ClientName Seq.Seq DeskWithInfo
   , _screenStateDesksShowHelp :: Bool
   , _screenStateDesksShowReservations :: Maybe T.Text
-  , _screenStateDesksShowDay :: T.Day
+  , _screenStateDesksPreviewDay :: T.Day
   , _screenStateDesksNewDeskForm :: Maybe (Form NewDeskInfo ClientEvent ClientName)
   }
 makeLenses ''ScreenDesksState
@@ -89,7 +89,7 @@ desksDraw = \case
   MkScreenDesksState
     { _screenStateDesksSpace = space
     , _screenStateDesksList = desksWithInfo
-    , _screenStateDesksShowDay = day
+    , _screenStateDesksPreviewDay = day
     } ->
       [ vBox
           [ joinBorders $
