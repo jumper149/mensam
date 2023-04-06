@@ -105,7 +105,7 @@ desksDraw = \case
                             Just (_index, desk) -> deskWithInfoReservations desk
                      in vLimit 3 $ hCenter $ viewport ClientNameDesksReservationsViewport Horizontal $ visible $ txt $ prettyReservations day reservations
                   ]
-          , padLeft Max $ txt footer
+          , padLeft Max $ txt footerMenuHelp
           ]
       ]
 

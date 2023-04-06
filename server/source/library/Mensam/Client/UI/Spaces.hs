@@ -82,7 +82,7 @@ spacesDraw = \case
             padBottom Max $
               padRight Max $
                 renderList (\_focus space -> padRight Max $ txt $ T.pack ("#" <> show (unIdentifierSpace $ spaceId space) <> " ") <> unNameSpace (spaceName space)) True spaces
-        , padLeft Max $ txt footer
+        , padLeft Max $ txt footerMenuHelp
         ]
     ]
 

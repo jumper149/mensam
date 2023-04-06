@@ -48,7 +48,7 @@ menuDraw = \case
               renderList buttonDraw True genericList
     , vBox
         [ txt title
-        , padTop Max (padLeft Max (txt " Exit (Escape) "))
+        , padTop Max (padLeft Max (txt footerMenu))
         ]
     ]
  where
