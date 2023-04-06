@@ -5,6 +5,7 @@ module Mensam.Client.UI.Login where
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
 import Mensam.Client.OrphanInstances
+import Mensam.Client.UI.Brick.Draw
 import Mensam.Client.UI.Brick.Events
 import Mensam.Client.UI.Brick.Names
 
@@ -46,6 +47,7 @@ loginDraw :: ScreenLoginState -> [Widget ClientName]
 loginDraw = \case
   MkScreenLoginState {_screenStateLoginForm = form} ->
     [ centerLayer $ borderWithLabel (txt "Login") $ cropRightTo 60 $ renderForm form
+    , drawHelp
     ]
 
 loginHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenLoginState) ()

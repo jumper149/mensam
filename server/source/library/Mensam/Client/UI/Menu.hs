@@ -4,6 +4,7 @@ module Mensam.Client.UI.Menu where
 
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
+import Mensam.Client.UI.Brick.Draw
 import Mensam.Client.UI.Brick.Events
 import Mensam.Client.UI.Brick.Names
 
@@ -14,7 +15,6 @@ import Brick.Widgets.List
 import Control.Monad.Trans.Class
 import Data.Kind
 import Data.Sequence qualified as Seq
-import Data.Text qualified as T
 import Graphics.Vty.Input.Events
 import Lens.Micro.Platform
 
@@ -57,12 +57,6 @@ menuDraw = \case
     MkMenuButtonLogin -> padRight Max $ txt "Login"
     MkMenuButtonRegister -> padRight Max $ txt "Register"
     MkMenuButtonSpaces -> padRight Max $ txt "Spaces"
-  title :: T.Text
-  title =
-    "  __  __                             \n\
-    \ |  \\/  | ___  _ _   ___ __ _  _ __  \n\
-    \ | |\\/| |/ -_)| ' \\ (_-// _` || '  \\ \n\
-    \ |_|  |_|\\___||_||_|/__/\\__/_||_|_|_|\n"
 
 menuHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenMenuState) ()
 menuHandleEvent event =

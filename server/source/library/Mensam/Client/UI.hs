@@ -9,7 +9,6 @@ import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
 import Mensam.Client.Application.MensamClient.Class
 import Mensam.Client.OrphanInstances
-import Mensam.Client.UI.Brick.Draw
 import Mensam.Client.UI.Brick.Events
 import Mensam.Client.UI.Brick.Names
 import Mensam.Client.UI.Brick.State
@@ -21,6 +20,8 @@ import Mensam.Client.UI.Spaces
 
 import Brick
 import Brick.BChan
+import Brick.Widgets.Border
+import Brick.Widgets.Center
 import Brick.Widgets.List
 import Control.Monad.IO.Class
 import Data.SOP
@@ -60,6 +61,20 @@ ui = do
   vty <- initVty
   _finalState <- customMain vty initVty (Just chan) app initialState
   pure ()
+
+draw :: ClientState -> [Widget ClientName]
+draw MkClientState {_clientStateScreenState, _clientStatePopup} =
+  case _clientStatePopup of
+    Nothing -> drawScreen _clientStateScreenState
+    Just popup -> [center $ borderWithLabel (txt "Error") $ txt popup]
+ where
+  drawScreen :: ClientScreenState -> [Widget ClientName]
+  drawScreen = \case
+    ClientScreenStateLogin s -> loginDraw s
+    ClientScreenStateRegister s -> registerDraw s
+    ClientScreenStateSpaces s -> spacesDraw s
+    ClientScreenStateDesks s -> desksDraw s
+    ClientScreenStateMenu s -> menuDraw s
 
 handleEvent :: BChan ClientEvent -> BrickEvent ClientName ClientEvent -> EventM ClientName ClientState ()
 handleEvent chan = \case
