@@ -53,12 +53,25 @@ newSpaceFormInitial =
 type ScreenSpacesState :: Type
 data ScreenSpacesState = MkScreenSpacesState
   { _screenStateSpacesList :: GenericList ClientName Seq.Seq Space
+  , _screenStateSpacesShowHelp :: Bool
   , _screenStateSpacesNewSpaceForm :: Maybe (Form NewSpaceInfo ClientEvent ClientName)
   }
 makeLenses ''ScreenSpacesState
 
 spacesDraw :: ScreenSpacesState -> [Widget ClientName]
 spacesDraw = \case
+  s@MkScreenSpacesState {_screenStateSpacesShowHelp = True} ->
+    [ centerLayer $
+        borderWithLabel (txt "Help") $
+          cropRightTo 80 $
+            txt
+              "? - Toggle Help\n\
+              \r - Refresh Spaces\n\
+              \c - Create new Space\n\
+              \Enter - View Desk\n\
+              \"
+    ]
+      <> spacesDraw s {_screenStateSpacesShowHelp = False}
   s@MkScreenSpacesState {_screenStateSpacesNewSpaceForm = Just form} ->
     [ centerLayer $ borderWithLabel (txt "New Space") $ cropRightTo 80 $ renderForm form
     ]
@@ -79,6 +92,7 @@ spacesHandleEvent event = do
   case formState <$> _screenStateSpacesNewSpaceForm s of
     Nothing ->
       case event of
+        VtyEvent (EvKey (KChar '?') []) -> lift $ put s {_screenStateSpacesShowHelp = not $ _screenStateSpacesShowHelp s}
         VtyEvent (EvKey (KChar 'r') []) -> sendEvent ClientEventSwitchToScreenSpaces
         VtyEvent (EvKey (KChar 'c') []) -> lift $ screenStateSpacesNewSpaceForm %= const (Just newSpaceFormInitial)
         VtyEvent (EvKey KEnter []) -> do

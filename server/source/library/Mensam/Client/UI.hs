@@ -107,7 +107,7 @@ handleEvent chan = \case
             case result of
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
                 let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
-                modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l Nothing)}
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l False Nothing)}
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
       ClientEventSwitchToScreenDesks space -> do
