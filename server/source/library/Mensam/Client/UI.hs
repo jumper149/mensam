@@ -78,8 +78,31 @@ draw :: ClientState -> [Widget ClientName]
 draw MkClientState {_clientStateScreenState, _clientStatePopup} =
   case _clientStatePopup of
     Nothing -> drawScreen _clientStateScreenState
-    Just popup -> centerLayer (borderWithLabel (txt "Error") $ txt popup) : drawScreen _clientStateScreenState
+    Just popup -> centerLayer (borderWithLabel (txt "Error") $ txt popup) : (withBackgroundStyle <$> drawScreen _clientStateScreenState)
  where
+  withBackgroundStyle :: Widget ClientName -> Widget ClientName
+  withBackgroundStyle = updateAttrMap toBackgroundAttrMap
+  toBackgroundAttrMap :: AttrMap -> AttrMap
+  toBackgroundAttrMap = const attrs
+   where
+    attr :: Attr
+    attr =
+      Attr
+        { attrStyle = Default
+        , attrForeColor = SetTo white
+        , attrBackColor = SetTo brightBlack
+        , attrURL = Default
+        }
+    attrs :: AttrMap
+    attrs =
+      attrMap
+        attr
+        [ (formAttr, attr)
+        , (focusedFormInputAttr, attr {attrBackColor = SetTo brightBlack})
+        , (invalidFormInputAttr, attr {attrForeColor = SetTo brightRed})
+        , (listAttr, attr)
+        , (listSelectedAttr, attr `withStyle` standout)
+        ]
   drawScreen :: ClientScreenState -> [Widget ClientName]
   drawScreen = \case
     ClientScreenStateLogin s -> loginDraw s
