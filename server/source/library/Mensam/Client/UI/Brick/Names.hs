@@ -18,5 +18,8 @@ data ClientName
   | ClientNameSpacesNewSpaceVisibility VisibilitySpace
   | ClientNameDesksNewDeskName
   | ClientNameDesksReservationsViewport
+  | ClientNameDesksNewReservationDesk
+  | ClientNameDesksNewReservationTimeBegin
+  | ClientNameDesksNewReservationTimeEnd
   | ClientNameMenuList
   deriving stock (Eq, Ord, Show)

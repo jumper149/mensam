@@ -22,9 +22,11 @@ import Brick.Widgets.List
 import Control.Monad.Trans.Class
 import Data.Bifunctor
 import Data.Kind
+import Data.Maybe
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Data.Time qualified as T
+import Data.Time.Format.ISO8601 qualified as T
 import Graphics.Vty.Input.Events
 import Lens.Micro.Platform
 
@@ -36,7 +38,7 @@ desksListInitial =
     1
 
 type NewDeskInfo :: Type
-newtype NewDeskInfo = MkLoginInfo
+newtype NewDeskInfo = MkNewDeskInfo
   { _newDeskInfoName :: T.Text
   }
 makeLenses ''NewDeskInfo
@@ -46,8 +48,51 @@ newDeskFormInitial =
   newForm
     [ (str "Name: " <+>) @@= editTextField newDeskInfoName ClientNameDesksNewDeskName (Just 1)
     ]
-    MkLoginInfo
+    MkNewDeskInfo
       { _newDeskInfoName = ""
+      }
+
+type NewReservationInfo :: Type
+data NewReservationInfo = MkNewReservationInfo
+  { _newReservationInfoDesk :: T.Text
+  , _newReservationInfoTimeBegin :: T.Text
+  , _newReservationInfoTimeEnd :: T.Text
+  }
+makeLenses ''NewReservationInfo
+
+newReservationFormInitial :: Desk -> Form NewReservationInfo e ClientName
+newReservationFormInitial desk =
+  newForm
+    [ (str "Desk: " <+>) @@= editTextField newReservationInfoDesk ClientNameDesksNewReservationDesk (Just 1)
+    , (str "Begin: " <+>)
+        @@= editField
+          newReservationInfoTimeBegin
+          ClientNameDesksNewReservationTimeBegin
+          (Just 1)
+          id
+          ( \case
+              [line] -> (const line <$>) . T.iso8601ParseM @_ @T.TimeOfDay . T.unpack $ line
+              _ -> Nothing
+          )
+          (txt . T.intercalate "\n")
+          id
+    , (str "End: " <+>)
+        @@= editField
+          newReservationInfoTimeEnd
+          ClientNameDesksNewReservationTimeEnd
+          (Just 1)
+          id
+          ( \case
+              [line] -> (const line <$>) . T.iso8601ParseM @_ @T.TimeOfDay . T.unpack $ line
+              _ -> Nothing
+          )
+          (txt . T.intercalate "\n")
+          id
+    ]
+    MkNewReservationInfo
+      { _newReservationInfoDesk = T.pack $ show $ deskId desk
+      , _newReservationInfoTimeBegin = ""
+      , _newReservationInfoTimeEnd = ""
       }
 
 type ScreenDesksState :: Type
@@ -55,7 +100,7 @@ data ScreenDesksState = MkScreenDesksState
   { _screenStateDesksSpace :: Space
   , _screenStateDesksList :: GenericList ClientName Seq.Seq DeskWithInfo
   , _screenStateDesksShowHelp :: Bool
-  , _screenStateDesksShowReservations :: Maybe T.Text
+  , _screenStateDesksCreateReservation :: Maybe (Form NewReservationInfo ClientEvent ClientName)
   , _screenStateDesksPreviewDay :: T.Day
   , _screenStateDesksNewDeskForm :: Maybe (Form NewDeskInfo ClientEvent ClientName)
   }
@@ -75,13 +120,10 @@ desksDraw = \case
               \"
     ]
       <> desksDraw s {_screenStateDesksShowHelp = False}
-  s@MkScreenDesksState {_screenStateDesksShowReservations = Just reservationsTxt} ->
-    [ centerLayer $
-        borderWithLabel (txt "Reservations") $
-          cropRightTo 80 $
-            txt reservationsTxt
+  s@MkScreenDesksState {_screenStateDesksCreateReservation = Just form} ->
+    [ centerLayer $ borderWithLabel (txt "New Reservation") $ cropRightTo 80 $ renderForm form
     ]
-      <> desksDraw s {_screenStateDesksShowReservations = Nothing}
+      <> desksDraw (s {_screenStateDesksCreateReservation = Nothing})
   s@MkScreenDesksState {_screenStateDesksNewDeskForm = Just form} ->
     [ centerLayer $ borderWithLabel (txt "New Desk") $ cropRightTo 80 $ renderForm form
     ]
@@ -114,24 +156,26 @@ desksHandleEvent event = do
   s <- lift get
   case formState <$> _screenStateDesksNewDeskForm s of
     Nothing ->
-      case event of
-        VtyEvent (EvKey (KChar '?') []) -> lift $ put s {_screenStateDesksShowHelp = not $ _screenStateDesksShowHelp s}
-        VtyEvent (EvKey (KChar 'r') []) -> sendEvent . ClientEventSwitchToScreenDesks . _screenStateDesksSpace =<< lift get
-        VtyEvent (EvKey (KChar 'c') []) -> lift $ screenStateDesksNewDeskForm %= const (Just newDeskFormInitial)
-        VtyEvent (EvKey KEnter []) -> do
-          case _screenStateDesksShowReservations s of
-            Just _ -> lift $ put s {_screenStateDesksShowReservations = Nothing}
-            Nothing ->
-              case listSelectedElement $ _screenStateDesksList s of
-                Nothing -> pure ()
-                Just (_index, desk) ->
-                  lift $
-                    put $
-                      s
-                        { _screenStateDesksShowReservations = Just $ T.pack $ show $ deskWithInfoReservations desk
-                        }
-        VtyEvent e -> lift $ zoom screenStateDesksList $ handleListEvent e
-        _ -> pure ()
+      case formState <$> _screenStateDesksCreateReservation s of
+        Nothing ->
+          case event of
+            VtyEvent (EvKey (KChar '?') []) -> lift $ put s {_screenStateDesksShowHelp = not $ _screenStateDesksShowHelp s}
+            VtyEvent (EvKey (KChar 'r') []) -> sendEvent . ClientEventSwitchToScreenDesks . _screenStateDesksSpace =<< lift get
+            VtyEvent (EvKey (KChar 'c') []) -> lift $ screenStateDesksNewDeskForm %= const (Just newDeskFormInitial)
+            VtyEvent (EvKey KEnter []) -> lift $ put $ s {_screenStateDesksCreateReservation = newReservationFormInitial . deskWithInfoDesk . snd <$> listSelectedElement (_screenStateDesksList s)}
+            VtyEvent e -> lift $ zoom screenStateDesksList $ handleListEvent e
+            _ -> pure ()
+        Just newReservationInfo ->
+          case event of
+            VtyEvent (EvKey KEnter []) ->
+              sendEvent $
+                ClientEventSendRequestCreateReservation
+                  Route.Booking.MkRequestReservationCreate
+                    { Route.Booking.requestReservationCreateDesk = Identifier $ read $ T.unpack $ _newReservationInfoDesk newReservationInfo
+                    , Route.Booking.requestReservationCreateTimeBegin = T.UTCTime (_screenStateDesksPreviewDay s) $ T.timeOfDayToTime $ fromJust $ T.iso8601ParseM @_ @T.TimeOfDay $ T.unpack $ _newReservationInfoTimeBegin newReservationInfo
+                    , Route.Booking.requestReservationCreateTimeEnd = T.UTCTime (_screenStateDesksPreviewDay s) $ T.timeOfDayToTime $ fromJust $ T.iso8601ParseM @_ @T.TimeOfDay $ T.unpack $ _newReservationInfoTimeEnd newReservationInfo
+                    }
+            _ -> lift $ zoom (screenStateDesksCreateReservation . _Just) $ handleFormEvent event
     Just newDeskInfo ->
       case event of
         VtyEvent (EvKey KEnter []) ->

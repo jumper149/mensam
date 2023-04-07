@@ -18,4 +18,5 @@ data ClientEvent
   | ClientEventSendRequestRegister Route.User.RequestRegister
   | ClientEventSendRequestCreateSpace Route.Booking.RequestSpaceCreate
   | ClientEventSendRequestCreateDesk Space Route.Booking.RequestDeskCreate
+  | ClientEventSendRequestCreateReservation Route.Booking.RequestReservationCreate
   deriving stock (Eq, Ord, Show)
