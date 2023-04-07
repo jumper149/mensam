@@ -263,8 +263,12 @@ createReservation auth eitherRequest = do
             Just MkSqlErrorMensamDeskAlreadyReserved ->
               respond $ WithStatus @409 $ MkStaticText @"Desk is not available within the given time window."
             Nothing -> do
-              -- TODO: Here we can theoretically return a more accurate error
-              respond $ WithStatus @500 ()
+              case fromException err of
+                Just MkSqlErrorMensamTimestampsInWrongOrder ->
+                  respond $ WithStatus @400 (undefined :: ErrorParseBodyJson) -- TODO: Return better error.
+                Nothing -> do
+                  -- TODO: Here we can theoretically return a more accurate error
+                  respond $ WithStatus @500 ()
         SeldaSuccess reservationIdentifier -> do
           logInfo "Created reservation."
           respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}

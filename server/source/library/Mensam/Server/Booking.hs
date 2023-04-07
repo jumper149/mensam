@@ -11,6 +11,7 @@ import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
 
+import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
@@ -340,6 +341,9 @@ reservationCreate ::
   SeldaTransactionT m IdentifierReservation
 reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   lift $ logDebug "Creating reservation."
+  unless (timestampBegin <= timestampEnd) $ do
+    lift $ logWarn "Timestamps are in the wrong order."
+    throwM MkSqlErrorMensamTimestampsInWrongOrder
   reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd)
   case filter ((== MkStatusReservationPlanned) . reservationStatus) reservations of
     _ : _ -> do
@@ -359,6 +363,11 @@ reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
   dbReservationId <- Selda.insertWithPK tableReservation [dbReservation]
   lift $ logInfo "Created reservation successfully."
   pure $ MkIdentifierReservation $ Selda.fromId @DbReservation dbReservationId
+
+type SqlErrorMensamTimestampsInWrongOrder :: Type
+data SqlErrorMensamTimestampsInWrongOrder = MkSqlErrorMensamTimestampsInWrongOrder
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
 
 type SqlErrorMensamDeskAlreadyReserved :: Type
 data SqlErrorMensamDeskAlreadyReserved = MkSqlErrorMensamDeskAlreadyReserved
