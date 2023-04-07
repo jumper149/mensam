@@ -2,6 +2,7 @@ module Mensam.Client.Debug where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.Desk
+import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
@@ -114,8 +115,10 @@ f = do
   let requestReservationCreate =
         Route.Booking.MkRequestReservationCreate
           { Route.Booking.requestReservationCreateDesk = Name (spacename, MkNameDesk "saturn")
-          , Route.Booking.requestReservationCreateTimeBegin = currentTime
-          , Route.Booking.requestReservationCreateTimeEnd = T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime` currentTime
+          , Route.Booking.requestReservationCreateTimeWindow =
+              MkIntervalUnsafe
+                currentTime
+                (T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime` currentTime)
           }
   resultReservationCreate <- endpointReservationCreate (DataJWT nextToken) requestReservationCreate
   liftIO $ print resultReservationCreate

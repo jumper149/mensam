@@ -102,6 +102,13 @@ deriving newtype instance ToSchema NameDesk
 deriving via A.CustomJSON (JSONSettings "Mk" "reservation") Reservation instance ToSchema Reservation
 deriving via A.CustomJSON (JSONSettings "MkStatusReservation" "") StatusReservation instance ToSchema StatusReservation
 deriving anyclass instance ToSchema IdentifierReservation
+instance ToSchema a => ToSchema (Interval a) where
+  declareNamedSchema Proxy =
+    declareNamedSchema (Proxy @(A.CustomJSON (JSONSettings "Mk" "interval") (Interval a)))
+      >>= \x ->
+        pure $
+          x
+            & schema . description ?~ "An ordered interval: `start <= end`"
 
 deriving via A.CustomJSON (JSONSettings "" "") Order instance ToSchema Order
 deriving via A.CustomJSON (JSONSettings "Mk" "orderByCategory") (OrderByCategory a) instance ToSchema a => ToSchema (OrderByCategory a)

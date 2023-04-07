@@ -11,7 +11,6 @@ import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
 
-import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
@@ -334,17 +333,15 @@ reservationCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierDesk ->
   IdentifierUser ->
-  -- | timestamp begin
-  T.UTCTime ->
-  -- | timestamp end
-  T.UTCTime ->
+  Interval T.UTCTime ->
   SeldaTransactionT m IdentifierReservation
-reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
+reservationCreate deskIdentifier userIdentifier timestampInterval = do
   lift $ logDebug "Creating reservation."
-  unless (timestampBegin <= timestampEnd) $ do
-    lift $ logWarn "Timestamps are in the wrong order."
-    throwM MkSqlErrorMensamTimestampsInWrongOrder
-  reservations <- reservationList deskIdentifier (Just timestampBegin) (Just timestampEnd)
+  reservations <-
+    reservationList
+      deskIdentifier
+      (Just $ intervalStart timestampInterval)
+      (Just $ intervalEnd timestampInterval)
   case filter ((== MkStatusReservationPlanned) . reservationStatus) reservations of
     _ : _ -> do
       lift $ logWarn "Desk is already reserved."
@@ -355,19 +352,14 @@ reservationCreate deskIdentifier userIdentifier timestampBegin timestampEnd = do
           { dbReservation_id = Selda.def
           , dbReservation_desk = Selda.toId @DbDesk $ unIdentifierDesk deskIdentifier
           , dbReservation_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
-          , dbReservation_time_begin = timestampBegin
-          , dbReservation_time_end = timestampEnd
+          , dbReservation_time_begin = intervalStart timestampInterval
+          , dbReservation_time_end = intervalEnd timestampInterval
           , dbReservation_status = MkDbReservationStatus_planned
           }
   lift $ logDebug "Inserting reservation into database."
   dbReservationId <- Selda.insertWithPK tableReservation [dbReservation]
   lift $ logInfo "Created reservation successfully."
   pure $ MkIdentifierReservation $ Selda.fromId @DbReservation dbReservationId
-
-type SqlErrorMensamTimestampsInWrongOrder :: Type
-data SqlErrorMensamTimestampsInWrongOrder = MkSqlErrorMensamTimestampsInWrongOrder
-  deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (Exception)
 
 type SqlErrorMensamDeskAlreadyReserved :: Type
 data SqlErrorMensamDeskAlreadyReserved = MkSqlErrorMensamDeskAlreadyReserved

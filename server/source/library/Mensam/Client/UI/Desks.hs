@@ -172,8 +172,11 @@ desksHandleEvent event = do
                 ClientEventSendRequestCreateReservation
                   Route.Booking.MkRequestReservationCreate
                     { Route.Booking.requestReservationCreateDesk = Identifier $ read $ T.unpack $ _newReservationInfoDesk newReservationInfo
-                    , Route.Booking.requestReservationCreateTimeBegin = T.UTCTime (_screenStateDesksPreviewDay s) $ T.timeOfDayToTime $ fromJust $ T.iso8601ParseM @_ @T.TimeOfDay $ T.unpack $ _newReservationInfoTimeBegin newReservationInfo
-                    , Route.Booking.requestReservationCreateTimeEnd = T.UTCTime (_screenStateDesksPreviewDay s) $ T.timeOfDayToTime $ fromJust $ T.iso8601ParseM @_ @T.TimeOfDay $ T.unpack $ _newReservationInfoTimeEnd newReservationInfo
+                    , Route.Booking.requestReservationCreateTimeWindow =
+                        MkIntervalUnsafe
+                          { intervalStart = T.UTCTime (_screenStateDesksPreviewDay s) $ T.timeOfDayToTime $ fromJust $ T.iso8601ParseM @_ @T.TimeOfDay $ T.unpack $ _newReservationInfoTimeBegin newReservationInfo
+                          , intervalEnd = T.UTCTime (_screenStateDesksPreviewDay s) $ T.timeOfDayToTime $ fromJust $ T.iso8601ParseM @_ @T.TimeOfDay $ T.unpack $ _newReservationInfoTimeEnd newReservationInfo
+                          }
                     }
             _ -> lift $ zoom (screenStateDesksCreateReservation . _Just) $ handleFormEvent event
     Just newDeskInfo ->
