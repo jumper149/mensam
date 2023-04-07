@@ -29,7 +29,7 @@ loginFormInitial :: Form LoginInfo e ClientName
 loginFormInitial =
   newForm
     [ (str "Username: " <+>) @@= editTextField loginInfoUsername ClientNameLoginUsername (Just 1)
-    , (str "Password: " <+>) @@= editTextField loginInfoPassword ClientNameLoginPassword (Just 1)
+    , (str "Password: " <+>) @@= editPasswordField loginInfoPassword ClientNameLoginPassword
     ]
     MkLoginInfo
       { _loginInfoUsername = ""

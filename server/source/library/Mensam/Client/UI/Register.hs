@@ -33,7 +33,7 @@ registerFormInitial :: Form RegisterInfo e ClientName
 registerFormInitial =
   newForm
     [ (str "Username: " <+>) @@= editTextField registerInfoUsername ClientNameRegisterUsername (Just 1)
-    , (str "Password: " <+>) @@= editTextField registerInfoPassword ClientNameRegisterPassword (Just 1)
+    , (str "Password: " <+>) @@= editPasswordField registerInfoPassword ClientNameRegisterPassword
     , (str "Email: " <+>) @@= editTextField registerInfoEmail ClientNameRegisterEmail (Just 1)
     , checkboxField registerInfoEmailVisible ClientNameRegisterEmailVisible "Email visible"
     ]

@@ -29,7 +29,7 @@ drawHelp :: Widget a
 drawHelp =
   vBox
     [ txt title
-    , padTop Max (padLeft Max (txt "Exit (Escape) | Register (Alt-1) | Login (Alt-2) | Spaces (Alt-3)"))
+    , padTop Max (padLeft Max (txt " Exit (Escape) | Help (?) | Register (Alt-1) | Login (Alt-2) | Spaces (Alt-3) "))
     ]
  where
   title :: T.Text
