@@ -9,6 +9,7 @@ import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
 import Mensam.Client.Application.MensamClient.Class
 import Mensam.Client.OrphanInstances
+import Mensam.Client.UI.Brick.AttrMap
 import Mensam.Client.UI.Brick.Events
 import Mensam.Client.UI.Brick.Names
 import Mensam.Client.UI.Brick.State
@@ -20,7 +21,6 @@ import Mensam.Client.UI.Spaces
 
 import Brick
 import Brick.BChan
-import Brick.Forms
 import Brick.Widgets.Border
 import Brick.Widgets.Center
 import Brick.Widgets.List
@@ -37,14 +37,6 @@ ui :: IO ()
 ui = do
   chan <- newBChan 10
   let
-    attr :: Attr
-    attr =
-      Attr
-        { attrStyle = Default
-        , attrForeColor = SetTo brightWhite
-        , attrBackColor = SetTo black
-        , attrURL = Default
-        }
     app :: App ClientState ClientEvent ClientName
     app =
       App
@@ -52,15 +44,7 @@ ui = do
         , appChooseCursor = showFirstCursor
         , appHandleEvent = handleEvent chan
         , appStartEvent = pure ()
-        , appAttrMap = \_ ->
-            attrMap
-              attr
-              [ (formAttr, attr)
-              , (focusedFormInputAttr, attr {attrBackColor = SetTo brightBlack})
-              , (invalidFormInputAttr, attr {attrForeColor = SetTo brightRed})
-              , (listAttr, attr)
-              , (listSelectedAttr, attr `withStyle` standout)
-              ]
+        , appAttrMap = const attrsDefault
         }
     initialState :: ClientState
     initialState =
@@ -81,28 +65,7 @@ draw MkClientState {_clientStateScreenState, _clientStatePopup} =
     Just popup -> centerLayer (borderWithLabel (txt "Error") $ txt popup) : (withBackgroundStyle <$> drawScreen _clientStateScreenState)
  where
   withBackgroundStyle :: Widget ClientName -> Widget ClientName
-  withBackgroundStyle = updateAttrMap toBackgroundAttrMap
-  toBackgroundAttrMap :: AttrMap -> AttrMap
-  toBackgroundAttrMap = const attrs
-   where
-    attr :: Attr
-    attr =
-      Attr
-        { attrStyle = Default
-        , attrForeColor = SetTo white
-        , attrBackColor = SetTo brightBlack
-        , attrURL = Default
-        }
-    attrs :: AttrMap
-    attrs =
-      attrMap
-        attr
-        [ (formAttr, attr)
-        , (focusedFormInputAttr, attr {attrBackColor = SetTo brightBlack})
-        , (invalidFormInputAttr, attr {attrForeColor = SetTo brightRed})
-        , (listAttr, attr)
-        , (listSelectedAttr, attr `withStyle` standout)
-        ]
+  withBackgroundStyle = updateAttrMap (const attrsBackground)
   drawScreen :: ClientScreenState -> [Widget ClientName]
   drawScreen = \case
     ClientScreenStateLogin s -> loginDraw s

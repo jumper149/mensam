@@ -127,6 +127,7 @@ library
     , Mensam.Client.Debug
     , Mensam.Client.OrphanInstances
     , Mensam.Client.UI
+    , Mensam.Client.UI.Brick.AttrMap
     , Mensam.Client.UI.Brick.Draw
     , Mensam.Client.UI.Brick.Events
     , Mensam.Client.UI.Brick.Names
