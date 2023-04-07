@@ -62,10 +62,21 @@ draw :: ClientState -> [Widget ClientName]
 draw MkClientState {_clientStateScreenState, _clientStatePopup} =
   case _clientStatePopup of
     Nothing -> drawScreen _clientStateScreenState
-    Just popup -> centerLayer (borderWithLabel (txt "Error") $ putCursor ClientNamePopupButton (Location (0,0)) $ txt popup) : (withBackgroundStyle <$> drawScreen _clientStateScreenState)
+    Just popup ->
+      let
+        foreground =
+          updateAttrMap (const attrsForeground) $
+            putCursor ClientNamePopupButton (Location (0, 0)) $
+              hLimitPercent 60 $
+                vLimitPercent 60 $
+                  vBox
+                    [ borderWithLabel (txt "Error") $ txtWrap popup
+                    , padLeft Max $ txt " OK (Enter) "
+                    ]
+        backgrounds = (updateAttrMap (const attrsBackground) <$> drawScreen _clientStateScreenState)
+       in
+        centerLayer foreground : backgrounds
  where
-  withBackgroundStyle :: Widget ClientName -> Widget ClientName
-  withBackgroundStyle = updateAttrMap (const attrsBackground)
   drawScreen :: ClientScreenState -> [Widget ClientName]
   drawScreen = \case
     ClientScreenStateLogin s -> loginDraw s

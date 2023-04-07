@@ -29,7 +29,7 @@ attrBackground :: Attr
 attrBackground =
   attrDefault
     { attrForeColor = SetTo white
-    , attrBackColor = SetTo brightBlack
+    , attrBackColor = SetTo black
     }
 
 attrsBackground :: AttrMap
@@ -41,4 +41,22 @@ attrsBackground =
     , (invalidFormInputAttr, attrBackground {attrForeColor = SetTo brightRed})
     , (listAttr, attrBackground)
     , (listSelectedAttr, attrBackground `withStyle` standout)
+    ]
+
+attrForeground :: Attr
+attrForeground =
+  attrDefault
+    { attrForeColor = SetTo brightBlack
+    , attrBackColor = SetTo brightWhite
+    }
+
+attrsForeground :: AttrMap
+attrsForeground =
+  attrMap
+    attrForeground
+    [ (formAttr, attrForeground)
+    , (focusedFormInputAttr, attrForeground {attrBackColor = SetTo brightBlack})
+    , (invalidFormInputAttr, attrForeground {attrForeColor = SetTo brightRed})
+    , (listAttr, attrForeground)
+    , (listSelectedAttr, attrForeground `withStyle` standout)
     ]
