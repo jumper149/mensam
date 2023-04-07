@@ -301,11 +301,11 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd = do
     case maybeTimestampBegin of
       Nothing -> pure ()
       Just timestampBegin ->
-        Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..> Selda.literal timestampBegin
+        Selda.restrict $ dbReservation Selda.! #dbReservation_time_end Selda..> Selda.literal timestampBegin
     case maybeTimestampEnd of
       Nothing -> pure ()
-      Just timestampBegin ->
-        Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..< Selda.literal timestampBegin
+      Just timestampEnd ->
+        Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..< Selda.literal timestampEnd
     pure dbReservation
   lift $ logInfo "Looked up reservations successfully."
   let toReservation
