@@ -164,13 +164,13 @@ handleEvent chan = \case
               Right (Z (I (WithStatus @201 (Route.Booking.MkResponseDeskCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
-      ClientEventSendRequestCreateReservation request -> do
+      ClientEventSendRequestCreateReservation space request -> do
         clientState <- get
         case clientState ^. clientStateJwt of
           Just jwt -> do
             result <- runApplicationT chan $ mensamCall $ endpointReservationCreate (DataJWT jwt) request
             case result of
-              Right (Z (I (WithStatus @201 (Route.Booking.MkResponseReservationCreate _)))) -> pure ()
+              Right (Z (I (WithStatus @201 (Route.Booking.MkResponseReservationCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
   VtyEvent (EvKey KEsc []) -> do

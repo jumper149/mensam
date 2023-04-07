@@ -170,6 +170,7 @@ desksHandleEvent event = do
             VtyEvent (EvKey KEnter []) ->
               sendEvent $
                 ClientEventSendRequestCreateReservation
+                  (_screenStateDesksSpace s)
                   Route.Booking.MkRequestReservationCreate
                     { Route.Booking.requestReservationCreateDesk = Identifier $ read $ T.unpack $ _newReservationInfoDesk newReservationInfo
                     , Route.Booking.requestReservationCreateTimeWindow =
