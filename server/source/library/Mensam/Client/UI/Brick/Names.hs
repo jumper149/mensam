@@ -22,4 +22,5 @@ data ClientName
   | ClientNameDesksNewReservationTimeBegin
   | ClientNameDesksNewReservationTimeEnd
   | ClientNameMenuList
+  | ClientNamePopupButton
   deriving stock (Eq, Ord, Show)

@@ -62,7 +62,7 @@ draw :: ClientState -> [Widget ClientName]
 draw MkClientState {_clientStateScreenState, _clientStatePopup} =
   case _clientStatePopup of
     Nothing -> drawScreen _clientStateScreenState
-    Just popup -> centerLayer (borderWithLabel (txt "Error") $ txt popup) : (withBackgroundStyle <$> drawScreen _clientStateScreenState)
+    Just popup -> centerLayer (borderWithLabel (txt "Error") $ putCursor ClientNamePopupButton (Location (0,0)) $ txt popup) : (withBackgroundStyle <$> drawScreen _clientStateScreenState)
  where
   withBackgroundStyle :: Widget ClientName -> Widget ClientName
   withBackgroundStyle = updateAttrMap (const attrsBackground)
