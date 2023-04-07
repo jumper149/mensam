@@ -55,6 +55,8 @@ createSpace auth eitherRequest =
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateVisibility request) (requestSpaceCreateAccessibility request)
         spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserEditDesk
+        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserCreateReservation
+        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserCancelReservation
         pure spaceIdentifier
       case seldaResult of
         SeldaFailure _err -> do

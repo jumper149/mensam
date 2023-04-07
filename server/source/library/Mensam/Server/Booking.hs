@@ -67,7 +67,7 @@ spaceList userIdentifier spaceOrder = do
   dbSpaces <- Selda.query $ do
     dbSpaceUser <- Selda.select tableSpaceUser
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
-    dbSpace <- Selda.select tableSpace
+    dbSpace <- Selda.distinct $ Selda.select tableSpace
     Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_space
     let categorySelector = \case
           SpaceOrderCategoryId -> Selda.MkSomeCol $ dbSpace Selda.! #dbSpace_id
@@ -221,7 +221,7 @@ deskList ::
 deskList spaceIdentifier userIdentifier = do
   lift $ logDebug $ "Looking up desks visible by user: " <> T.pack (show userIdentifier)
   dbDesks <- Selda.query $ do
-    dbSpaceUser <- Selda.select tableSpaceUser
+    dbSpaceUser <- Selda.distinct $ Selda.select tableSpaceUser
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
     Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
 
