@@ -52,14 +52,21 @@
       name = "mensam-openapi-test"; # TODO: Necessary to avoid segmentation fault.
       src = ./.;
       buildPhase = ''
+        # Generate OpenAPI specification from definition.
         mensam-openapi-full > generated-openapi.json
+
+        # Check generated `openapi.json`.
         diff openapi.json generated-openapi.json
+
+        # Validate `openapi.json` with "openapi-generator-cli".
+        openapi-generator-cli validate --input-spec openapi.json
       '';
       installPhase = ''
         mkdir $out
       '';
       buildInputs = [
         packages.x86_64-linux.mensam-openapi
+        pkgs.openapi-generator-cli
       ];
     };
 
