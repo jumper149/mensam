@@ -39,10 +39,13 @@
           pkgs.haskell.packages.ghc926.nix-tree
           pkgs.rnix-lsp
         ];
-        shells = [
-          self.subflakes.server.devShells.x86_64-linux.default
-          self.subflakes.static.devShells.x86_64-linux.default
-        ];
+        shells =
+          let
+            hasDevShells = name: value: __elem "devShells" (__attrNames value) && __elem "x86_64-linux" (__attrNames value.devShells);
+            subflakesWithDevShells = lib.filterAttrs hasDevShells self.subflakes;
+            devShellsBySubflake = __mapAttrs (name: value: value.devShells.x86_64-linux) subflakesWithDevShells;
+            devShells = __foldl' (a: b: a ++ b) [ ] (map __attrValues (__attrValues devShellsBySubflake));
+          in devShells;
         fullBuildInputs = __concatMap (x: x.buildInputs) shells;
         fullNativeBuildInputs = __concatMap (x: x.nativeBuildInputs) shells;
         fullShellHook = __concatStringsSep "\n" (map (x: x.shellHook) shells);
