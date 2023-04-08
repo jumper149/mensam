@@ -35,6 +35,7 @@
       let
         additionalBuildInputs = [
           pkgs.asciidoctor
+          pkgs.openapi-generator-cli
           pkgs.haskell.packages.ghc926.nix-tree
           pkgs.rnix-lsp
           pkgs.sqlite
