@@ -5,6 +5,7 @@
     mkShell {
       packages = [
         pkgs.elmPackages.elm
+        pkgs.elmPackages.elm-language-server
       ];
     };
 
