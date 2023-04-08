@@ -36,6 +36,7 @@ import Servant
 ui :: IO ()
 ui = do
   chan <- newBChan 10
+  tz <- liftIO T.getCurrentTimeZone
   let
     app :: App ClientState ClientEvent ClientName
     app =
@@ -52,6 +53,7 @@ ui = do
         { _clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState {_screenStateLoginForm = loginFormInitial}
         , _clientStatePopup = Nothing
         , _clientStateJwt = Nothing
+        , _clientStateTimezone = tz
         }
     initVty = mkVty defaultConfig
   vty <- initVty
@@ -126,7 +128,7 @@ handleEvent chan = \case
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) -> do
                 let l = listReplace (Seq.fromList desks) (Just 0) desksListInitial
                 currentDay <- T.utctDay <$> liftIO T.getCurrentTime
-                modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l False Nothing currentDay Nothing)}
+                modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l False Nothing currentDay (_clientStateTimezone s) Nothing)}
               err ->
                 modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}

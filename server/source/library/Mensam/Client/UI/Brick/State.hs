@@ -11,6 +11,7 @@ import Mensam.Client.UI.Spaces
 
 import Data.Kind
 import Data.Text qualified as T
+import Data.Time qualified as T
 import Lens.Micro.Platform
 
 type ClientScreenState :: Type
@@ -27,5 +28,6 @@ data ClientState = MkClientState
   { _clientStateScreenState :: ClientScreenState
   , _clientStatePopup :: Maybe T.Text
   , _clientStateJwt :: Maybe Jwt
+  , _clientStateTimezone :: T.TimeZone
   }
 makeLenses ''ClientState

@@ -102,6 +102,7 @@ data ScreenDesksState = MkScreenDesksState
   , _screenStateDesksShowHelp :: Bool
   , _screenStateDesksCreateReservation :: Maybe (Form NewReservationInfo ClientEvent ClientName)
   , _screenStateDesksPreviewDay :: T.Day
+  , _screenStateDesksTimezone :: T.TimeZone
   , _screenStateDesksNewDeskForm :: Maybe (Form NewDeskInfo ClientEvent ClientName)
   }
 makeLenses ''ScreenDesksState
@@ -132,6 +133,7 @@ desksDraw = \case
     { _screenStateDesksSpace = space
     , _screenStateDesksList = desksWithInfo
     , _screenStateDesksPreviewDay = day
+    , _screenStateDesksTimezone = tz
     } ->
       [ vBox
           [ joinBorders $
@@ -145,7 +147,7 @@ desksDraw = \case
                           case listSelectedElement desksWithInfo of
                             Nothing -> []
                             Just (_index, desk) -> deskWithInfoReservations desk
-                     in vLimit 3 $ hCenter $ viewport ClientNameDesksReservationsViewport Horizontal $ visible $ txt $ prettyReservations day reservations
+                     in vLimit 3 $ hCenter $ viewport ClientNameDesksReservationsViewport Horizontal $ visible $ txt $ prettyReservations tz day reservations
                   ]
           , padLeft Max $ txt footerMenuHelp
           ]
@@ -174,10 +176,20 @@ desksHandleEvent event = do
                   Route.Booking.MkRequestReservationCreate
                     { Route.Booking.requestReservationCreateDesk = Identifier $ read $ T.unpack $ _newReservationInfoDesk newReservationInfo
                     , Route.Booking.requestReservationCreateTimeWindow =
-                        MkIntervalUnsafe
-                          { intervalStart = T.UTCTime (_screenStateDesksPreviewDay s) $ T.timeOfDayToTime $ fromJust $ T.iso8601ParseM @_ @T.TimeOfDay $ T.unpack $ _newReservationInfoTimeBegin newReservationInfo
-                          , intervalEnd = T.UTCTime (_screenStateDesksPreviewDay s) $ T.timeOfDayToTime $ fromJust $ T.iso8601ParseM @_ @T.TimeOfDay $ T.unpack $ _newReservationInfoTimeEnd newReservationInfo
-                          }
+                        let toUTC text =
+                              T.zonedTimeToUTC
+                                T.ZonedTime
+                                  { T.zonedTimeToLocalTime =
+                                      T.LocalTime
+                                        { T.localDay = _screenStateDesksPreviewDay s
+                                        , T.localTimeOfDay = fromJust $ T.iso8601ParseM @_ @T.TimeOfDay $ T.unpack text
+                                        }
+                                  , T.zonedTimeZone = _screenStateDesksTimezone s
+                                  }
+                         in MkIntervalUnsafe
+                              { intervalStart = toUTC $ _newReservationInfoTimeBegin newReservationInfo
+                              , intervalEnd = toUTC $ _newReservationInfoTimeEnd newReservationInfo
+                              }
                     }
             _ -> lift $ zoom (screenStateDesksCreateReservation . _Just) $ handleFormEvent event
     Just newDeskInfo ->
@@ -192,14 +204,24 @@ desksHandleEvent event = do
                 }
         _ -> lift $ zoom (screenStateDesksNewDeskForm . _Just) $ handleFormEvent event
 
-prettyReservations :: T.Day -> [Reservation] -> T.Text
-prettyReservations day reservations = T.pack out
+prettyReservations :: T.TimeZone -> T.Day -> [Reservation] -> T.Text
+prettyReservations tz day reservations = T.pack out
  where
   hours :: [Integer] = [0 .. 23]
   minutes :: [Integer] = [0, 15, 30, 45]
   diffTimes = T.secondsToDiffTime . (60 *) <$> concatMap (\hour -> (hour * 60 +) <$> minutes) hours
   diffTimeWindows = zip diffTimes ((+ T.secondsToDiffTime (15 * 60)) <$> diffTimes)
-  utcTimeWindows = bimap (T.UTCTime day) (T.UTCTime day) <$> diffTimeWindows
+  toUTC diffTime =
+    T.zonedTimeToUTC
+      T.ZonedTime
+        { T.zonedTimeToLocalTime =
+            T.LocalTime
+              { T.localDay = day
+              , T.localTimeOfDay = T.timeToTimeOfDay diffTime
+              }
+        , T.zonedTimeZone = tz
+        }
+  utcTimeWindows = bimap toUTC toUTC <$> diffTimeWindows
   utcTimeWindowReservedByOne (begin, end) MkReservation {reservationTimeBegin, reservationTimeEnd} =
     reservationTimeBegin < end && reservationTimeEnd >= begin
   utcTimeWindowReservedByAny window = any (utcTimeWindowReservedByOne window) reservations
