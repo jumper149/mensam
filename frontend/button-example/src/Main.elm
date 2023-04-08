@@ -1,64 +1,57 @@
 module Main exposing (..)
 
--- Press buttons to increment and decrement a counter.
---
--- Read how it works:
---   https://guide.elm-lang.org/architecture/buttons.html
---
-
-
 import Browser
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import Debug
+import Html
+import Html.Events
+import Html.Attributes
 
-
-
--- MAIN
-
-
+main : Program () Model Message
 main =
   Browser.sandbox { init = init, update = update, view = view }
 
-
-
--- MODEL
-
-
-type alias Model = Int
-
+type Model = MkModel {username : String, password : String, output : String}
 
 init : Model
-init =
-  0
+init = MkModel {username = "", password = "", output = ""}
 
+type Message
+  = EnterUsername String
+  | EnterPassword String
+  | SubmitLogin
 
-
--- UPDATE
-
-
-type Msg
-  = Increment
-  | Decrement
-
-
-update : Msg -> Model -> Model
-update msg model =
+update : Message -> Model -> Model
+update msg (MkModel model) =
   case msg of
-    Increment ->
-      model + 1
+    EnterUsername x ->
+      MkModel { model | username = x }
+    EnterPassword x ->
+      MkModel { model | password = x }
+    SubmitLogin ->
+      MkModel { model | output = Debug.toString model }
 
-    Decrement ->
-      model - 1
-
-
-
--- VIEW
-
-
-view : Model -> Html Msg
-view model =
-  div []
-    [ button [ onClick Decrement ] [ text "-" ]
-    , div [] [ text (String.fromInt model) ]
-    , button [ onClick Increment ] [ text "+" ]
+view : Model -> Html.Html Message
+view (MkModel model) =
+  Html.div []
+    [ Html.form [ Html.Events.onSubmit SubmitLogin ]
+          [ Html.fieldset [ ]
+              [ Html.input
+                  [ Html.Events.onInput EnterUsername
+                  , Html.Attributes.type_ "text"
+                  , Html.Attributes.placeholder "Username"
+                  ]
+                  []
+              ]
+          , Html.fieldset [ ]
+              [ Html.input
+                  [ Html.Events.onInput EnterPassword
+                  , Html.Attributes.type_ "password"
+                  , Html.Attributes.placeholder "Password"
+                  ]
+                  []
+              ]
+          , Html.button []
+              [ Html.text "Login" ]
+          ]
+    ,  Html.text (model.output)
     ]
