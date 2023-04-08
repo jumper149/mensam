@@ -38,8 +38,6 @@
           pkgs.openapi-generator-cli
           pkgs.haskell.packages.ghc926.nix-tree
           pkgs.rnix-lsp
-          pkgs.sqlite
-          pkgs.sqlitebrowser
         ];
         shells = [
           self.subflakes.server.devShells.x86_64-linux.default

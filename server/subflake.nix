@@ -18,6 +18,8 @@
         haskell-language-server
         hlint
         implicit-hie
+        pkgs.sqlite
+        pkgs.sqlitebrowser
         weeder
       ];
       packages = haskellPackages: [
