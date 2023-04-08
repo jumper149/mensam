@@ -43,8 +43,27 @@
     mkShell {
       packages = [
         pkgs.elmPackages.elm
+        pkgs.elmPackages.elm-format
         pkgs.elmPackages.elm-language-server
         pkgs.haskell.packages.ghc926.elm2nix
+      ];
+    };
+
+  checks.x86_64-linux.elm-format =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    stdenv.mkDerivation {
+      name = "elm-format"; # TODO: Necessary to avoid segmentation fault.
+      src = ./.;
+      buildPhase = ''
+        elm-format src
+      '';
+      installPhase = ''
+        mkdir $out
+      '';
+      buildInputs = [
+      ];
+      nativeBuildInputs = [
+        pkgs.elmPackages.elm-format
       ];
     };
 
