@@ -4,7 +4,7 @@
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     stdenv.mkDerivation {
       name = "mensam-elm";
-      src = ./button-example;
+      src = ./.;
 
       buildInputs = [
         elmPackages.elm
@@ -12,9 +12,9 @@
       ];
 
       buildPhase = pkgs.elmPackages.fetchElmDeps {
-        elmPackages = import ./button-example/elm-srcs.nix;
+        elmPackages = import ./elm-srcs.nix;
         elmVersion = "0.19.1";
-        registryDat = ./button-example/registry.dat;
+        registryDat = ./registry.dat;
       };
 
       installPhase =
