@@ -20,7 +20,7 @@
           setup = importSubflake ./setup/subflake.nix { } { };
           server = importSubflake ./server/subflake.nix { inherit nixpkgs; } { inherit setup; };
           frontend = importSubflake ./frontend/subflake.nix { inherit nixpkgs; } { inherit setup; };
-          static = importSubflake ./static/subflake.nix { inherit nixpkgs; } { inherit setup; };
+          static = importSubflake ./static/subflake.nix { inherit nixpkgs; } { inherit setup frontend; };
           config = importSubflake ./config/subflake.nix { inherit nixpkgs; } { inherit setup static; };
           final = importSubflake ./final/subflake.nix { inherit nixpkgs; } { inherit setup server config; };
         };

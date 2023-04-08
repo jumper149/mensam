@@ -7,6 +7,9 @@
       src = ./.;
       buildPhase = ''
         make all
+
+        cp --target-directory=build --recursive ${self.subflakes.frontend.packages.x86_64-linux.default.outPath}/*
+        mv build/Main.html build/index.html
       '';
       installPhase = ''
         cp --recursive build $out
