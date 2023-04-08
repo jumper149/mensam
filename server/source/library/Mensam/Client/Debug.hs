@@ -114,7 +114,7 @@ f = do
   currentTime <- liftIO T.getCurrentTime
   let requestReservationCreate =
         Route.Booking.MkRequestReservationCreate
-          { Route.Booking.requestReservationCreateDesk = Name (spacename, MkNameDesk "saturn")
+          { Route.Booking.requestReservationCreateDesk = Name $ MkDeskNameWithContext (MkNameDesk "saturn") spacename
           , Route.Booking.requestReservationCreateTimeWindow =
               MkIntervalUnsafe
                 currentTime

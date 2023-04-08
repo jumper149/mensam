@@ -40,7 +40,7 @@ openapi =
 instance ToSchema OpenApi where
   declareNamedSchema Proxy =
     pure $
-      NamedSchema (Just "OpenAPI Specification") $
+      NamedSchema (Just "OpenAPI") $
         mempty
           & example ?~ A.toJSON openapiExample
    where
@@ -99,6 +99,7 @@ deriving via A.CustomJSON (JSONSettings "MkAccessibilitySpace" "") Accessibility
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Desk instance ToSchema Desk
 deriving anyclass instance ToSchema IdentifierDesk
 deriving newtype instance ToSchema NameDesk
+deriving via A.CustomJSON (JSONSettings "Mk" "deskNameWithContext") DeskNameWithContext instance ToSchema DeskNameWithContext
 deriving via A.CustomJSON (JSONSettings "Mk" "reservation") Reservation instance ToSchema Reservation
 deriving via A.CustomJSON (JSONSettings "MkStatusReservation" "") StatusReservation instance ToSchema StatusReservation
 deriving anyclass instance ToSchema IdentifierReservation

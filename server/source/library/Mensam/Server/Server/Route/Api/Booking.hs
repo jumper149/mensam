@@ -237,7 +237,7 @@ createReservation auth eitherRequest = do
       seldaResult <- runSeldaTransactionT $ do
         deskIdentifier <-
           case requestReservationCreateDesk request of
-            Name (spaceName, deskName) -> do
+            Name MkDeskNameWithContext {deskNameWithContextSpace = spaceName, deskNameWithContextDesk = deskName} -> do
               spaceIdentifier <-
                 spaceLookupId spaceName >>= \case
                   Nothing -> undefined
