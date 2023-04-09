@@ -55,7 +55,7 @@
       name = "elm-format"; # TODO: Necessary to avoid segmentation fault.
       src = ./.;
       buildPhase = ''
-        elm-format src
+        elm-format --yes src
       '';
       installPhase = ''
         mkdir $out
