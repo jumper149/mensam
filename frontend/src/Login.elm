@@ -19,21 +19,36 @@ init =
 
 view : Model -> Html.Html Message
 view model =
-    Html.form [ Html.Events.onSubmit <| MessageEffect SubmitLogin ]
-        [ Html.fieldset []
+    Html.form
+        [ Html.Attributes.id "form-login"
+        , Html.Events.onSubmit <| MessageEffect SubmitLogin
+        ]
+        [ Html.fieldset
+            [ Html.Attributes.form "form-login"
+            ]
             [ Html.input
-                [ Html.Events.onInput <| MessagePure << EnterUsername
+                [ Html.Attributes.id "input-login-username"
+                , Html.Attributes.form "form-login"
+                , Html.Events.onInput <| MessagePure << EnterUsername
                 , Html.Attributes.type_ "text"
                 , Html.Attributes.placeholder "Username"
+                , Html.Attributes.value model.username
                 ]
                 []
             , Html.input
-                [ Html.Events.onInput <| MessagePure << EnterPassword
+                [ Html.Attributes.id "input-login-password"
+                , Html.Attributes.form "form-login"
+                , Html.Events.onInput <| MessagePure << EnterPassword
                 , Html.Attributes.type_ "password"
                 , Html.Attributes.placeholder "Password"
+                , Html.Attributes.value model.password
                 ]
                 []
-            , Html.button []
+            , Html.button
+                [ Html.Attributes.id "button-login-submit"
+                , Html.Attributes.form "form-login"
+                , Html.Attributes.type_ "submit"
+                ]
                 [ Html.text "Login" ]
             ]
         ]

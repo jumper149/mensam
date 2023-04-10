@@ -23,35 +23,55 @@ init =
 
 view : Model -> Html.Html Message
 view model =
-    Html.form [ Html.Events.onSubmit <| MessageEffect Submit ]
-        [ Html.fieldset []
+    Html.form
+        [ Html.Attributes.id "form-register"
+        , Html.Events.onSubmit <| MessageEffect Submit
+        ]
+        [ Html.fieldset
+            [ Html.Attributes.form "form-register"
+            ]
             [ Html.input
-                [ Html.Events.onInput <| MessagePure << EnterUsername
+                [ Html.Attributes.id "input-form-username"
+                , Html.Attributes.form "form-register"
+                , Html.Events.onInput <| MessagePure << EnterUsername
                 , Html.Attributes.type_ "text"
                 , Html.Attributes.placeholder "Username"
+                , Html.Attributes.value model.username
                 ]
                 []
             , Html.input
-                [ Html.Events.onInput <| MessagePure << EnterPassword
+                [ Html.Attributes.id "input-form-password"
+                , Html.Attributes.form "form-register"
+                , Html.Events.onInput <| MessagePure << EnterPassword
                 , Html.Attributes.type_ "password"
                 , Html.Attributes.placeholder "Password"
+                , Html.Attributes.value model.password
                 ]
                 []
             , Html.input
-                [ Html.Events.onInput <| MessagePure << EnterEmail
+                [ Html.Attributes.id "input-form-email"
+                , Html.Attributes.form "form-register"
+                , Html.Events.onInput <| MessagePure << EnterEmail
                 , Html.Attributes.type_ "email"
                 , Html.Attributes.placeholder "Email Address"
+                , Html.Attributes.value model.email
                 ]
                 []
             , Html.input
-                [ Html.Events.onCheck <| MessagePure << ToggleEmailVisible
+                [ Html.Attributes.id "input-form-email-visible"
+                , Html.Attributes.form "form-register"
+                , Html.Events.onCheck <| MessagePure << ToggleEmailVisible
                 , Html.Attributes.type_ "checkbox"
                 , Html.Attributes.checked model.emailVisible
                 ]
                 []
+            , Html.button
+                [ Html.Attributes.id "button-register-submit"
+                , Html.Attributes.form "form-register"
+                , Html.Attributes.type_ "submit"
+                ]
+                [ Html.text "Register" ]
             ]
-        , Html.button []
-            [ Html.text "Register" ]
         ]
 
 
