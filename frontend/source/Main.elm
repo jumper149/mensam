@@ -9,6 +9,7 @@ import Login
 import Platform.Cmd
 import Platform.Sub
 import Register
+import Spaces
 import Url
 
 
@@ -35,6 +36,7 @@ type Model
 type Screen
     = ScreenRegister Register.Model
     | ScreenLogin Login.Model
+    | ScreenSpaces Spaces.Model
     | NoScreen
 
 
@@ -51,6 +53,8 @@ type Message
     | SwitchScreenRegister
     | MessageLogin Login.Message
     | SwitchScreenLogin
+    | MessageSpaces Spaces.Message
+    | SwitchScreenSpaces
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
@@ -138,6 +142,40 @@ update message (MkModel model) =
             , Platform.Cmd.none
             )
 
+        MessageSpaces (Spaces.MessagePure m) ->
+            case model.screen of
+                ScreenSpaces screenModel ->
+                    ( MkModel { model | screen = ScreenSpaces <| Spaces.updatePure m screenModel }
+                    , Platform.Cmd.none
+                    )
+
+                _ ->
+                    ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
+                    , Platform.Cmd.none
+                    )
+
+        MessageSpaces (Spaces.MessageEffect m) ->
+            case m of
+                Spaces.ReportError err ->
+                    ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
+
+                Spaces.RefreshSpaces ->
+                    case model.jwt of
+                        Just jwt ->
+                            ( MkModel model
+                            , Platform.Cmd.map MessageSpaces <| Spaces.deskListRequest { jwt = jwt }
+                            )
+
+                        Nothing ->
+                            ( MkModel { model | error = "Can't make request without JWT." :: model.error }
+                            , Platform.Cmd.none
+                            )
+
+        SwitchScreenSpaces ->
+            ( MkModel { model | screen = ScreenSpaces Spaces.init }
+            , Platform.Cmd.none
+            )
+
 
 view : Model -> Browser.Document Message
 view (MkModel model) =
@@ -146,6 +184,7 @@ view (MkModel model) =
         [ Html.h1 [] [ Html.text "Mensam" ]
         , Html.button [ Html.Events.onClick SwitchScreenLogin ] [ Html.text "Login" ]
         , Html.button [ Html.Events.onClick SwitchScreenRegister ] [ Html.text "Register" ]
+        , Html.button [ Html.Events.onClick SwitchScreenSpaces ] [ Html.text "Spaces" ]
         , Html.h3 [] [ Html.text "Screen" ]
         , case model.screen of
             ScreenLogin screenModel ->
@@ -153,6 +192,9 @@ view (MkModel model) =
 
             ScreenRegister screenModel ->
                 Html.map MessageRegister <| Register.view screenModel
+
+            ScreenSpaces screenModel ->
+                Html.map MessageSpaces <| Spaces.view screenModel
 
             NoScreen ->
                 Html.div [] []
