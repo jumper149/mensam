@@ -1,0 +1,29 @@
+= Frontend
+
+The web frontend is written in Elm.
+
+== Development
+
+=== Formatting
+
+Use `elm-format` to format Elm.
+
+[source,bash]
+----
+# Format Elm.
+elm-format --yes src
+----
+
+=== Nix
+
+Elm dependencies are pinned in link:./elm-srcs.nix[elm-srcs.nix].
+link:./registry.dat[registry.dat] and link:./versions.dat[versions.dat] are also required to with Nix.
+
+[source,bash]
+----
+# Update `elm-srcs.nix`.
+elm2nix convert > elm-srcs.nix
+
+# Update `registry.dat` and `versions.dat`.
+elm2nix snapshot
+----
