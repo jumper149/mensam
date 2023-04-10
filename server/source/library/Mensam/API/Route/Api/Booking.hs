@@ -62,7 +62,7 @@ data Routes route = Routes
           :> Auth '[JWT] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceList
           :> UVerb
-              GET
+              POST
               '[JSON]
               [ WithStatus 200 ResponseSpaceList
               , WithStatus 400 ErrorParseBodyJson
@@ -98,7 +98,7 @@ data Routes route = Routes
           :> Auth '[JWT] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskList
           :> UVerb
-              GET
+              POST
               '[JSON]
               [ WithStatus 200 ResponseDeskList
               , WithStatus 400 ErrorParseBodyJson

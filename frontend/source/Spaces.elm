@@ -54,7 +54,7 @@ type MessageEffect
 deskListRequest : { jwt : String } -> Cmd Message
 deskListRequest body =
     Http.request
-        { method = "GET"
+        { method = "POST"
         , headers =
             [ Http.header "Authorization" ("Bearer " ++ body.jwt)
             ]
