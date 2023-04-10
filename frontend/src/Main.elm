@@ -4,6 +4,7 @@ import Browser
 import Browser.Navigation
 import Debug
 import Html
+import Html.Events
 import Login
 import Platform.Cmd
 import Platform.Sub
@@ -27,7 +28,7 @@ type Model
     = MkModel
         { screen : Screen
         , jwt : Maybe String
-        , error : Maybe String
+        , error : List String
         }
 
 
@@ -39,7 +40,7 @@ type Screen
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
 init _ _ _ =
-    ( MkModel { screen = ScreenLogin Login.init, jwt = Nothing, error = Nothing }, Platform.Cmd.none )
+    ( MkModel { screen = ScreenLogin Login.init, jwt = Nothing, error = [] }, Platform.Cmd.none )
 
 
 type Message
@@ -47,7 +48,7 @@ type Message
     | MessageLogin Login.Message
     | EmptyMessage
     | ReportError String
-    | ClearError
+    | ClearErrors
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
@@ -61,7 +62,7 @@ update message (MkModel model) =
                     )
 
                 _ ->
-                    ( MkModel { model | error = Just "Can't process a message for the wrong screen." }
+                    ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
                     , Platform.Cmd.none
                     )
 
@@ -75,7 +76,7 @@ update message (MkModel model) =
                             )
 
                         _ ->
-                            ( MkModel { model | error = Just "Can't process a message for the wrong screen." }
+                            ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
                             , Platform.Cmd.none
                             )
 
@@ -92,7 +93,7 @@ update message (MkModel model) =
                     )
 
                 _ ->
-                    ( MkModel { model | error = Just "Can't process a message for the wrong screen." }
+                    ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
                     , Platform.Cmd.none
                     )
 
@@ -106,7 +107,7 @@ update message (MkModel model) =
                             )
 
                         _ ->
-                            ( MkModel { model | error = Just "Can't process a message for the wrong screen." }
+                            ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
                             , Platform.Cmd.none
                             )
 
@@ -117,10 +118,10 @@ update message (MkModel model) =
             ( MkModel model, Platform.Cmd.none )
 
         ReportError err ->
-            ( MkModel { model | error = Just err }, Platform.Cmd.none )
+            ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
 
-        ClearError ->
-            ( MkModel { model | error = Nothing }, Platform.Cmd.none )
+        ClearErrors ->
+            ( MkModel { model | error = [] }, Platform.Cmd.none )
 
 
 view : Model -> Browser.Document Message
@@ -136,6 +137,10 @@ view (MkModel model) =
 
             NoScreen ->
                 Html.div [] []
+        , Html.h3 [] [ Html.text "JWT" ]
         , Html.text (Debug.toString model.jwt)
+        , Html.h3 [] [ Html.text "Error" ]
+        , Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
+        , Html.text (Debug.toString model.error)
         ]
     }
