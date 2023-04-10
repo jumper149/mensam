@@ -7,6 +7,7 @@ import Html
 import Login
 import Platform.Cmd
 import Platform.Sub
+import Register
 import Url
 
 
@@ -23,22 +24,42 @@ main =
 
 
 type Model
-    = MkModel { modelLogin : Login.Model, jwt : Maybe String }
+    = MkModel
+        { modelRegister : Register.Model
+        , modelLogin : Login.Model
+        , jwt : Maybe String
+        }
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
 init _ _ _ =
-    ( MkModel { modelLogin = Login.init, jwt = Nothing }, Platform.Cmd.none )
+    ( MkModel { modelRegister = Register.init, modelLogin = Login.init, jwt = Nothing }, Platform.Cmd.none )
 
 
 type Message
-    = MessageLogin Login.Message
+    = MessageRegister Register.Message
+    | MessageLogin Login.Message
     | EmptyMessage
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
 update message (MkModel model) =
     case message of
+        MessageRegister (Register.MessagePure m) ->
+            ( MkModel { model | modelRegister = Register.updatePure m model.modelRegister }, Platform.Cmd.none )
+
+        MessageRegister (Register.MessageEffect m) ->
+            case m of
+                Register.Submit ->
+                    ( MkModel model
+                    , Platform.Cmd.map MessageRegister <| Register.registerRequest model.modelRegister
+                    )
+
+                Register.Submitted ->
+                    ( MkModel model
+                    , Platform.Cmd.none
+                    )
+
         MessageLogin (Login.MessagePure m) ->
             ( MkModel { model | modelLogin = Login.updatePure m model.modelLogin }, Platform.Cmd.none )
 
@@ -61,6 +82,7 @@ view (MkModel model) =
     { title = "Mensam"
     , body =
         [ Html.map MessageLogin <| Login.view model.modelLogin
+        , Html.map MessageRegister <| Register.view model.modelRegister
         , Html.text (Debug.toString model.jwt)
         ]
     }
