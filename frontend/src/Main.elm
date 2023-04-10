@@ -127,6 +127,9 @@ update message (MkModel model) =
                             , Platform.Cmd.none
                             )
 
+                Login.Register ->
+                    ( MkModel { model | screen = ScreenRegister Register.init }, Platform.Cmd.none )
+
                 Login.SetSession x ->
                     ( MkModel { model | jwt = Just x.jwt }, Platform.Cmd.none )
 

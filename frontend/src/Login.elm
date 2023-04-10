@@ -44,6 +44,16 @@ view model =
                 , Html.Attributes.value model.password
                 ]
                 []
+            ]
+        , Html.fieldset
+            [ Html.Attributes.form "form-login"
+            ]
+            [ Html.button
+                [ Html.Attributes.id "button-login-register"
+                , Html.Events.onClick <| MessageEffect Register
+                , Html.Attributes.type_ "button"
+                ]
+                [ Html.text "Register" ]
             , Html.button
                 [ Html.Attributes.id "button-login-submit"
                 , Html.Attributes.form "form-login"
@@ -76,6 +86,7 @@ updatePure message model =
 
 type MessageEffect
     = SubmitLogin
+    | Register
     | SetSession { jwt : String }
 
 
