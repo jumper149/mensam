@@ -25,35 +25,59 @@ main =
 
 type Model
     = MkModel
-        { modelRegister : Register.Model
-        , modelLogin : Login.Model
+        { screen : Screen
         , jwt : Maybe String
+        , error : Maybe String
         }
+
+
+type Screen
+    = ScreenRegister Register.Model
+    | ScreenLogin Login.Model
+    | NoScreen
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
 init _ _ _ =
-    ( MkModel { modelRegister = Register.init, modelLogin = Login.init, jwt = Nothing }, Platform.Cmd.none )
+    ( MkModel { screen = ScreenLogin Login.init, jwt = Nothing, error = Nothing }, Platform.Cmd.none )
 
 
 type Message
     = MessageRegister Register.Message
     | MessageLogin Login.Message
     | EmptyMessage
+    | ReportError String
+    | ClearError
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
 update message (MkModel model) =
     case message of
         MessageRegister (Register.MessagePure m) ->
-            ( MkModel { model | modelRegister = Register.updatePure m model.modelRegister }, Platform.Cmd.none )
+            case model.screen of
+                ScreenRegister screenModel ->
+                    ( MkModel { model | screen = ScreenRegister <| Register.updatePure m screenModel }
+                    , Platform.Cmd.none
+                    )
+
+                _ ->
+                    ( MkModel { model | error = Just "Can't process a message for the wrong screen." }
+                    , Platform.Cmd.none
+                    )
 
         MessageRegister (Register.MessageEffect m) ->
             case m of
                 Register.Submit ->
-                    ( MkModel model
-                    , Platform.Cmd.map MessageRegister <| Register.registerRequest model.modelRegister
-                    )
+                    case model.screen of
+                        ScreenRegister screenModel ->
+                            ( MkModel model
+                            , Platform.Cmd.map MessageRegister <| Register.registerRequest screenModel
+                            )
+
+                        _ ->
+                            ( MkModel { model | error = Just "Can't process a message for the wrong screen." }
+                            , Platform.Cmd.none
+                            )
 
                 Register.Submitted ->
                     ( MkModel model
@@ -61,14 +85,30 @@ update message (MkModel model) =
                     )
 
         MessageLogin (Login.MessagePure m) ->
-            ( MkModel { model | modelLogin = Login.updatePure m model.modelLogin }, Platform.Cmd.none )
+            case model.screen of
+                ScreenLogin screenModel ->
+                    ( MkModel { model | screen = ScreenLogin <| Login.updatePure m screenModel }
+                    , Platform.Cmd.none
+                    )
+
+                _ ->
+                    ( MkModel { model | error = Just "Can't process a message for the wrong screen." }
+                    , Platform.Cmd.none
+                    )
 
         MessageLogin (Login.MessageEffect m) ->
             case m of
                 Login.SubmitLogin ->
-                    ( MkModel model
-                    , Platform.Cmd.map MessageLogin <| Login.loginRequest model.modelLogin
-                    )
+                    case model.screen of
+                        ScreenLogin screenModel ->
+                            ( MkModel model
+                            , Platform.Cmd.map MessageLogin <| Login.loginRequest screenModel
+                            )
+
+                        _ ->
+                            ( MkModel { model | error = Just "Can't process a message for the wrong screen." }
+                            , Platform.Cmd.none
+                            )
 
                 Login.SetSession x ->
                     ( MkModel { model | jwt = Just x.jwt }, Platform.Cmd.none )
@@ -76,13 +116,26 @@ update message (MkModel model) =
         EmptyMessage ->
             ( MkModel model, Platform.Cmd.none )
 
+        ReportError err ->
+            ( MkModel { model | error = Just err }, Platform.Cmd.none )
+
+        ClearError ->
+            ( MkModel { model | error = Nothing }, Platform.Cmd.none )
+
 
 view : Model -> Browser.Document Message
 view (MkModel model) =
     { title = "Mensam"
     , body =
-        [ Html.map MessageLogin <| Login.view model.modelLogin
-        , Html.map MessageRegister <| Register.view model.modelRegister
+        [ case model.screen of
+            ScreenLogin screenModel ->
+                Html.map MessageLogin <| Login.view screenModel
+
+            ScreenRegister screenModel ->
+                Html.map MessageRegister <| Register.view screenModel
+
+            NoScreen ->
+                Html.div [] []
         , Html.text (Debug.toString model.jwt)
         ]
     }
