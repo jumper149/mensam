@@ -20,7 +20,7 @@
       installPhase =
         let
           outputJavaScript = false;
-          srcdir = "./src";
+          srcdir = "./source";
           elmfile = module: "${srcdir}/${builtins.replaceStrings ["."] ["/"] module}.elm";
           extension = if outputJavaScript then "js" else "html";
           targets = ["Main"];
@@ -55,7 +55,7 @@
       name = "elm-format"; # TODO: Necessary to avoid segmentation fault.
       src = ./.;
       buildPhase = ''
-        elm-format --yes src
+        elm-format --yes source
       '';
       installPhase = ''
         mkdir $out
