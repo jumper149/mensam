@@ -44,16 +44,27 @@ init _ _ _ =
 
 
 type Message
-    = MessageRegister Register.Message
-    | MessageLogin Login.Message
-    | EmptyMessage
+    = EmptyMessage
     | ReportError String
     | ClearErrors
+    | MessageRegister Register.Message
+    | SwitchScreenRegister
+    | MessageLogin Login.Message
+    | SwitchScreenLogin
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
 update message (MkModel model) =
     case message of
+        EmptyMessage ->
+            ( MkModel model, Platform.Cmd.none )
+
+        ReportError err ->
+            ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
+
+        ClearErrors ->
+            ( MkModel { model | error = [] }, Platform.Cmd.none )
+
         MessageRegister (Register.MessagePure m) ->
             case model.screen of
                 ScreenRegister screenModel ->
@@ -85,6 +96,11 @@ update message (MkModel model) =
                     , Platform.Cmd.none
                     )
 
+        SwitchScreenRegister ->
+            ( MkModel { model | screen = ScreenRegister Register.init }
+            , Platform.Cmd.none
+            )
+
         MessageLogin (Login.MessagePure m) ->
             case model.screen of
                 ScreenLogin screenModel ->
@@ -114,21 +130,21 @@ update message (MkModel model) =
                 Login.SetSession x ->
                     ( MkModel { model | jwt = Just x.jwt }, Platform.Cmd.none )
 
-        EmptyMessage ->
-            ( MkModel model, Platform.Cmd.none )
-
-        ReportError err ->
-            ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
-
-        ClearErrors ->
-            ( MkModel { model | error = [] }, Platform.Cmd.none )
+        SwitchScreenLogin ->
+            ( MkModel { model | screen = ScreenLogin Login.init }
+            , Platform.Cmd.none
+            )
 
 
 view : Model -> Browser.Document Message
 view (MkModel model) =
     { title = "Mensam"
     , body =
-        [ case model.screen of
+        [ Html.h1 [] [ Html.text "Mensam" ]
+        , Html.button [ Html.Events.onClick SwitchScreenLogin ] [ Html.text "Login" ]
+        , Html.button [ Html.Events.onClick SwitchScreenRegister ] [ Html.text "Register" ]
+        , Html.h3 [] [ Html.text "Screen" ]
+        , case model.screen of
             ScreenLogin screenModel ->
                 Html.map MessageLogin <| Login.view screenModel
 
