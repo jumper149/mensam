@@ -27,17 +27,15 @@ view model =
                 , Html.Attributes.placeholder "Username"
                 ]
                 []
-            ]
-        , Html.fieldset []
-            [ Html.input
+            , Html.input
                 [ Html.Events.onInput <| MessagePure << EnterPassword
                 , Html.Attributes.type_ "password"
                 , Html.Attributes.placeholder "Password"
                 ]
                 []
+            , Html.button []
+                [ Html.text "Login" ]
             ]
-        , Html.button []
-            [ Html.text "Login" ]
         ]
 
 
