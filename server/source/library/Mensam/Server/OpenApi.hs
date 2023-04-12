@@ -90,19 +90,19 @@ deriving via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth in
 deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBodyJson instance ToSchema ErrorParseBodyJson
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
 deriving via A.CustomJSON (JSONSettings "Mk" "user") User instance ToSchema User
-deriving anyclass instance ToSchema IdentifierUser
+deriving newtype instance ToSchema IdentifierUser
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
-deriving anyclass instance ToSchema IdentifierSpace
+deriving newtype instance ToSchema IdentifierSpace
 deriving newtype instance ToSchema NameSpace
 deriving via A.CustomJSON (JSONSettings "MkVisibilitySpace" "") VisibilitySpace instance ToSchema VisibilitySpace
 deriving via A.CustomJSON (JSONSettings "MkAccessibilitySpace" "") AccessibilitySpace instance ToSchema AccessibilitySpace
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Desk instance ToSchema Desk
-deriving anyclass instance ToSchema IdentifierDesk
+deriving newtype instance ToSchema IdentifierDesk
 deriving newtype instance ToSchema NameDesk
 deriving via A.CustomJSON (JSONSettings "Mk" "deskNameWithContext") DeskNameWithContext instance ToSchema DeskNameWithContext
 deriving via A.CustomJSON (JSONSettings "Mk" "reservation") Reservation instance ToSchema Reservation
 deriving via A.CustomJSON (JSONSettings "MkStatusReservation" "") StatusReservation instance ToSchema StatusReservation
-deriving anyclass instance ToSchema IdentifierReservation
+deriving newtype instance ToSchema IdentifierReservation
 instance ToSchema a => ToSchema (Interval a) where
   declareNamedSchema Proxy =
     declareNamedSchema (Proxy @(A.CustomJSON (JSONSettings "Mk" "interval") (Interval a)))

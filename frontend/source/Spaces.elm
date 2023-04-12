@@ -9,7 +9,7 @@ import Json.Encode
 
 
 type alias Model =
-    { spaces : List () }
+    { spaces : List { id : Int, name : String } }
 
 
 init : Model
@@ -36,7 +36,7 @@ type Message
 
 
 type MessagePure
-    = SetSpaces (List ())
+    = SetSpaces (List { id : Int, name : String })
 
 
 updatePure : MessagePure -> Model -> Model
@@ -71,7 +71,7 @@ expectDeskListResponse =
     Http.expectJson handleDeskListResponse decodeDeskListResponse
 
 
-handleDeskListResponse : Result Http.Error (List ()) -> Message
+handleDeskListResponse : Result Http.Error (List { id : Int, name : String }) -> Message
 handleDeskListResponse result =
     case result of
         Ok response ->
@@ -81,6 +81,12 @@ handleDeskListResponse result =
             MessageEffect <| ReportError <| Debug.toString err
 
 
-decodeDeskListResponse : Json.Decode.Decoder (List ())
+decodeDeskListResponse : Json.Decode.Decoder (List { id : Int, name : String })
 decodeDeskListResponse =
-    Json.Decode.field "spaces" <| Json.Decode.list <| Json.Decode.succeed ()
+    let
+        decodeSpace =
+            Json.Decode.map2 (\id name -> { id = id, name = name })
+                (Json.Decode.field "id" Json.Decode.int)
+                (Json.Decode.field "name" Json.Decode.string)
+    in
+    Json.Decode.field "spaces" <| Json.Decode.list <| decodeSpace

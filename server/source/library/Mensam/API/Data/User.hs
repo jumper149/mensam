@@ -18,7 +18,7 @@ newtype UserAuthenticated = MkUserAuthenticated
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "MkUserAuthenticated" "userAuthenticated") UserAuthenticated
+    via A.CustomJSON (JSONSettings "Mk" "userAuthenticated") UserAuthenticated
 
 type User :: Type
 data User = MkUser
@@ -34,7 +34,7 @@ data User = MkUser
 type IdentifierUser :: Type
 newtype IdentifierUser = MkIdentifierUser {unIdentifierUser :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving newtype (A.FromJSON, A.ToJSON)
 
 type ErrorBasicAuth :: Type
 data ErrorBasicAuth

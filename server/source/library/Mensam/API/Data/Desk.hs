@@ -17,12 +17,14 @@ data Desk = MkDesk
   , deskName :: NameDesk
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "desk") Desk
 
 type IdentifierDesk :: Type
 newtype IdentifierDesk = MkIdentifierDesk {unIdentifierDesk :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving newtype (A.FromJSON, A.ToJSON)
 
 type NameDesk :: Type
 newtype NameDesk = MkNameDesk {unNameDesk :: T.Text}

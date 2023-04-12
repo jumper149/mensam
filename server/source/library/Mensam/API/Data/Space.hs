@@ -15,12 +15,14 @@ data Space = MkSpace
   , spaceName :: NameSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "space") Space
 
 type IdentifierSpace :: Type
 newtype IdentifierSpace = MkIdentifierSpace {unIdentifierSpace :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving newtype (A.FromJSON, A.ToJSON)
 
 type NameSpace :: Type
 newtype NameSpace = MkNameSpace {unNameSpace :: T.Text}

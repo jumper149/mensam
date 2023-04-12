@@ -21,12 +21,14 @@ data Reservation = MkReservation
   , reservationStatus :: StatusReservation
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "reservation") Reservation
 
 type IdentifierReservation :: Type
 newtype IdentifierReservation = MkIdentifierReservation {unIdentifierReservation :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving anyclass (A.FromJSON, A.ToJSON)
+  deriving newtype (A.FromJSON, A.ToJSON)
 
 type StatusReservation :: Type
 data StatusReservation
