@@ -20,13 +20,21 @@ init =
 view : Model -> Html.Html Message
 view model =
     Html.div []
-        [ Html.text (Debug.toString model)
-        , Html.button
+        [ Html.button
             [ Html.Attributes.id "button-spaces-refresh"
             , Html.Events.onClick <| MessageEffect RefreshSpaces
             , Html.Attributes.type_ "button"
             ]
-            [ Html.text "Register" ]
+            [ Html.text "Refresh" ]
+        , Html.table [] (List.map viewSpace model.spaces)
+        ]
+
+
+viewSpace : { id : Int, name : String } -> Html.Html Message
+viewSpace space =
+    Html.tr []
+        [ Html.td [] [ Html.text (Debug.toString space.id) ]
+        , Html.td [] [ Html.text (Debug.toString space.name) ]
         ]
 
 
