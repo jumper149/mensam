@@ -30,6 +30,11 @@
         version = "1.0.0";
       };
 
+      "mdgriffith/elm-ui" = {
+        sha256 = "0ffcqv4a4ad400hwp824m3qq4jy82cqp5ghmhp1m0q7n004z6kgv";
+        version = "1.1.8";
+      };
+
       "truqu/elm-base64" = {
         sha256 = "12w68b4idbs2vn0gm0lj354pm745jb7n0fj69408mpvh5r1z4m1b";
         version = "2.0.4";

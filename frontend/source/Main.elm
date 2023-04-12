@@ -3,6 +3,9 @@ module Main exposing (..)
 import Browser
 import Browser.Navigation
 import Debug
+import Element
+import Element.Background
+import Element.Font
 import Html
 import Html.Events
 import Login
@@ -181,27 +184,38 @@ view : Model -> Browser.Document Message
 view (MkModel model) =
     { title = "Mensam"
     , body =
-        [ Html.h1 [] [ Html.text "Mensam" ]
-        , Html.button [ Html.Events.onClick SwitchScreenLogin ] [ Html.text "Login" ]
-        , Html.button [ Html.Events.onClick SwitchScreenRegister ] [ Html.text "Register" ]
-        , Html.button [ Html.Events.onClick SwitchScreenSpaces ] [ Html.text "Spaces" ]
-        , Html.h3 [] [ Html.text "Screen" ]
-        , case model.screen of
-            ScreenLogin screenModel ->
-                Html.map MessageLogin <| Login.view screenModel
+        [ Element.layout
+            [ Element.Background.color (Element.rgba 0 0 0 1)
+            , Element.Font.color (Element.rgba 1 1 1 1)
+            , Element.Font.medium
+            , Element.Font.size 20
+            , Element.Font.family [ Element.Font.sansSerif ]
+            ]
+          <|
+            Element.html <|
+                Html.div []
+                    [ Html.h1 [] [ Html.text "Mensam" ]
+                    , Html.button [ Html.Events.onClick SwitchScreenLogin ] [ Html.text "Login" ]
+                    , Html.button [ Html.Events.onClick SwitchScreenRegister ] [ Html.text "Register" ]
+                    , Html.button [ Html.Events.onClick SwitchScreenSpaces ] [ Html.text "Spaces" ]
+                    , Html.h3 [] [ Html.text "Screen" ]
+                    , case model.screen of
+                        ScreenLogin screenModel ->
+                            Html.map MessageLogin <| Login.view screenModel
 
-            ScreenRegister screenModel ->
-                Html.map MessageRegister <| Register.view screenModel
+                        ScreenRegister screenModel ->
+                            Html.map MessageRegister <| Register.view screenModel
 
-            ScreenSpaces screenModel ->
-                Html.map MessageSpaces <| Spaces.view screenModel
+                        ScreenSpaces screenModel ->
+                            Html.map MessageSpaces <| Spaces.view screenModel
 
-            NoScreen ->
-                Html.div [] []
-        , Html.h3 [] [ Html.text "JWT" ]
-        , Html.text (Debug.toString model.jwt)
-        , Html.h3 [] [ Html.text "Error" ]
-        , Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
-        , Html.text (Debug.toString model.error)
+                        NoScreen ->
+                            Html.div [] []
+                    , Html.h3 [] [ Html.text "JWT" ]
+                    , Html.text (Debug.toString model.jwt)
+                    , Html.h3 [] [ Html.text "Error" ]
+                    , Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
+                    , Html.text (Debug.toString model.error)
+                    ]
         ]
     }
