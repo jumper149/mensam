@@ -7,6 +7,7 @@ import Element
 import Element.Background
 import Element.Font
 import Html
+import Html.Attributes
 import Html.Events
 import Login
 import Platform.Cmd
@@ -185,37 +186,74 @@ view (MkModel model) =
     { title = "Mensam"
     , body =
         [ Element.layout
-            [ Element.Background.color (Element.rgba 0 0 0 1)
-            , Element.Font.color (Element.rgba 1 1 1 1)
+            [ Element.Background.gradient { angle = 0, steps = [ colors.dark.yellow, colors.bright.yellow ] }
+            , Element.Font.color colors.dark.black
             , Element.Font.medium
             , Element.Font.size 20
             , Element.Font.family [ Element.Font.sansSerif ]
             ]
           <|
-            Element.html <|
-                Html.div []
-                    [ Html.h1 [] [ Html.text "Mensam" ]
-                    , Html.button [ Html.Events.onClick SwitchScreenLogin ] [ Html.text "Login" ]
-                    , Html.button [ Html.Events.onClick SwitchScreenRegister ] [ Html.text "Register" ]
-                    , Html.button [ Html.Events.onClick SwitchScreenSpaces ] [ Html.text "Spaces" ]
-                    , Html.h3 [] [ Html.text "Screen" ]
-                    , case model.screen of
-                        ScreenLogin screenModel ->
-                            Html.map MessageLogin <| Login.view screenModel
+            Element.el
+                [ Element.htmlAttribute <| Html.Attributes.style "min-width" "800px"
+                , Element.htmlAttribute <| Html.Attributes.style "max-width" "1000px"
+                , Element.htmlAttribute <| Html.Attributes.style "margin-left" "auto"
+                , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
+                , Element.htmlAttribute <| Html.Attributes.style "padding-left" "20px"
+                , Element.htmlAttribute <| Html.Attributes.style "padding-right" "20px"
+                , Element.height Element.fill
+                , Element.Background.color colors.dark.black
+                , Element.Font.color colors.bright.white
+                ]
+            <|
+                Element.html <|
+                    Html.div []
+                        [ Html.h1 [] [ Html.text "Mensam" ]
+                        , Html.button [ Html.Events.onClick SwitchScreenLogin ] [ Html.text "Login" ]
+                        , Html.button [ Html.Events.onClick SwitchScreenRegister ] [ Html.text "Register" ]
+                        , Html.button [ Html.Events.onClick SwitchScreenSpaces ] [ Html.text "Spaces" ]
+                        , Html.h3 [] [ Html.text "Screen" ]
+                        , case model.screen of
+                            ScreenLogin screenModel ->
+                                Html.map MessageLogin <| Login.view screenModel
 
-                        ScreenRegister screenModel ->
-                            Html.map MessageRegister <| Register.view screenModel
+                            ScreenRegister screenModel ->
+                                Html.map MessageRegister <| Register.view screenModel
 
-                        ScreenSpaces screenModel ->
-                            Html.map MessageSpaces <| Spaces.view screenModel
+                            ScreenSpaces screenModel ->
+                                Html.map MessageSpaces <| Spaces.view screenModel
 
-                        NoScreen ->
-                            Html.div [] []
-                    , Html.h3 [] [ Html.text "JWT" ]
-                    , Html.text (Debug.toString model.jwt)
-                    , Html.h3 [] [ Html.text "Error" ]
-                    , Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
-                    , Html.text (Debug.toString model.error)
-                    ]
+                            NoScreen ->
+                                Html.div [] []
+                        , Html.h3 [] [ Html.text "JWT" ]
+                        , Html.text (Debug.toString model.jwt)
+                        , Html.h3 [] [ Html.text "Error" ]
+                        , Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
+                        , Html.text (Debug.toString model.error)
+                        ]
         ]
+    }
+
+
+colors : { dark : { black : Element.Color, red : Element.Color, green : Element.Color, yellow : Element.Color, blue : Element.Color, magenta : Element.Color, cyan : Element.Color, white : Element.Color }, bright : { black : Element.Color, red : Element.Color, green : Element.Color, yellow : Element.Color, blue : Element.Color, magenta : Element.Color, cyan : Element.Color, white : Element.Color } }
+colors =
+    { dark =
+        { black = Element.rgb255 40 42 46
+        , red = Element.rgb255 165 66 66
+        , green = Element.rgb255 140 148 64
+        , yellow = Element.rgb255 222 147 95
+        , blue = Element.rgb255 95 129 157
+        , magenta = Element.rgb255 133 103 143
+        , cyan = Element.rgb255 94 141 135
+        , white = Element.rgb255 112 120 128
+        }
+    , bright =
+        { black = Element.rgb255 55 59 65
+        , red = Element.rgb255 204 102 102
+        , green = Element.rgb255 181 189 104
+        , yellow = Element.rgb255 240 198 116
+        , blue = Element.rgb255 129 162 190
+        , magenta = Element.rgb255 178 148 187
+        , cyan = Element.rgb255 138 190 183
+        , white = Element.rgb255 197 200 198
+        }
     }
