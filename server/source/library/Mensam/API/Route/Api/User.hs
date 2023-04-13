@@ -63,7 +63,7 @@ data Routes route = Routes
 
 type ResponseLogin :: Type
 newtype ResponseLogin = MkResponseLogin
-  { responseLoginJWT :: Jwt
+  { responseLoginJwt :: Jwt
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
