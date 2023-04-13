@@ -250,7 +250,7 @@ view (MkModel model) =
 elementNavigationBar : Model -> Element.Element Message
 elementNavigationBar (MkModel model) =
     let
-        descriptions =
+        tabDescriptions =
             [ { name = "Login"
               , message = SwitchScreenLogin
               , active =
@@ -283,7 +283,7 @@ elementNavigationBar (MkModel model) =
               }
             ]
 
-        viewDescription description =
+        viewTabDescriptions description =
             Element.el
                 [ Element.Events.onClick description.message
                 , Element.height Element.fill
@@ -303,6 +303,43 @@ elementNavigationBar (MkModel model) =
                     ]
                 <|
                     Element.text description.name
+
+        elementsTabDescription =
+            List.map viewTabDescriptions tabDescriptions
+
+        loginStatus =
+            case model.authenticated of
+                Nothing ->
+                    Element.el
+                        [ Element.Events.onClick SwitchScreenLogin
+                        , Element.height Element.fill
+                        , Element.paddingXY 20 0
+                        , Element.alignRight
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.3 ]
+                        ]
+                    <|
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            ]
+                        <|
+                            Element.text "Sign in"
+
+                Just _ ->
+                    Element.el
+                        [ Element.height Element.fill
+                        , Element.paddingXY 20 0
+                        , Element.alignRight
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
+                        ]
+                    <|
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            ]
+                        <|
+                            Element.text "Signed in"
     in
     Element.row
         [ Element.Font.size 20
@@ -310,5 +347,4 @@ elementNavigationBar (MkModel model) =
         , Element.height <| Element.px 60
         , Element.Background.color Color.colors.bright.black
         ]
-    <|
-        List.map viewDescription descriptions
+        (elementsTabDescription ++ [ loginStatus ])
