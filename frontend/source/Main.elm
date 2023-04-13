@@ -6,6 +6,7 @@ import Color
 import Debug
 import Element
 import Element.Background
+import Element.Events
 import Element.Font
 import Html
 import Html.Attributes
@@ -188,7 +189,7 @@ view (MkModel model) =
     , body =
         [ Element.layout
             [ Element.Background.gradient { angle = 0, steps = [ Color.colors.dark.yellow, Color.colors.bright.yellow ] }
-            , Element.Font.color colors.dark.black
+            , Element.Font.color Color.colors.dark.black
             , Element.Font.medium
             , Element.Font.size 20
             , Element.Font.family [ Element.Font.sansSerif ]
@@ -201,35 +202,80 @@ view (MkModel model) =
                 , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
                 , Element.htmlAttribute <| Html.Attributes.style "padding-left" "20px"
                 , Element.htmlAttribute <| Html.Attributes.style "padding-right" "20px"
+                , Element.htmlAttribute <| Html.Attributes.style "padding-top" "20px"
+                , Element.htmlAttribute <| Html.Attributes.style "padding-bottom" "20px"
                 , Element.height Element.fill
                 , Element.Background.color Color.colors.dark.black
                 , Element.Font.color Color.colors.bright.white
                 ]
             <|
-                Element.html <|
-                    Html.div []
-                        [ Html.h1 [] [ Html.text "Mensam" ]
-                        , Html.button [ Html.Events.onClick SwitchScreenLogin ] [ Html.text "Login" ]
-                        , Html.button [ Html.Events.onClick SwitchScreenRegister ] [ Html.text "Register" ]
-                        , Html.button [ Html.Events.onClick SwitchScreenSpaces ] [ Html.text "Spaces" ]
-                        , Html.h3 [] [ Html.text "Screen" ]
-                        , case model.screen of
-                            ScreenLogin screenModel ->
-                                Html.map MessageLogin <| Login.view screenModel
-
-                            ScreenRegister screenModel ->
-                                Html.map MessageRegister <| Register.view screenModel
-
-                            ScreenSpaces screenModel ->
-                                Html.map MessageSpaces <| Spaces.view screenModel
-
-                            NoScreen ->
-                                Html.div [] []
-                        , Html.h3 [] [ Html.text "JWT" ]
-                        , Html.text (Debug.toString model.jwt)
-                        , Html.h3 [] [ Html.text "Error" ]
-                        , Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
-                        , Html.text (Debug.toString model.error)
+                Element.column
+                    [ Element.width Element.fill
+                    , Element.spacing 10
+                    ]
+                    [ Element.el
+                        [ Element.Font.size 55
+                        , Element.centerX
                         ]
+                      <|
+                        Element.text "Mensam"
+                    , elementNavigationBar <| MkModel model
+                    , Element.html <|
+                        Html.div []
+                            [ Html.button [ Html.Events.onClick SwitchScreenLogin ] [ Html.text "Login" ]
+                            , Html.button [ Html.Events.onClick SwitchScreenRegister ] [ Html.text "Register" ]
+                            , Html.button [ Html.Events.onClick SwitchScreenSpaces ] [ Html.text "Spaces" ]
+                            , Html.h3 [] [ Html.text "Screen" ]
+                            , case model.screen of
+                                ScreenLogin screenModel ->
+                                    Html.map MessageLogin <| Login.view screenModel
+
+                                ScreenRegister screenModel ->
+                                    Html.map MessageRegister <| Register.view screenModel
+
+                                ScreenSpaces screenModel ->
+                                    Html.map MessageSpaces <| Spaces.view screenModel
+
+                                NoScreen ->
+                                    Html.div [] []
+                            , Html.h3 [] [ Html.text "JWT" ]
+                            , Html.text (Debug.toString model.jwt)
+                            , Html.h3 [] [ Html.text "Error" ]
+                            , Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
+                            , Html.text (Debug.toString model.error)
+                            ]
+                    ]
         ]
     }
+
+
+elementNavigationBar : Model -> Element.Element Message
+elementNavigationBar (MkModel model) =
+    let
+        descriptions =
+            [ { message = SwitchScreenLogin, name = "Login" }
+            , { message = SwitchScreenRegister, name = "Register" }
+            , { message = SwitchScreenSpaces, name = "Spaces" }
+            ]
+
+        viewDescription description =
+            Element.el
+                [ Element.Events.onClick description.message
+                , Element.height <| Element.px 40
+                , Element.width <| Element.px 150
+                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.3 ]
+                ]
+            <|
+                Element.el
+                    [ Element.centerX
+                    , Element.centerY
+                    ]
+                <|
+                    Element.text description.name
+    in
+    Element.row
+        [ Element.Background.color Color.colors.bright.black
+        ]
+    <|
+        List.map viewDescription descriptions
