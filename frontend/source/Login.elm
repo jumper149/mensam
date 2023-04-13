@@ -7,6 +7,7 @@ import Html.Events
 import Http
 import Iso8601
 import Json.Decode
+import Jwt
 import Time
 
 
@@ -89,7 +90,7 @@ updatePure message model =
 type MessageEffect
     = SubmitLogin
     | Register
-    | SetSession { jwt : String, expiration : Maybe Time.Posix }
+    | SetSession { jwt : Jwt.Jwt, expiration : Maybe Time.Posix }
 
 
 loginRequest : { username : String, password : String } -> Cmd Message
@@ -110,18 +111,18 @@ expectLoginResponse =
     Http.expectJson handleLoginResponse decodeLoginResponse
 
 
-handleLoginResponse : Result Http.Error { jwt : String, expiration : Maybe Time.Posix } -> Message
+handleLoginResponse : Result Http.Error { jwt : Jwt.Jwt, expiration : Maybe Time.Posix } -> Message
 handleLoginResponse result =
     case result of
         Ok response ->
             MessageEffect <| SetSession { jwt = response.jwt, expiration = response.expiration }
 
         Err err ->
-            MessageEffect <| SetSession { jwt = "", expiration = Nothing }
+            MessageEffect <| SetSession { jwt = Jwt.MkJwt "", expiration = Nothing }
 
 
-decodeLoginResponse : Json.Decode.Decoder { jwt : String, expiration : Maybe Time.Posix }
+decodeLoginResponse : Json.Decode.Decoder { jwt : Jwt.Jwt, expiration : Maybe Time.Posix }
 decodeLoginResponse =
     Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
-        (Json.Decode.field "jwt" Json.Decode.string)
+        (Json.Decode.field "jwt" Jwt.decode)
         (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)

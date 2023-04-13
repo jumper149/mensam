@@ -6,6 +6,7 @@ import Html.Events
 import Http
 import Json.Decode
 import Json.Encode
+import Jwt
 
 
 type alias Model =
@@ -59,12 +60,12 @@ type MessageEffect
     | RefreshSpaces
 
 
-deskListRequest : { jwt : String } -> Cmd Message
-deskListRequest body =
+deskListRequest : Jwt.Jwt -> Cmd Message
+deskListRequest jwt =
     Http.request
         { method = "POST"
         , headers =
-            [ Http.header "Authorization" ("Bearer " ++ body.jwt)
+            [ Jwt.authorizationHeader jwt
             ]
         , url = "api/space/list"
         , body = Http.jsonBody <| Json.Encode.object [ ( "order", Json.Encode.list (\_ -> Json.Encode.null) [] ) ]

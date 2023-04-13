@@ -11,6 +11,7 @@ import Element.Font
 import Html
 import Html.Attributes
 import Html.Events
+import Jwt
 import Login
 import Platform.Cmd
 import Platform.Sub
@@ -41,7 +42,7 @@ type Model
 
 
 type alias Authentication =
-    { jwt : String
+    { jwt : Jwt.Jwt
     , expiration : Maybe Time.Posix
     }
 
@@ -176,7 +177,7 @@ update message (MkModel model) =
                     case model.authenticated of
                         Just { jwt } ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageSpaces <| Spaces.deskListRequest { jwt = jwt }
+                            , Platform.Cmd.map MessageSpaces <| Spaces.deskListRequest jwt
                             )
 
                         Nothing ->
