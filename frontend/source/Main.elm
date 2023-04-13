@@ -16,6 +16,7 @@ import Platform.Cmd
 import Platform.Sub
 import Register
 import Spaces
+import Time
 import Url
 
 
@@ -34,9 +35,15 @@ main =
 type Model
     = MkModel
         { screen : Screen
-        , jwt : Maybe String
+        , authenticated : Maybe Authentication
         , error : List String
         }
+
+
+type alias Authentication =
+    { jwt : String
+    , expiration : Maybe Time.Posix
+    }
 
 
 type Screen
@@ -48,7 +55,7 @@ type Screen
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
 init _ _ _ =
-    ( MkModel { screen = ScreenLogin Login.init, jwt = Nothing, error = [] }, Platform.Cmd.none )
+    ( MkModel { screen = ScreenLogin Login.init, authenticated = Nothing, error = [] }, Platform.Cmd.none )
 
 
 type Message
@@ -141,7 +148,7 @@ update message (MkModel model) =
                     ( MkModel { model | screen = ScreenRegister Register.init }, Platform.Cmd.none )
 
                 Login.SetSession x ->
-                    ( MkModel { model | jwt = Just x.jwt }, Platform.Cmd.none )
+                    ( MkModel { model | authenticated = Just x }, Platform.Cmd.none )
 
         SwitchScreenLogin ->
             ( MkModel { model | screen = ScreenLogin Login.init }
@@ -166,8 +173,8 @@ update message (MkModel model) =
                     ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
 
                 Spaces.RefreshSpaces ->
-                    case model.jwt of
-                        Just jwt ->
+                    case model.authenticated of
+                        Just { jwt } ->
                             ( MkModel model
                             , Platform.Cmd.map MessageSpaces <| Spaces.deskListRequest { jwt = jwt }
                             )
@@ -229,7 +236,7 @@ view (MkModel model) =
                                 NoScreen ->
                                     Html.div [] []
                             , Html.h3 [] [ Html.text "JWT" ]
-                            , Html.text (Debug.toString model.jwt)
+                            , Html.text (Debug.toString model.authenticated)
                             , Html.h3 [] [ Html.text "Error" ]
                             , Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
                             , Html.text (Debug.toString model.error)

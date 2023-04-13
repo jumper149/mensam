@@ -71,7 +71,12 @@ login auth =
           Right jwtText -> do
             logInfo "Created JWT successfully."
             logInfo "User logged in successfully."
-            respond $ WithStatus @200 MkResponseLogin {responseLoginJwt = MkJwt jwtText}
+            respond $
+              WithStatus @200
+                MkResponseLogin
+                  { responseLoginJwt = MkJwt jwtText
+                  , responseLoginExpiration = maybeTimeout
+                  }
 
 register ::
   ( MonadIO m

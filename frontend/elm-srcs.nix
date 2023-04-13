@@ -25,6 +25,11 @@
         version = "1.1.3";
       };
 
+      "elm/time" = {
+        sha256 = "0vch7i86vn0x8b850w1p69vplll1bnbkp8s383z7pinyg94cm2z1";
+        version = "1.0.0";
+      };
+
       "elm/url" = {
         sha256 = "0av8x5syid40sgpl5vd7pry2rq0q4pga28b4yykn9gd9v12rs3l4";
         version = "1.0.0";
@@ -33,6 +38,11 @@
       "mdgriffith/elm-ui" = {
         sha256 = "0ffcqv4a4ad400hwp824m3qq4jy82cqp5ghmhp1m0q7n004z6kgv";
         version = "1.1.8";
+      };
+
+      "rtfeldman/elm-iso8601-date-strings" = {
+        sha256 = "1ah491kgyicgvy1c9myylqvhzb7ya9kgmn0hcsv23ymvqgaf6b1a";
+        version = "1.1.4";
       };
 
       "truqu/elm-base64" = {
@@ -50,13 +60,13 @@
         version = "1.0.5";
       };
 
-      "elm/regex" = {
-        sha256 = "0lijsp50w7n1n57mjg6clpn9phly8vvs07h0qh2rqcs0f1jqvsa2";
-        version = "1.0.0";
+      "elm/parser" = {
+        sha256 = "0a3cxrvbm7mwg9ykynhp7vjid58zsw03r63qxipxp3z09qks7512";
+        version = "1.1.0";
       };
 
-      "elm/time" = {
-        sha256 = "0vch7i86vn0x8b850w1p69vplll1bnbkp8s383z7pinyg94cm2z1";
+      "elm/regex" = {
+        sha256 = "0lijsp50w7n1n57mjg6clpn9phly8vvs07h0qh2rqcs0f1jqvsa2";
         version = "1.0.0";
       };
 
