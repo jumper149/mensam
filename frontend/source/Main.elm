@@ -202,7 +202,7 @@ view (MkModel model) =
                 , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
                 , Element.htmlAttribute <| Html.Attributes.style "padding-left" "20px"
                 , Element.htmlAttribute <| Html.Attributes.style "padding-right" "20px"
-                , Element.htmlAttribute <| Html.Attributes.style "padding-top" "20px"
+                , Element.htmlAttribute <| Html.Attributes.style "padding-top" "0px"
                 , Element.htmlAttribute <| Html.Attributes.style "padding-bottom" "20px"
                 , Element.height Element.fill
                 , Element.Background.color Color.colors.dark.black
@@ -213,20 +213,10 @@ view (MkModel model) =
                     [ Element.width Element.fill
                     , Element.spacing 10
                     ]
-                    [ Element.el
-                        [ Element.Font.size 55
-                        , Element.centerX
-                        ]
-                      <|
-                        Element.text "Mensam"
-                    , elementNavigationBar <| MkModel model
+                    [ elementNavigationBar <| MkModel model
                     , Element.html <|
                         Html.div []
-                            [ Html.button [ Html.Events.onClick SwitchScreenLogin ] [ Html.text "Login" ]
-                            , Html.button [ Html.Events.onClick SwitchScreenRegister ] [ Html.text "Register" ]
-                            , Html.button [ Html.Events.onClick SwitchScreenSpaces ] [ Html.text "Spaces" ]
-                            , Html.h3 [] [ Html.text "Screen" ]
-                            , case model.screen of
+                            [ case model.screen of
                                 ScreenLogin screenModel ->
                                     Html.map MessageLogin <| Login.view screenModel
 
@@ -253,18 +243,50 @@ elementNavigationBar : Model -> Element.Element Message
 elementNavigationBar (MkModel model) =
     let
         descriptions =
-            [ { message = SwitchScreenLogin, name = "Login" }
-            , { message = SwitchScreenRegister, name = "Register" }
-            , { message = SwitchScreenSpaces, name = "Spaces" }
+            [ { name = "Login"
+              , message = SwitchScreenLogin
+              , active =
+                    case model.screen of
+                        ScreenLogin _ ->
+                            True
+
+                        _ ->
+                            False
+              }
+            , { name = "Register"
+              , message = SwitchScreenRegister
+              , active =
+                    case model.screen of
+                        ScreenRegister _ ->
+                            True
+
+                        _ ->
+                            False
+              }
+            , { name = "Spaces"
+              , message = SwitchScreenSpaces
+              , active =
+                    case model.screen of
+                        ScreenSpaces _ ->
+                            True
+
+                        _ ->
+                            False
+              }
             ]
 
         viewDescription description =
             Element.el
                 [ Element.Events.onClick description.message
-                , Element.height <| Element.px 40
-                , Element.width <| Element.px 150
+                , Element.height Element.fill
+                , Element.paddingXY 20 0
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                 , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.3 ]
+                , if description.active then
+                    Element.Background.color <| Element.rgba 1 1 1 0.1
+
+                  else
+                    Element.Background.color <| Element.rgba 1 1 1 0
                 ]
             <|
                 Element.el
@@ -275,7 +297,10 @@ elementNavigationBar (MkModel model) =
                     Element.text description.name
     in
     Element.row
-        [ Element.Background.color Color.colors.bright.black
+        [ Element.Font.size 20
+        , Element.width Element.fill
+        , Element.height <| Element.px 60
+        , Element.Background.color Color.colors.bright.black
         ]
     <|
         List.map viewDescription descriptions
