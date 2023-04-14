@@ -4,6 +4,7 @@ import Base64
 import Color
 import Element
 import Element.Background
+import Element.Border
 import Element.Font
 import Element.Input
 import Html
@@ -28,8 +29,8 @@ init =
 element : Model -> Element.Element Message
 element model =
     Element.el
-        [ Element.Background.color (Element.rgba 1 1 1 0.2)
-        , Element.Font.color Color.colors.dark.black
+        [ Element.Background.color (Element.rgba 1 1 1 0.1)
+        , Element.Font.color Color.colors.bright.white
         , Element.Font.size 16
         , Element.centerX
         , Element.centerY
@@ -46,35 +47,45 @@ element model =
               <|
                 Element.text "Sign in"
             , Element.Input.username
-                [ onEnter <| MessageEffect SubmitLogin ]
+                [ onEnter <| MessageEffect SubmitLogin
+                , Element.Font.color Color.colors.dark.black
+                ]
                 { onChange = MessagePure << EnterUsername
                 , text = model.username
                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Username"
                 , label = Element.Input.labelAbove [] <| Element.text "Username"
                 }
             , Element.Input.currentPassword
-                [ onEnter <| MessageEffect SubmitLogin ]
+                [ onEnter <| MessageEffect SubmitLogin
+                , Element.Font.color Color.colors.dark.black
+                ]
                 { onChange = MessagePure << EnterPassword
                 , text = model.password
                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
                 , label = Element.Input.labelAbove [] <| Element.text "Password"
                 , show = False
                 }
-            , Element.Input.button
-                [ Element.Background.color Color.colors.dark.yellow
-                , Element.width Element.fill
+            , Element.el
+                [ Element.width Element.fill
                 , Element.padding 10
                 ]
-                { onPress = Just <| MessageEffect <| SubmitLogin
-                , label =
-                    Element.el
-                        [ Element.centerX
-                        , Element.centerY
-                        , Element.Font.light
-                        ]
-                    <|
-                        Element.text "Sign in"
-                }
+              <|
+                Element.Input.button
+                    [ Element.Background.color Color.colors.bright.yellow
+                    , Element.Font.color Color.colors.dark.black
+                    , Element.width Element.fill
+                    , Element.padding 10
+                    ]
+                    { onPress = Just <| MessageEffect <| SubmitLogin
+                    , label =
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            , Element.Font.light
+                            ]
+                        <|
+                            Element.text "Sign in"
+                    }
             ]
 
 
