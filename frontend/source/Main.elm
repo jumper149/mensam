@@ -218,6 +218,7 @@ view (MkModel model) =
                 , Element.htmlAttribute <| Html.Attributes.style "padding-right" "20px"
                 , Element.htmlAttribute <| Html.Attributes.style "padding-top" "0px"
                 , Element.htmlAttribute <| Html.Attributes.style "padding-bottom" "20px"
+                , Element.width Element.fill
                 , Element.height Element.fill
                 , Element.Background.color Color.colors.dark.black
                 , Element.Font.color Color.colors.bright.white
@@ -242,12 +243,14 @@ view (MkModel model) =
 
                                 NoScreen ->
                                     Html.div [] []
-                            , Html.h3 [] [ Html.text "JWT" ]
-                            , Html.text (Debug.toString model.authenticated)
-                            , Html.h3 [] [ Html.text "Error" ]
-                            , Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
-                            , Html.text (Debug.toString model.error)
                             ]
+                    , Element.paragraph []
+                        [ Element.text <| "Authenticated: " ++ Debug.toString model.authenticated
+                        ]
+                    , Element.paragraph []
+                        [ Element.text <| "Error: " ++ Debug.toString model.error
+                        ]
+                    , Element.html <| Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
                     ]
         ]
     }
