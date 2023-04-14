@@ -366,6 +366,25 @@ elementNavigationBar (MkModel model) =
                             ]
                         <|
                             Element.text "Signed in"
+
+        title =
+            Element.el
+                [ Element.height Element.fill
+                , Element.paddingXY 20 0
+                , Element.alignLeft
+                , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
+                , Element.Font.color Color.colors.bright.yellow
+                , Element.Font.italic
+                , Element.Font.light
+                , Element.Font.size 25
+                ]
+            <|
+                Element.el
+                    [ Element.centerX
+                    , Element.centerY
+                    ]
+                <|
+                    Element.text "Mensam"
     in
     Element.row
         [ Element.Font.size 20
@@ -373,4 +392,4 @@ elementNavigationBar (MkModel model) =
         , Element.height <| Element.px 60
         , Element.Background.color Color.colors.bright.black
         ]
-        (elementsTabDescription ++ [ loginStatus ])
+        ([ title ] ++ elementsTabDescription ++ [ loginStatus ])
