@@ -204,9 +204,14 @@ view (MkModel model) =
         [ Element.layout
             [ Element.Background.gradient { angle = 0, steps = [ Color.colors.dark.yellow, Color.colors.bright.yellow ] }
             , Element.Font.color Color.colors.dark.black
-            , Element.Font.medium
+            , Element.Font.regular
             , Element.Font.size 20
-            , Element.Font.family [ Element.Font.sansSerif ]
+            , Element.Font.family
+                [ Element.Font.external
+                    { url = "fonts.css"
+                    , name = "Fira Sans"
+                    }
+                ]
             ]
           <|
             Element.el

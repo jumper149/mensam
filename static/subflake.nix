@@ -8,6 +8,14 @@
       buildPhase = ''
         make all
 
+        cp -r ${pkgs.fira.outPath}/share/fonts/opentype build
+        mv build/opentype build/fonts
+        chmod --recursive +w build/fonts
+        for f in build/fonts/*
+        do
+          woff2_compress $f
+        done
+
         cp --target-directory=build --recursive ${self.subflakes.frontend.packages.x86_64-linux.default.outPath}/*
         mv build/Main.html build/index.html
       '';
@@ -19,6 +27,7 @@
       nativeBuildInputs = [
         imagemagick
         lessc
+        woff2
       ];
     };
 
