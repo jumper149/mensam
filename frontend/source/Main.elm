@@ -219,10 +219,6 @@ view (MkModel model) =
                 , Element.htmlAttribute <| Html.Attributes.style "max-width" "1000px"
                 , Element.htmlAttribute <| Html.Attributes.style "margin-left" "auto"
                 , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
-                , Element.htmlAttribute <| Html.Attributes.style "padding-left" "20px"
-                , Element.htmlAttribute <| Html.Attributes.style "padding-right" "20px"
-                , Element.htmlAttribute <| Html.Attributes.style "padding-top" "0px"
-                , Element.htmlAttribute <| Html.Attributes.style "padding-bottom" "20px"
                 , Element.width Element.fill
                 , Element.height Element.fill
                 , Element.Background.color Color.colors.dark.black
@@ -235,37 +231,43 @@ view (MkModel model) =
                     , Element.spacing 10
                     ]
                     [ elementNavigationBar <| MkModel model
-                    , case model.screen of
-                        ScreenLogin screenModel ->
-                            Element.el
-                                [ Element.width Element.fill
-                                , Element.height Element.fill
-                                ]
-                            <|
-                                Element.map MessageLogin <|
-                                    Login.element screenModel
-
-                        ScreenRegister screenModel ->
-                            Element.html <|
-                                Html.div []
-                                    [ Html.map MessageRegister <| Register.view screenModel
-                                    ]
-
-                        ScreenSpaces screenModel ->
-                            Element.html <|
-                                Html.div []
-                                    [ Html.map MessageSpaces <| Spaces.view screenModel
-                                    ]
-
-                        NoScreen ->
-                            Element.none
-                    , Element.paragraph []
-                        [ Element.text <| "Authenticated: " ++ Debug.toString model.authenticated
+                    , Element.column
+                        [ Element.width Element.fill
+                        , Element.height Element.fill
+                        , Element.padding 20
                         ]
-                    , Element.paragraph []
-                        [ Element.text <| "Error: " ++ Debug.toString model.error
+                        [ case model.screen of
+                            ScreenLogin screenModel ->
+                                Element.el
+                                    [ Element.width Element.fill
+                                    , Element.height Element.fill
+                                    ]
+                                <|
+                                    Element.map MessageLogin <|
+                                        Login.element screenModel
+
+                            ScreenRegister screenModel ->
+                                Element.html <|
+                                    Html.div []
+                                        [ Html.map MessageRegister <| Register.view screenModel
+                                        ]
+
+                            ScreenSpaces screenModel ->
+                                Element.html <|
+                                    Html.div []
+                                        [ Html.map MessageSpaces <| Spaces.view screenModel
+                                        ]
+
+                            NoScreen ->
+                                Element.none
+                        , Element.paragraph []
+                            [ Element.text <| "Authenticated: " ++ Debug.toString model.authenticated
+                            ]
+                        , Element.paragraph []
+                            [ Element.text <| "Error: " ++ Debug.toString model.error
+                            ]
+                        , Element.html <| Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
                         ]
-                    , Element.html <| Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
                     ]
         ]
     }
