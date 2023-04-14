@@ -46,14 +46,14 @@ element model =
               <|
                 Element.text "Sign in"
             , Element.Input.username
-                []
+                [ onEnter <| MessageEffect SubmitLogin ]
                 { onChange = MessagePure << EnterUsername
                 , text = model.username
                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Username"
                 , label = Element.Input.labelAbove [] <| Element.text "Username"
                 }
             , Element.Input.currentPassword
-                []
+                [ onEnter <| MessageEffect SubmitLogin ]
                 { onChange = MessagePure << EnterPassword
                 , text = model.password
                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
@@ -138,3 +138,20 @@ decodeLoginResponse =
     Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
         (Json.Decode.field "jwt" Jwt.decode)
         (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)
+
+
+onEnter : msg -> Element.Attribute msg
+onEnter msg =
+    Element.htmlAttribute
+        (Html.Events.on "keyup"
+            (Json.Decode.field "key" Json.Decode.string
+                |> Json.Decode.andThen
+                    (\key ->
+                        if key == "Enter" then
+                            Json.Decode.succeed msg
+
+                        else
+                            Json.Decode.fail "Not the enter key"
+                    )
+            )
+        )
