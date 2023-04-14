@@ -72,6 +72,7 @@ element model =
               <|
                 Element.Input.button
                     [ Element.Background.color Color.colors.bright.yellow
+                    , Element.mouseOver [ Element.Background.color Color.colors.bright.green ]
                     , Element.Font.color Color.colors.dark.black
                     , Element.width Element.fill
                     , Element.padding 10
@@ -86,6 +87,28 @@ element model =
                         <|
                             Element.text "Sign in"
                     }
+            , Element.el
+                [ Element.width Element.fill
+                ]
+              <|
+                Element.row
+                    [ Element.centerX
+                    ]
+                    [ Element.Input.button
+                        [ Element.Font.color Color.colors.bright.blue
+                        , Element.mouseOver [ Element.Font.color Color.colors.bright.green ]
+                        ]
+                        { onPress = Just <| MessageEffect <| Register
+                        , label =
+                            Element.el
+                                [ Element.centerX
+                                , Element.centerY
+                                , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+                                ]
+                            <|
+                                Element.text "Register"
+                        }
+                    ]
             ]
 
 
