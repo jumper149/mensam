@@ -18,7 +18,11 @@ type alias Model =
 
 init : Model
 init =
-    { username = "", password = "", email = "", emailVisible = True }
+    { username = ""
+    , password = ""
+    , email = ""
+    , emailVisible = True
+    }
 
 
 view : Model -> Html.Html Message
@@ -104,7 +108,8 @@ updatePure message model =
 
 
 type MessageEffect
-    = Submit
+    = ReportError String
+    | Submit
     | Submitted
 
 
@@ -148,11 +153,11 @@ expectRegisterResponse =
 handleRegisterResponse : Result Http.Error RegisterResponseBody -> Message
 handleRegisterResponse result =
     case result of
-        Ok response ->
+        Ok () ->
             MessageEffect Submitted
 
         Err err ->
-            MessageEffect Submitted
+            MessageEffect <| ReportError <| Debug.toString err
 
 
 decodeRegisterResponse : Json.Decode.Decoder RegisterResponseBody

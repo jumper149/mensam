@@ -97,6 +97,9 @@ update message (MkModel model) =
 
         MessageRegister (Register.MessageEffect m) ->
             case m of
+                Register.ReportError err ->
+                    ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
+
                 Register.Submit ->
                     case model.screen of
                         ScreenRegister screenModel ->
@@ -133,6 +136,9 @@ update message (MkModel model) =
 
         MessageLogin (Login.MessageEffect m) ->
             case m of
+                Login.ReportError err ->
+                    ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
+
                 Login.SubmitLogin ->
                     case model.screen of
                         ScreenLogin screenModel ->

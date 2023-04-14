@@ -88,7 +88,8 @@ updatePure message model =
 
 
 type MessageEffect
-    = SubmitLogin
+    = ReportError String
+    | SubmitLogin
     | Register
     | SetSession { jwt : Jwt.Jwt, expiration : Maybe Time.Posix }
 
@@ -118,7 +119,7 @@ handleLoginResponse result =
             MessageEffect <| SetSession { jwt = response.jwt, expiration = response.expiration }
 
         Err err ->
-            MessageEffect <| SetSession { jwt = Jwt.MkJwt "", expiration = Nothing }
+            MessageEffect <| ReportError <| Debug.toString err
 
 
 decodeLoginResponse : Json.Decode.Decoder { jwt : Jwt.Jwt, expiration : Maybe Time.Posix }
