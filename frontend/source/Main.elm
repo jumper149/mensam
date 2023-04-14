@@ -226,24 +226,34 @@ view (MkModel model) =
             <|
                 Element.column
                     [ Element.width Element.fill
+                    , Element.height Element.fill
                     , Element.spacing 10
                     ]
                     [ elementNavigationBar <| MkModel model
-                    , Element.html <|
-                        Html.div []
-                            [ case model.screen of
-                                ScreenLogin screenModel ->
-                                    Html.map MessageLogin <| Login.view screenModel
+                    , case model.screen of
+                        ScreenLogin screenModel ->
+                            Element.el
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                ]
+                            <|
+                                Element.map MessageLogin <|
+                                    Login.element screenModel
 
-                                ScreenRegister screenModel ->
-                                    Html.map MessageRegister <| Register.view screenModel
+                        ScreenRegister screenModel ->
+                            Element.html <|
+                                Html.div []
+                                    [ Html.map MessageRegister <| Register.view screenModel
+                                    ]
 
-                                ScreenSpaces screenModel ->
-                                    Html.map MessageSpaces <| Spaces.view screenModel
+                        ScreenSpaces screenModel ->
+                            Element.html <|
+                                Html.div []
+                                    [ Html.map MessageSpaces <| Spaces.view screenModel
+                                    ]
 
-                                NoScreen ->
-                                    Html.div [] []
-                            ]
+                        NoScreen ->
+                            Element.none
                     , Element.paragraph []
                         [ Element.text <| "Authenticated: " ++ Debug.toString model.authenticated
                         ]

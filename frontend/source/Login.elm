@@ -1,6 +1,11 @@
 module Login exposing (..)
 
 import Base64
+import Color
+import Element
+import Element.Background
+import Element.Font
+import Element.Input
 import Html
 import Html.Attributes
 import Html.Events
@@ -20,51 +25,47 @@ init =
     { username = "", password = "" }
 
 
-view : Model -> Html.Html Message
-view model =
-    Html.form
-        [ Html.Attributes.id "form-login"
-        , Html.Events.onSubmit <| MessageEffect SubmitLogin
+element : Model -> Element.Element Message
+element model =
+    Element.el
+        [ Element.Background.color (Element.rgba 1 1 1 0.2)
+        , Element.Font.color Color.colors.dark.black
+        , Element.Font.size 16
+        , Element.centerX
+        , Element.centerY
         ]
-        [ Html.fieldset
-            [ Html.Attributes.form "form-login"
+    <|
+        Element.column
+            [ Element.padding 20
+            , Element.spacing 20
             ]
-            [ Html.input
-                [ Html.Attributes.id "input-login-username"
-                , Html.Attributes.form "form-login"
-                , Html.Events.onInput <| MessagePure << EnterUsername
-                , Html.Attributes.type_ "text"
-                , Html.Attributes.placeholder "Username"
-                , Html.Attributes.value model.username
+            [ Element.el
+                [ Element.Font.size 30
+                , Element.Font.hairline
                 ]
+              <|
+                Element.text "Sign in"
+            , Element.Input.username
                 []
-            , Html.input
-                [ Html.Attributes.id "input-login-password"
-                , Html.Attributes.form "form-login"
-                , Html.Events.onInput <| MessagePure << EnterPassword
-                , Html.Attributes.type_ "password"
-                , Html.Attributes.placeholder "Password"
-                , Html.Attributes.value model.password
-                ]
+                { onChange = MessagePure << EnterUsername
+                , text = model.username
+                , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Username"
+                , label = Element.Input.labelAbove [] <| Element.text "Username"
+                }
+            , Element.Input.currentPassword
                 []
+                { onChange = MessagePure << EnterPassword
+                , text = model.password
+                , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
+                , label = Element.Input.labelAbove [] <| Element.text "Password"
+                , show = False
+                }
+            , Element.Input.button
+                []
+                { onPress = Just <| MessageEffect <| SubmitLogin
+                , label = Element.text "Sign in"
+                }
             ]
-        , Html.fieldset
-            [ Html.Attributes.form "form-login"
-            ]
-            [ Html.button
-                [ Html.Attributes.id "button-login-register"
-                , Html.Events.onClick <| MessageEffect Register
-                , Html.Attributes.type_ "button"
-                ]
-                [ Html.text "Register" ]
-            , Html.button
-                [ Html.Attributes.id "button-login-submit"
-                , Html.Attributes.form "form-login"
-                , Html.Attributes.type_ "submit"
-                ]
-                [ Html.text "Login" ]
-            ]
-        ]
 
 
 type Message
