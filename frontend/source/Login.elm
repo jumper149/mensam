@@ -81,7 +81,7 @@ element model =
                         Element.el
                             [ Element.centerX
                             , Element.centerY
-                            , Element.Font.light
+                            , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
                             ]
                         <|
                             Element.text "Sign in"

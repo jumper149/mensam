@@ -211,6 +211,14 @@ view (MkModel model) =
                     { url = "fonts.css"
                     , name = "Fira Sans"
                     }
+                , Element.Font.external
+                    { url = "fonts.css"
+                    , name = "Fira Sans Condensed"
+                    }
+                , Element.Font.external
+                    { url = "fonts.css"
+                    , name = "Fira Sans Mono"
+                    }
                 ]
             ]
           <|
