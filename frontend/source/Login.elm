@@ -61,9 +61,19 @@ element model =
                 , show = False
                 }
             , Element.Input.button
-                []
+                [ Element.Background.color Color.colors.dark.yellow
+                , Element.width Element.fill
+                , Element.padding 10
+                ]
                 { onPress = Just <| MessageEffect <| SubmitLogin
-                , label = Element.text "Sign in"
+                , label =
+                    Element.el
+                        [ Element.centerX
+                        , Element.centerY
+                        , Element.Font.light
+                        ]
+                    <|
+                        Element.text "Sign in"
                 }
             ]
 
