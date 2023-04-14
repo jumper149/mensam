@@ -381,9 +381,10 @@ elementNavigationBar (MkModel model) =
                 , Element.paddingXY 20 0
                 , Element.alignLeft
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
+                , Element.Font.family [ Element.Font.typeface "Fira Sans" ]
                 , Element.Font.color Color.colors.bright.yellow
                 , Element.Font.italic
-                , Element.Font.light
+                , Element.Font.extraLight
                 , Element.Font.size 25
                 ]
             <|
@@ -399,5 +400,8 @@ elementNavigationBar (MkModel model) =
         , Element.width Element.fill
         , Element.height <| Element.px 60
         , Element.Background.color Color.colors.bright.black
+        , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+        , Element.Font.light
+        , Element.Font.size 20
         ]
         ([ title ] ++ elementsTabDescription ++ [ loginStatus ])
