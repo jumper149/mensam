@@ -382,6 +382,7 @@ elementNavigationBar (MkModel model) =
                 , Element.alignLeft
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
                 , Element.Font.family [ Element.Font.typeface "Fira Sans" ]
+                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
                 , Element.Font.color Color.colors.bright.yellow
                 , Element.Font.italic
                 , Element.Font.extraLight
@@ -396,12 +397,12 @@ elementNavigationBar (MkModel model) =
                     Element.text "Mensam"
     in
     Element.row
-        [ Element.Font.size 20
-        , Element.width Element.fill
+        [ Element.width Element.fill
         , Element.height <| Element.px 60
         , Element.Background.color Color.colors.bright.black
         , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
         , Element.Font.light
-        , Element.Font.size 20
+        , Element.Font.size 17
         ]
         ([ title ] ++ elementsTabDescription ++ [ loginStatus ])

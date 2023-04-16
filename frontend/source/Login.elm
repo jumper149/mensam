@@ -83,6 +83,7 @@ element model =
                             [ Element.centerX
                             , Element.centerY
                             , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                             ]
                         <|
                             Element.text "Sign in"
@@ -104,6 +105,7 @@ element model =
                                 [ Element.centerX
                                 , Element.centerY
                                 , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
                             <|
                                 Element.text "Register"
