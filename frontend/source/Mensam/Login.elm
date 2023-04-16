@@ -13,6 +13,7 @@ import Http
 import Iso8601
 import Json.Decode
 import Mensam.Color
+import Mensam.Font
 import Mensam.Jwt
 import Time
 
@@ -82,7 +83,7 @@ element model =
                         Element.el
                             [ Element.centerX
                             , Element.centerY
-                            , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+                            , Element.Font.family [ Mensam.Font.condensed ]
                             , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                             ]
                         <|
@@ -104,7 +105,7 @@ element model =
                             Element.el
                                 [ Element.centerX
                                 , Element.centerY
-                                , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+                                , Element.Font.family [ Mensam.Font.condensed ]
                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
                             <|

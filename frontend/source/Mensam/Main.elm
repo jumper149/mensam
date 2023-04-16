@@ -11,6 +11,7 @@ import Html
 import Html.Attributes
 import Html.Events
 import Mensam.Color
+import Mensam.Font
 import Mensam.Jwt
 import Mensam.Login
 import Mensam.Register
@@ -206,20 +207,7 @@ view (MkModel model) =
             , Element.Font.color Mensam.Color.dark.black
             , Element.Font.regular
             , Element.Font.size 20
-            , Element.Font.family
-                [ Element.Font.external
-                    { url = "fonts.css"
-                    , name = "Fira Sans"
-                    }
-                , Element.Font.external
-                    { url = "fonts.css"
-                    , name = "Fira Sans Condensed"
-                    }
-                , Element.Font.external
-                    { url = "fonts.css"
-                    , name = "Fira Sans Mono"
-                    }
-                ]
+            , Mensam.Font.families
             ]
           <|
             Element.el
@@ -381,7 +369,7 @@ elementNavigationBar (MkModel model) =
                 , Element.paddingXY 20 0
                 , Element.alignLeft
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
-                , Element.Font.family [ Element.Font.typeface "Fira Sans" ]
+                , Element.Font.family [ Mensam.Font.sansSerif ]
                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
                 , Element.Font.color Mensam.Color.bright.yellow
                 , Element.Font.italic
@@ -400,7 +388,7 @@ elementNavigationBar (MkModel model) =
         [ Element.width Element.fill
         , Element.height <| Element.px 60
         , Element.Background.color Mensam.Color.bright.black
-        , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+        , Element.Font.family [ Mensam.Font.condensed ]
         , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
         , Element.Font.light
         , Element.Font.size 17
