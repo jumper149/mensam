@@ -144,7 +144,7 @@ update message (MkModel model) =
                     case model.screen of
                         ScreenLogin screenModel ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageLogin <| Mensam.Login.loginRequest screenModel
+                            , Platform.Cmd.map MessageLogin <| Mensam.Login.login screenModel
                             )
 
                         _ ->

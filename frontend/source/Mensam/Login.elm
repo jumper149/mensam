@@ -1,17 +1,13 @@
 module Mensam.Login exposing (..)
 
-import Base64
 import Element
 import Element.Background
-import Element.Border
 import Element.Font
 import Element.Input
-import Html
 import Html.Attributes
 import Html.Events
-import Http
-import Iso8601
 import Json.Decode
+import Mensam.Api.Login
 import Mensam.Color
 import Mensam.Font
 import Mensam.Jwt
@@ -142,41 +138,6 @@ type MessageEffect
     | SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
 
 
-loginRequest : { username : String, password : String } -> Cmd Message
-loginRequest body =
-    Http.request
-        { method = "POST"
-        , headers = [ Http.header "Authorization" ("Basic " ++ Base64.encode (body.username ++ ":" ++ body.password)) ]
-        , url = "api/login"
-        , body = Http.emptyBody
-        , expect = expectLoginResponse
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-expectLoginResponse : Http.Expect Message
-expectLoginResponse =
-    Http.expectJson handleLoginResponse decodeLoginResponse
-
-
-handleLoginResponse : Result Http.Error { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix } -> Message
-handleLoginResponse result =
-    case result of
-        Ok response ->
-            MessageEffect <| SetSession { jwt = response.jwt, expiration = response.expiration }
-
-        Err err ->
-            MessageEffect <| ReportError <| Debug.toString err
-
-
-decodeLoginResponse : Json.Decode.Decoder { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
-decodeLoginResponse =
-    Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
-        (Json.Decode.field "jwt" Mensam.Jwt.decode)
-        (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)
-
-
 onEnter : msg -> Element.Attribute msg
 onEnter msg =
     Element.htmlAttribute
@@ -192,3 +153,12 @@ onEnter msg =
                     )
             )
         )
+
+
+login : Model -> Cmd Message
+login model =
+    Mensam.Api.Login.request model <|
+        \result ->
+            case result of
+                _ ->
+                    MessageEffect SubmitLogin
