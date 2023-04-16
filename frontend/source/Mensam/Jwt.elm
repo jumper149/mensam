@@ -1,4 +1,4 @@
-module Jwt exposing (..)
+module Mensam.Jwt exposing (..)
 
 import Http
 import Json.Decode

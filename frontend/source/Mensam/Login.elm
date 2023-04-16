@@ -1,7 +1,6 @@
-module Login exposing (..)
+module Mensam.Login exposing (..)
 
 import Base64
-import Color
 import Element
 import Element.Background
 import Element.Border
@@ -13,7 +12,8 @@ import Html.Events
 import Http
 import Iso8601
 import Json.Decode
-import Jwt
+import Mensam.Color
+import Mensam.Jwt
 import Time
 
 
@@ -30,7 +30,7 @@ element : Model -> Element.Element Message
 element model =
     Element.el
         [ Element.Background.color (Element.rgba 1 1 1 0.1)
-        , Element.Font.color Color.colors.bright.white
+        , Element.Font.color Mensam.Color.colors.bright.white
         , Element.Font.size 16
         , Element.centerX
         , Element.centerY
@@ -48,7 +48,7 @@ element model =
                 Element.text "Sign in"
             , Element.Input.username
                 [ onEnter <| MessageEffect SubmitLogin
-                , Element.Font.color Color.colors.dark.black
+                , Element.Font.color Mensam.Color.colors.dark.black
                 ]
                 { onChange = MessagePure << EnterUsername
                 , text = model.username
@@ -57,7 +57,7 @@ element model =
                 }
             , Element.Input.currentPassword
                 [ onEnter <| MessageEffect SubmitLogin
-                , Element.Font.color Color.colors.dark.black
+                , Element.Font.color Mensam.Color.colors.dark.black
                 ]
                 { onChange = MessagePure << EnterPassword
                 , text = model.password
@@ -71,9 +71,9 @@ element model =
                 ]
               <|
                 Element.Input.button
-                    [ Element.Background.color Color.colors.bright.yellow
-                    , Element.mouseOver [ Element.Background.color Color.colors.bright.green ]
-                    , Element.Font.color Color.colors.dark.black
+                    [ Element.Background.color Mensam.Color.colors.bright.yellow
+                    , Element.mouseOver [ Element.Background.color Mensam.Color.colors.bright.green ]
+                    , Element.Font.color Mensam.Color.colors.dark.black
                     , Element.width Element.fill
                     , Element.padding 10
                     ]
@@ -96,8 +96,8 @@ element model =
                     [ Element.centerX
                     ]
                     [ Element.Input.button
-                        [ Element.Font.color Color.colors.bright.blue
-                        , Element.mouseOver [ Element.Font.color Color.colors.bright.green ]
+                        [ Element.Font.color Mensam.Color.colors.bright.blue
+                        , Element.mouseOver [ Element.Font.color Mensam.Color.colors.bright.green ]
                         ]
                         { onPress = Just <| MessageEffect <| Register
                         , label =
@@ -138,7 +138,7 @@ type MessageEffect
     = ReportError String
     | SubmitLogin
     | Register
-    | SetSession { jwt : Jwt.Jwt, expiration : Maybe Time.Posix }
+    | SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
 
 
 loginRequest : { username : String, password : String } -> Cmd Message
@@ -159,7 +159,7 @@ expectLoginResponse =
     Http.expectJson handleLoginResponse decodeLoginResponse
 
 
-handleLoginResponse : Result Http.Error { jwt : Jwt.Jwt, expiration : Maybe Time.Posix } -> Message
+handleLoginResponse : Result Http.Error { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix } -> Message
 handleLoginResponse result =
     case result of
         Ok response ->
@@ -169,10 +169,10 @@ handleLoginResponse result =
             MessageEffect <| ReportError <| Debug.toString err
 
 
-decodeLoginResponse : Json.Decode.Decoder { jwt : Jwt.Jwt, expiration : Maybe Time.Posix }
+decodeLoginResponse : Json.Decode.Decoder { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
 decodeLoginResponse =
     Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
-        (Json.Decode.field "jwt" Jwt.decode)
+        (Json.Decode.field "jwt" Mensam.Jwt.decode)
         (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)
 
 

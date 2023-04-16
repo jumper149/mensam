@@ -1,4 +1,4 @@
-module Register exposing (..)
+module Mensam.Register exposing (..)
 
 import Html
 import Html.Attributes

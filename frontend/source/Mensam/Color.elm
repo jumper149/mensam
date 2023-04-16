@@ -1,4 +1,4 @@
-module Color exposing (..)
+module Mensam.Color exposing (..)
 
 import Element
 

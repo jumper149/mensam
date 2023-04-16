@@ -1,4 +1,4 @@
-module Spaces exposing (..)
+module Mensam.Spaces exposing (..)
 
 import Html
 import Html.Attributes
@@ -6,7 +6,7 @@ import Html.Events
 import Http
 import Json.Decode
 import Json.Encode
-import Jwt
+import Mensam.Jwt
 
 
 type alias Model =
@@ -60,12 +60,12 @@ type MessageEffect
     | RefreshSpaces
 
 
-deskListRequest : Jwt.Jwt -> Cmd Message
+deskListRequest : Mensam.Jwt.Jwt -> Cmd Message
 deskListRequest jwt =
     Http.request
         { method = "POST"
         , headers =
-            [ Jwt.authorizationHeader jwt
+            [ Mensam.Jwt.authorizationHeader jwt
             ]
         , url = "api/space/list"
         , body = Http.jsonBody <| Json.Encode.object [ ( "order", Json.Encode.list (\_ -> Json.Encode.null) [] ) ]
