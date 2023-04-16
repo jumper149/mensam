@@ -15,12 +15,12 @@ import Time
 
 
 type alias Model =
-    { username : String, password : String }
+    { username : String, password : String, hint : String }
 
 
 init : Model
 init =
-    { username = "", password = "" }
+    { username = "", password = "", hint = "" }
 
 
 element : Model -> Element.Element Message
@@ -64,27 +64,46 @@ element model =
                 }
             , Element.el
                 [ Element.width Element.fill
-                , Element.padding 10
+                , Element.paddingEach
+                    { top = 0
+                    , right = 10
+                    , bottom = 5
+                    , left = 10
+                    }
                 ]
               <|
-                Element.Input.button
-                    [ Element.Background.color Mensam.Color.bright.yellow
-                    , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
-                    , Element.Font.color Mensam.Color.dark.black
-                    , Element.width Element.fill
-                    , Element.padding 10
+                Element.column
+                    [ Element.width Element.fill
+                    , Element.spacing 3
                     ]
-                    { onPress = Just <| MessageEffect <| SubmitLogin
-                    , label =
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            , Element.Font.family [ Mensam.Font.condensed ]
-                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                            ]
-                        <|
-                            Element.text "Sign in"
-                    }
+                    [ Element.el
+                        [ Element.height <| Element.px 14
+                        , Element.paddingXY 5 0
+                        , Element.Font.size 14
+                        , Element.Font.color Mensam.Color.bright.red
+                        ]
+                      <|
+                        Element.text <|
+                            model.hint
+                    , Element.Input.button
+                        [ Element.Background.color Mensam.Color.bright.yellow
+                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
+                        , Element.Font.color Mensam.Color.dark.black
+                        , Element.width Element.fill
+                        , Element.padding 10
+                        ]
+                        { onPress = Just <| MessageEffect <| SubmitLogin
+                        , label =
+                            Element.el
+                                [ Element.centerX
+                                , Element.centerY
+                                , Element.Font.family [ Mensam.Font.condensed ]
+                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                ]
+                            <|
+                                Element.text "Sign in"
+                        }
+                    ]
             , Element.el
                 [ Element.width Element.fill
                 ]
@@ -119,6 +138,8 @@ type Message
 type MessagePure
     = EnterUsername String
     | EnterPassword String
+    | SetHintUsername
+    | SetHintPassword
 
 
 updatePure : MessagePure -> Model -> Model
@@ -129,6 +150,12 @@ updatePure message model =
 
         EnterPassword password ->
             { model | password = password }
+
+        SetHintUsername ->
+            { model | hint = "Invalid username." }
+
+        SetHintPassword ->
+            { model | hint = "Invalid password." }
 
 
 type MessageEffect
@@ -157,8 +184,20 @@ onEnter msg =
 
 login : Model -> Cmd Message
 login model =
-    Mensam.Api.Login.request model <|
+    Mensam.Api.Login.request { username = model.username, password = model.password } <|
         \result ->
             case result of
-                _ ->
-                    MessageEffect SubmitLogin
+                Ok (Mensam.Api.Login.Success value) ->
+                    MessageEffect <| SetSession value
+
+                Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthUsername) ->
+                    MessagePure <| SetHintUsername
+
+                Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthPassword) ->
+                    MessagePure <| SetHintPassword
+
+                Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthIndefinite) ->
+                    MessageEffect <| ReportError ""
+
+                Err err ->
+                    MessageEffect <| ReportError <| Debug.toString err

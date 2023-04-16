@@ -14,7 +14,6 @@ type alias Request =
 
 type Response
     = Success { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
-    | ErrorHttp Http.Error
     | ErrorAuth ErrorAuth
 
 
@@ -51,8 +50,8 @@ responseResult httpResponse =
 
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
-                404 ->
-                    case Json.Decode.decodeString decodeBody404 body of
+                401 ->
+                    case Json.Decode.decodeString decodeBody401 body of
                         Ok value ->
                             Ok <| ErrorAuth value
 
@@ -83,8 +82,8 @@ decodeBody200 =
         (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)
 
 
-decodeBody404 : Json.Decode.Decoder ErrorAuth
-decodeBody404 =
+decodeBody401 : Json.Decode.Decoder ErrorAuth
+decodeBody401 =
     Json.Decode.string
         |> Json.Decode.andThen
             (\string ->
