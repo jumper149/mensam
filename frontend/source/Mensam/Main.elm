@@ -202,8 +202,8 @@ view (MkModel model) =
     { title = "Mensam"
     , body =
         [ Element.layout
-            [ Element.Background.gradient { angle = 0, steps = [ Mensam.Color.colors.dark.yellow, Mensam.Color.colors.bright.yellow ] }
-            , Element.Font.color Mensam.Color.colors.dark.black
+            [ Element.Background.gradient { angle = 0, steps = [ Mensam.Color.dark.yellow, Mensam.Color.bright.yellow ] }
+            , Element.Font.color Mensam.Color.dark.black
             , Element.Font.regular
             , Element.Font.size 20
             , Element.Font.family
@@ -229,8 +229,8 @@ view (MkModel model) =
                 , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
                 , Element.width Element.fill
                 , Element.height Element.fill
-                , Element.Background.color Mensam.Color.colors.dark.black
-                , Element.Font.color Mensam.Color.colors.bright.white
+                , Element.Background.color Mensam.Color.dark.black
+                , Element.Font.color Mensam.Color.bright.white
                 ]
             <|
                 Element.column
@@ -383,7 +383,7 @@ elementNavigationBar (MkModel model) =
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
                 , Element.Font.family [ Element.Font.typeface "Fira Sans" ]
                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
-                , Element.Font.color Mensam.Color.colors.bright.yellow
+                , Element.Font.color Mensam.Color.bright.yellow
                 , Element.Font.italic
                 , Element.Font.extraLight
                 , Element.Font.size 25
@@ -399,7 +399,7 @@ elementNavigationBar (MkModel model) =
     Element.row
         [ Element.width Element.fill
         , Element.height <| Element.px 60
-        , Element.Background.color Mensam.Color.colors.bright.black
+        , Element.Background.color Mensam.Color.bright.black
         , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
         , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
         , Element.Font.light

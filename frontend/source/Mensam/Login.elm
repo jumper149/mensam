@@ -30,7 +30,7 @@ element : Model -> Element.Element Message
 element model =
     Element.el
         [ Element.Background.color (Element.rgba 1 1 1 0.1)
-        , Element.Font.color Mensam.Color.colors.bright.white
+        , Element.Font.color Mensam.Color.bright.white
         , Element.Font.size 16
         , Element.centerX
         , Element.centerY
@@ -48,7 +48,7 @@ element model =
                 Element.text "Sign in"
             , Element.Input.username
                 [ onEnter <| MessageEffect SubmitLogin
-                , Element.Font.color Mensam.Color.colors.dark.black
+                , Element.Font.color Mensam.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterUsername
                 , text = model.username
@@ -57,7 +57,7 @@ element model =
                 }
             , Element.Input.currentPassword
                 [ onEnter <| MessageEffect SubmitLogin
-                , Element.Font.color Mensam.Color.colors.dark.black
+                , Element.Font.color Mensam.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterPassword
                 , text = model.password
@@ -71,9 +71,9 @@ element model =
                 ]
               <|
                 Element.Input.button
-                    [ Element.Background.color Mensam.Color.colors.bright.yellow
-                    , Element.mouseOver [ Element.Background.color Mensam.Color.colors.bright.green ]
-                    , Element.Font.color Mensam.Color.colors.dark.black
+                    [ Element.Background.color Mensam.Color.bright.yellow
+                    , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
+                    , Element.Font.color Mensam.Color.dark.black
                     , Element.width Element.fill
                     , Element.padding 10
                     ]
@@ -96,8 +96,8 @@ element model =
                     [ Element.centerX
                     ]
                     [ Element.Input.button
-                        [ Element.Font.color Mensam.Color.colors.bright.blue
-                        , Element.mouseOver [ Element.Font.color Mensam.Color.colors.bright.green ]
+                        [ Element.Font.color Mensam.Color.bright.blue
+                        , Element.mouseOver [ Element.Font.color Mensam.Color.bright.green ]
                         ]
                         { onPress = Just <| MessageEffect <| Register
                         , label =
