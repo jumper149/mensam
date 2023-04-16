@@ -152,10 +152,10 @@ updatePure message model =
             { model | password = password }
 
         SetHintUsername ->
-            { model | hint = "Invalid username." }
+            { model | username = "", password = "", hint = "Invalid username." }
 
         SetHintPassword ->
-            { model | hint = "Invalid password." }
+            { model | password = "", hint = "Invalid password." }
 
 
 type MessageEffect
