@@ -28,7 +28,7 @@
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     stdenv.mkDerivation {
       name = "fonts"; # TODO: Necessary to avoid segmentation fault.
-      src = ./.;
+      dontUnpack = true;
       buildPhase = ''
         mkdir -p build
         cp -r ${pkgs.fira.outPath}/share/fonts/opentype build
