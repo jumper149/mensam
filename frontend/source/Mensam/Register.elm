@@ -16,6 +16,8 @@ type alias Model =
     { username : String
     , password : String
     , email : String
+
+    -- TODO: Add checkbox.
     , emailVisible : Bool
     , hint : String
     }
