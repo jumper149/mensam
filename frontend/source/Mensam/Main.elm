@@ -67,7 +67,7 @@ type Message
     | MessageRegister Mensam.Register.Message
     | SwitchScreenRegister
     | MessageLogin Mensam.Login.Message
-    | SwitchScreenLogin
+    | SwitchScreenLogin (Maybe Mensam.Login.Model)
     | MessageSpaces Mensam.Spaces.Message
     | SwitchScreenSpaces
 
@@ -109,7 +109,12 @@ update message (MkModel model) =
                             update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
                 Mensam.Register.Submitted ->
-                    update EmptyMessage <| MkModel model
+                    case model.screen of
+                        ScreenRegister screenModel ->
+                            update (SwitchScreenLogin <| Just { username = screenModel.username, password = screenModel.password, hint = "" }) <| MkModel model
+
+                        _ ->
+                            update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
                 Mensam.Register.Login ->
                     update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Login.init }
@@ -146,8 +151,13 @@ update message (MkModel model) =
                 Mensam.Login.SetSession x ->
                     update SwitchScreenSpaces <| MkModel { model | authenticated = Just x }
 
-        SwitchScreenLogin ->
-            update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Login.init }
+        SwitchScreenLogin maybeInitLogin ->
+            case maybeInitLogin of
+                Nothing ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Login.init }
+
+                Just initLogin ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenLogin initLogin }
 
         MessageSpaces (Mensam.Spaces.MessagePure m) ->
             case model.screen of
@@ -252,7 +262,7 @@ elementNavigationBar (MkModel model) =
     let
         tabDescriptions =
             [ { name = "Login"
-              , message = SwitchScreenLogin
+              , message = SwitchScreenLogin Nothing
               , active =
                     case model.screen of
                         ScreenLogin _ ->
@@ -311,7 +321,7 @@ elementNavigationBar (MkModel model) =
             case model.authenticated of
                 Nothing ->
                     Element.el
-                        [ Element.Events.onClick SwitchScreenLogin
+                        [ Element.Events.onClick <| SwitchScreenLogin Nothing
                         , Element.height Element.fill
                         , Element.paddingXY 20 0
                         , Element.alignRight
