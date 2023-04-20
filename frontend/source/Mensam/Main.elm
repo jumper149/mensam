@@ -2,14 +2,12 @@ module Mensam.Main exposing (..)
 
 import Browser
 import Browser.Navigation
-import Debug
 import Element
 import Element.Background
 import Element.Events
 import Element.Font
 import Html
 import Html.Attributes
-import Html.Events
 import Mensam.Color
 import Mensam.Font
 import Mensam.Jwt
@@ -247,10 +245,6 @@ view (MkModel model) =
 
                             NoScreen ->
                                 Element.none
-                        , Element.paragraph []
-                            [ Element.text <| "Error: " ++ Debug.toString model.error
-                            ]
-                        , Element.html <| Html.button [ Html.Events.onClick ClearErrors ] [ Html.text "Clear" ]
                         ]
                     ]
         ]
