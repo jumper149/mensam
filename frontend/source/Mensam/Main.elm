@@ -111,6 +111,9 @@ update message (MkModel model) =
                 Mensam.Register.Submitted ->
                     update EmptyMessage <| MkModel model
 
+                Mensam.Register.Login ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Login.init }
+
         SwitchScreenRegister ->
             update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Register.init }
 
@@ -218,10 +221,13 @@ view (MkModel model) =
                                         Mensam.Login.element screenModel
 
                             ScreenRegister screenModel ->
-                                Element.html <|
-                                    Html.div []
-                                        [ Html.map MessageRegister <| Mensam.Register.view screenModel
-                                        ]
+                                Element.el
+                                    [ Element.width Element.fill
+                                    , Element.height Element.fill
+                                    ]
+                                <|
+                                    Element.map MessageRegister <|
+                                        Mensam.Register.element screenModel
 
                             ScreenSpaces screenModel ->
                                 Element.html <|
