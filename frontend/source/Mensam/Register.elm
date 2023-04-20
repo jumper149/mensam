@@ -121,29 +121,6 @@ element model =
                                 Element.text "Sign up"
                         }
                     ]
-            , Element.el
-                [ Element.width Element.fill
-                ]
-              <|
-                Element.row
-                    [ Element.centerX
-                    ]
-                    [ Element.Input.button
-                        [ Element.Font.color Mensam.Color.bright.blue
-                        , Element.mouseOver [ Element.Font.color Mensam.Color.bright.green ]
-                        ]
-                        { onPress = Just <| MessageEffect <| Login
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Sign in"
-                        }
-                    ]
             ]
 
 
