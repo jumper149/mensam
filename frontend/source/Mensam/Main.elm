@@ -199,7 +199,7 @@ view (MkModel model) =
             ]
           <|
             Element.el
-                [ Element.htmlAttribute <| Html.Attributes.style "min-width" "800px"
+                [ Element.htmlAttribute <| Html.Attributes.style "min-width" "393px"
                 , Element.htmlAttribute <| Html.Attributes.style "max-width" "1000px"
                 , Element.htmlAttribute <| Html.Attributes.style "margin-left" "auto"
                 , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
@@ -261,27 +261,7 @@ elementNavigationBar : Model -> Element.Element Message
 elementNavigationBar (MkModel model) =
     let
         tabDescriptions =
-            [ { name = "Login"
-              , message = SwitchScreenLogin Nothing
-              , active =
-                    case model.screen of
-                        ScreenLogin _ ->
-                            True
-
-                        _ ->
-                            False
-              }
-            , { name = "Register"
-              , message = SwitchScreenRegister
-              , active =
-                    case model.screen of
-                        ScreenRegister _ ->
-                            True
-
-                        _ ->
-                            False
-              }
-            , { name = "Spaces"
+            [ { name = "Spaces"
               , message = SwitchScreenSpaces
               , active =
                     case model.screen of
