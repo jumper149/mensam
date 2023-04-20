@@ -79,27 +79,24 @@ update message (MkModel model) =
             ( MkModel model, Platform.Cmd.none )
 
         ReportError err ->
-            ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
+            update EmptyMessage <| MkModel { model | error = err :: model.error }
 
         ClearErrors ->
-            ( MkModel { model | error = [] }, Platform.Cmd.none )
+            update EmptyMessage <| MkModel { model | error = [] }
 
         MessageRegister (Mensam.Register.MessagePure m) ->
             case model.screen of
                 ScreenRegister screenModel ->
-                    ( MkModel { model | screen = ScreenRegister <| Mensam.Register.updatePure m screenModel }
-                    , Platform.Cmd.none
-                    )
+                    update EmptyMessage <|
+                        MkModel { model | screen = ScreenRegister <| Mensam.Register.updatePure m screenModel }
 
                 _ ->
-                    ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
-                    , Platform.Cmd.none
-                    )
+                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
         MessageRegister (Mensam.Register.MessageEffect m) ->
             case m of
                 Mensam.Register.ReportError err ->
-                    ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
+                    update (ReportError err) <| MkModel model
 
                 Mensam.Register.Submit ->
                     case model.screen of
@@ -109,36 +106,26 @@ update message (MkModel model) =
                             )
 
                         _ ->
-                            ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
-                            , Platform.Cmd.none
-                            )
+                            update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
                 Mensam.Register.Submitted ->
-                    ( MkModel model
-                    , Platform.Cmd.none
-                    )
+                    update EmptyMessage <| MkModel model
 
         SwitchScreenRegister ->
-            ( MkModel { model | screen = ScreenRegister Mensam.Register.init }
-            , Platform.Cmd.none
-            )
+            update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Register.init }
 
         MessageLogin (Mensam.Login.MessagePure m) ->
             case model.screen of
                 ScreenLogin screenModel ->
-                    ( MkModel { model | screen = ScreenLogin <| Mensam.Login.updatePure m screenModel }
-                    , Platform.Cmd.none
-                    )
+                    update EmptyMessage <| MkModel { model | screen = ScreenLogin <| Mensam.Login.updatePure m screenModel }
 
                 _ ->
-                    ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
-                    , Platform.Cmd.none
-                    )
+                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
         MessageLogin (Mensam.Login.MessageEffect m) ->
             case m of
                 Mensam.Login.ReportError err ->
-                    ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
+                    update (ReportError err) <| MkModel model
 
                 Mensam.Login.SubmitLogin ->
                     case model.screen of
@@ -148,37 +135,29 @@ update message (MkModel model) =
                             )
 
                         _ ->
-                            ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
-                            , Platform.Cmd.none
-                            )
+                            update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
                 Mensam.Login.Register ->
-                    ( MkModel { model | screen = ScreenRegister Mensam.Register.init }, Platform.Cmd.none )
+                    update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Register.init }
 
                 Mensam.Login.SetSession x ->
-                    ( MkModel { model | authenticated = Just x }, Platform.Cmd.none )
+                    update SwitchScreenSpaces <| MkModel { model | authenticated = Just x }
 
         SwitchScreenLogin ->
-            ( MkModel { model | screen = ScreenLogin Mensam.Login.init }
-            , Platform.Cmd.none
-            )
+            update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Login.init }
 
         MessageSpaces (Mensam.Spaces.MessagePure m) ->
             case model.screen of
                 ScreenSpaces screenModel ->
-                    ( MkModel { model | screen = ScreenSpaces <| Mensam.Spaces.updatePure m screenModel }
-                    , Platform.Cmd.none
-                    )
+                    update EmptyMessage <| MkModel { model | screen = ScreenSpaces <| Mensam.Spaces.updatePure m screenModel }
 
                 _ ->
-                    ( MkModel { model | error = "Can't process a message for the wrong screen." :: model.error }
-                    , Platform.Cmd.none
-                    )
+                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
         MessageSpaces (Mensam.Spaces.MessageEffect m) ->
             case m of
                 Mensam.Spaces.ReportError err ->
-                    ( MkModel { model | error = err :: model.error }, Platform.Cmd.none )
+                    update (ReportError err) <| MkModel model
 
                 Mensam.Spaces.RefreshSpaces ->
                     case model.authenticated of
@@ -188,14 +167,10 @@ update message (MkModel model) =
                             )
 
                         Nothing ->
-                            ( MkModel { model | error = "Can't make request without JWT." :: model.error }
-                            , Platform.Cmd.none
-                            )
+                            update (ReportError "Can't make request without JWT.") <| MkModel model
 
         SwitchScreenSpaces ->
-            ( MkModel { model | screen = ScreenSpaces Mensam.Spaces.init }
-            , Platform.Cmd.none
-            )
+            update EmptyMessage <| MkModel { model | screen = ScreenSpaces Mensam.Spaces.init }
 
 
 view : Model -> Browser.Document Message
