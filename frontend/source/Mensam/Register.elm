@@ -6,6 +6,7 @@ import Html.Events
 import Http
 import Json.Decode
 import Json.Encode
+import Mensam.Api.Register
 
 
 type alias Model =
@@ -113,62 +114,16 @@ type MessageEffect
     | Submitted
 
 
-type alias RegisterRequestBody =
-    { username : String, password : String, email : String, emailVisible : Bool }
+register : Model -> Cmd Message
+register model =
+    Mensam.Api.Register.request { email = model.email, emailVisible = model.emailVisible, name = model.username, password = model.password } <|
+        \result ->
+            case result of
+                Ok Mensam.Api.Register.Success ->
+                    MessageEffect <| Submitted
 
+                Ok (Mensam.Api.Register.ErrorBody err) ->
+                    MessageEffect <| ReportError <| Debug.toString err
 
-type alias RegisterResponseBody =
-    ()
-
-
-registerRequest : RegisterRequestBody -> Cmd Message
-registerRequest body =
-    Http.request
-        { method = "POST"
-        , headers = []
-        , url = "api/register"
-        , body = serializeRegisterRequest body
-        , expect = expectRegisterResponse
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-
-serializeRegisterRequest : RegisterRequestBody -> Http.Body
-serializeRegisterRequest body =
-    Http.jsonBody <|
-        Json.Encode.object
-            [ ( "name", Json.Encode.string body.username )
-            , ( "password", Json.Encode.string body.password )
-            , ( "email", Json.Encode.string body.email )
-            , ( "email-visible", Json.Encode.bool body.emailVisible )
-            ]
-
-
-expectRegisterResponse : Http.Expect Message
-expectRegisterResponse =
-    Http.expectJson handleRegisterResponse decodeRegisterResponse
-
-
-handleRegisterResponse : Result Http.Error RegisterResponseBody -> Message
-handleRegisterResponse result =
-    case result of
-        Ok () ->
-            MessageEffect Submitted
-
-        Err err ->
-            MessageEffect <| ReportError <| Debug.toString err
-
-
-decodeRegisterResponse : Json.Decode.Decoder RegisterResponseBody
-decodeRegisterResponse =
-    Json.Decode.list (Json.Decode.succeed ())
-        |> Json.Decode.andThen
-            (\x ->
-                case x of
-                    [] ->
-                        Json.Decode.succeed ()
-
-                    _ ->
-                        Json.Decode.fail "Trying to decode empty list, but list has elements."
-            )
+                Err err ->
+                    MessageEffect <| ReportError <| Debug.toString err

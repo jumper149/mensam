@@ -102,7 +102,7 @@ update message (MkModel model) =
                     case model.screen of
                         ScreenRegister screenModel ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageRegister <| Mensam.Register.registerRequest screenModel
+                            , Platform.Cmd.map MessageRegister <| Mensam.Register.register screenModel
                             )
 
                         _ ->
