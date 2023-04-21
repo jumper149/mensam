@@ -1,23 +1,41 @@
-module Mensam.Spaces exposing (..)
+module Mensam.Space exposing (..)
 
 import Element
 import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
-import Mensam.Api.SpaceList
+import Mensam.Api.DeskList
 import Mensam.Jwt
+import Time
 
 
 type alias Model =
-    { spaces : List { id : Int, name : String }
+    { space : { id : Int }
+    , desks :
+        List
+            { desk :
+                { id : Int
+                , name : String
+                , space : Int
+                }
+            , reservations :
+                List
+                    { desk : Int
+                    , id : Int
+                    , status : String
+                    , timeBegin : Time.Posix
+                    , timeEnd : Time.Posix
+                    , user : Int
+                    }
+            }
     , selected : Maybe Int
     }
 
 
-init : Model
-init =
-    { spaces = [], selected = Nothing }
+init : { id : Int } -> Model
+init space =
+    { space = space, desks = [], selected = Nothing }
 
 
 element : Model -> Element.Element Message
@@ -34,7 +52,7 @@ element model =
         Element.indexedTable
             [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
             ]
-            { data = model.spaces
+            { data = model.desks
             , columns =
                 let
                     cell =
@@ -58,7 +76,6 @@ element model =
                         \n x ->
                             Element.el
                                 [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                , Element.Events.onClick <| MessageEffect <| ChooseSpace { id = x.id }
                                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                 , let
                                     alpha =
@@ -81,7 +98,7 @@ element model =
                                         [ Element.width <| Element.maximum 100 <| Element.fill ]
                                     <|
                                         Element.text <|
-                                            Debug.toString x.id
+                                            Debug.toString x.desk.id
                   }
                 , { header =
                         Element.el
@@ -98,7 +115,6 @@ element model =
                         \n x ->
                             Element.el
                                 [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                , Element.Events.onClick <| MessageEffect <| ChooseSpace { id = x.id }
                                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                 , let
                                     alpha =
@@ -121,7 +137,7 @@ element model =
                                         [ Element.width <| Element.maximum 100 <| Element.fill ]
                                     <|
                                         Element.text <|
-                                            Debug.toString x.name
+                                            Debug.toString x.desk.name
                   }
                 ]
             }
@@ -133,15 +149,32 @@ type Message
 
 
 type MessagePure
-    = SetSpaces (List { id : Int, name : String })
+    = SetDesks
+        (List
+            { desk :
+                { id : Int
+                , name : String
+                , space : Int
+                }
+            , reservations :
+                List
+                    { desk : Int
+                    , id : Int
+                    , status : String
+                    , timeBegin : Time.Posix
+                    , timeEnd : Time.Posix
+                    , user : Int
+                    }
+            }
+        )
     | SetSelected (Maybe Int)
 
 
 updatePure : MessagePure -> Model -> Model
 updatePure message model =
     case message of
-        SetSpaces spaces ->
-            { model | spaces = spaces }
+        SetDesks desks ->
+            { model | desks = desks }
 
         SetSelected selection ->
             { model | selected = selection }
@@ -149,22 +182,21 @@ updatePure message model =
 
 type MessageEffect
     = ReportError String
-    | RefreshSpaces
-    | ChooseSpace { id : Int }
+    | RefreshDesks
 
 
-spaceList : Mensam.Jwt.Jwt -> Cmd Message
-spaceList jwt =
-    Mensam.Api.SpaceList.request { jwt = jwt, order = [] } <|
+deskList : Mensam.Jwt.Jwt -> Model -> Cmd Message
+deskList jwt model =
+    Mensam.Api.DeskList.request { jwt = jwt, space = model.space } <|
         \result ->
             case result of
-                Ok (Mensam.Api.SpaceList.Success value) ->
-                    MessagePure <| SetSpaces value.spaces
+                Ok (Mensam.Api.DeskList.Success value) ->
+                    MessagePure <| SetDesks value.desks
 
-                Ok (Mensam.Api.SpaceList.ErrorBody error) ->
+                Ok (Mensam.Api.DeskList.ErrorBody error) ->
                     MessageEffect <| ReportError <| Debug.toString error
 
-                Ok (Mensam.Api.SpaceList.ErrorAuth error) ->
+                Ok (Mensam.Api.DeskList.ErrorAuth error) ->
                     MessageEffect <| ReportError <| Debug.toString error
 
                 Err err ->

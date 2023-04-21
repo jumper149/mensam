@@ -13,6 +13,7 @@ import Mensam.Font
 import Mensam.Jwt
 import Mensam.Login
 import Mensam.Register
+import Mensam.Space
 import Mensam.Spaces
 import Platform.Cmd
 import Platform.Sub
@@ -50,6 +51,7 @@ type Screen
     = ScreenRegister Mensam.Register.Model
     | ScreenLogin Mensam.Login.Model
     | ScreenSpaces Mensam.Spaces.Model
+    | ScreenSpace Mensam.Space.Model
     | NoScreen
 
 
@@ -68,6 +70,8 @@ type Message
     | SwitchScreenLogin (Maybe Mensam.Login.Model)
     | MessageSpaces Mensam.Spaces.Message
     | SwitchScreenSpaces
+    | MessageSpace Mensam.Space.Message
+    | SwitchScreenSpace Int
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
@@ -180,8 +184,37 @@ update message (MkModel model) =
                         Nothing ->
                             update (ReportError "Can't make request without JWT.") <| MkModel model
 
+                Mensam.Spaces.ChooseSpace { id } ->
+                    update (SwitchScreenSpace id) <| MkModel model
+
         SwitchScreenSpaces ->
             update (MessageSpaces <| Mensam.Spaces.MessageEffect Mensam.Spaces.RefreshSpaces) <| MkModel { model | screen = ScreenSpaces Mensam.Spaces.init }
+
+        MessageSpace (Mensam.Space.MessagePure m) ->
+            case model.screen of
+                ScreenSpace screenModel ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenSpace <| Mensam.Space.updatePure m screenModel }
+
+                _ ->
+                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
+
+        MessageSpace (Mensam.Space.MessageEffect m) ->
+            case m of
+                Mensam.Space.ReportError err ->
+                    update (ReportError err) <| MkModel model
+
+                Mensam.Space.RefreshDesks ->
+                    case model.authenticated of
+                        Just { jwt } ->
+                            ( MkModel model
+                            , Platform.Cmd.map MessageSpaces <| Mensam.Spaces.spaceList jwt
+                            )
+
+                        Nothing ->
+                            update (ReportError "Can't make request without JWT.") <| MkModel model
+
+        SwitchScreenSpace id ->
+            update (MessageSpace <| Mensam.Space.MessageEffect Mensam.Space.RefreshDesks) <| MkModel { model | screen = ScreenSpace <| Mensam.Space.init { id = id } }
 
 
 view : Model -> Browser.Document Message
@@ -245,6 +278,15 @@ view (MkModel model) =
                                 <|
                                     Element.map MessageSpaces <|
                                         Mensam.Spaces.element screenModel
+
+                            ScreenSpace screenModel ->
+                                Element.el
+                                    [ Element.width Element.fill
+                                    , Element.height Element.fill
+                                    ]
+                                <|
+                                    Element.map MessageSpace <|
+                                        Mensam.Space.element screenModel
 
                             NoScreen ->
                                 Element.none
