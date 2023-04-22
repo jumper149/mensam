@@ -181,7 +181,7 @@ update message (MkModel model) =
                             update (ReportError "Can't make request without JWT.") <| MkModel model
 
         SwitchScreenSpaces ->
-            update EmptyMessage <| MkModel { model | screen = ScreenSpaces Mensam.Spaces.init }
+            update (MessageSpaces <| Mensam.Spaces.MessageEffect Mensam.Spaces.RefreshSpaces) <| MkModel { model | screen = ScreenSpaces Mensam.Spaces.init }
 
 
 view : Model -> Browser.Document Message
@@ -238,10 +238,13 @@ view (MkModel model) =
                                         Mensam.Register.element screenModel
 
                             ScreenSpaces screenModel ->
-                                Element.html <|
-                                    Html.div []
-                                        [ Html.map MessageSpaces <| Mensam.Spaces.view screenModel
-                                        ]
+                                Element.el
+                                    [ Element.width Element.fill
+                                    , Element.height Element.fill
+                                    ]
+                                <|
+                                    Element.map MessageSpaces <|
+                                        Mensam.Spaces.element screenModel
 
                             NoScreen ->
                                 Element.none

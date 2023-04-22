@@ -1,8 +1,6 @@
 module Mensam.Spaces exposing (..)
 
-import Html
-import Html.Attributes
-import Html.Events
+import Element
 import Mensam.Api.SpaceList
 import Mensam.Jwt
 
@@ -16,25 +14,26 @@ init =
     { spaces = [] }
 
 
-view : Model -> Html.Html Message
-view model =
-    Html.div []
-        [ Html.button
-            [ Html.Attributes.id "button-spaces-refresh"
-            , Html.Events.onClick <| MessageEffect RefreshSpaces
-            , Html.Attributes.type_ "button"
-            ]
-            [ Html.text "Refresh" ]
-        , Html.table [] (List.map viewSpace model.spaces)
+element : Model -> Element.Element Message
+element model =
+    Element.el
+        [ Element.width Element.fill
         ]
-
-
-viewSpace : { id : Int, name : String } -> Html.Html Message
-viewSpace space =
-    Html.tr []
-        [ Html.td [] [ Html.text (Debug.toString space.id) ]
-        , Html.td [] [ Html.text (Debug.toString space.name) ]
-        ]
+    <|
+        Element.table
+            []
+            { data = model.spaces
+            , columns =
+                [ { header = Element.text "ID"
+                  , width = Element.px 100
+                  , view = \x -> Element.text <| Debug.toString x.id
+                  }
+                , { header = Element.text "Name"
+                  , width = Element.fill
+                  , view = \x -> Element.text <| Debug.toString x.name
+                  }
+                ]
+            }
 
 
 type Message
