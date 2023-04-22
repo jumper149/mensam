@@ -1,6 +1,9 @@
 module Mensam.Spaces exposing (..)
 
 import Element
+import Element.Background
+import Element.Font
+import Html.Attributes
 import Mensam.Api.SpaceList
 import Mensam.Jwt
 
@@ -18,19 +21,56 @@ element : Model -> Element.Element Message
 element model =
     Element.el
         [ Element.width Element.fill
+        , Element.height Element.fill
+        , Element.padding 10
+        , Element.Background.color (Element.rgba 0 0 0 0.1)
+        , Element.Font.size 16
+        , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
         ]
     <|
-        Element.table
+        Element.indexedTable
             []
             { data = model.spaces
             , columns =
-                [ { header = Element.text "ID"
+                let
+                    cell =
+                        Element.el
+                            [ Element.height <| Element.px 40
+                            , Element.padding 10
+                            , Element.Background.color (Element.rgba 0 0 0 0.4)
+                            ]
+                in
+                [ { header =
+                        cell <|
+                            Element.el
+                                []
+                            <|
+                                Element.text "ID"
                   , width = Element.px 100
-                  , view = \x -> Element.text <| Debug.toString x.id
+                  , view =
+                        \n x ->
+                            cell <|
+                                Element.el
+                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                <|
+                                    Element.text <|
+                                        Debug.toString x.id
                   }
-                , { header = Element.text "Name"
+                , { header =
+                        cell <|
+                            Element.el
+                                []
+                            <|
+                                Element.text "Name"
                   , width = Element.fill
-                  , view = \x -> Element.text <| Debug.toString x.name
+                  , view =
+                        \n x ->
+                            cell <|
+                                Element.el
+                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                <|
+                                    Element.text <|
+                                        Debug.toString x.name
                   }
                 ]
             }
