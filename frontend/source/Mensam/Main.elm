@@ -174,7 +174,7 @@ update message (MkModel model) =
                     case model.authenticated of
                         Just { jwt } ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageSpaces <| Mensam.Spaces.deskListRequest jwt
+                            , Platform.Cmd.map MessageSpaces <| Mensam.Spaces.spaceList jwt
                             )
 
                         Nothing ->

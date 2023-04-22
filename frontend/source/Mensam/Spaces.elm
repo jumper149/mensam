@@ -3,9 +3,7 @@ module Mensam.Spaces exposing (..)
 import Html
 import Html.Attributes
 import Html.Events
-import Http
-import Json.Decode
-import Json.Encode
+import Mensam.Api.SpaceList
 import Mensam.Jwt
 
 
@@ -60,42 +58,19 @@ type MessageEffect
     | RefreshSpaces
 
 
-deskListRequest : Mensam.Jwt.Jwt -> Cmd Message
-deskListRequest jwt =
-    Http.request
-        { method = "POST"
-        , headers =
-            [ Mensam.Jwt.authorizationHeader jwt
-            ]
-        , url = "api/space/list"
-        , body = Http.jsonBody <| Json.Encode.object [ ( "order", Json.Encode.list (\_ -> Json.Encode.null) [] ) ]
-        , expect = expectDeskListResponse
-        , timeout = Nothing
-        , tracker = Nothing
-        }
+spaceList : Mensam.Jwt.Jwt -> Cmd Message
+spaceList jwt =
+    Mensam.Api.SpaceList.request { jwt = jwt, order = [] } <|
+        \result ->
+            case result of
+                Ok (Mensam.Api.SpaceList.Success value) ->
+                    MessagePure <| SetSpaces value.spaces
 
+                Ok (Mensam.Api.SpaceList.ErrorBody error) ->
+                    MessageEffect <| ReportError <| Debug.toString error
 
-expectDeskListResponse : Http.Expect Message
-expectDeskListResponse =
-    Http.expectJson handleDeskListResponse decodeDeskListResponse
+                Ok (Mensam.Api.SpaceList.ErrorAuth error) ->
+                    MessageEffect <| ReportError <| Debug.toString error
 
-
-handleDeskListResponse : Result Http.Error (List { id : Int, name : String }) -> Message
-handleDeskListResponse result =
-    case result of
-        Ok response ->
-            MessagePure <| SetSpaces response
-
-        Err err ->
-            MessageEffect <| ReportError <| Debug.toString err
-
-
-decodeDeskListResponse : Json.Decode.Decoder (List { id : Int, name : String })
-decodeDeskListResponse =
-    let
-        decodeSpace =
-            Json.Decode.map2 (\id name -> { id = id, name = name })
-                (Json.Decode.field "id" Json.Decode.int)
-                (Json.Decode.field "name" Json.Decode.string)
-    in
-    Json.Decode.field "spaces" <| Json.Decode.list <| decodeSpace
+                Err err ->
+                    MessageEffect <| ReportError <| Debug.toString err
