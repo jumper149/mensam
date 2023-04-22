@@ -6,7 +6,6 @@ import Element
 import Element.Background
 import Element.Events
 import Element.Font
-import Html
 import Html.Attributes
 import Mensam.Color
 import Mensam.Font
@@ -38,6 +37,7 @@ type Model
         { screen : Screen
         , authenticated : Maybe Authentication
         , error : List String
+        , viewErrors : Bool
         }
 
 
@@ -57,13 +57,15 @@ type Screen
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
 init _ _ _ =
-    ( MkModel { screen = ScreenLogin Mensam.Login.init, authenticated = Nothing, error = [] }, Platform.Cmd.none )
+    ( MkModel { screen = ScreenLogin Mensam.Login.init, authenticated = Nothing, error = [], viewErrors = False }, Platform.Cmd.none )
 
 
 type Message
     = EmptyMessage
     | ReportError String
     | ClearErrors
+    | ViewErrors
+    | HideErrors
     | MessageRegister Mensam.Register.Message
     | SwitchScreenRegister
     | MessageLogin Mensam.Login.Message
@@ -85,6 +87,12 @@ update message (MkModel model) =
 
         ClearErrors ->
             update EmptyMessage <| MkModel { model | error = [] }
+
+        ViewErrors ->
+            update EmptyMessage <| MkModel { model | viewErrors = True }
+
+        HideErrors ->
+            update ClearErrors <| MkModel { model | viewErrors = False }
 
         MessageRegister (Mensam.Register.MessagePure m) ->
             case model.screen of
@@ -336,6 +344,61 @@ elementNavigationBar (MkModel model) =
         elementsTabDescription =
             List.map viewTabDescriptions tabDescriptions
 
+        errorViewer =
+            case model.error of
+                [] ->
+                    Element.none
+
+                errors ->
+                    Element.el
+                        [ Element.Events.onClick <|
+                            if model.viewErrors then
+                                HideErrors
+
+                            else
+                                ViewErrors
+                        , Element.height Element.fill
+                        , Element.paddingXY 20 0
+                        , Element.alignRight
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        , Element.mouseOver
+                            [ Element.Background.color <| Mensam.Color.bright.white
+                            , Element.Font.color <| Mensam.Color.dark.black
+                            ]
+                        , Element.Font.color Mensam.Color.bright.red
+                        , Element.below <|
+                            if model.viewErrors then
+                                Element.el
+                                    [ Element.Font.family [ Mensam.Font.condensed ]
+                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
+                                    , Element.width <| Element.px 200
+                                    , Element.padding 15
+                                    , Element.Background.color Mensam.Color.bright.black
+                                    , Element.Font.color Mensam.Color.bright.white
+                                    , Element.mouseOver
+                                        [ Element.Background.color <| Mensam.Color.bright.white
+                                        , Element.Font.color <| Mensam.Color.dark.black
+                                        ]
+                                    , Element.alignRight
+                                    ]
+                                <|
+                                    Element.column
+                                        [ Element.spacing 10
+                                        ]
+                                    <|
+                                        List.map (\message -> Element.paragraph [] [ Element.text message ]) errors
+
+                            else
+                                Element.none
+                        ]
+                    <|
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            ]
+                        <|
+                            Element.text "?"
+
         loginStatus =
             case model.authenticated of
                 Nothing ->
@@ -400,4 +463,4 @@ elementNavigationBar (MkModel model) =
         , Element.Font.light
         , Element.Font.size 17
         ]
-        ([ title ] ++ elementsTabDescription ++ [ loginStatus ])
+        (title :: elementsTabDescription ++ [ errorViewer, loginStatus ])
