@@ -10,10 +10,10 @@ import Html.Attributes
 import Mensam.Color
 import Mensam.Font
 import Mensam.Jwt
-import Mensam.Login
-import Mensam.Register
-import Mensam.Space
-import Mensam.Spaces
+import Mensam.Screen.Login
+import Mensam.Screen.Register
+import Mensam.Screen.Space
+import Mensam.Screen.Spaces
 import Platform.Cmd
 import Platform.Sub
 import Time
@@ -48,16 +48,16 @@ type alias Authentication =
 
 
 type Screen
-    = ScreenRegister Mensam.Register.Model
-    | ScreenLogin Mensam.Login.Model
-    | ScreenSpaces Mensam.Spaces.Model
-    | ScreenSpace Mensam.Space.Model
+    = ScreenRegister Mensam.Screen.Register.Model
+    | ScreenLogin Mensam.Screen.Login.Model
+    | ScreenSpaces Mensam.Screen.Spaces.Model
+    | ScreenSpace Mensam.Screen.Space.Model
     | NoScreen
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
 init _ _ _ =
-    ( MkModel { screen = ScreenLogin Mensam.Login.init, authenticated = Nothing, error = [], viewErrors = False }, Platform.Cmd.none )
+    ( MkModel { screen = ScreenLogin Mensam.Screen.Login.init, authenticated = Nothing, error = [], viewErrors = False }, Platform.Cmd.none )
 
 
 type Message
@@ -66,13 +66,13 @@ type Message
     | ClearErrors
     | ViewErrors
     | HideErrors
-    | MessageRegister Mensam.Register.Message
+    | MessageRegister Mensam.Screen.Register.Message
     | SwitchScreenRegister
-    | MessageLogin Mensam.Login.Message
-    | SwitchScreenLogin (Maybe Mensam.Login.Model)
-    | MessageSpaces Mensam.Spaces.Message
+    | MessageLogin Mensam.Screen.Login.Message
+    | SwitchScreenLogin (Maybe Mensam.Screen.Login.Model)
+    | MessageSpaces Mensam.Screen.Spaces.Message
     | SwitchScreenSpaces
-    | MessageSpace Mensam.Space.Message
+    | MessageSpace Mensam.Screen.Space.Message
     | SwitchScreenSpace Int
 
 
@@ -94,31 +94,31 @@ update message (MkModel model) =
         HideErrors ->
             update ClearErrors <| MkModel { model | viewErrors = False }
 
-        MessageRegister (Mensam.Register.MessagePure m) ->
+        MessageRegister (Mensam.Screen.Register.MessagePure m) ->
             case model.screen of
                 ScreenRegister screenModel ->
                     update EmptyMessage <|
-                        MkModel { model | screen = ScreenRegister <| Mensam.Register.updatePure m screenModel }
+                        MkModel { model | screen = ScreenRegister <| Mensam.Screen.Register.updatePure m screenModel }
 
                 _ ->
                     update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
-        MessageRegister (Mensam.Register.MessageEffect m) ->
+        MessageRegister (Mensam.Screen.Register.MessageEffect m) ->
             case m of
-                Mensam.Register.ReportError err ->
+                Mensam.Screen.Register.ReportError err ->
                     update (ReportError err) <| MkModel model
 
-                Mensam.Register.Submit ->
+                Mensam.Screen.Register.Submit ->
                     case model.screen of
                         ScreenRegister screenModel ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageRegister <| Mensam.Register.register screenModel
+                            , Platform.Cmd.map MessageRegister <| Mensam.Screen.Register.register screenModel
                             )
 
                         _ ->
                             update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
-                Mensam.Register.Submitted ->
+                Mensam.Screen.Register.Submitted ->
                     case model.screen of
                         ScreenRegister screenModel ->
                             update (SwitchScreenLogin <| Just { username = screenModel.username, password = screenModel.password, hint = "" }) <| MkModel model
@@ -126,98 +126,98 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
-                Mensam.Register.Login ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Login.init }
+                Mensam.Screen.Register.Login ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Screen.Login.init }
 
         SwitchScreenRegister ->
-            update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Register.init }
+            update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
 
-        MessageLogin (Mensam.Login.MessagePure m) ->
+        MessageLogin (Mensam.Screen.Login.MessagePure m) ->
             case model.screen of
                 ScreenLogin screenModel ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenLogin <| Mensam.Login.updatePure m screenModel }
+                    update EmptyMessage <| MkModel { model | screen = ScreenLogin <| Mensam.Screen.Login.updatePure m screenModel }
 
                 _ ->
                     update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
-        MessageLogin (Mensam.Login.MessageEffect m) ->
+        MessageLogin (Mensam.Screen.Login.MessageEffect m) ->
             case m of
-                Mensam.Login.ReportError err ->
+                Mensam.Screen.Login.ReportError err ->
                     update (ReportError err) <| MkModel model
 
-                Mensam.Login.SubmitLogin ->
+                Mensam.Screen.Login.SubmitLogin ->
                     case model.screen of
                         ScreenLogin screenModel ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageLogin <| Mensam.Login.login screenModel
+                            , Platform.Cmd.map MessageLogin <| Mensam.Screen.Login.login screenModel
                             )
 
                         _ ->
                             update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
-                Mensam.Login.Register ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Register.init }
+                Mensam.Screen.Login.Register ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
 
-                Mensam.Login.SetSession x ->
+                Mensam.Screen.Login.SetSession x ->
                     update SwitchScreenSpaces <| MkModel { model | authenticated = Just x }
 
         SwitchScreenLogin maybeInitLogin ->
             case maybeInitLogin of
                 Nothing ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Login.init }
+                    update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Screen.Login.init }
 
                 Just initLogin ->
                     update EmptyMessage <| MkModel { model | screen = ScreenLogin initLogin }
 
-        MessageSpaces (Mensam.Spaces.MessagePure m) ->
+        MessageSpaces (Mensam.Screen.Spaces.MessagePure m) ->
             case model.screen of
                 ScreenSpaces screenModel ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenSpaces <| Mensam.Spaces.updatePure m screenModel }
+                    update EmptyMessage <| MkModel { model | screen = ScreenSpaces <| Mensam.Screen.Spaces.updatePure m screenModel }
 
                 _ ->
                     update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
-        MessageSpaces (Mensam.Spaces.MessageEffect m) ->
+        MessageSpaces (Mensam.Screen.Spaces.MessageEffect m) ->
             case m of
-                Mensam.Spaces.ReportError err ->
+                Mensam.Screen.Spaces.ReportError err ->
                     update (ReportError err) <| MkModel model
 
-                Mensam.Spaces.RefreshSpaces ->
+                Mensam.Screen.Spaces.RefreshSpaces ->
                     case model.authenticated of
                         Just { jwt } ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageSpaces <| Mensam.Spaces.spaceList jwt
+                            , Platform.Cmd.map MessageSpaces <| Mensam.Screen.Spaces.spaceList jwt
                             )
 
                         Nothing ->
                             update (ReportError "Can't make request without JWT.") <| MkModel model
 
-                Mensam.Spaces.ChooseSpace { id } ->
+                Mensam.Screen.Spaces.ChooseSpace { id } ->
                     update (SwitchScreenSpace id) <| MkModel model
 
         SwitchScreenSpaces ->
-            update (MessageSpaces <| Mensam.Spaces.MessageEffect Mensam.Spaces.RefreshSpaces) <| MkModel { model | screen = ScreenSpaces Mensam.Spaces.init }
+            update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <| MkModel { model | screen = ScreenSpaces Mensam.Screen.Spaces.init }
 
-        MessageSpace (Mensam.Space.MessagePure m) ->
+        MessageSpace (Mensam.Screen.Space.MessagePure m) ->
             case model.screen of
                 ScreenSpace screenModel ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenSpace <| Mensam.Space.updatePure m screenModel }
+                    update EmptyMessage <| MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.updatePure m screenModel }
 
                 _ ->
                     update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
-        MessageSpace (Mensam.Space.MessageEffect m) ->
+        MessageSpace (Mensam.Screen.Space.MessageEffect m) ->
             case m of
-                Mensam.Space.ReportError err ->
+                Mensam.Screen.Space.ReportError err ->
                     update (ReportError err) <| MkModel model
 
-                Mensam.Space.RefreshDesks ->
+                Mensam.Screen.Space.RefreshDesks ->
                     case model.authenticated of
                         Just { jwt } ->
                             case model.screen of
                                 ScreenSpace screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageSpace <| Mensam.Space.deskList jwt screenModel
+                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.deskList jwt screenModel
                                     )
 
                                 _ ->
@@ -227,7 +227,7 @@ update message (MkModel model) =
                             update (ReportError "Can't make request without JWT.") <| MkModel model
 
         SwitchScreenSpace id ->
-            update (MessageSpace <| Mensam.Space.MessageEffect Mensam.Space.RefreshDesks) <| MkModel { model | screen = ScreenSpace <| Mensam.Space.init { id = id } }
+            update (MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks) <| MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = id } }
 
 
 view : Model -> Browser.Document Message
@@ -272,7 +272,7 @@ view (MkModel model) =
                                     ]
                                 <|
                                     Element.map MessageLogin <|
-                                        Mensam.Login.element screenModel
+                                        Mensam.Screen.Login.element screenModel
 
                             ScreenRegister screenModel ->
                                 Element.el
@@ -281,7 +281,7 @@ view (MkModel model) =
                                     ]
                                 <|
                                     Element.map MessageRegister <|
-                                        Mensam.Register.element screenModel
+                                        Mensam.Screen.Register.element screenModel
 
                             ScreenSpaces screenModel ->
                                 Element.el
@@ -290,7 +290,7 @@ view (MkModel model) =
                                     ]
                                 <|
                                     Element.map MessageSpaces <|
-                                        Mensam.Spaces.element screenModel
+                                        Mensam.Screen.Spaces.element screenModel
 
                             ScreenSpace screenModel ->
                                 Element.el
@@ -299,7 +299,7 @@ view (MkModel model) =
                                     ]
                                 <|
                                     Element.map MessageSpace <|
-                                        Mensam.Space.element screenModel
+                                        Mensam.Screen.Space.element screenModel
 
                             NoScreen ->
                                 Element.none

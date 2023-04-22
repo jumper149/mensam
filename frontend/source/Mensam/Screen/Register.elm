@@ -1,4 +1,4 @@
-module Mensam.Login exposing (..)
+module Mensam.Screen.Register exposing (..)
 
 import Element
 import Element.Background
@@ -7,20 +7,30 @@ import Element.Input
 import Html.Attributes
 import Html.Events
 import Json.Decode
-import Mensam.Api.Login
+import Mensam.Api.Register
 import Mensam.Color
 import Mensam.Font
-import Mensam.Jwt
-import Time
 
 
 type alias Model =
-    { username : String, password : String, hint : String }
+    { username : String
+    , password : String
+    , email : String
+
+    -- TODO: Add checkbox.
+    , emailVisible : Bool
+    , hint : String
+    }
 
 
 init : Model
 init =
-    { username = "", password = "", hint = "" }
+    { username = ""
+    , password = ""
+    , email = ""
+    , emailVisible = True
+    , hint = ""
+    }
 
 
 element : Model -> Element.Element Message
@@ -42,9 +52,9 @@ element model =
                 , Element.Font.hairline
                 ]
               <|
-                Element.text "Sign in"
+                Element.text "Register"
             , Element.Input.username
-                [ onEnter <| MessageEffect SubmitLogin
+                [ onEnter <| MessageEffect Submit
                 , Element.Font.color Mensam.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterUsername
@@ -52,8 +62,8 @@ element model =
                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Username"
                 , label = Element.Input.labelAbove [] <| Element.text "Username"
                 }
-            , Element.Input.currentPassword
-                [ onEnter <| MessageEffect SubmitLogin
+            , Element.Input.newPassword
+                [ onEnter <| MessageEffect Submit
                 , Element.Font.color Mensam.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterPassword
@@ -61,6 +71,15 @@ element model =
                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
                 , label = Element.Input.labelAbove [] <| Element.text "Password"
                 , show = False
+                }
+            , Element.Input.email
+                [ onEnter <| MessageEffect Submit
+                , Element.Font.color Mensam.Color.dark.black
+                ]
+                { onChange = MessagePure << EnterEmail
+                , text = model.email
+                , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Email"
+                , label = Element.Input.labelAbove [] <| Element.text "Email"
                 }
             , Element.el
                 [ Element.width Element.fill
@@ -92,7 +111,7 @@ element model =
                         , Element.width Element.fill
                         , Element.padding 10
                         ]
-                        { onPress = Just <| MessageEffect <| SubmitLogin
+                        { onPress = Just <| MessageEffect <| Submit
                         , label =
                             Element.el
                                 [ Element.centerX
@@ -101,30 +120,7 @@ element model =
                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
                             <|
-                                Element.text "Sign in"
-                        }
-                    ]
-            , Element.el
-                [ Element.width Element.fill
-                ]
-              <|
-                Element.row
-                    [ Element.centerX
-                    ]
-                    [ Element.Input.button
-                        [ Element.Font.color Mensam.Color.bright.blue
-                        , Element.mouseOver [ Element.Font.color Mensam.Color.bright.green ]
-                        ]
-                        { onPress = Just <| MessageEffect <| Register
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Register"
+                                Element.text "Sign up"
                         }
                     ]
             ]
@@ -138,8 +134,8 @@ type Message
 type MessagePure
     = EnterUsername String
     | EnterPassword String
-    | SetHintUsername
-    | SetHintPassword
+    | EnterEmail String
+    | ToggleEmailVisible Bool
 
 
 updatePure : MessagePure -> Model -> Model
@@ -151,18 +147,18 @@ updatePure message model =
         EnterPassword password ->
             { model | password = password }
 
-        SetHintUsername ->
-            { model | username = "", password = "", hint = "Invalid username." }
+        EnterEmail email ->
+            { model | email = email }
 
-        SetHintPassword ->
-            { model | password = "", hint = "Invalid password." }
+        ToggleEmailVisible emailVisible ->
+            { model | emailVisible = emailVisible }
 
 
 type MessageEffect
     = ReportError String
-    | SubmitLogin
-    | Register
-    | SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
+    | Submit
+    | Submitted
+    | Login
 
 
 onEnter : msg -> Element.Attribute msg
@@ -182,22 +178,16 @@ onEnter msg =
         )
 
 
-login : Model -> Cmd Message
-login model =
-    Mensam.Api.Login.request { username = model.username, password = model.password } <|
+register : Model -> Cmd Message
+register model =
+    Mensam.Api.Register.request { email = model.email, emailVisible = model.emailVisible, name = model.username, password = model.password } <|
         \result ->
             case result of
-                Ok (Mensam.Api.Login.Success value) ->
-                    MessageEffect <| SetSession value
+                Ok Mensam.Api.Register.Success ->
+                    MessageEffect <| Submitted
 
-                Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthUsername) ->
-                    MessagePure <| SetHintUsername
-
-                Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthPassword) ->
-                    MessagePure <| SetHintPassword
-
-                Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthIndefinite) ->
-                    MessageEffect <| ReportError ""
+                Ok (Mensam.Api.Register.ErrorBody err) ->
+                    MessageEffect <| ReportError <| Debug.toString err
 
                 Err err ->
                     MessageEffect <| ReportError <| Debug.toString err

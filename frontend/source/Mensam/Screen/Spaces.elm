@@ -1,4 +1,4 @@
-module Mensam.Spaces exposing (..)
+module Mensam.Screen.Spaces exposing (..)
 
 import Element
 import Element.Background
