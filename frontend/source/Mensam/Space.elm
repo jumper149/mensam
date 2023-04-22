@@ -4,8 +4,10 @@ import Element
 import Element.Background
 import Element.Events
 import Element.Font
+import Element.Input
 import Html.Attributes
 import Mensam.Api.DeskList
+import Mensam.Color
 import Mensam.Jwt
 import Time
 
@@ -30,12 +32,20 @@ type alias Model =
                     }
             }
     , selected : Maybe Int
+    , viewDetailed :
+        Maybe
+            { desk :
+                { id : Int
+                , name : String
+                , space : Int
+                }
+            }
     }
 
 
 init : { id : Int } -> Model
 init space =
-    { space = space, desks = [], selected = Nothing }
+    { space = space, desks = [], selected = Nothing, viewDetailed = Nothing }
 
 
 element : Model -> Element.Element Message
@@ -47,6 +57,34 @@ element model =
         , Element.Background.color (Element.rgba 0 0 0 0.1)
         , Element.Font.size 16
         , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+        , Element.inFront <|
+            case model.viewDetailed of
+                Nothing ->
+                    Element.none
+
+                Just x ->
+                    Element.el
+                        [ Element.width Element.fill
+                        , Element.height Element.fill
+                        , Element.paddingXY 30 30
+                        ]
+                    <|
+                        Element.el
+                            [ Element.Background.color Mensam.Color.bright.black
+                            , Element.centerX
+                            , Element.width <| Element.maximum 500 <| Element.fill
+                            , Element.height <| Element.maximum 400 <| Element.fill
+                            , Element.paddingXY 30 30
+                            ]
+                        <|
+                            Element.column
+                                []
+                                [ Element.text "Create reservation"
+                                , Element.Input.button []
+                                    { onPress = Just <| MessagePure <| ViewDetailed Nothing
+                                    , label = Element.text "Abort"
+                                    }
+                                ]
         ]
     <|
         Element.indexedTable
@@ -76,6 +114,7 @@ element model =
                         \n x ->
                             Element.el
                                 [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
                                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                 , let
                                     alpha =
@@ -115,6 +154,7 @@ element model =
                         \n x ->
                             Element.el
                                 [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
                                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                 , let
                                     alpha =
@@ -168,6 +208,15 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
+    | ViewDetailed
+        (Maybe
+            { desk :
+                { id : Int
+                , name : String
+                , space : Int
+                }
+            }
+        )
 
 
 updatePure : MessagePure -> Model -> Model
@@ -178,6 +227,9 @@ updatePure message model =
 
         SetSelected selection ->
             { model | selected = selection }
+
+        ViewDetailed data ->
+            { model | viewDetailed = data }
 
 
 type MessageEffect
