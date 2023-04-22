@@ -214,9 +214,14 @@ update message (MkModel model) =
                 Mensam.Space.RefreshDesks ->
                     case model.authenticated of
                         Just { jwt } ->
-                            ( MkModel model
-                            , Platform.Cmd.map MessageSpaces <| Mensam.Spaces.spaceList jwt
-                            )
+                            case model.screen of
+                                ScreenSpace screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpace <| Mensam.Space.deskList jwt screenModel
+                                    )
+
+                                _ ->
+                                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
                         Nothing ->
                             update (ReportError "Can't make request without JWT.") <| MkModel model
