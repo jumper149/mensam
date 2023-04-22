@@ -6,6 +6,7 @@ import Element.Events
 import Element.Font
 import Html.Attributes
 import Mensam.Api.SpaceList
+import Mensam.Font
 import Mensam.Jwt
 
 
@@ -28,7 +29,7 @@ element model =
         , Element.padding 10
         , Element.Background.color (Element.rgba 0 0 0 0.1)
         , Element.Font.size 16
-        , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+        , Element.Font.family [ Mensam.Font.condensed ]
         ]
     <|
         Element.indexedTable

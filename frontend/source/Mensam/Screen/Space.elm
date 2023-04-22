@@ -8,6 +8,7 @@ import Element.Input
 import Html.Attributes
 import Mensam.Api.DeskList
 import Mensam.Color
+import Mensam.Font
 import Mensam.Jwt
 import Time
 
@@ -56,7 +57,7 @@ element model =
         , Element.padding 10
         , Element.Background.color (Element.rgba 0 0 0 0.1)
         , Element.Font.size 16
-        , Element.Font.family [ Element.Font.typeface "Fira Sans Condensed" ]
+        , Element.Font.family [ Mensam.Font.condensed ]
         , Element.inFront <|
             case model.viewDetailed of
                 Nothing ->
