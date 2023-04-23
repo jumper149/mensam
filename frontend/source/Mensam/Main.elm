@@ -62,6 +62,7 @@ type Route
     = RouteLogin (Maybe Mensam.Screen.Login.Model)
     | RouteRegister
     | RouteSpaces
+    | RouteSpace Int
 
 
 routeToUrl : Route -> String
@@ -86,6 +87,10 @@ routeToModelUpdate route (MkModel model) =
         RouteSpaces ->
             update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <|
                 MkModel { model | screen = ScreenSpaces Mensam.Screen.Spaces.init }
+
+        RouteSpace id ->
+            update (MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks) <|
+                MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = id } }
 
 
 urlParser : Url.Parser.Parser (Route -> c) c
@@ -132,7 +137,6 @@ type Message
     | MessageLogin Mensam.Screen.Login.Message
     | MessageSpaces Mensam.Screen.Spaces.Message
     | MessageSpace Mensam.Screen.Space.Message
-    | SwitchScreenSpace Int
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
@@ -254,7 +258,7 @@ update message (MkModel model) =
                             update (ReportError "Can't make request without JWT.") <| MkModel model
 
                 Mensam.Screen.Spaces.ChooseSpace { id } ->
-                    update (SwitchScreenSpace id) <| MkModel model
+                    update (SetUrl <| RouteSpace id) <| MkModel model
 
         MessageSpace (Mensam.Screen.Space.MessagePure m) ->
             case model.screen of
@@ -283,9 +287,6 @@ update message (MkModel model) =
 
                         Nothing ->
                             update (ReportError "Can't make request without JWT.") <| MkModel model
-
-        SwitchScreenSpace id ->
-            update (MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks) <| MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = id } }
 
 
 view : Model -> Browser.Document Message
