@@ -2,11 +2,6 @@
 
 __**A desk-booking web application.**__
 
-
-++++
-<a href="https://asciinema.org/a/HgqbLitk1T0DvFZWitgee7xfO?startAt=2&autoplay=1&loop=1&speed=1.3&idleTimeLimit=0.5" target="_blank"><img src="https://asciinema.org/a/HgqbLitk1T0DvFZWitgee7xfO.svg" /></a>
-++++
-
 Are you hosting a **coworking space**, a **hot-desk office** or a community space like a **hacker space**?
 
 Desks are a limited resource.
