@@ -12,7 +12,7 @@ fileServerSettings ::
   m StaticSettings
 fileServerSettings path =
   withRunInIO $ \runInIO ->
-    pure $ case defaultFileServerSettings path of
+    pure $ case defaultWebAppSettings path of
       defaultSettings@StaticSettings {ssLookupFile, ssGetMimeType} ->
         defaultSettings
           { ssLookupFile = \pieces -> do
