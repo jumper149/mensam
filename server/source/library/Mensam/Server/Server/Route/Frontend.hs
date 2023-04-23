@@ -6,50 +6,50 @@ import Mensam.Server.Configuration
 
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
+import Mensam.Server.Configuration.BaseUrl
+import Numeric.Natural
 import Servant
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as H.A
-import Mensam.Server.Configuration.BaseUrl
-import Numeric.Natural
 
 handler ::
   (MonadConfigured m, MonadLogger m, MonadUnliftIO m) =>
   ServerT API m
 handler _ = do
-    baseUrl <- configBaseUrl <$> configuration
-    let depth = Just 1
-    pure $
-        docTypeHtml $ do
-            H.head $ do
-                meta ! charset "UTF-8"
-                H.title "Mensam"
-                link
-                  ! rel "icon"
-                  ! type_ "image/png"
-                  ! sizes "32x32"
-                  ! hrefWithDepth baseUrl depth "static/favicon.png"
-                link
-                  ! rel "icon"
-                  ! type_ "image/png"
-                  ! sizes "192x192"
-                  ! hrefWithDepth baseUrl depth "static/favicon-192x192.png"
-                link
-                  ! rel "icon"
-                  ! type_ "image/png"
-                  ! sizes "512x512"
-                  ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
-                link
-                  ! rel "apple-touch-icon"
-                  ! type_ "image/png"
-                  ! sizes "512x512"
-                  ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
-                script ! src (withDepth baseUrl depth "static/spa.js") $ ""
-            body $ do
-                H.div ! H.A.id "myapp" $ ""
-                script
-                    "var app = Elm.Main.init({\
-                    \  node: document.getElementById('myapp')\
-                    \});"
+  baseUrl <- configBaseUrl <$> configuration
+  let depth = Just 1
+  pure $
+    docTypeHtml $ do
+      H.head $ do
+        meta ! charset "UTF-8"
+        H.title "Mensam"
+        link
+          ! rel "icon"
+          ! type_ "image/png"
+          ! sizes "32x32"
+          ! hrefWithDepth baseUrl depth "static/favicon.png"
+        link
+          ! rel "icon"
+          ! type_ "image/png"
+          ! sizes "192x192"
+          ! hrefWithDepth baseUrl depth "static/favicon-192x192.png"
+        link
+          ! rel "icon"
+          ! type_ "image/png"
+          ! sizes "512x512"
+          ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
+        link
+          ! rel "apple-touch-icon"
+          ! type_ "image/png"
+          ! sizes "512x512"
+          ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
+        script ! src (withDepth baseUrl depth "static/spa.js") $ ""
+      body $ do
+        H.div ! H.A.id "myapp" $ ""
+        script
+          "var app = Elm.Main.init({\
+          \  node: document.getElementById('myapp')\
+          \});"
 
 hrefWithDepth ::
   BaseUrl ->
