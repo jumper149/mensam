@@ -3,21 +3,26 @@ module Mensam.Server.Server.Route.Frontend where
 import Mensam.API.Route.Frontend
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Configuration
-
-import Control.Monad.IO.Unlift
-import Control.Monad.Logger.CallStack
 import Mensam.Server.Configuration.BaseUrl
+
+import Control.Monad.Logger.CallStack
+import Data.Text qualified as T
 import Numeric.Natural
 import Servant
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as H.A
 
 handler ::
-  (MonadConfigured m, MonadLogger m, MonadUnliftIO m) =>
+  (MonadConfigured m, MonadLogger m) =>
   ServerT API m
-handler _ = do
+handler segments = do
   baseUrl <- configBaseUrl <$> configuration
-  let depth = Just 1
+  let depth =
+        case segments of
+          [] -> Just 0
+          _ -> Just $ toEnum $ length segments - 1
+  logInfo "Serve frontend."
+  logDebug $ "Frontend will be using path: " <> T.pack (show segments)
   pure $
     docTypeHtml $ do
       H.head $ do
