@@ -79,12 +79,56 @@ element model =
                             ]
                         <|
                             Element.column
-                                []
-                                [ Element.text "Create reservation"
-                                , Element.Input.button []
-                                    { onPress = Just <| MessagePure <| ViewDetailed Nothing
-                                    , label = Element.text "Abort"
-                                    }
+                                [ Element.spacing 20
+                                , Element.width Element.fill
+                                ]
+                                [ Element.el
+                                    [ Element.Font.size 30
+                                    , Element.Font.hairline
+                                    ]
+                                  <|
+                                    Element.text "Create reservation"
+                                , Element.row
+                                    [ Element.width Element.fill
+                                    , Element.spacing 10
+                                    ]
+                                    [ Element.Input.button
+                                        [ Element.Background.color Mensam.Color.bright.yellow
+                                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
+                                        , Element.Font.color Mensam.Color.dark.black
+                                        , Element.width Element.fill
+                                        , Element.padding 10
+                                        ]
+                                        { onPress = Just <| MessagePure <| ViewDetailed Nothing
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                ]
+                                            <|
+                                                Element.text "Abort"
+                                        }
+                                    , Element.Input.button
+                                        [ Element.Background.color Mensam.Color.bright.yellow
+                                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
+                                        , Element.Font.color Mensam.Color.dark.black
+                                        , Element.width Element.fill
+                                        , Element.padding 10
+                                        ]
+                                        { onPress = Just <| MessagePure <| ViewDetailed Nothing
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                ]
+                                            <|
+                                                Element.text "Submit"
+                                        }
+                                    ]
                                 ]
         ]
     <|
