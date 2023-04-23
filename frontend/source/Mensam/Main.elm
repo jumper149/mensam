@@ -65,16 +65,7 @@ type Route
 
 
 routeToUrl : Route -> String
-routeToUrl route =
-    case route of
-        RouteLogin _ ->
-            "login"
-
-        RouteRegister ->
-            "register"
-
-        RouteSpaces ->
-            "spaces"
+routeToUrl _ = Url.Builder.absolute [] []
 
 
 routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
@@ -120,10 +111,10 @@ init _ url navigationKey =
         model =
             case Url.Parser.parse urlParser url of
                 Nothing ->
-                    update (SetModel (RouteLogin Nothing)) modelInit
+                    update (SetUrl (RouteLogin Nothing)) modelInit
 
                 Just route ->
-                    update (SetModel route) modelInit
+                    update (SetUrl route) modelInit
     in
     model
 
