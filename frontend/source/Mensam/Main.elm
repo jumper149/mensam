@@ -65,7 +65,8 @@ type Route
 
 
 routeToUrl : Route -> String
-routeToUrl _ = Url.Builder.absolute [] []
+routeToUrl _ =
+    Url.Builder.absolute [] []
 
 
 routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
@@ -128,11 +129,8 @@ type Message
     | ViewErrors
     | HideErrors
     | MessageRegister Mensam.Screen.Register.Message
-    | SwitchScreenRegister
     | MessageLogin Mensam.Screen.Login.Message
-    | SwitchScreenLogin (Maybe Mensam.Screen.Login.Model)
     | MessageSpaces Mensam.Screen.Spaces.Message
-    | SwitchScreenSpaces
     | MessageSpace Mensam.Screen.Space.Message
     | SwitchScreenSpace Int
 
@@ -195,16 +193,13 @@ update message (MkModel model) =
                 Mensam.Screen.Register.Submitted ->
                     case model.screen of
                         ScreenRegister screenModel ->
-                            update (SwitchScreenLogin <| Just { username = screenModel.username, password = screenModel.password, hint = "" }) <| MkModel model
+                            update (SetUrl <| RouteLogin <| Just { username = screenModel.username, password = screenModel.password, hint = "" }) <| MkModel model
 
                         _ ->
                             update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
 
                 Mensam.Screen.Register.Login ->
                     update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Screen.Login.init }
-
-        SwitchScreenRegister ->
-            update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
 
         MessageLogin (Mensam.Screen.Login.MessagePure m) ->
             case model.screen of
@@ -233,15 +228,7 @@ update message (MkModel model) =
                     update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
 
                 Mensam.Screen.Login.SetSession x ->
-                    update SwitchScreenSpaces <| MkModel { model | authenticated = Just x }
-
-        SwitchScreenLogin maybeInitLogin ->
-            case maybeInitLogin of
-                Nothing ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Screen.Login.init }
-
-                Just initLogin ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenLogin initLogin }
+                    update (SetUrl RouteSpaces) <| MkModel { model | authenticated = Just x }
 
         MessageSpaces (Mensam.Screen.Spaces.MessagePure m) ->
             case model.screen of
@@ -268,10 +255,6 @@ update message (MkModel model) =
 
                 Mensam.Screen.Spaces.ChooseSpace { id } ->
                     update (SwitchScreenSpace id) <| MkModel model
-
-        SwitchScreenSpaces ->
-            update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <|
-                MkModel { model | screen = ScreenSpaces Mensam.Screen.Spaces.init }
 
         MessageSpace (Mensam.Screen.Space.MessagePure m) ->
             case model.screen of
@@ -389,7 +372,7 @@ elementNavigationBar (MkModel model) =
     let
         tabDescriptions =
             [ { name = "Spaces"
-              , message = SwitchScreenSpaces
+              , message = SetUrl RouteSpaces
               , active =
                     case model.screen of
                         ScreenSpaces _ ->
@@ -483,7 +466,7 @@ elementNavigationBar (MkModel model) =
             case model.authenticated of
                 Nothing ->
                     Element.el
-                        [ Element.Events.onClick <| SwitchScreenLogin Nothing
+                        [ Element.Events.onClick <| SetUrl <| RouteLogin Nothing
                         , Element.height Element.fill
                         , Element.paddingXY 20 0
                         , Element.alignRight
