@@ -7,5 +7,5 @@ Modify `deployment.json` and use the name of a configuration.
 * `development`: Development configuration
 
 ```
-echo "\"development\"" > deployment.json
+echo "\"nixpublic\"" > deployment.json
 ```
