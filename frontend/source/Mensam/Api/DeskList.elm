@@ -6,6 +6,7 @@ import Json.Decode
 import Json.Encode
 import Mensam.Jwt
 import Time
+import Url.Builder
 
 
 type alias Request =
@@ -51,7 +52,13 @@ request body handleResult =
         , headers =
             [ Mensam.Jwt.authorizationHeader body.jwt
             ]
-        , url = "api/desk/list"
+        , url =
+            Url.Builder.absolute
+                [ "api"
+                , "desk"
+                , "list"
+                ]
+                []
         , body = Http.jsonBody <| encodeBody body
         , expect = Http.expectStringResponse handleResult responseResult
         , timeout = Nothing

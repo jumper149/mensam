@@ -6,6 +6,7 @@ import Iso8601
 import Json.Decode
 import Mensam.Jwt
 import Time
+import Url.Builder
 
 
 type alias Request =
@@ -30,7 +31,12 @@ request body handleResult =
     Http.request
         { method = "POST"
         , headers = [ Http.header "Authorization" ("Basic " ++ Base64.encode (body.username ++ ":" ++ body.password)) ]
-        , url = "api/login"
+        , url =
+            Url.Builder.absolute
+                [ "api"
+                , "login"
+                ]
+                []
         , body = Http.emptyBody
         , expect = Http.expectStringResponse handleResult responseResult
         , timeout = Nothing

@@ -3,6 +3,7 @@ module Mensam.Api.Register exposing (..)
 import Http
 import Json.Decode
 import Json.Encode
+import Url.Builder
 
 
 type alias Request =
@@ -23,7 +24,12 @@ request body handleResult =
     Http.request
         { method = "POST"
         , headers = []
-        , url = "api/register"
+        , url =
+            Url.Builder.absolute
+                [ "api"
+                , "register"
+                ]
+                []
         , body = Http.jsonBody <| encodeBody body
         , expect = Http.expectStringResponse handleResult responseResult
         , timeout = Nothing
