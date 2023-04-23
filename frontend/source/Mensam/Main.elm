@@ -275,7 +275,7 @@ view (MkModel model) =
             , Element.Font.color Mensam.Color.dark.black
             , Element.Font.regular
             , Element.Font.size 20
-            , Mensam.Font.families
+            , Element.Font.family [ Mensam.Font.sansSerif ]
             ]
           <|
             Element.el

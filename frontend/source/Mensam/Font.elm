@@ -1,25 +1,6 @@
 module Mensam.Font exposing (..)
 
-import Element
 import Element.Font
-
-
-families : Element.Attribute msg
-families =
-    Element.Font.family
-        [ Element.Font.external
-            { url = "static/fonts.css"
-            , name = "Fira Sans"
-            }
-        , Element.Font.external
-            { url = "static/fonts.css"
-            , name = "Fira Sans Condensed"
-            }
-        , Element.Font.external
-            { url = "static/fonts.css"
-            , name = "Fira Sans Mono"
-            }
-        ]
 
 
 sansSerif : Element.Font.Font

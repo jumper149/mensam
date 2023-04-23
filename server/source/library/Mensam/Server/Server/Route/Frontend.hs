@@ -49,6 +49,10 @@ handler segments = do
           ! sizes "512x512"
           ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
         script ! src (withDepth baseUrl depth "static/spa.js") $ ""
+        link
+          ! rel "stylesheet"
+          ! type_ "text/css"
+          ! hrefWithDepth baseUrl depth "static/fonts.css"
       body $ do
         H.div ! H.A.id "myapp" $ ""
         script
