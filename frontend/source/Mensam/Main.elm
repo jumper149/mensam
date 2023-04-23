@@ -18,6 +18,7 @@ import Platform.Cmd
 import Platform.Sub
 import Time
 import Url
+import Url.Builder
 import Url.Parser
 
 
@@ -35,7 +36,8 @@ main =
 
 type Model
     = MkModel
-        { screen : Screen
+        { navigationKey : Browser.Navigation.Key
+        , screen : Screen
         , authenticated : Maybe Authentication
         , error : List String
         , viewErrors : Bool
@@ -57,9 +59,22 @@ type Screen
 
 
 type Route
-    = RouteLogin
+    = RouteLogin (Maybe Mensam.Screen.Login.Model)
     | RouteRegister
     | RouteSpaces
+
+
+routeToUrl : Route -> String
+routeToUrl route =
+    case route of
+        RouteLogin _ ->
+            "login"
+
+        RouteRegister ->
+            "register"
+
+        RouteSpaces ->
+            "spaces"
 
 
 onUrlChange : Url.Url -> Message
@@ -67,37 +82,40 @@ onUrlChange url =
     let
         parser =
             Url.Parser.oneOf
-                [ Url.Parser.map RouteLogin <| Url.Parser.top
-                , Url.Parser.map RouteLogin <| Url.Parser.s "login"
+                [ Url.Parser.map (RouteLogin Nothing) <| Url.Parser.top
+                , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
                 , Url.Parser.map RouteRegister <| Url.Parser.s "register"
                 , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
                 ]
     in
     case Url.Parser.parse parser url of
         Nothing ->
-            SwitchScreenLogin Nothing
+            SetRoute (RouteLogin Nothing)
 
-        Just RouteLogin ->
-            SwitchScreenLogin Nothing
+        Just route ->
+            case route of
+                RouteLogin x ->
+                    SwitchScreenLogin x
 
-        Just RouteRegister ->
-            SwitchScreenRegister
+                RouteRegister ->
+                    SwitchScreenRegister
 
-        Just RouteSpaces ->
-            SwitchScreenSpaces
+                RouteSpaces ->
+                    SwitchScreenSpaces
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
-init _ url _ =
+init _ url navigationKey =
     let
         model =
-            MkModel { screen = ScreenLogin Mensam.Screen.Login.init, authenticated = Nothing, error = [], viewErrors = False }
+            MkModel { navigationKey = navigationKey, screen = ScreenLogin Mensam.Screen.Login.init, authenticated = Nothing, error = [], viewErrors = False }
     in
     update (onUrlChange url) model
 
 
 type Message
     = EmptyMessage
+    | SetRoute Route
     | ReportError String
     | ClearErrors
     | ViewErrors
@@ -117,6 +135,24 @@ update message (MkModel model) =
     case message of
         EmptyMessage ->
             ( MkModel model, Platform.Cmd.none )
+
+        SetRoute route ->
+            let
+                updateUrlCmd =
+                    Browser.Navigation.pushUrl model.navigationKey <| routeToUrl route
+
+                ( switchedModel, switchedCmd ) =
+                    case route of
+                        RouteLogin x ->
+                            update (SwitchScreenLogin x) <| MkModel model
+
+                        RouteRegister ->
+                            update SwitchScreenRegister <| MkModel model
+
+                        RouteSpaces ->
+                            update SwitchScreenSpaces <| MkModel model
+            in
+            ( switchedModel, Platform.Cmd.batch [ updateUrlCmd, switchedCmd ] )
 
         ReportError err ->
             update EmptyMessage <| MkModel { model | error = err :: model.error }
@@ -232,7 +268,8 @@ update message (MkModel model) =
                     update (SwitchScreenSpace id) <| MkModel model
 
         SwitchScreenSpaces ->
-            update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <| MkModel { model | screen = ScreenSpaces Mensam.Screen.Spaces.init }
+            update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <|
+                MkModel { model | screen = ScreenSpaces Mensam.Screen.Spaces.init }
 
         MessageSpace (Mensam.Screen.Space.MessagePure m) ->
             case model.screen of
