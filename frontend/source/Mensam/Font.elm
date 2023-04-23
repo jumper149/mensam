@@ -8,15 +8,15 @@ families : Element.Attribute msg
 families =
     Element.Font.family
         [ Element.Font.external
-            { url = "fonts.css"
+            { url = "static/fonts.css"
             , name = "Fira Sans"
             }
         , Element.Font.external
-            { url = "fonts.css"
+            { url = "static/fonts.css"
             , name = "Fira Sans Condensed"
             }
         , Element.Font.external
-            { url = "fonts.css"
+            { url = "static/fonts.css"
             , name = "Fira Sans Mono"
             }
         ]

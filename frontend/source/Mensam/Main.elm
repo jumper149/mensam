@@ -18,6 +18,7 @@ import Platform.Cmd
 import Platform.Sub
 import Time
 import Url
+import Url.Parser
 
 
 main : Program () Model Message
@@ -28,7 +29,7 @@ main =
         , update = update
         , subscriptions = \_ -> Platform.Sub.none
         , onUrlRequest = \_ -> EmptyMessage
-        , onUrlChange = \_ -> EmptyMessage
+        , onUrlChange = onUrlChange
         }
 
 
@@ -55,9 +56,44 @@ type Screen
     | NoScreen
 
 
+type Route
+    = RouteLogin
+    | RouteRegister
+    | RouteSpaces
+
+
+onUrlChange : Url.Url -> Message
+onUrlChange url =
+    let
+        parser =
+            Url.Parser.oneOf
+                [ Url.Parser.map RouteLogin <| Url.Parser.top
+                , Url.Parser.map RouteLogin <| Url.Parser.s "login"
+                , Url.Parser.map RouteRegister <| Url.Parser.s "register"
+                , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
+                ]
+    in
+    case Url.Parser.parse parser url of
+        Nothing ->
+            SwitchScreenLogin Nothing
+
+        Just RouteLogin ->
+            SwitchScreenLogin Nothing
+
+        Just RouteRegister ->
+            SwitchScreenRegister
+
+        Just RouteSpaces ->
+            SwitchScreenSpaces
+
+
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
-init _ _ _ =
-    ( MkModel { screen = ScreenLogin Mensam.Screen.Login.init, authenticated = Nothing, error = [], viewErrors = False }, Platform.Cmd.none )
+init _ url _ =
+    let
+        model =
+            MkModel { screen = ScreenLogin Mensam.Screen.Login.init, authenticated = Nothing, error = [], viewErrors = False }
+    in
+    update (onUrlChange url) model
 
 
 type Message

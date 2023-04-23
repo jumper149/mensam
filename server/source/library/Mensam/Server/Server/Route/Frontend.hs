@@ -43,10 +43,6 @@ handler _ = do
                   ! type_ "image/png"
                   ! sizes "512x512"
                   ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
-                link
-                  ! rel "stylesheet"
-                  ! type_ "text/css"
-                  ! hrefWithDepth baseUrl depth "static/stylesheet.css"
                 script ! src (withDepth baseUrl depth "static/spa.js") $ ""
             body $ do
                 H.div ! H.A.id "myapp" $ ""
