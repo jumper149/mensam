@@ -77,45 +77,61 @@ routeToUrl route =
             "spaces"
 
 
+routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
+routeToModelUpdate route (MkModel model) =
+    case route of
+        RouteLogin maybeInitLogin ->
+            case maybeInitLogin of
+                Nothing ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Screen.Login.init }
+
+                Just initLogin ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenLogin initLogin }
+
+        RouteRegister ->
+            update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
+
+        RouteSpaces ->
+            update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <|
+                MkModel { model | screen = ScreenSpaces Mensam.Screen.Spaces.init }
+
+
+urlParser : Url.Parser.Parser (Route -> c) c
+urlParser =
+    Url.Parser.oneOf
+        [ Url.Parser.map (RouteLogin Nothing) <| Url.Parser.top
+        , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
+        , Url.Parser.map RouteRegister <| Url.Parser.s "register"
+        , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
+        ]
+
+
 onUrlChange : Url.Url -> Message
-onUrlChange url =
-    let
-        parser =
-            Url.Parser.oneOf
-                [ Url.Parser.map (RouteLogin Nothing) <| Url.Parser.top
-                , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
-                , Url.Parser.map RouteRegister <| Url.Parser.s "register"
-                , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
-                ]
-    in
-    case Url.Parser.parse parser url of
-        Nothing ->
-            SetRoute (RouteLogin Nothing)
-
-        Just route ->
-            case route of
-                RouteLogin x ->
-                    SwitchScreenLogin x
-
-                RouteRegister ->
-                    SwitchScreenRegister
-
-                RouteSpaces ->
-                    SwitchScreenSpaces
+onUrlChange _ =
+    EmptyMessage
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
 init _ url navigationKey =
     let
-        model =
+        modelInit =
             MkModel { navigationKey = navigationKey, screen = ScreenLogin Mensam.Screen.Login.init, authenticated = Nothing, error = [], viewErrors = False }
+
+        model =
+            case Url.Parser.parse urlParser url of
+                Nothing ->
+                    update (SetModel (RouteLogin Nothing)) modelInit
+
+                Just route ->
+                    update (SetModel route) modelInit
     in
-    update (onUrlChange url) model
+    model
 
 
 type Message
     = EmptyMessage
-    | SetRoute Route
+    | SetUrl Route
+    | SetModel Route
     | ReportError String
     | ClearErrors
     | ViewErrors
@@ -136,23 +152,18 @@ update message (MkModel model) =
         EmptyMessage ->
             ( MkModel model, Platform.Cmd.none )
 
-        SetRoute route ->
+        SetUrl route ->
             let
                 updateUrlCmd =
                     Browser.Navigation.pushUrl model.navigationKey <| routeToUrl route
 
-                ( switchedModel, switchedCmd ) =
-                    case route of
-                        RouteLogin x ->
-                            update (SwitchScreenLogin x) <| MkModel model
-
-                        RouteRegister ->
-                            update SwitchScreenRegister <| MkModel model
-
-                        RouteSpaces ->
-                            update SwitchScreenSpaces <| MkModel model
+                ( setModel, setCmd ) =
+                    update (SetModel route) <| MkModel model
             in
-            ( switchedModel, Platform.Cmd.batch [ updateUrlCmd, switchedCmd ] )
+            ( setModel, Platform.Cmd.batch [ updateUrlCmd, setCmd ] )
+
+        SetModel route ->
+            routeToModelUpdate route (MkModel model)
 
         ReportError err ->
             update EmptyMessage <| MkModel { model | error = err :: model.error }
