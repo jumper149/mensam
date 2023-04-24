@@ -9,6 +9,7 @@ import Html.Attributes
 import Mensam.Api.DeskList
 import Mensam.Color
 import Mensam.Font
+import Mensam.Http
 import Mensam.Jwt
 import Time
 
@@ -296,5 +297,5 @@ deskList jwt model =
                 Ok (Mensam.Api.DeskList.ErrorAuth error) ->
                     MessageEffect <| ReportError <| Debug.toString error
 
-                Err err ->
-                    MessageEffect <| ReportError <| Debug.toString err
+                Err error ->
+                    MessageEffect <| ReportError <| Mensam.Http.errorToString error

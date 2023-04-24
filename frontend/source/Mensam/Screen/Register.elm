@@ -10,6 +10,7 @@ import Json.Decode
 import Mensam.Api.Register
 import Mensam.Color
 import Mensam.Font
+import Mensam.Http
 
 
 type alias Model =
@@ -189,5 +190,5 @@ register model =
                 Ok (Mensam.Api.Register.ErrorBody err) ->
                     MessageEffect <| ReportError <| Debug.toString err
 
-                Err err ->
-                    MessageEffect <| ReportError <| Debug.toString err
+                Err error ->
+                    MessageEffect <| ReportError <| Mensam.Http.errorToString error

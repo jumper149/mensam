@@ -10,6 +10,7 @@ import Json.Decode
 import Mensam.Api.Login
 import Mensam.Color
 import Mensam.Font
+import Mensam.Http
 import Mensam.Jwt
 import Time
 
@@ -199,5 +200,5 @@ login model =
                 Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthIndefinite) ->
                     MessageEffect <| ReportError ""
 
-                Err err ->
-                    MessageEffect <| ReportError <| Debug.toString err
+                Err error ->
+                    MessageEffect <| ReportError <| Mensam.Http.errorToString error

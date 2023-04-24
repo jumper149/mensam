@@ -7,6 +7,7 @@ import Element.Font
 import Html.Attributes
 import Mensam.Api.SpaceList
 import Mensam.Font
+import Mensam.Http
 import Mensam.Jwt
 
 
@@ -168,5 +169,5 @@ spaceList jwt =
                 Ok (Mensam.Api.SpaceList.ErrorAuth error) ->
                     MessageEffect <| ReportError <| Debug.toString error
 
-                Err err ->
-                    MessageEffect <| ReportError <| Debug.toString err
+                Err error ->
+                    MessageEffect <| ReportError <| Mensam.Http.errorToString error
