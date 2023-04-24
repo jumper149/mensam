@@ -461,7 +461,7 @@ elementNavigationBar (MkModel model) =
                                     [ Element.Font.family [ Mensam.Font.condensed ]
                                     , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
                                     , Element.width <| Element.px 200
-                                    , Element.padding 15
+                                    , Element.padding 12
                                     , Element.Background.color Mensam.Color.bright.black
                                     , Element.Font.color Mensam.Color.bright.white
                                     , Element.mouseOver
@@ -475,7 +475,7 @@ elementNavigationBar (MkModel model) =
                                         [ Element.spacing 10
                                         ]
                                     <|
-                                        List.map (\error -> Element.paragraph [] [ Element.text <| Mensam.Error.toString error ]) errors
+                                        List.map Mensam.Error.toElement errors
 
                             else
                                 Element.none
