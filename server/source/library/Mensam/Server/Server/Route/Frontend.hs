@@ -54,18 +54,18 @@ handler segments = do
           ! hrefWithDepth baseUrl depth "static/fonts.css"
         script ! src (withDepth baseUrl depth "static/spa.js") $ ""
       body $ do
-        H.div ! H.A.id "myapp" $ ""
+        H.div ! H.A.id "mensam-frontend" $ ""
         script
-          "var storedData = localStorage.getItem('myapp-model');\n\
+          "var storedData = localStorage.getItem('mensam-frontend-storage');\n\
           \var flags = storedData ? JSON.parse(storedData) : null;\n\
           \\n\
           \var app = Elm.Main.init({\n\
-          \  node: document.getElementById('myapp'),\n\
+          \  node: document.getElementById('mensam-frontend'),\n\
           \  flags: flags\n\
           \});\n\
           \\n\
           \app.ports.setStorageJson.subscribe(function(state) {\n\
-          \  localStorage.setItem('myapp-model', JSON.stringify(state));\n\
+          \  localStorage.setItem('mensam-frontend-storage', JSON.stringify(state));\n\
           \});\n"
 
 hrefWithDepth ::
