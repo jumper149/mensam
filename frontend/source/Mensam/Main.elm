@@ -1,4 +1,4 @@
-port module Mensam.Main exposing (..)
+module Mensam.Main exposing (..)
 
 import Browser
 import Browser.Navigation
@@ -7,7 +7,6 @@ import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
-import Iso8601
 import Json.Decode
 import Json.Encode
 import Mensam.Color
@@ -17,6 +16,7 @@ import Mensam.Screen.Login
 import Mensam.Screen.Register
 import Mensam.Screen.Space
 import Mensam.Screen.Spaces
+import Mensam.Storage
 import Platform.Cmd
 import Platform.Sub
 import Time
@@ -111,35 +111,6 @@ onUrlChange _ =
     EmptyMessage
 
 
-port setStorage : Json.Encode.Value -> Cmd msg
-
-
-type alias Storage =
-    Authentication
-
-
-decode : Json.Decode.Decoder Storage
-decode =
-    Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
-        (Json.Decode.field "jwt" Mensam.Jwt.decode)
-        (Json.Decode.field "expiration" <| Json.Decode.nullable Iso8601.decoder)
-
-
-encode : Storage -> Json.Encode.Value
-encode storage =
-    Json.Encode.object
-        [ ( "jwt", Mensam.Jwt.encode storage.jwt )
-        , ( "expiration"
-          , case storage.expiration of
-                Nothing ->
-                    Json.Encode.null
-
-                Just expiration ->
-                    Iso8601.encode expiration
-          )
-        ]
-
-
 init : Json.Encode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
 init flags url navigationKey =
     let
@@ -148,8 +119,8 @@ init flags url navigationKey =
                 { navigationKey = navigationKey
                 , screen = ScreenLogin Mensam.Screen.Login.init
                 , authenticated =
-                    case Json.Decode.decodeValue decode flags of
-                        Ok storage ->
+                    case Json.Decode.decodeValue Mensam.Storage.decode flags of
+                        Ok (Mensam.Storage.MkStorage storage) ->
                             Just storage
 
                         Err _ ->
@@ -279,7 +250,7 @@ update message (MkModel model) =
                     let
                         ( modelAuthenticated, cmdAuthenticated ) =
                             ( MkModel { model | authenticated = Just x }
-                            , setStorage (encode x)
+                            , Mensam.Storage.setStorage <| Mensam.Storage.MkStorage x
                             )
 
                         ( modelUpdated, cmdUpdated ) =

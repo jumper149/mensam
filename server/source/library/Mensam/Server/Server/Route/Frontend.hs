@@ -64,7 +64,7 @@ handler segments = do
           \  flags: flags\n\
           \});\n\
           \\n\
-          \app.ports.setStorage.subscribe(function(state) {\n\
+          \app.ports.setStorageJson.subscribe(function(state) {\n\
           \  localStorage.setItem('myapp-model', JSON.stringify(state));\n\
           \});\n"
 
