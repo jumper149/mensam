@@ -149,7 +149,7 @@ type Message
     | ClearErrors
     | ViewErrors
     | HideErrors
-    | MessageLogout
+    | Logout
     | MessageRegister Mensam.Screen.Register.Message
     | MessageLogin Mensam.Screen.Login.Message
     | MessageSpaces Mensam.Screen.Spaces.Message
@@ -187,7 +187,7 @@ update message (MkModel model) =
         HideErrors ->
             update ClearErrors <| MkModel { model | viewErrors = False }
 
-        MessageLogout ->
+        Logout ->
             ( MkModel { model | authenticated = Nothing }
             , Mensam.Storage.unsetStorage
             )
@@ -515,10 +515,12 @@ elementNavigationBar (MkModel model) =
 
                 Just _ ->
                     Element.el
-                        [ Element.height Element.fill
+                        [ Element.Events.onClick Logout
+                        , Element.height Element.fill
                         , Element.paddingXY 20 0
                         , Element.alignRight
-                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.3 ]
                         ]
                     <|
                         Element.el
@@ -526,7 +528,7 @@ elementNavigationBar (MkModel model) =
                             , Element.centerY
                             ]
                         <|
-                            Element.text "Signed in"
+                            Element.text "Sign out"
 
         title =
             Element.el
