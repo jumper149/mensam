@@ -50,6 +50,11 @@
         version = "2.0.4";
       };
 
+      "zwilias/elm-rosetree" = {
+        sha256 = "03ki3c3bfipnxzdk969j46qjvx7k2mfasg2pavhvbll3fnb7jqdi";
+        version = "1.5.0";
+      };
+
       "elm/bytes" = {
         sha256 = "02ywbf52akvxclpxwj9n04jydajcbsbcbsnjs53yjc5lwck3abwj";
         version = "1.0.8";

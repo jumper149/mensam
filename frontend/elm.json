@@ -15,7 +15,8 @@
             "elm/url": "1.0.0",
             "mdgriffith/elm-ui": "1.1.8",
             "rtfeldman/elm-iso8601-date-strings": "1.1.4",
-            "truqu/elm-base64": "2.0.4"
+            "truqu/elm-base64": "2.0.4",
+            "zwilias/elm-rosetree": "1.5.0"
         },
         "indirect": {
             "elm/bytes": "1.0.8",
