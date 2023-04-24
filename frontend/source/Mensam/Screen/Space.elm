@@ -183,7 +183,7 @@ element model =
                                         [ Element.width <| Element.maximum 100 <| Element.fill ]
                                     <|
                                         Element.text <|
-                                            Debug.toString x.desk.id
+                                            String.fromInt x.desk.id
                   }
                 , { header =
                         Element.el
@@ -223,7 +223,7 @@ element model =
                                         [ Element.width <| Element.maximum 100 <| Element.fill ]
                                     <|
                                         Element.text <|
-                                            Debug.toString x.desk.name
+                                            x.desk.name
                   }
                 ]
             }

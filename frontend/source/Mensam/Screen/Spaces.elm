@@ -83,7 +83,7 @@ element model =
                                         [ Element.width <| Element.maximum 100 <| Element.fill ]
                                     <|
                                         Element.text <|
-                                            Debug.toString x.id
+                                            String.fromInt x.id
                   }
                 , { header =
                         Element.el
@@ -123,7 +123,7 @@ element model =
                                         [ Element.width <| Element.maximum 100 <| Element.fill ]
                                     <|
                                         Element.text <|
-                                            Debug.toString x.name
+                                            x.name
                   }
                 ]
             }
