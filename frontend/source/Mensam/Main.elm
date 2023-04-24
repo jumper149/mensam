@@ -327,7 +327,7 @@ view (MkModel model) =
           <|
             Element.el
                 [ Element.htmlAttribute <| Html.Attributes.style "min-width" "393px"
-                , Element.htmlAttribute <| Html.Attributes.style "max-width" "1000px"
+                , Element.htmlAttribute <| Html.Attributes.style "max-width" "851px"
                 , Element.htmlAttribute <| Html.Attributes.style "margin-left" "auto"
                 , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
                 , Element.width Element.fill
