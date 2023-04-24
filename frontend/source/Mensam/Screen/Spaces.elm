@@ -6,8 +6,8 @@ import Element.Events
 import Element.Font
 import Html.Attributes
 import Mensam.Api.SpaceList
+import Mensam.Error
 import Mensam.Font
-import Mensam.Http
 import Mensam.Jwt
 
 
@@ -150,7 +150,7 @@ updatePure message model =
 
 
 type MessageEffect
-    = ReportError String
+    = ReportError Mensam.Error.Error
     | RefreshSpaces
     | ChooseSpace { id : Int }
 
@@ -164,10 +164,13 @@ spaceList jwt =
                     MessagePure <| SetSpaces value.spaces
 
                 Ok (Mensam.Api.SpaceList.ErrorBody error) ->
-                    MessageEffect <| ReportError <| Debug.toString error
+                    MessageEffect <| ReportError <| Mensam.Error.message "Bad request body" <| Mensam.Error.message error <| Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceList.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Debug.toString error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Authentication" <|
+                                Mensam.Api.SpaceList.errorAuth error
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Http.errorToString error
+                    MessageEffect <| ReportError <| Mensam.Error.http error

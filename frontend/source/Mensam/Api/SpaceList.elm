@@ -3,6 +3,7 @@ module Mensam.Api.SpaceList exposing (..)
 import Http
 import Json.Decode
 import Json.Encode
+import Mensam.Error
 import Mensam.Jwt
 import Url.Builder
 
@@ -23,6 +24,19 @@ type ErrorAuth
     = ErrorAuthUsername
     | ErrorAuthPassword
     | ErrorAuthIndefinite
+
+
+errorAuth : ErrorAuth -> Mensam.Error.Error
+errorAuth error =
+    case error of
+        ErrorAuthUsername ->
+            Mensam.Error.message "Unknown username" Mensam.Error.undefined
+
+        ErrorAuthPassword ->
+            Mensam.Error.message "Bad password" Mensam.Error.undefined
+
+        ErrorAuthIndefinite ->
+            Mensam.Error.message "Indefinite" Mensam.Error.undefined
 
 
 request : Request -> (Result Http.Error Response -> a) -> Cmd a

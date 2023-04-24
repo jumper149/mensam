@@ -9,8 +9,8 @@ import Html.Events
 import Json.Decode
 import Mensam.Api.Register
 import Mensam.Color
+import Mensam.Error
 import Mensam.Font
-import Mensam.Http
 
 
 type alias Model =
@@ -156,7 +156,7 @@ updatePure message model =
 
 
 type MessageEffect
-    = ReportError String
+    = ReportError Mensam.Error.Error
     | Submit
     | Submitted
     | Login
@@ -187,8 +187,8 @@ register model =
                 Ok Mensam.Api.Register.Success ->
                     MessageEffect <| Submitted
 
-                Ok (Mensam.Api.Register.ErrorBody err) ->
-                    MessageEffect <| ReportError <| Debug.toString err
+                Ok (Mensam.Api.Register.ErrorBody error) ->
+                    MessageEffect <| ReportError <| Mensam.Error.message "Bad request body" <| Mensam.Error.message error <| Mensam.Error.undefined
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Http.errorToString error
+                    MessageEffect <| ReportError <| Mensam.Error.http error

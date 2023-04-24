@@ -9,8 +9,8 @@ import Html.Events
 import Json.Decode
 import Mensam.Api.Login
 import Mensam.Color
+import Mensam.Error
 import Mensam.Font
-import Mensam.Http
 import Mensam.Jwt
 import Time
 
@@ -160,7 +160,7 @@ updatePure message model =
 
 
 type MessageEffect
-    = ReportError String
+    = ReportError Mensam.Error.Error
     | SubmitLogin
     | Register
     | SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
@@ -198,7 +198,10 @@ login model =
                     MessagePure <| SetHintPassword
 
                 Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthIndefinite) ->
-                    MessageEffect <| ReportError ""
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Authentication" <|
+                                Mensam.Error.message "Indefinite" Mensam.Error.undefined
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Http.errorToString error
+                    MessageEffect <| ReportError <| Mensam.Error.http error

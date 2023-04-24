@@ -8,8 +8,8 @@ import Element.Input
 import Html.Attributes
 import Mensam.Api.DeskList
 import Mensam.Color
+import Mensam.Error
 import Mensam.Font
-import Mensam.Http
 import Mensam.Jwt
 import Time
 
@@ -279,7 +279,7 @@ updatePure message model =
 
 
 type MessageEffect
-    = ReportError String
+    = ReportError Mensam.Error.Error
     | RefreshDesks
 
 
@@ -292,10 +292,14 @@ deskList jwt model =
                     MessagePure <| SetDesks value.desks
 
                 Ok (Mensam.Api.DeskList.ErrorBody error) ->
-                    MessageEffect <| ReportError <| Debug.toString error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Bad request body" <|
+                                Mensam.Error.message error <|
+                                    Mensam.Error.undefined
 
                 Ok (Mensam.Api.DeskList.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Debug.toString error
+                    MessageEffect <| ReportError <| Mensam.Api.DeskList.errorAuth error
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Http.errorToString error
+                    MessageEffect <| ReportError <| Mensam.Error.http error

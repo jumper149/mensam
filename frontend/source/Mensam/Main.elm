@@ -10,6 +10,7 @@ import Html.Attributes
 import Json.Decode
 import Json.Encode
 import Mensam.Color
+import Mensam.Error
 import Mensam.Font
 import Mensam.Jwt
 import Mensam.Screen.Login
@@ -42,7 +43,7 @@ type Model
         { navigationKey : Browser.Navigation.Key
         , screen : Screen
         , authenticated : Maybe Authentication
-        , error : List String
+        , errors : List Mensam.Error.Error
         , viewErrors : Bool
         }
 
@@ -125,7 +126,7 @@ init flags url navigationKey =
 
                         Err _ ->
                             Nothing
-                , error = []
+                , errors = []
                 , viewErrors = False
                 }
 
@@ -144,7 +145,7 @@ type Message
     = EmptyMessage
     | SetUrl Route
     | SetModel Route
-    | ReportError String
+    | ReportError Mensam.Error.Error
     | ClearErrors
     | ViewErrors
     | HideErrors
@@ -173,11 +174,11 @@ update message (MkModel model) =
         SetModel route ->
             routeToModelUpdate route (MkModel model)
 
-        ReportError err ->
-            update EmptyMessage <| MkModel { model | error = err :: model.error }
+        ReportError error ->
+            update EmptyMessage <| MkModel { model | errors = error :: model.errors }
 
         ClearErrors ->
-            update EmptyMessage <| MkModel { model | error = [] }
+            update EmptyMessage <| MkModel { model | errors = [] }
 
         ViewErrors ->
             update EmptyMessage <| MkModel { model | viewErrors = True }
@@ -192,7 +193,7 @@ update message (MkModel model) =
                         MkModel { model | screen = ScreenRegister <| Mensam.Screen.Register.updatePure m screenModel }
 
                 _ ->
-                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
+                    update (ReportError errorScreen) <| MkModel model
 
         MessageRegister (Mensam.Screen.Register.MessageEffect m) ->
             case m of
@@ -207,7 +208,7 @@ update message (MkModel model) =
                             )
 
                         _ ->
-                            update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
+                            update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Register.Submitted ->
                     case model.screen of
@@ -215,7 +216,7 @@ update message (MkModel model) =
                             update (SetUrl <| RouteLogin <| Just { username = screenModel.username, password = screenModel.password, hint = "" }) <| MkModel model
 
                         _ ->
-                            update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
+                            update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Register.Login ->
                     update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Screen.Login.init }
@@ -226,7 +227,7 @@ update message (MkModel model) =
                     update EmptyMessage <| MkModel { model | screen = ScreenLogin <| Mensam.Screen.Login.updatePure m screenModel }
 
                 _ ->
-                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
+                    update (ReportError errorScreen) <| MkModel model
 
         MessageLogin (Mensam.Screen.Login.MessageEffect m) ->
             case m of
@@ -241,7 +242,7 @@ update message (MkModel model) =
                             )
 
                         _ ->
-                            update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
+                            update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Login.Register ->
                     update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
@@ -264,7 +265,7 @@ update message (MkModel model) =
                     update EmptyMessage <| MkModel { model | screen = ScreenSpaces <| Mensam.Screen.Spaces.updatePure m screenModel }
 
                 _ ->
-                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
+                    update (ReportError errorScreen) <| MkModel model
 
         MessageSpaces (Mensam.Screen.Spaces.MessageEffect m) ->
             case m of
@@ -279,7 +280,7 @@ update message (MkModel model) =
                             )
 
                         Nothing ->
-                            update (ReportError "Can't make request without JWT.") <| MkModel model
+                            update (ReportError errorNoAuth) <| MkModel model
 
                 Mensam.Screen.Spaces.ChooseSpace { id } ->
                     update (SetUrl <| RouteSpace id) <| MkModel model
@@ -290,7 +291,7 @@ update message (MkModel model) =
                     update EmptyMessage <| MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.updatePure m screenModel }
 
                 _ ->
-                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
+                    update (ReportError errorScreen) <| MkModel model
 
         MessageSpace (Mensam.Screen.Space.MessageEffect m) ->
             case m of
@@ -307,10 +308,10 @@ update message (MkModel model) =
                                     )
 
                                 _ ->
-                                    update (ReportError "Can't process a message for the wrong screen.") <| MkModel model
+                                    update (ReportError errorScreen) <| MkModel model
 
                         Nothing ->
-                            update (ReportError "Can't make request without JWT.") <| MkModel model
+                            update (ReportError errorNoAuth) <| MkModel model
 
 
 view : Model -> Browser.Document Message
@@ -433,7 +434,7 @@ elementNavigationBar (MkModel model) =
             List.map viewTabDescriptions tabDescriptions
 
         errorViewer =
-            case model.error of
+            case model.errors of
                 [] ->
                     Element.none
 
@@ -474,7 +475,7 @@ elementNavigationBar (MkModel model) =
                                         [ Element.spacing 10
                                         ]
                                     <|
-                                        List.map (\message -> Element.paragraph [] [ Element.text message ]) errors
+                                        List.map (\error -> Element.paragraph [] [ Element.text <| Mensam.Error.toString error ]) errors
 
                             else
                                 Element.none
@@ -552,3 +553,13 @@ elementNavigationBar (MkModel model) =
         , Element.Font.size 17
         ]
         (title :: elementsTabDescription ++ [ errorViewer, loginStatus ])
+
+
+errorScreen : Mensam.Error.Error
+errorScreen =
+    Mensam.Error.message "Can't process a message for the wrong screen" Mensam.Error.undefined
+
+
+errorNoAuth : Mensam.Error.Error
+errorNoAuth =
+    Mensam.Error.message "Can't make request without JWT" Mensam.Error.undefined
