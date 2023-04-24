@@ -56,9 +56,17 @@ handler segments = do
       body $ do
         H.div ! H.A.id "myapp" $ ""
         script
-          "var app = Elm.Main.init({\
-          \  node: document.getElementById('myapp')\
-          \});"
+          "var storedData = localStorage.getItem('myapp-model');\n\
+          \var flags = storedData ? JSON.parse(storedData) : null;\n\
+          \\n\
+          \var app = Elm.Main.init({\n\
+          \  node: document.getElementById('myapp'),\n\
+          \  flags: flags\n\
+          \});\n\
+          \\n\
+          \app.ports.setStorage.subscribe(function(state) {\n\
+          \  localStorage.setItem('myapp-model', JSON.stringify(state));\n\
+          \});\n"
 
 hrefWithDepth ::
   BaseUrl ->

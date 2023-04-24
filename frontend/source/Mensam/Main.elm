@@ -1,4 +1,4 @@
-module Mensam.Main exposing (..)
+port module Mensam.Main exposing (..)
 
 import Browser
 import Browser.Navigation
@@ -7,6 +7,9 @@ import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
+import Iso8601
+import Json.Decode
+import Json.Encode
 import Mensam.Color
 import Mensam.Font
 import Mensam.Jwt
@@ -22,7 +25,7 @@ import Url.Builder
 import Url.Parser
 
 
-main : Program () Model Message
+main : Program Json.Encode.Value Model Message
 main =
     Browser.application
         { init = init
@@ -108,11 +111,52 @@ onUrlChange _ =
     EmptyMessage
 
 
-init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
-init _ url navigationKey =
+port setStorage : Json.Encode.Value -> Cmd msg
+
+
+type alias Storage =
+    Authentication
+
+
+decode : Json.Decode.Decoder Storage
+decode =
+    Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
+        (Json.Decode.field "jwt" Mensam.Jwt.decode)
+        (Json.Decode.field "expiration" <| Json.Decode.nullable Iso8601.decoder)
+
+
+encode : Storage -> Json.Encode.Value
+encode storage =
+    Json.Encode.object
+        [ ( "jwt", Mensam.Jwt.encode storage.jwt )
+        , ( "expiration"
+          , case storage.expiration of
+                Nothing ->
+                    Json.Encode.null
+
+                Just expiration ->
+                    Iso8601.encode expiration
+          )
+        ]
+
+
+init : Json.Encode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
+init flags url navigationKey =
     let
         modelInit =
-            MkModel { navigationKey = navigationKey, screen = ScreenLogin Mensam.Screen.Login.init, authenticated = Nothing, error = [], viewErrors = False }
+            MkModel
+                { navigationKey = navigationKey
+                , screen = ScreenLogin Mensam.Screen.Login.init
+                , authenticated =
+                    case Json.Decode.decodeValue decode flags of
+                        Ok storage ->
+                            Just storage
+
+                        Err _ ->
+                            Nothing
+                , error = []
+                , viewErrors = False
+                }
 
         model =
             case Url.Parser.parse urlParser url of
@@ -232,7 +276,16 @@ update message (MkModel model) =
                     update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
 
                 Mensam.Screen.Login.SetSession x ->
-                    update (SetUrl RouteSpaces) <| MkModel { model | authenticated = Just x }
+                    let
+                        ( modelAuthenticated, cmdAuthenticated ) =
+                            ( MkModel { model | authenticated = Just x }
+                            , setStorage (encode x)
+                            )
+
+                        ( modelUpdated, cmdUpdated ) =
+                            update (SetUrl RouteSpaces) <| modelAuthenticated
+                    in
+                    ( modelUpdated, Platform.Cmd.batch [ cmdAuthenticated, cmdUpdated ] )
 
         MessageSpaces (Mensam.Screen.Spaces.MessagePure m) ->
             case model.screen of
