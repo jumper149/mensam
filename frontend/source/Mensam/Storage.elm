@@ -22,6 +22,11 @@ setStorage =
     encode >> setStorageJson
 
 
+unsetStorage : Cmd msg
+unsetStorage =
+    setStorageJson Json.Encode.null
+
+
 decode : Json.Decode.Decoder Storage
 decode =
     Json.Decode.map2 (\jwt expiration -> MkStorage { jwt = jwt, expiration = expiration })

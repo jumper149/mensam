@@ -149,6 +149,7 @@ type Message
     | ClearErrors
     | ViewErrors
     | HideErrors
+    | MessageLogout
     | MessageRegister Mensam.Screen.Register.Message
     | MessageLogin Mensam.Screen.Login.Message
     | MessageSpaces Mensam.Screen.Spaces.Message
@@ -185,6 +186,11 @@ update message (MkModel model) =
 
         HideErrors ->
             update ClearErrors <| MkModel { model | viewErrors = False }
+
+        MessageLogout ->
+            ( MkModel { model | authenticated = Nothing }
+            , Mensam.Storage.unsetStorage
+            )
 
         MessageRegister (Mensam.Screen.Register.MessagePure m) ->
             case model.screen of
