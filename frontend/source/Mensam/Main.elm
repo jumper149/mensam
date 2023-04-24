@@ -188,9 +188,16 @@ update message (MkModel model) =
             update ClearErrors <| MkModel { model | viewErrors = False }
 
         Logout ->
-            ( MkModel { model | authenticated = Nothing }
-            , Mensam.Storage.unsetStorage
-            )
+            let
+                ( modelLoggedOut, cmdLoggedOut ) =
+                    ( MkModel { model | authenticated = Nothing }
+                    , Mensam.Storage.unsetStorage
+                    )
+
+                ( modelUpdated, cmdUpdated ) =
+                    update (SetUrl <| RouteLogin Nothing) <| modelLoggedOut
+            in
+            ( modelUpdated, Platform.Cmd.batch [ cmdLoggedOut, cmdUpdated ] )
 
         MessageRegister (Mensam.Screen.Register.MessagePure m) ->
             case model.screen of
