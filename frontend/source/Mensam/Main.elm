@@ -13,6 +13,7 @@ import Mensam.Color
 import Mensam.Error
 import Mensam.Font
 import Mensam.Jwt
+import Mensam.Screen.Landing
 import Mensam.Screen.Login
 import Mensam.Screen.Register
 import Mensam.Screen.Space
@@ -55,7 +56,8 @@ type alias Authentication =
 
 
 type Screen
-    = ScreenRegister Mensam.Screen.Register.Model
+    = ScreenLanding Mensam.Screen.Landing.Model
+    | ScreenRegister Mensam.Screen.Register.Model
     | ScreenLogin Mensam.Screen.Login.Model
     | ScreenSpaces Mensam.Screen.Spaces.Model
     | ScreenSpace Mensam.Screen.Space.Model
@@ -63,7 +65,8 @@ type Screen
 
 
 type Route
-    = RouteLogin (Maybe Mensam.Screen.Login.Model)
+    = RouteLanding
+    | RouteLogin (Maybe Mensam.Screen.Login.Model)
     | RouteRegister
     | RouteSpaces
     | RouteSpace Int
@@ -77,6 +80,9 @@ routeToUrl _ =
 routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
 routeToModelUpdate route (MkModel model) =
     case route of
+        RouteLanding ->
+            update EmptyMessage <| MkModel { model | screen = ScreenLanding Mensam.Screen.Landing.init }
+
         RouteLogin maybeInitLogin ->
             case maybeInitLogin of
                 Nothing ->
@@ -100,7 +106,7 @@ routeToModelUpdate route (MkModel model) =
 urlParser : Url.Parser.Parser (Route -> c) c
 urlParser =
     Url.Parser.oneOf
-        [ Url.Parser.map (RouteLogin Nothing) <| Url.Parser.top
+        [ Url.Parser.map RouteLanding <| Url.Parser.top
         , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
         , Url.Parser.map RouteRegister <| Url.Parser.s "register"
         , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
@@ -118,7 +124,7 @@ init flags url navigationKey =
         modelInit =
             MkModel
                 { navigationKey = navigationKey
-                , screen = ScreenLogin Mensam.Screen.Login.init
+                , screen = ScreenLanding Mensam.Screen.Landing.init
                 , authenticated =
                     case Json.Decode.decodeValue Mensam.Storage.decode flags of
                         Ok (Mensam.Storage.MkStorage storage) ->
@@ -133,7 +139,7 @@ init flags url navigationKey =
         model =
             case Url.Parser.parse urlParser url of
                 Nothing ->
-                    update (SetUrl (RouteLogin Nothing)) modelInit
+                    update (SetUrl RouteLanding) modelInit
 
                 Just route ->
                     update (SetUrl route) modelInit
@@ -150,6 +156,7 @@ type Message
     | ViewErrors
     | HideErrors
     | Logout
+    | MessageLanding Mensam.Screen.Landing.Message
     | MessageRegister Mensam.Screen.Register.Message
     | MessageLogin Mensam.Screen.Login.Message
     | MessageSpaces Mensam.Screen.Spaces.Message
@@ -198,6 +205,26 @@ update message (MkModel model) =
                     update (SetUrl <| RouteLogin Nothing) <| modelLoggedOut
             in
             ( modelUpdated, Platform.Cmd.batch [ cmdLoggedOut, cmdUpdated ] )
+
+        MessageLanding (Mensam.Screen.Landing.MessagePure m) ->
+            case model.screen of
+                ScreenLanding screenModel ->
+                    update EmptyMessage <|
+                        MkModel { model | screen = ScreenLanding <| Mensam.Screen.Landing.updatePure m screenModel }
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
+        MessageLanding (Mensam.Screen.Landing.MessageEffect m) ->
+            case m of
+                Mensam.Screen.Landing.ReportError error ->
+                    update (ReportError error) <| MkModel model
+
+                Mensam.Screen.Landing.Login ->
+                    update (SetUrl <| RouteLogin Nothing) <| MkModel model
+
+                Mensam.Screen.Landing.Register ->
+                    update (SetUrl RouteRegister) <| MkModel model
 
         MessageRegister (Mensam.Screen.Register.MessagePure m) ->
             case model.screen of
@@ -362,6 +389,15 @@ view (MkModel model) =
                         , Element.padding 20
                         ]
                         [ case model.screen of
+                            ScreenLanding screenModel ->
+                                Element.el
+                                    [ Element.width Element.fill
+                                    , Element.height Element.fill
+                                    ]
+                                <|
+                                    Element.map MessageLanding <|
+                                        Mensam.Screen.Landing.element screenModel
+
                             ScreenLogin screenModel ->
                                 Element.el
                                     [ Element.width Element.fill
