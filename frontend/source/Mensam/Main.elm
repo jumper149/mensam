@@ -202,7 +202,7 @@ update message (MkModel model) =
                     )
 
                 ( modelUpdated, cmdUpdated ) =
-                    update (SetUrl <| RouteLogin Nothing) <| modelLoggedOut
+                    update (SetUrl <| RouteLanding) <| modelLoggedOut
             in
             ( modelUpdated, Platform.Cmd.batch [ cmdLoggedOut, cmdUpdated ] )
 
