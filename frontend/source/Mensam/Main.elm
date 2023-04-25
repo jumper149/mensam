@@ -578,13 +578,15 @@ elementNavigationBar (MkModel model) =
                 [ Element.height Element.fill
                 , Element.paddingXY 20 0
                 , Element.alignLeft
-                , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
                 , Element.Font.family [ Mensam.Font.sansSerif ]
                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
                 , Element.Font.color Mensam.Color.bright.yellow
                 , Element.Font.italic
                 , Element.Font.extraLight
                 , Element.Font.size 25
+                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
+                , Element.Events.onClick <| SetUrl RouteLanding
                 ]
             <|
                 Element.el
