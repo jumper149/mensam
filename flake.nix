@@ -21,8 +21,7 @@
           server = importSubflake ./server/subflake.nix { inherit nixpkgs; } { inherit setup; };
           frontend = importSubflake ./frontend/subflake.nix { inherit nixpkgs; } { inherit setup; };
           static = importSubflake ./static/subflake.nix { inherit nixpkgs; } { inherit setup frontend; };
-          config = importSubflake ./config/subflake.nix { inherit nixpkgs; } { inherit setup static; };
-          final = importSubflake ./final/subflake.nix { inherit nixpkgs; } { inherit setup server config; };
+          final = importSubflake ./final/subflake.nix { inherit nixpkgs; } { inherit setup server static; };
         };
 
     packages.x86_64-linux.default = self.subflakes.final.packages.x86_64-linux.default;

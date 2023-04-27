@@ -21,7 +21,7 @@ The configuration file is written in JSON and is specified in [here](./source/li
 
 ```
 # Generate static files and configuration.
-nix build ..#subflakes.config.packages.x86_64-linux.default
+nix build ..#subflakes.final.packages.x86_64-linux.config
 
 # Use cabal to develop the application.
 MENSAM_CONFIG_FILE=result cabal run mensam

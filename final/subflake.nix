@@ -3,13 +3,13 @@
   packages.x86_64-linux.default =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-server-full" ''
-      MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server
+      MENSAM_CONFIG_FILE="${packages.x86_64-linux.config}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server
     '';
 
   packages.x86_64-linux.mensam-init =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-init-full" ''
-      export MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}"
+      export MENSAM_CONFIG_FILE="${packages.x86_64-linux.config}"
       export MENSAM_LOG_LEVEL=LevelWarn
       ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-init
     '';
@@ -17,7 +17,7 @@
   packages.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-test-full" ''
-      export MENSAM_CONFIG_FILE="${self.subflakes.config.packages.x86_64-linux.default}"
+      export MENSAM_CONFIG_FILE="${packages.x86_64-linux.config}"
       export MENSAM_LOG_LEVEL=LevelWarn
       ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-test
     '';
@@ -34,11 +34,21 @@
       ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-client
     '';
 
+  packages.x86_64-linux.config =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    writeText "mensam.json" (builtins.toJSON config);
+
+  config =
+    self.subflakes.setup.config // {
+      revision = if self ? rev then self.rev else null;
+      directory-static = "${self.subflakes.static.packages.x86_64-linux.default}";
+    };
+
   overlays.default = final: prev: {
     mensam = {
       exe = self.subflakes.server.packages.x86_64-linux.default;
       full = packages.x86_64-linux.default;
-      config.default = self.subflakes.config.config;
+      config.default = config;
     };
   };
 
