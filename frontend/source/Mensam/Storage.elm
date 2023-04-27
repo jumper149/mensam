@@ -27,11 +27,12 @@ unsetStorage =
     setStorageJson Json.Encode.null
 
 
-decode : Json.Decode.Decoder Storage
+decode : Json.Decode.Decoder (Maybe Storage)
 decode =
-    Json.Decode.map2 (\jwt expiration -> MkStorage { jwt = jwt, expiration = expiration })
-        (Json.Decode.field "jwt" Mensam.Jwt.decode)
-        (Json.Decode.field "expiration" <| Json.Decode.nullable Iso8601.decoder)
+    Json.Decode.nullable <|
+        Json.Decode.map2 (\jwt expiration -> MkStorage { jwt = jwt, expiration = expiration })
+            (Json.Decode.field "jwt" Mensam.Jwt.decode)
+            (Json.Decode.field "expiration" <| Json.Decode.nullable Iso8601.decoder)
 
 
 encode : Storage -> Json.Encode.Value

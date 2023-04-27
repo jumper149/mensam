@@ -122,27 +122,39 @@ init : Json.Encode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Platfo
 init flags url navigationKey =
     let
         modelInit =
-            MkModel
-                { navigationKey = navigationKey
-                , screen = ScreenLanding Mensam.Screen.Landing.init
-                , authenticated =
-                    case Json.Decode.decodeValue Mensam.Storage.decode flags of
-                        Ok (Mensam.Storage.MkStorage storage) ->
-                            Just storage
+            { navigationKey = navigationKey
+            , screen = ScreenLanding Mensam.Screen.Landing.init
+            , authenticated = Nothing
+            , errors = []
+            , viewErrors = False
+            }
 
-                        Err _ ->
-                            Nothing
-                , errors = []
-                , viewErrors = False
-                }
+        modelStorage =
+            case Json.Decode.decodeValue Mensam.Storage.decode flags of
+                Ok (Just (Mensam.Storage.MkStorage storage)) ->
+                    { modelInit | authenticated = Just storage }
+
+                Ok Nothing ->
+                    modelInit
+
+                Err err ->
+                    let
+                        error =
+                            Mensam.Error.message "Failed to decode `localStorage`" <|
+                                Mensam.Error.message (Json.Decode.errorToString err) <|
+                                    Mensam.Error.undefined
+                    in
+                    { modelInit
+                        | errors = error :: modelInit.errors
+                    }
 
         model =
             case Url.Parser.parse urlParser url of
                 Nothing ->
-                    update (SetUrl RouteLanding) modelInit
+                    update (SetUrl RouteLanding) (MkModel modelStorage)
 
                 Just route ->
-                    update (SetUrl route) modelInit
+                    update (SetUrl route) (MkModel modelStorage)
     in
     model
 
