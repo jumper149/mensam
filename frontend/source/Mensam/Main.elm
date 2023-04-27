@@ -189,14 +189,12 @@ update message (MkModel model) =
             ( MkModel model, Platform.Cmd.none )
 
         SetUrl route ->
-            let
-                updateUrlCmd =
-                    Browser.Navigation.pushUrl model.navigationKey <| routeToUrl route
-
-                ( setModel, setCmd ) =
-                    update (SetModel route) <| MkModel model
-            in
-            ( setModel, Platform.Cmd.batch [ updateUrlCmd, setCmd ] )
+            updates
+                [ \m -> ( m, Browser.Navigation.pushUrl model.navigationKey <| routeToUrl route )
+                , update (SetModel route)
+                ]
+            <|
+                MkModel model
 
         SetModel route ->
             routeToModelUpdate route (MkModel model)
@@ -239,16 +237,12 @@ update message (MkModel model) =
             )
 
         Auth Logout ->
-            let
-                ( modelLoggedOut, cmdLoggedOut ) =
-                    ( MkModel { model | authenticated = Nothing }
-                    , Mensam.Storage.unsetStorage
-                    )
-
-                ( modelUpdated, cmdUpdated ) =
-                    update (SetUrl <| RouteLanding) <| modelLoggedOut
-            in
-            ( modelUpdated, Platform.Cmd.batch [ cmdLoggedOut, cmdUpdated ] )
+            updates
+                [ \(MkModel m) -> ( MkModel { m | authenticated = Nothing }, Mensam.Storage.unsetStorage )
+                , update (SetUrl <| RouteLanding)
+                ]
+            <|
+                MkModel model
 
         MessageLanding (Mensam.Screen.Landing.MessagePure m) ->
             case model.screen of
@@ -332,14 +326,12 @@ update message (MkModel model) =
                     update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
 
                 Mensam.Screen.Login.SetSession session ->
-                    let
-                        ( modelAuthenticated, cmdAuthenticated ) =
-                            update (Auth <| SetSession session) <| MkModel model
-
-                        ( modelUpdated, cmdUpdated ) =
-                            update (SetUrl RouteSpaces) <| modelAuthenticated
-                    in
-                    ( modelUpdated, Platform.Cmd.batch [ cmdAuthenticated, cmdUpdated ] )
+                    updates
+                        [ update (Auth <| SetSession session)
+                        , update (SetUrl RouteSpaces)
+                        ]
+                    <|
+                        MkModel model
 
         MessageSpaces (Mensam.Screen.Spaces.MessagePure m) ->
             case model.screen of
@@ -658,3 +650,20 @@ errorScreen =
 errorNoAuth : Mensam.Error.Error
 errorNoAuth =
     Mensam.Error.message "Can't make request without JWT" Mensam.Error.undefined
+
+
+updates : List (Model -> ( Model, Platform.Cmd.Cmd Message )) -> Model -> ( Model, Platform.Cmd.Cmd Message )
+updates x model =
+    case x of
+        [] ->
+            update EmptyMessage model
+
+        u :: us ->
+            let
+                ( modelU, cmdU ) =
+                    u model
+
+                ( modelUs, cmdUs ) =
+                    updates us modelU
+            in
+            ( modelUs, Platform.Cmd.batch [ cmdU, cmdUs ] )
