@@ -9,10 +9,14 @@ import Time
 import Url.Builder
 
 
-type alias Request =
-    { username : String
-    , password : String
-    }
+type Request
+    = BasicAuth
+        { username : String
+        , password : String
+        }
+    | Bearer
+        { jwt : Mensam.Jwt.Jwt
+        }
 
 
 type Response
@@ -30,7 +34,16 @@ request : Request -> (Result Http.Error Response -> a) -> Cmd a
 request body handleResult =
     Http.request
         { method = "POST"
-        , headers = [ Http.header "Authorization" ("Basic " ++ Base64.encode (body.username ++ ":" ++ body.password)) ]
+        , headers =
+            [ case body of
+                BasicAuth { username, password } ->
+                    Http.header
+                        "Authorization"
+                        ("Basic " ++ Base64.encode (username ++ ":" ++ password))
+
+                Bearer { jwt } ->
+                    Mensam.Jwt.authorizationHeader jwt
+            ]
         , url =
             Url.Builder.absolute
                 [ "api"

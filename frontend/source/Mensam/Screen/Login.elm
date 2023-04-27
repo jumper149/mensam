@@ -185,7 +185,13 @@ onEnter msg =
 
 login : Model -> Cmd Message
 login model =
-    Mensam.Api.Login.request { username = model.username, password = model.password } <|
+    Mensam.Api.Login.request
+        (Mensam.Api.Login.BasicAuth
+            { username = model.username
+            , password = model.password
+            }
+        )
+    <|
         \result ->
             case result of
                 Ok (Mensam.Api.Login.Success value) ->
