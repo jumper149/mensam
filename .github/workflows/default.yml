@@ -16,7 +16,6 @@ jobs:
           , devShells.x86_64-linux.default
           , subflakes.server.packages.x86_64-linux.default
           , subflakes.static.packages.x86_64-linux.default
-          , subflakes.config.packages.x86_64-linux.default
           ]
     steps:
     - name: "Set up GitHub Actions"
