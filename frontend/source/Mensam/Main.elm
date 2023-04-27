@@ -105,7 +105,7 @@ routeToModelUpdate route (MkModel model) =
 
         RouteSpace id ->
             update (MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks) <|
-                MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = id } }
+                MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = id, time = model.time } }
 
 
 urlParser : Url.Parser.Parser (Route -> c) c

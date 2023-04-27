@@ -43,12 +43,16 @@ type alias Model =
                 , space : Int
                 }
             }
+    , time :
+        { now : Time.Posix
+        , zone : Time.Zone
+        }
     }
 
 
-init : { id : Int } -> Model
-init space =
-    { space = space, desks = [], selected = Nothing, viewDetailed = Nothing }
+init : { id : Int, time : { now : Time.Posix, zone : Time.Zone } } -> Model
+init args =
+    { space = { id = args.id }, desks = [], selected = Nothing, viewDetailed = Nothing, time = args.time }
 
 
 element : Model -> Element.Element Message
@@ -90,6 +94,7 @@ element model =
                                     ]
                                   <|
                                     Element.text "Create reservation"
+                                , elementTime { stamp = model.time.now, zone = model.time.zone }
                                 , Element.row
                                     [ Element.width Element.fill
                                     , Element.spacing 10
@@ -304,3 +309,156 @@ deskList jwt model =
 
                 Err error ->
                     MessageEffect <| ReportError <| Mensam.Error.http error
+
+
+elementTime : { stamp : Time.Posix, zone : Time.Zone } -> Element.Element msg
+elementTime time =
+    Element.el
+        [ Element.width <| Element.px 200
+        , Element.height <| Element.px 80
+        , Element.centerX
+        , Element.Background.color Mensam.Color.dark.black
+        ]
+    <|
+        Element.column
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            ]
+            [ Element.row
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Background.color <| Element.rgba 1 1 1 0.0
+                ]
+                [ Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.Background.color <| Element.rgba 1 1 1 0.03
+                    ]
+                  <|
+                    Element.el
+                        [ Element.centerX
+                        , Element.centerY
+                        ]
+                    <|
+                        Element.text <|
+                            String.fromInt <|
+                                Time.toYear time.zone time.stamp
+                , Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.Background.color <| Element.rgba 1 1 1 0.03
+                    ]
+                  <|
+                    Element.el
+                        [ Element.centerX
+                        , Element.centerY
+                        ]
+                    <|
+                        Element.text <|
+                            String.fromInt <|
+                                monthToInt <|
+                                    Time.toMonth time.zone time.stamp
+                , Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.Background.color <| Element.rgba 1 1 1 0.06
+                    ]
+                  <|
+                    Element.el
+                        [ Element.centerX
+                        , Element.centerY
+                        ]
+                    <|
+                        Element.text <|
+                            String.fromInt <|
+                                Time.toDay time.zone time.stamp
+                ]
+            , Element.row
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Background.color <| Element.rgba 1 1 1 0.1
+                ]
+                [ Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.Background.color <| Element.rgba 1 1 1 0.03
+                    ]
+                  <|
+                    Element.el
+                        [ Element.centerX
+                        , Element.centerY
+                        ]
+                    <|
+                        Element.text <|
+                            String.fromInt <|
+                                Time.toHour time.zone time.stamp
+                , Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.Background.color <| Element.rgba 1 1 1 0.06
+                    ]
+                  <|
+                    Element.el
+                        [ Element.centerX
+                        , Element.centerY
+                        ]
+                    <|
+                        Element.text <|
+                            String.fromInt <|
+                                Time.toMinute time.zone time.stamp
+                , Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.Background.color <| Element.rgba 1 1 1 0.09
+                    ]
+                  <|
+                    Element.el
+                        [ Element.centerX
+                        , Element.centerY
+                        ]
+                    <|
+                        Element.text <|
+                            String.fromInt <|
+                                Time.toSecond time.zone time.stamp
+                ]
+            ]
+
+
+monthToInt : Time.Month -> Int
+monthToInt month =
+    case month of
+        Time.Jan ->
+            1
+
+        Time.Feb ->
+            2
+
+        Time.Mar ->
+            3
+
+        Time.Apr ->
+            4
+
+        Time.May ->
+            5
+
+        Time.Jun ->
+            6
+
+        Time.Jul ->
+            7
+
+        Time.Aug ->
+            8
+
+        Time.Sep ->
+            9
+
+        Time.Oct ->
+            10
+
+        Time.Nov ->
+            11
+
+        Time.Dec ->
+            12
