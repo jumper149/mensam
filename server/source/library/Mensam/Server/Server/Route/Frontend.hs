@@ -53,7 +53,7 @@ handler segments = do
           ! rel "stylesheet"
           ! type_ "text/css"
           ! hrefWithDepth baseUrl depth "static/fonts.css"
-        script ! src (withDepth baseUrl depth "static/spa.js") $ ""
+        script ! src (withDepth baseUrl depth "static/frontend.js") $ ""
       body $ do
         H.div ! H.A.id "mensam-frontend" $ ""
         script
