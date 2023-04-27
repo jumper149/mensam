@@ -8,15 +8,13 @@
 , "base-url":
   { "scheme": "https"
   , "authority":
-    { "host": "felixspringer.xyz"
+    { "host": "mensam.felixspringer.xyz"
     , "port": null
     }
-  , "path":
-    [ "homepage"
-    ]
+  , "path": []
   }
 , "auth":
   { "jwk-filepath": "mensam-jwk.secret"
-  , "timeout-seconds": 86400
+  , "timeout-seconds": 900
   }
 }
