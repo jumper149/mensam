@@ -1,63 +1,67 @@
-# Server
+= Server
 
 The server executable is written in Haskell using wai and servant for the HTTP interface.
 OpenAPI documentation is generated automatically.
 This application uses mtl-style effects.
 
-## Configuration
+== Configuration
 
 Environment variables and a configuration file change the runtime behaviour.
 
-### Environment
+=== Environment
 
 Environment variables are checked early during the initialization.
-The options are set [here](./source/library/Mensam/Server/Environment.hs).
+The options are set link:./source/library/Mensam/Server/Environment.hs[here].
 
-### Configuration file
+=== Configuration file
 
-The configuration file is written in JSON and is specified in [here](./source/library/Mensam/Server/Configuration.hs).
+The configuration file is written in JSON and is specified in link:./source/library/Mensam/Server/Configuration.hs[here].
 
-## Development
+== Development
 
-```
+[source,bash]
+----
 # Generate static files and configuration.
 nix build ..#subflakes.final.packages.x86_64-linux.config
 
 # Use cabal to develop the application.
 MENSAM_CONFIG_FILE=result cabal run mensam
-```
+----
 
-### Formatting
+=== Formatting
 
 Use `fourmolu` to format Haskell.
 
-```
+[source,bash]
+----
 # Format Haskell.
 fourmolu --mode inplace ./source
-```
+----
 
-### `weeder`
+=== `weeder`
 
 Running `weeder` should be a part of linting, but requires manual execution at the moment.
 
-```
+[source,bash]
+----
 # Prepare additional information for weeder.
 cabal clean
 cabal build all
 
 # Run weeder.
 weeder
-```
+----
 
-### `graphmod`
+=== `graphmod`
 
 The module dependency graph can be visualised using `graphmod`.
 
-```
+[source,bash]
+----
 # Run graphmod.
 nix build ..#subflakes.server.checks.x86_64-linux.graphmod
 
 # View graph with xdot or your PDF viewer.
 xdot result/graphmod.dot
 zathura result/graphmod.pdf
-```
+----

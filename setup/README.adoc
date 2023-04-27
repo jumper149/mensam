@@ -1,11 +1,12 @@
-# Setup
+= Setup
 
 It's possible to use a development configuration.
 Modify `deployment.json` and use the name of a configuration.
 
-* `nixpublic`: Deployment configuration
-* `development`: Development configuration
+`nixpublic`:: Deployment configuration
+`development`:: Development configuration
 
-```
+[source,bash]
+----
 echo "\"nixpublic\"" > deployment.json
-```
+----
