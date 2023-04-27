@@ -178,7 +178,6 @@ type Message
 
 type MessageAuth
     = SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
-    | Refresh { jwt : Mensam.Jwt.Jwt }
     | Logout
 
 
@@ -214,26 +213,6 @@ update message (MkModel model) =
         Auth (SetSession session) ->
             ( MkModel { model | authenticated = Just session }
             , Mensam.Storage.setStorage <| Mensam.Storage.MkStorage session
-            )
-
-        Auth (Refresh { jwt }) ->
-            ( MkModel model
-            , Mensam.Api.Login.request
-                (Mensam.Api.Login.Bearer
-                    { jwt = jwt
-                    }
-                )
-              <|
-                \result ->
-                    case result of
-                        Ok (Mensam.Api.Login.Success body) ->
-                            Auth <| SetSession { jwt = body.jwt, expiration = body.expiration }
-
-                        Ok (Mensam.Api.Login.ErrorAuth error) ->
-                            ReportError <| Mensam.Api.Login.errorAuth error
-
-                        Err error ->
-                            ReportError <| Mensam.Error.http error
             )
 
         Auth Logout ->
