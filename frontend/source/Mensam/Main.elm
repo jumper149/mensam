@@ -167,12 +167,17 @@ type Message
     | ClearErrors
     | ViewErrors
     | HideErrors
-    | Logout
+    | Auth MessageAuth
     | MessageLanding Mensam.Screen.Landing.Message
     | MessageRegister Mensam.Screen.Register.Message
     | MessageLogin Mensam.Screen.Login.Message
     | MessageSpaces Mensam.Screen.Spaces.Message
     | MessageSpace Mensam.Screen.Space.Message
+
+
+type MessageAuth
+    = Refresh { jwt : Mensam.Jwt.Jwt }
+    | Logout
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
@@ -206,7 +211,10 @@ update message (MkModel model) =
         HideErrors ->
             update ClearErrors <| MkModel { model | viewErrors = False }
 
-        Logout ->
+        Auth (Refresh { jwt }) ->
+            Debug.todo "Implement"
+
+        Auth Logout ->
             let
                 ( modelLoggedOut, cmdLoggedOut ) =
                     ( MkModel { model | authenticated = Nothing }
@@ -570,7 +578,7 @@ elementNavigationBar (MkModel model) =
 
                 Just _ ->
                     Element.el
-                        [ Element.Events.onClick Logout
+                        [ Element.Events.onClick <| Auth Logout
                         , Element.height Element.fill
                         , Element.paddingXY 20 0
                         , Element.alignRight
