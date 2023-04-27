@@ -53,6 +53,7 @@
     pkgs.mkShell {
       inputsFrom = [
         packages.x86_64-linux.default
+        packages.x86_64-linux.fonts
       ];
     };
 
