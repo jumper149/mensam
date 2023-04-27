@@ -4,7 +4,7 @@ import Http
 import Iso8601
 import Json.Decode
 import Json.Encode
-import Mensam.Error
+import Mensam.Api.Login
 import Mensam.Jwt
 import Time
 import Url.Builder
@@ -37,26 +37,7 @@ type Response
                 }
         }
     | ErrorBody String
-    | ErrorAuth ErrorAuth
-
-
-type ErrorAuth
-    = ErrorAuthUsername
-    | ErrorAuthPassword
-    | ErrorAuthIndefinite
-
-
-errorAuth : ErrorAuth -> Mensam.Error.Error
-errorAuth error =
-    case error of
-        ErrorAuthUsername ->
-            Mensam.Error.message "Unknown username" Mensam.Error.undefined
-
-        ErrorAuthPassword ->
-            Mensam.Error.message "Bad password" Mensam.Error.undefined
-
-        ErrorAuthIndefinite ->
-            Mensam.Error.message "Indefinite" Mensam.Error.undefined
+    | ErrorAuth Mensam.Api.Login.ErrorAuth
 
 
 request : Request -> (Result Http.Error Response -> a) -> Cmd a
@@ -173,20 +154,20 @@ decodeBody400 =
     Json.Decode.field "error" Json.Decode.string
 
 
-decodeBody401 : Json.Decode.Decoder ErrorAuth
+decodeBody401 : Json.Decode.Decoder Mensam.Api.Login.ErrorAuth
 decodeBody401 =
     Json.Decode.string
         |> Json.Decode.andThen
             (\string ->
                 case string of
                     "username" ->
-                        Json.Decode.succeed ErrorAuthUsername
+                        Json.Decode.succeed Mensam.Api.Login.ErrorAuthUsername
 
                     "password" ->
-                        Json.Decode.succeed ErrorAuthPassword
+                        Json.Decode.succeed Mensam.Api.Login.ErrorAuthPassword
 
                     "indefinite" ->
-                        Json.Decode.succeed ErrorAuthIndefinite
+                        Json.Decode.succeed Mensam.Api.Login.ErrorAuthIndefinite
 
                     _ ->
                         Json.Decode.fail <| "Trying to decode authentication error, but this option is not supported: " ++ string

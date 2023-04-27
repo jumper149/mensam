@@ -9,6 +9,7 @@ import Element.Font
 import Html.Attributes
 import Json.Decode
 import Json.Encode
+import Mensam.Api.Login
 import Mensam.Color
 import Mensam.Error
 import Mensam.Font
@@ -176,7 +177,8 @@ type Message
 
 
 type MessageAuth
-    = Refresh { jwt : Mensam.Jwt.Jwt }
+    = SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
+    | Refresh { jwt : Mensam.Jwt.Jwt }
     | Logout
 
 
@@ -211,8 +213,30 @@ update message (MkModel model) =
         HideErrors ->
             update ClearErrors <| MkModel { model | viewErrors = False }
 
+        Auth (SetSession session) ->
+            ( MkModel { model | authenticated = Just session }
+            , Mensam.Storage.setStorage <| Mensam.Storage.MkStorage session
+            )
+
         Auth (Refresh { jwt }) ->
-            Debug.todo "Implement"
+            ( MkModel model
+            , Mensam.Api.Login.request
+                (Mensam.Api.Login.Bearer
+                    { jwt = jwt
+                    }
+                )
+              <|
+                \result ->
+                    case result of
+                        Ok (Mensam.Api.Login.Success body) ->
+                            Auth <| SetSession { jwt = body.jwt, expiration = body.expiration }
+
+                        Ok (Mensam.Api.Login.ErrorAuth error) ->
+                            ReportError <| Mensam.Api.Login.errorAuth error
+
+                        Err error ->
+                            ReportError <| Mensam.Error.http error
+            )
 
         Auth Logout ->
             let
@@ -307,12 +331,10 @@ update message (MkModel model) =
                 Mensam.Screen.Login.Register ->
                     update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
 
-                Mensam.Screen.Login.SetSession x ->
+                Mensam.Screen.Login.SetSession session ->
                     let
                         ( modelAuthenticated, cmdAuthenticated ) =
-                            ( MkModel { model | authenticated = Just x }
-                            , Mensam.Storage.setStorage <| Mensam.Storage.MkStorage x
-                            )
+                            update (Auth <| SetSession session) <| MkModel model
 
                         ( modelUpdated, cmdUpdated ) =
                             update (SetUrl RouteSpaces) <| modelAuthenticated
