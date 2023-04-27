@@ -11,11 +11,11 @@ Environment variables and a configuration file change the runtime behaviour.
 ### Environment
 
 Environment variables are checked early during the initialization.
-The options are set [here](./source/library/Mensam/Environment.hs).
+The options are set [here](./source/library/Mensam/Server/Environment.hs).
 
 ### Configuration file
 
-The configuration file is written in JSON and is specified in [here](./source/library/Mensam/Configuration.hs).
+The configuration file is written in JSON and is specified in [here](./source/library/Mensam/Server/Configuration.hs).
 
 ## Development
 
