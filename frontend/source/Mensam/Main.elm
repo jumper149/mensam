@@ -7,9 +7,9 @@ import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
+import Iso8601
 import Json.Decode
 import Json.Encode
-import Mensam.Api.Login
 import Mensam.Color
 import Mensam.Error
 import Mensam.Font
@@ -21,7 +21,7 @@ import Mensam.Screen.Space
 import Mensam.Screen.Spaces
 import Mensam.Storage
 import Platform.Cmd
-import Platform.Sub
+import Task
 import Time
 import Url
 import Url.Builder
@@ -34,7 +34,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Platform.Sub.none
+        , subscriptions = subscriptions
         , onUrlRequest = \_ -> EmptyMessage
         , onUrlChange = onUrlChange
         }
@@ -47,6 +47,10 @@ type Model
         , authenticated : Maybe Authentication
         , errors : List Mensam.Error.Error
         , viewErrors : Bool
+        , time :
+            { now : Time.Posix
+            , zone : Time.Zone
+            }
         }
 
 
@@ -128,6 +132,10 @@ init flags url navigationKey =
             , authenticated = Nothing
             , errors = []
             , viewErrors = False
+            , time =
+                { now = Time.millisToPosix 0
+                , zone = Time.utc
+                }
             }
 
         modelStorage =
@@ -148,16 +156,19 @@ init flags url navigationKey =
                     { modelInit
                         | errors = error :: modelInit.errors
                     }
-
-        model =
+    in
+    updates
+        [ \(MkModel model) ->
             case Url.Parser.parse urlParser url of
                 Nothing ->
-                    update (SetUrl RouteLanding) (MkModel modelStorage)
+                    update (SetUrl RouteLanding) (MkModel model)
 
                 Just route ->
-                    update (SetUrl route) (MkModel modelStorage)
-    in
-    model
+                    update (SetUrl route) (MkModel model)
+        , update SetTimeZoneHere
+        ]
+    <|
+        MkModel modelStorage
 
 
 type Message
@@ -168,6 +179,9 @@ type Message
     | ClearErrors
     | ViewErrors
     | HideErrors
+    | SetTimeNow Time.Posix
+    | SetTimeZone Time.Zone
+    | SetTimeZoneHere
     | Auth MessageAuth
     | MessageLanding Mensam.Screen.Landing.Message
     | MessageRegister Mensam.Screen.Register.Message
@@ -209,6 +223,44 @@ update message (MkModel model) =
 
         HideErrors ->
             update ClearErrors <| MkModel { model | viewErrors = False }
+
+        SetTimeNow timestamp ->
+            update EmptyMessage <|
+                MkModel
+                    { model
+                        | time =
+                            let
+                                time =
+                                    model.time
+                            in
+                            { time | now = timestamp }
+                    }
+
+        SetTimeZone zone ->
+            update EmptyMessage <|
+                MkModel
+                    { model
+                        | time =
+                            let
+                                time =
+                                    model.time
+                            in
+                            { time | zone = zone }
+                    }
+
+        SetTimeZoneHere ->
+            let
+                handleResult result =
+                    case result of
+                        Ok zone ->
+                            SetTimeZone zone
+
+                        Err _ ->
+                            ReportError <| Mensam.Error.message "Failed to set local timezone" <| Mensam.Error.undefined
+            in
+            ( MkModel model
+            , Task.attempt handleResult Time.here
+            )
 
         Auth (SetSession session) ->
             ( MkModel { model | authenticated = Just session }
@@ -453,6 +505,11 @@ view (MkModel model) =
                     ]
         ]
     }
+
+
+subscriptions : Model -> Sub Message
+subscriptions _ =
+    Time.every 100 SetTimeNow
 
 
 elementNavigationBar : Model -> Element.Element Message
