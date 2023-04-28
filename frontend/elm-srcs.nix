@@ -1,10 +1,5 @@
 {
 
-      "PanagiotisGeorgiadis/elm-datetime" = {
-        sha256 = "10fd2pad1kv8gm8zj2ixspyyxjqlzx50s3di17vl51gp41j05qbw";
-        version = "1.3.0";
-      };
-
       "elm/browser" = {
         sha256 = "0nagb9ajacxbbg985r4k9h0jadqpp0gp84nm94kcgbr5sf8i9x13";
         version = "1.0.2";
