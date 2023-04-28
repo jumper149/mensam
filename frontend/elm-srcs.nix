@@ -35,6 +35,11 @@
         version = "1.0.0";
       };
 
+      "justinmimbs/time-extra" = {
+        sha256 = "1qd9cpwpjj944rijdyfflwsl0qp6f492q6hj9pm3xfbwiq8kdjhn";
+        version = "1.1.1";
+      };
+
       "mdgriffith/elm-ui" = {
         sha256 = "0ffcqv4a4ad400hwp824m3qq4jy82cqp5ghmhp1m0q7n004z6kgv";
         version = "1.1.8";
@@ -78,5 +83,10 @@
       "elm/virtual-dom" = {
         sha256 = "1yvb8px2z62xd578ag2q0r5hd1vkz9y7dfkx05355iiy1d7jwq4v";
         version = "1.0.3";
+      };
+
+      "justinmimbs/date" = {
+        sha256 = "0fpci4mvnjdjl3gyjamw39virj3x38s0dsgrm8sy94qwwn2dlds3";
+        version = "4.0.1";
       };
 }
