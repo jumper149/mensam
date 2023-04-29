@@ -7,7 +7,6 @@ import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
-import Iso8601
 import Json.Decode
 import Json.Encode
 import Mensam.Color
@@ -411,6 +410,26 @@ update message (MkModel model) =
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.deskList jwt screenModel
                                     )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Nothing ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Space.SubmitReservation ->
+                    case model.authenticated of
+                        Just { jwt } ->
+                            case model.screen of
+                                ScreenSpace screenModel ->
+                                    case screenModel.viewDetailed of
+                                        Nothing ->
+                                            update (ReportError errorScreen) <| MkModel model
+
+                                        Just { desk } ->
+                                            ( MkModel model
+                                            , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.reservationCreate jwt screenModel { desk = { id = desk.id } }
+                                            )
 
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model

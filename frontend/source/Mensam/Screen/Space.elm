@@ -8,6 +8,7 @@ import Element.Input
 import Html.Attributes
 import Mensam.Api.DeskList
 import Mensam.Api.Login
+import Mensam.Api.ReservationCreate
 import Mensam.Color
 import Mensam.Error
 import Mensam.Font
@@ -238,7 +239,7 @@ element model =
                                         , Element.width Element.fill
                                         , Element.padding 10
                                         ]
-                                        { onPress = Just <| MessagePure <| ViewDetailed Nothing
+                                        { onPress = Just <| MessageEffect <| SubmitReservation
                                         , label =
                                             Element.el
                                                 [ Element.centerX
@@ -466,6 +467,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshDesks
+    | SubmitReservation
 
 
 deskList : Mensam.Jwt.Jwt -> Model -> Cmd Message
@@ -484,6 +486,53 @@ deskList jwt model =
                                     Mensam.Error.undefined
 
                 Ok (Mensam.Api.DeskList.ErrorAuth error) ->
+                    MessageEffect <| ReportError <| Mensam.Api.Login.errorAuth error
+
+                Err error ->
+                    MessageEffect <| ReportError <| Mensam.Error.http error
+
+
+reservationCreate : Mensam.Jwt.Jwt -> Model -> { desk : { id : Int } } -> Cmd Message
+reservationCreate jwt model { desk } =
+    Mensam.Api.ReservationCreate.request
+        { jwt = jwt
+        , desk = desk
+        , timeWindow =
+            { start =
+                Mensam.Time.toPosix model.time.zone <|
+                    Mensam.Time.MkTimestamp
+                        { date = model.dateSelected
+                        , time = model.timeSelected
+                        }
+            , end =
+                Mensam.Time.toPosix model.time.zone <|
+                    Mensam.Time.MkTimestamp
+                        { date = model.dateSelected
+                        , time = model.timeSelected
+                        }
+            }
+        }
+    <|
+        \result ->
+            case result of
+                Ok (Mensam.Api.ReservationCreate.Success _) ->
+                    MessagePure <| ViewDetailed Nothing
+
+                Ok Mensam.Api.ReservationCreate.ErrorTimeUnavailable ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Bad request" <|
+                                Mensam.Error.message "Requested time unavailable" <|
+                                    Mensam.Error.undefined
+
+                Ok (Mensam.Api.ReservationCreate.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Bad request body" <|
+                                Mensam.Error.message error <|
+                                    Mensam.Error.undefined
+
+                Ok (Mensam.Api.ReservationCreate.ErrorAuth error) ->
                     MessageEffect <| ReportError <| Mensam.Api.Login.errorAuth error
 
                 Err error ->
