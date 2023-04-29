@@ -319,6 +319,7 @@ type MessagePure
             }
         )
     | PickDate Mensam.Time.MessageDate
+    | PickTime Mensam.Time.MessageTime
 
 
 updatePure : MessagePure -> Model -> Model
@@ -356,6 +357,36 @@ updatePure message model =
                             , month = modelDate.month
                             , day = day
                             }
+            }
+
+        PickTime (Mensam.Time.SetHour hour) ->
+            { model
+                | timeSelected =
+                    let
+                        (Mensam.Time.MkTime timeSelected) =
+                            model.timeSelected
+                    in
+                    Mensam.Time.MkTime { timeSelected | hour = hour }
+            }
+
+        PickTime (Mensam.Time.SetMinute minute) ->
+            { model
+                | timeSelected =
+                    let
+                        (Mensam.Time.MkTime timeSelected) =
+                            model.timeSelected
+                    in
+                    Mensam.Time.MkTime { timeSelected | minute = minute }
+            }
+
+        PickTime (Mensam.Time.SetSecond second) ->
+            { model
+                | timeSelected =
+                    let
+                        (Mensam.Time.MkTime timeSelected) =
+                            model.timeSelected
+                    in
+                    Mensam.Time.MkTime { timeSelected | second = second }
             }
 
 

@@ -541,7 +541,7 @@ elementPickDate (MkModelDate model) =
 type MessageTime
     = SetHour Hour
     | SetMinute Minute
-    | SetSecond
+    | SetSecond Second
 
 
 elementPickTime : Time -> Element.Element MessageTime
