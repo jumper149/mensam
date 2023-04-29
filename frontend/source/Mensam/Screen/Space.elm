@@ -50,6 +50,7 @@ type alias Model =
         }
     , modelDate : Mensam.Time.ModelDate
     , dateSelected : Maybe Mensam.Time.Date
+    , timeSelected : Mensam.Time.Time
     }
 
 
@@ -74,6 +75,12 @@ init args =
             , selected = []
             }
     , dateSelected = Nothing
+    , timeSelected =
+        Mensam.Time.MkTime
+            { hour = Mensam.Time.MkHour 12
+            , minute = Mensam.Time.MkMinute 0
+            , second = Mensam.Time.MkSecond 0
+            }
     }
 
 
@@ -126,6 +133,16 @@ element model =
                                     <|
                                         Element.map (MessagePure << PickDate) <|
                                             Mensam.Time.elementPickDate model.modelDate
+                                , Element.el
+                                    [ Element.width Element.fill
+                                    ]
+                                  <|
+                                    Element.el
+                                        [ Element.centerX
+                                        ]
+                                    <|
+                                        Element.map (\_ -> MessagePure EmptyMessage) <|
+                                            Mensam.Time.elementPickTime model.timeSelected
                                 , Element.row
                                     [ Element.width Element.fill
                                     , Element.spacing 10

@@ -4,6 +4,8 @@ import Element
 import Element.Background
 import Element.Events
 import Html.Attributes
+import Svg
+import Svg.Attributes
 import Time
 import Time.Extra
 
@@ -533,6 +535,29 @@ elementPickDate (MkModelDate model) =
                             , selected = model.selected
                             }
         ]
+
+
+type MessageTime
+    = SetHour
+    | SetMinute
+    | SetSecond
+
+
+elementPickTime : Time -> Element.Element MessageTime
+elementPickTime (MkTime time) =
+    Element.el
+        [ Element.width <| Element.px 200 ]
+    <|
+        Element.html <|
+            Svg.svg
+                [ Svg.Attributes.viewBox "-100 -100 200 200", Svg.Attributes.width "100%" ]
+                [ Svg.circle
+                    [ Svg.Attributes.cx "0"
+                    , Svg.Attributes.cy "0"
+                    , Svg.Attributes.r "100"
+                    ]
+                    []
+                ]
 
 
 yearToString : Year -> String
