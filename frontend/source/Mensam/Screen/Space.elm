@@ -47,8 +47,9 @@ type alias Model =
     , time :
         { now : Time.Posix
         , zone : Time.Zone
-        , selected : Mensam.Time.Timestamp
         }
+    , modelDate : Mensam.Time.ModelDate
+    , dateSelected : Maybe Mensam.Time.Date
     }
 
 
@@ -61,8 +62,18 @@ init args =
     , time =
         { now = args.time.now
         , zone = args.time.zone
-        , selected = Mensam.Time.fromPosix args.time.zone args.time.now
         }
+    , modelDate =
+        let
+            date =
+                (Mensam.Time.unTimestamp <| Mensam.Time.fromPosix args.time.zone args.time.now).date
+        in
+        Mensam.Time.MkModelDate
+            { year = (Mensam.Time.unDate date).year
+            , month = (Mensam.Time.unDate date).month
+            , selected = []
+            }
+    , dateSelected = Nothing
     }
 
 
@@ -113,21 +124,8 @@ element model =
                                         [ Element.centerX
                                         ]
                                     <|
-                                        Element.map
-                                            (\message ->
-                                                case message of
-                                                    _ ->
-                                                        MessagePure EmptyMessage
-                                            )
-                                        <|
-                                            Mensam.Time.elementPickDate <|
-                                                Mensam.Time.MkModelDate
-                                                    { year = (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).year
-                                                    , month = (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).month
-                                                    , selected =
-                                                        [ (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).day
-                                                        ]
-                                                    }
+                                        Element.map (MessagePure << PickDate) <|
+                                            Mensam.Time.elementPickDate model.modelDate
                                 , Element.row
                                     [ Element.width Element.fill
                                     , Element.spacing 10
@@ -303,6 +301,7 @@ type MessagePure
                 }
             }
         )
+    | PickDate Mensam.Time.MessageDate
 
 
 updatePure : MessagePure -> Model -> Model
@@ -319,6 +318,28 @@ updatePure message model =
 
         ViewDetailed data ->
             { model | viewDetailed = data }
+
+        PickDate (Mensam.Time.MessageMonth Mensam.Time.MonthNext) ->
+            { model | modelDate = Mensam.Time.updateDateNextMonth model.modelDate, dateSelected = Nothing }
+
+        PickDate (Mensam.Time.MessageMonth Mensam.Time.MonthPrevious) ->
+            { model | modelDate = Mensam.Time.updateDatePreviousMonth model.modelDate, dateSelected = Nothing }
+
+        PickDate (Mensam.Time.MessageDay (Mensam.Time.ClickDay day)) ->
+            let
+                (Mensam.Time.MkModelDate modelDate) =
+                    model.modelDate
+            in
+            { model
+                | modelDate = Mensam.Time.MkModelDate { modelDate | selected = [ day ] }
+                , dateSelected =
+                    Just <|
+                        Mensam.Time.MkDate
+                            { year = modelDate.year
+                            , month = modelDate.month
+                            , day = day
+                            }
+            }
 
 
 type MessageEffect

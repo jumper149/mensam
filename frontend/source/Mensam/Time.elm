@@ -356,6 +356,12 @@ elementPickDay (MkModelDay model) =
                         Element.el
                             [ Element.width Element.fill
                             , Element.height Element.fill
+                            , Element.Background.color <|
+                                if List.member day model.selected then
+                                    Element.rgba 1 1 1 0.05
+
+                                else
+                                    Element.rgba 1 1 1 0
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , Element.mouseOver
                                 [ Element.Background.color <| Element.rgba 1 1 1 0.1
@@ -399,6 +405,96 @@ type ModelDate
 type MessageDate
     = MessageMonth MessageMonth
     | MessageDay MessageDay
+
+
+updateDateNextMonth : ModelDate -> ModelDate
+updateDateNextMonth (MkModelDate model) =
+    case unMonth model.month of
+        Time.Jan ->
+            MkModelDate { model | month = MkMonth Time.Feb, selected = [] }
+
+        Time.Feb ->
+            MkModelDate { model | month = MkMonth Time.Mar, selected = [] }
+
+        Time.Mar ->
+            MkModelDate { model | month = MkMonth Time.Apr, selected = [] }
+
+        Time.Apr ->
+            MkModelDate { model | month = MkMonth Time.May, selected = [] }
+
+        Time.May ->
+            MkModelDate { model | month = MkMonth Time.Jun, selected = [] }
+
+        Time.Jun ->
+            MkModelDate { model | month = MkMonth Time.Jul, selected = [] }
+
+        Time.Jul ->
+            MkModelDate { model | month = MkMonth Time.Aug, selected = [] }
+
+        Time.Aug ->
+            MkModelDate { model | month = MkMonth Time.Sep, selected = [] }
+
+        Time.Sep ->
+            MkModelDate { model | month = MkMonth Time.Oct, selected = [] }
+
+        Time.Oct ->
+            MkModelDate { model | month = MkMonth Time.Nov, selected = [] }
+
+        Time.Nov ->
+            MkModelDate { model | month = MkMonth Time.Dec, selected = [] }
+
+        Time.Dec ->
+            MkModelDate
+                { model
+                    | year = MkYear <| unYear model.year + 1
+                    , month = MkMonth Time.Jan
+                    , selected = []
+                }
+
+
+updateDatePreviousMonth : ModelDate -> ModelDate
+updateDatePreviousMonth (MkModelDate model) =
+    case unMonth model.month of
+        Time.Jan ->
+            MkModelDate
+                { model
+                    | year = MkYear <| unYear model.year - 1
+                    , month = MkMonth Time.Dec
+                    , selected = []
+                }
+
+        Time.Feb ->
+            MkModelDate { model | month = MkMonth Time.Jan, selected = [] }
+
+        Time.Mar ->
+            MkModelDate { model | month = MkMonth Time.Feb, selected = [] }
+
+        Time.Apr ->
+            MkModelDate { model | month = MkMonth Time.Mar, selected = [] }
+
+        Time.May ->
+            MkModelDate { model | month = MkMonth Time.Apr, selected = [] }
+
+        Time.Jun ->
+            MkModelDate { model | month = MkMonth Time.May, selected = [] }
+
+        Time.Jul ->
+            MkModelDate { model | month = MkMonth Time.Jun, selected = [] }
+
+        Time.Aug ->
+            MkModelDate { model | month = MkMonth Time.Jul, selected = [] }
+
+        Time.Sep ->
+            MkModelDate { model | month = MkMonth Time.Aug, selected = [] }
+
+        Time.Oct ->
+            MkModelDate { model | month = MkMonth Time.Sep, selected = [] }
+
+        Time.Nov ->
+            MkModelDate { model | month = MkMonth Time.Oct, selected = [] }
+
+        Time.Dec ->
+            MkModelDate { model | month = MkMonth Time.Nov, selected = [] }
 
 
 elementPickDate : ModelDate -> Element.Element MessageDate
