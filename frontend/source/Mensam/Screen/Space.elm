@@ -49,7 +49,7 @@ type alias Model =
         , zone : Time.Zone
         }
     , modelDate : Mensam.Time.ModelDate
-    , dateSelected : Maybe Mensam.Time.Date
+    , dateSelected : Mensam.Time.Date
     , timeSelected : Mensam.Time.Time
     }
 
@@ -72,9 +72,9 @@ init args =
         Mensam.Time.MkModelDate
             { year = (Mensam.Time.unDate date).year
             , month = (Mensam.Time.unDate date).month
-            , selected = []
+            , selected = [ (Mensam.Time.unDate date).day ]
             }
-    , dateSelected = Nothing
+    , dateSelected = (Mensam.Time.unTimestamp <| Mensam.Time.fromPosix args.time.zone args.time.now).date
     , timeSelected =
         Mensam.Time.MkTime
             { hour = Mensam.Time.MkHour 12
@@ -338,10 +338,10 @@ updatePure message model =
             { model | viewDetailed = data }
 
         PickDate (Mensam.Time.MessageMonth Mensam.Time.MonthNext) ->
-            { model | modelDate = Mensam.Time.updateDateNextMonth model.modelDate, dateSelected = Nothing }
+            { model | modelDate = Mensam.Time.updateDateNextMonth model.modelDate }
 
         PickDate (Mensam.Time.MessageMonth Mensam.Time.MonthPrevious) ->
-            { model | modelDate = Mensam.Time.updateDatePreviousMonth model.modelDate, dateSelected = Nothing }
+            { model | modelDate = Mensam.Time.updateDatePreviousMonth model.modelDate }
 
         PickDate (Mensam.Time.MessageDay (Mensam.Time.ClickDay day)) ->
             let
@@ -351,12 +351,11 @@ updatePure message model =
             { model
                 | modelDate = Mensam.Time.MkModelDate { modelDate | selected = [ day ] }
                 , dateSelected =
-                    Just <|
-                        Mensam.Time.MkDate
-                            { year = modelDate.year
-                            , month = modelDate.month
-                            , day = day
-                            }
+                    Mensam.Time.MkDate
+                        { year = modelDate.year
+                        , month = modelDate.month
+                        , day = day
+                        }
             }
 
         PickTime (Mensam.Time.SetHour hour) ->
