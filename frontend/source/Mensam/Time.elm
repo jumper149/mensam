@@ -14,7 +14,7 @@ type Day
 
 unDay : Day -> Int
 unDay (MkDay n) =
-    n - 1
+    n
 
 
 type Month
