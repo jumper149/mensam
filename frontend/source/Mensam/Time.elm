@@ -1,6 +1,7 @@
 module Mensam.Time exposing (..)
 
 import Time
+import Time.Extra
 
 
 type Day
@@ -84,100 +85,88 @@ unTimestamp (MkTimestamp x) =
     x
 
 
-fromPosix : Time.Zone -> Time.Posix -> Date
+fromPosix : Time.Zone -> Time.Posix -> Timestamp
 fromPosix zone posix =
-    MkDate
-        { year = MkYear <| Time.toYear zone posix
-        , month = MkMonth <| Time.toMonth zone posix
-        , day = MkDay <| Time.toDay zone posix
+    let
+        parts =
+            Time.Extra.posixToParts zone posix
+    in
+    MkTimestamp
+        { date =
+            MkDate
+                { year = MkYear parts.year
+                , month = MkMonth parts.month
+                , day = MkDay parts.day
+                }
+        , time =
+            MkTime
+                { hour = MkHour parts.hour
+                , minute = MkMinute parts.minute
+                , second = MkSecond parts.second
+                }
         }
 
 
-toPosixUtc : Time.Zone -> Timestamp -> Time.Posix
-toPosixUtc zone timestamp =
+toPosix : Time.Zone -> Timestamp -> Time.Posix
+toPosix zone timestamp =
     let
-        secondsToMillis seconds =
-            1000 * seconds
-
-        minutesToMillis minutes =
-            secondsToMillis 60 * minutes
-
-        hoursToMillis hours =
-            minutesToMillis 60 * hours
-
-        daysToMillis days =
-            hoursToMillis 24 * days
-
-        isLeapYear (MkYear n) =
-            (modBy 4 n == 0) && ((modBy 100 n /= 0) || (modBy 400 n == 0))
-
-        daysUntilMonth year (MkMonth n) =
-            case n of
-                Time.Jan ->
-                    0
-
-                Time.Feb ->
-                    31 + daysUntilMonth year (MkMonth Time.Jan)
-
-                Time.Mar ->
-                    (if isLeapYear year then
-                        28
-
-                     else
-                        29
-                    )
-                        + daysUntilMonth year (MkMonth Time.Feb)
-
-                Time.Apr ->
-                    31 + daysUntilMonth year (MkMonth Time.Mar)
-
-                Time.May ->
-                    30 + daysUntilMonth year (MkMonth Time.Apr)
-
-                Time.Jun ->
-                    31 + daysUntilMonth year (MkMonth Time.May)
-
-                Time.Jul ->
-                    30 + daysUntilMonth year (MkMonth Time.Jun)
-
-                Time.Aug ->
-                    31 + daysUntilMonth year (MkMonth Time.Jul)
-
-                Time.Sep ->
-                    31 + daysUntilMonth year (MkMonth Time.Aug)
-
-                Time.Oct ->
-                    30 + daysUntilMonth year (MkMonth Time.Sep)
-
-                Time.Nov ->
-                    31 + daysUntilMonth year (MkMonth Time.Oct)
-
-                Time.Dec ->
-                    30 + daysUntilMonth year (MkMonth Time.Nov)
-
-        daysUntilYear year =
-            case year of
-                MkYear 1970 ->
-                    0
-
-                MkYear n ->
-                    (if isLeapYear year then
-                        365
-
-                     else
-                        366
-                    )
-                        + daysUntilYear (MkYear <| n - 1)
+        parts =
+            { year = unYear (unDate (unTimestamp timestamp).date).year
+            , month = unMonth (unDate (unTimestamp timestamp).date).month
+            , day = unDay (unDate (unTimestamp timestamp).date).day
+            , hour = unHour (unTime (unTimestamp timestamp).time).hour
+            , minute = unMinute (unTime (unTimestamp timestamp).time).minute
+            , second = unSecond (unTime (unTimestamp timestamp).time).second
+            , millisecond = 0
+            }
     in
-    Time.millisToPosix <|
-        List.sum
-            [ secondsToMillis <| unSecond (unTime (unTimestamp timestamp).time).second
-            , minutesToMillis <| unMinute (unTime (unTimestamp timestamp).time).minute
-            , hoursToMillis <| unHour (unTime (unTimestamp timestamp).time).hour
-            , daysToMillis <| unDay (unDate (unTimestamp timestamp).date).day
-            , daysToMillis <|
-                daysUntilMonth
-                    (unDate (unTimestamp timestamp).date).year
-                    (unDate (unTimestamp timestamp).date).month
-            , daysToMillis <| daysUntilYear <| (unDate (unTimestamp timestamp).date).year
-            ]
+    Time.Extra.partsToPosix zone parts
+
+
+isLeapYear : Year -> Bool
+isLeapYear (MkYear year) =
+    (modBy 4 year == 0) && ((modBy 100 year /= 0) || (modBy 400 year == 0))
+
+
+daysInMonth : Year -> Month -> Int
+daysInMonth year (MkMonth month) =
+    case month of
+        Time.Jan ->
+            31
+
+        Time.Feb ->
+            if isLeapYear year then
+                29
+
+            else
+                28
+
+        Time.Mar ->
+            31
+
+        Time.Apr ->
+            30
+
+        Time.May ->
+            31
+
+        Time.Jun ->
+            30
+
+        Time.Jul ->
+            31
+
+        Time.Aug ->
+            31
+
+        Time.Sep ->
+            30
+
+        Time.Oct ->
+            31
+
+        Time.Nov ->
+            30
+
+        Time.Dec ->
+            31
