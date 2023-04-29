@@ -120,9 +120,14 @@ element model =
                                                         MessagePure EmptyMessage
                                             )
                                         <|
-                                            Mensam.Time.elementPickDate
-                                                (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).year
-                                                (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).month
+                                            Mensam.Time.elementPickDate <|
+                                                Mensam.Time.MkModelDate
+                                                    { year = (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).year
+                                                    , month = (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).month
+                                                    , selected =
+                                                        [ (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).day
+                                                        ]
+                                                    }
                                 , Element.row
                                     [ Element.width Element.fill
                                     , Element.spacing 10

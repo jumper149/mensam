@@ -176,13 +176,20 @@ daysInMonth year (MkMonth month) =
             31
 
 
+type ModelMonth
+    = MkModelMonth
+        { year : Year
+        , month : Month
+        }
+
+
 type MessageMonth
     = MonthNext
     | MonthPrevious
 
 
-elementPickMonth : Year -> Month -> Element.Element MessageMonth
-elementPickMonth year month =
+elementPickMonth : ModelMonth -> Element.Element MessageMonth
+elementPickMonth (MkModelMonth model) =
     Element.el
         [ Element.width <| Element.px 230
         , Element.height <| Element.px 40
@@ -221,9 +228,9 @@ elementPickMonth year month =
                     ]
                 <|
                     Element.text <|
-                        yearToString year
+                        yearToString model.year
                             ++ ", "
-                            ++ monthToString month
+                            ++ monthToString model.month
             , Element.el
                 [ Element.width <| Element.px 35
                 , Element.height <| Element.px 35
@@ -243,12 +250,20 @@ elementPickMonth year month =
             ]
 
 
+type ModelDay
+    = MkModelDay
+        { year : Year
+        , month : Month
+        , selected : List Day
+        }
+
+
 type MessageDay
     = ClickDay Day
 
 
-elementPickDay : Year -> Month -> Element.Element MessageDay
-elementPickDay year month =
+elementPickDay : ModelDay -> Element.Element MessageDay
+elementPickDay (MkModelDay model) =
     let
         weekdayOfFirst =
             Time.toWeekday Time.utc <|
@@ -256,8 +271,8 @@ elementPickDay year month =
                     MkTimestamp
                         { date =
                             MkDate
-                                { year = year
-                                , month = month
+                                { year = model.year
+                                , month = model.month
                                 , day = MkDay 1
                                 }
                         , time =
@@ -296,7 +311,7 @@ elementPickDay year month =
             List.repeat count Nothing
 
         daysMiddle =
-            List.map (Just << MkDay) <| List.range 1 (daysInMonth year month)
+            List.map (Just << MkDay) <| List.range 1 (daysInMonth model.year model.month)
 
         daysPost =
             List.repeat 14 Nothing
@@ -373,13 +388,21 @@ elementPickDay year month =
                 dayMatrix
 
 
+type ModelDate
+    = MkModelDate
+        { year : Year
+        , month : Month
+        , selected : List Day
+        }
+
+
 type MessageDate
     = MessageMonth MessageMonth
     | MessageDay MessageDay
 
 
-elementPickDate : Year -> Month -> Element.Element MessageDate
-elementPickDate year month =
+elementPickDate : ModelDate -> Element.Element MessageDate
+elementPickDate (MkModelDate model) =
     Element.column
         [ Element.spacing 5
         , Element.width <| Element.px 231
@@ -393,7 +416,11 @@ elementPickDate year month =
                 ]
             <|
                 Element.map MessageMonth <|
-                    elementPickMonth year month
+                    elementPickMonth <|
+                        MkModelMonth
+                            { year = model.year
+                            , month = model.month
+                            }
         , Element.el
             [ Element.width Element.fill
             ]
@@ -403,7 +430,12 @@ elementPickDate year month =
                 ]
             <|
                 Element.map MessageDay <|
-                    elementPickDay year month
+                    elementPickDay <|
+                        MkModelDay
+                            { year = model.year
+                            , month = model.month
+                            , selected = model.selected
+                            }
         ]
 
 
