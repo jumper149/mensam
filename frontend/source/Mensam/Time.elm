@@ -1,6 +1,7 @@
 module Mensam.Time exposing (..)
 
 import Element
+import Element.Background
 import Element.Events
 import Html.Attributes
 import Time
@@ -186,6 +187,7 @@ elementPickMonth year month =
         [ Element.width <| Element.px 230
         , Element.height <| Element.px 40
         , Element.spaceEvenly
+        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
         ]
     <|
         Element.row
@@ -196,6 +198,9 @@ elementPickMonth year month =
                 [ Element.width <| Element.px 40
                 , Element.height <| Element.px 40
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                , Element.mouseOver
+                    [ Element.Background.color <| Element.rgba 1 1 1 0.1
+                    ]
                 , Element.Events.onClick MonthPrevious
                 ]
               <|
@@ -220,9 +225,12 @@ elementPickMonth year month =
                             ++ ", "
                             ++ monthToString month
             , Element.el
-                [ Element.width <| Element.px 40
-                , Element.height <| Element.px 40
+                [ Element.width <| Element.px 35
+                , Element.height <| Element.px 35
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                , Element.mouseOver
+                    [ Element.Background.color <| Element.rgba 1 1 1 0.1
+                    ]
                 , Element.Events.onClick MonthNext
                 ]
               <|
@@ -288,7 +296,7 @@ elementPickDay year month =
             List.repeat count Nothing
 
         daysMiddle =
-            List.map (Just << MkDay << (\n -> n + 1)) <| List.range 0 (daysInMonth year month)
+            List.map (Just << MkDay) <| List.range 1 (daysInMonth year month)
 
         daysPost =
             List.repeat 14 Nothing
@@ -312,7 +320,7 @@ elementPickDay year month =
             Element.el
                 [ Element.width <| Element.px 33
                 , Element.height <| Element.px 33
-                , Element.padding 5
+                , Element.padding 2
                 ]
             <|
                 case maybeDay of
@@ -334,6 +342,9 @@ elementPickDay year month =
                             [ Element.width Element.fill
                             , Element.height Element.fill
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                            , Element.mouseOver
+                                [ Element.Background.color <| Element.rgba 1 1 1 0.1
+                                ]
                             , Element.Events.onClick <| ClickDay day
                             ]
                         <|
@@ -343,18 +354,57 @@ elementPickDay year month =
                                 ]
                             <|
                                 Element.text <|
-                                    String.fromInt <|
-                                        unDay day
+                                    dayToString day
     in
-    Element.column
-        []
+    Element.el
+        [ Element.width <| Element.px 231
+        , Element.height <| Element.px 198
+        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+        ]
     <|
-        List.map
-            (Element.row
-                []
-                << List.map elementDay
-            )
-            dayMatrix
+        Element.column
+            []
+        <|
+            List.map
+                (Element.row
+                    []
+                    << List.map elementDay
+                )
+                dayMatrix
+
+
+type MessageDate
+    = MessageMonth MessageMonth
+    | MessageDay MessageDay
+
+
+elementPickDate : Year -> Month -> Element.Element MessageDate
+elementPickDate year month =
+    Element.column
+        [ Element.spacing 5
+        , Element.width <| Element.px 231
+        ]
+        [ Element.el
+            [ Element.width Element.fill
+            ]
+          <|
+            Element.el
+                [ Element.centerX
+                ]
+            <|
+                Element.map MessageMonth <|
+                    elementPickMonth year month
+        , Element.el
+            [ Element.width Element.fill
+            ]
+          <|
+            Element.el
+                [ Element.centerX
+                ]
+            <|
+                Element.map MessageDay <|
+                    elementPickDay year month
+        ]
 
 
 yearToString : Year -> String
@@ -400,3 +450,8 @@ monthToString (MkMonth month) =
 
         Time.Dec ->
             "December"
+
+
+dayToString : Day -> String
+dayToString (MkDay n) =
+    String.fromInt n
