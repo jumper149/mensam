@@ -1,5 +1,8 @@
 module Mensam.Time exposing (..)
 
+import Element
+import Element.Events
+import Html.Attributes
 import Time
 import Time.Extra
 
@@ -170,3 +173,108 @@ daysInMonth year (MkMonth month) =
 
         Time.Dec ->
             31
+
+
+type MessageYear
+    = YearNext
+    | YearPrevious
+
+
+elementPickMonth : Year -> Month -> Element.Element MessageYear
+elementPickMonth year month =
+    Element.el
+        [ Element.width <| Element.px 230
+        , Element.height <| Element.px 40
+        , Element.spaceEvenly
+        ]
+    <|
+        Element.row
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            ]
+            [ Element.el
+                [ Element.width <| Element.px 40
+                , Element.height <| Element.px 40
+                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                , Element.Events.onClick YearPrevious
+                ]
+              <|
+                Element.el
+                    [ Element.centerX
+                    , Element.centerY
+                    ]
+                <|
+                    Element.text "<"
+            , Element.el
+                [ Element.width <| Element.fill
+                , Element.height <| Element.fill
+                ]
+              <|
+                Element.el
+                    [ Element.centerX
+                    , Element.centerY
+                    ]
+                <|
+                    Element.text <|
+                        yearToString year
+                            ++ ", "
+                            ++ monthToString month
+            , Element.el
+                [ Element.width <| Element.px 40
+                , Element.height <| Element.px 40
+                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                , Element.Events.onClick YearNext
+                ]
+              <|
+                Element.el
+                    [ Element.centerX
+                    , Element.centerY
+                    ]
+                <|
+                    Element.text ">"
+            ]
+
+
+yearToString : Year -> String
+yearToString =
+    String.fromInt << unYear
+
+
+monthToString : Month -> String
+monthToString (MkMonth month) =
+    case month of
+        Time.Jan ->
+            "January"
+
+        Time.Feb ->
+            "February"
+
+        Time.Mar ->
+            "March"
+
+        Time.Apr ->
+            "April"
+
+        Time.May ->
+            "May"
+
+        Time.Jun ->
+            "June"
+
+        Time.Jul ->
+            "July"
+
+        Time.Aug ->
+            "August"
+
+        Time.Sep ->
+            "September"
+
+        Time.Oct ->
+            "October"
+
+        Time.Nov ->
+            "November"
+
+        Time.Dec ->
+            "December"
