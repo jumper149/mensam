@@ -679,3 +679,18 @@ monthToString (MkMonth month) =
 dayToString : Day -> String
 dayToString (MkDay n) =
     String.fromInt n
+
+
+timeToString : Time -> String
+timeToString (MkTime time) =
+    let
+        addPadding =
+            (\x -> "00" ++ x) >> String.reverse >> String.toList >> List.take 2 >> String.fromList >> String.reverse
+    in
+    String.concat
+        [ addPadding <| String.fromInt <| unHour time.hour
+        , ":"
+        , addPadding <| String.fromInt <| unMinute time.minute
+        , ":"
+        , addPadding <| String.fromInt <| unSecond time.second
+        ]

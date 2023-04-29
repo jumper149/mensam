@@ -48,10 +48,17 @@ type alias Model =
         { now : Time.Posix
         , zone : Time.Zone
         }
+    , pickerVisibility : PickerVisibility
     , modelDate : Mensam.Time.ModelDate
     , dateSelected : Mensam.Time.Date
     , timeSelected : Mensam.Time.Time
     }
+
+
+type PickerVisibility
+    = PickerInvisible
+    | DatePickerVisible
+    | TimePickerVisible
 
 
 init : { id : Int, time : { now : Time.Posix, zone : Time.Zone } } -> Model
@@ -74,6 +81,7 @@ init args =
             , month = (Mensam.Time.unDate date).month
             , selected = [ (Mensam.Time.unDate date).day ]
             }
+    , pickerVisibility = PickerInvisible
     , dateSelected = (Mensam.Time.unTimestamp <| Mensam.Time.fromPosix args.time.zone args.time.now).date
     , timeSelected =
         Mensam.Time.MkTime
@@ -109,13 +117,14 @@ element model =
                             [ Element.Background.color Mensam.Color.bright.black
                             , Element.centerX
                             , Element.width <| Element.maximum 500 <| Element.fill
-                            , Element.height <| Element.maximum 400 <| Element.fill
+                            , Element.height <| Element.px 465
                             , Element.paddingXY 30 30
                             ]
                         <|
                             Element.column
                                 [ Element.spacing 20
                                 , Element.width Element.fill
+                                , Element.height Element.fill
                                 ]
                                 [ Element.el
                                     [ Element.Font.size 30
@@ -123,29 +132,86 @@ element model =
                                     ]
                                   <|
                                     Element.text "Create reservation"
-                                , Element.el
-                                    [ Element.width Element.fill
-                                    ]
-                                  <|
-                                    Element.el
-                                        [ Element.centerX
-                                        ]
-                                    <|
-                                        Element.map (MessagePure << PickDate) <|
-                                            Mensam.Time.elementPickDate model.modelDate
-                                , Element.el
-                                    [ Element.width Element.fill
-                                    ]
-                                  <|
-                                    Element.el
-                                        [ Element.centerX
-                                        ]
-                                    <|
-                                        Element.map (\_ -> MessagePure EmptyMessage) <|
-                                            Mensam.Time.elementPickTime model.timeSelected
                                 , Element.row
                                     [ Element.width Element.fill
                                     , Element.spacing 10
+                                    ]
+                                    [ Element.Input.button
+                                        [ Element.Background.color Mensam.Color.bright.blue
+                                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
+                                        , Element.Font.color Mensam.Color.dark.black
+                                        , Element.width Element.fill
+                                        , Element.padding 10
+                                        ]
+                                        { onPress = Just <| MessagePure <| ViewDatePicker
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                ]
+                                            <|
+                                                Element.text <|
+                                                    let
+                                                        date =
+                                                            Mensam.Time.unDate model.dateSelected
+                                                    in
+                                                    String.concat
+                                                        [ Mensam.Time.yearToString date.year
+                                                        , ", "
+                                                        , Mensam.Time.monthToString date.month
+                                                        , " "
+                                                        , Mensam.Time.dayToString date.day
+                                                        ]
+                                        }
+                                    , Element.Input.button
+                                        [ Element.Background.color Mensam.Color.bright.blue
+                                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
+                                        , Element.Font.color Mensam.Color.dark.black
+                                        , Element.width Element.fill
+                                        , Element.padding 10
+                                        ]
+                                        { onPress = Just <| MessagePure <| ViewTimePicker
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                ]
+                                            <|
+                                                Element.text <|
+                                                    Mensam.Time.timeToString model.timeSelected
+                                        }
+                                    ]
+                                , Element.el
+                                    [ Element.width Element.fill
+                                    ]
+                                  <|
+                                    case model.pickerVisibility of
+                                        DatePickerVisible ->
+                                            Element.el
+                                                [ Element.centerX
+                                                ]
+                                            <|
+                                                Element.map (MessagePure << PickDate) <|
+                                                    Mensam.Time.elementPickDate model.modelDate
+
+                                        TimePickerVisible ->
+                                            Element.el
+                                                [ Element.centerX
+                                                ]
+                                            <|
+                                                Element.map (\_ -> MessagePure EmptyMessage) <|
+                                                    Mensam.Time.elementPickTime model.timeSelected
+
+                                        PickerInvisible ->
+                                            Element.none
+                                , Element.row
+                                    [ Element.width Element.fill
+                                    , Element.spacing 10
+                                    , Element.alignBottom
                                     ]
                                     [ Element.Input.button
                                         [ Element.Background.color Mensam.Color.bright.yellow
@@ -318,6 +384,8 @@ type MessagePure
                 }
             }
         )
+    | ViewDatePicker
+    | ViewTimePicker
     | PickDate Mensam.Time.MessageDate
     | PickTime Mensam.Time.MessageTime
 
@@ -336,6 +404,12 @@ updatePure message model =
 
         ViewDetailed data ->
             { model | viewDetailed = data }
+
+        ViewDatePicker ->
+            { model | pickerVisibility = DatePickerVisible }
+
+        ViewTimePicker ->
+            { model | pickerVisibility = TimePickerVisible }
 
         PickDate (Mensam.Time.MessageMonth Mensam.Time.MonthNext) ->
             { model | modelDate = Mensam.Time.updateDateNextMonth model.modelDate }
