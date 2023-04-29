@@ -575,30 +575,30 @@ elementPickTime (MkTime time) =
                         , svgOnCircle 100 "45" (SetMinute <| MkMinute 45) -1 0
                         , svgOnCircle 100 "50" (SetMinute <| MkMinute 50) -(sqrt 3 / 2) -(1 / 2)
                         , svgOnCircle 100 "55" (SetMinute <| MkMinute 55) -(1 / 2) -(sqrt 3 / 2)
-                        , svgOnCircle 60 "1" (SetHour <| MkHour 1) 0 -1
-                        , svgOnCircle 60 "2" (SetHour <| MkHour 2) (1 / 2) -(sqrt 3 / 2)
-                        , svgOnCircle 60 "3" (SetHour <| MkHour 3) (sqrt 3 / 2) -(1 / 2)
-                        , svgOnCircle 60 "4" (SetHour <| MkHour 4) 1 0
-                        , svgOnCircle 60 "5" (SetHour <| MkHour 5) (sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 60 "6" (SetHour <| MkHour 6) (1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 60 "7" (SetHour <| MkHour 7) 0 1
-                        , svgOnCircle 60 "8" (SetHour <| MkHour 8) -(1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 60 "9" (SetHour <| MkHour 9) -(sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 60 "10" (SetHour <| MkHour 10) -1 0
-                        , svgOnCircle 60 "11" (SetHour <| MkHour 11) -(sqrt 3 / 2) -(1 / 2)
-                        , svgOnCircle 60 "12" (SetHour <| MkHour 12) -(1 / 2) -(sqrt 3 / 2)
+                        , svgOnCircle 60 "12" (SetHour <| MkHour 12) 0 -1
+                        , svgOnCircle 60 "1" (SetHour <| MkHour 1) (1 / 2) -(sqrt 3 / 2)
+                        , svgOnCircle 60 "2" (SetHour <| MkHour 2) (sqrt 3 / 2) -(1 / 2)
+                        , svgOnCircle 60 "3" (SetHour <| MkHour 3) 1 0
+                        , svgOnCircle 60 "4" (SetHour <| MkHour 4) (sqrt 3 / 2) (1 / 2)
+                        , svgOnCircle 60 "5" (SetHour <| MkHour 5) (1 / 2) (sqrt 3 / 2)
+                        , svgOnCircle 60 "6" (SetHour <| MkHour 6) 0 1
+                        , svgOnCircle 60 "7" (SetHour <| MkHour 7) -(1 / 2) (sqrt 3 / 2)
+                        , svgOnCircle 60 "8" (SetHour <| MkHour 8) -(sqrt 3 / 2) (1 / 2)
+                        , svgOnCircle 60 "9" (SetHour <| MkHour 9) -1 0
+                        , svgOnCircle 60 "10" (SetHour <| MkHour 10) -(sqrt 3 / 2) -(1 / 2)
+                        , svgOnCircle 60 "11" (SetHour <| MkHour 11) -(1 / 2) -(sqrt 3 / 2)
                         , svgOnCircle 40 "0" (SetHour <| MkHour 0) 0 -1
-                        , svgOnCircle 40 "13" (SetHour <| MkHour 5) (1 / 2) -(sqrt 3 / 2)
-                        , svgOnCircle 40 "14" (SetHour <| MkHour 10) (sqrt 3 / 2) -(1 / 2)
+                        , svgOnCircle 40 "13" (SetHour <| MkHour 13) (1 / 2) -(sqrt 3 / 2)
+                        , svgOnCircle 40 "14" (SetHour <| MkHour 14) (sqrt 3 / 2) -(1 / 2)
                         , svgOnCircle 40 "15" (SetHour <| MkHour 15) 1 0
-                        , svgOnCircle 40 "16" (SetHour <| MkHour 20) (sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 40 "17" (SetHour <| MkHour 25) (1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 40 "18" (SetHour <| MkHour 30) 0 1
-                        , svgOnCircle 40 "19" (SetHour <| MkHour 35) -(1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 40 "20" (SetHour <| MkHour 40) -(sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 40 "21" (SetHour <| MkHour 45) -1 0
-                        , svgOnCircle 40 "22" (SetHour <| MkHour 50) -(sqrt 3 / 2) -(1 / 2)
-                        , svgOnCircle 40 "23" (SetHour <| MkHour 55) -(1 / 2) -(sqrt 3 / 2)
+                        , svgOnCircle 40 "16" (SetHour <| MkHour 16) (sqrt 3 / 2) (1 / 2)
+                        , svgOnCircle 40 "17" (SetHour <| MkHour 17) (1 / 2) (sqrt 3 / 2)
+                        , svgOnCircle 40 "18" (SetHour <| MkHour 18) 0 1
+                        , svgOnCircle 40 "19" (SetHour <| MkHour 19) -(1 / 2) (sqrt 3 / 2)
+                        , svgOnCircle 40 "20" (SetHour <| MkHour 20) -(sqrt 3 / 2) (1 / 2)
+                        , svgOnCircle 40 "21" (SetHour <| MkHour 21) -1 0
+                        , svgOnCircle 40 "22" (SetHour <| MkHour 22) -(sqrt 3 / 2) -(1 / 2)
+                        , svgOnCircle 40 "23" (SetHour <| MkHour 23) -(1 / 2) -(sqrt 3 / 2)
                         ]
 
 

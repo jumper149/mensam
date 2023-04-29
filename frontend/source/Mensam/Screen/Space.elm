@@ -203,7 +203,7 @@ element model =
                                                 [ Element.centerX
                                                 ]
                                             <|
-                                                Element.map (\_ -> MessagePure EmptyMessage) <|
+                                                Element.map (MessagePure << PickTime) <|
                                                     Mensam.Time.elementPickTime model.timeSelected
 
                                         PickerInvisible ->
