@@ -115,6 +115,16 @@ element model =
                                     Mensam.Time.elementPickMonth
                                         (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).year
                                         (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).month
+                                , Element.map
+                                    (\message ->
+                                        case message of
+                                            _ ->
+                                                MessagePure EmptyMessage
+                                    )
+                                  <|
+                                    Mensam.Time.elementPickDay
+                                        (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).year
+                                        (Mensam.Time.unDate (Mensam.Time.unTimestamp model.time.selected).date).month
                                 , Element.row
                                     [ Element.width Element.fill
                                     , Element.spacing 10

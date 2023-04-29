@@ -175,12 +175,12 @@ daysInMonth year (MkMonth month) =
             31
 
 
-type MessageYear
-    = YearNext
-    | YearPrevious
+type MessageMonth
+    = MonthNext
+    | MonthPrevious
 
 
-elementPickMonth : Year -> Month -> Element.Element MessageYear
+elementPickMonth : Year -> Month -> Element.Element MessageMonth
 elementPickMonth year month =
     Element.el
         [ Element.width <| Element.px 230
@@ -196,7 +196,7 @@ elementPickMonth year month =
                 [ Element.width <| Element.px 40
                 , Element.height <| Element.px 40
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                , Element.Events.onClick YearPrevious
+                , Element.Events.onClick MonthPrevious
                 ]
               <|
                 Element.el
@@ -223,7 +223,7 @@ elementPickMonth year month =
                 [ Element.width <| Element.px 40
                 , Element.height <| Element.px 40
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                , Element.Events.onClick YearNext
+                , Element.Events.onClick MonthNext
                 ]
               <|
                 Element.el
@@ -233,6 +233,128 @@ elementPickMonth year month =
                 <|
                     Element.text ">"
             ]
+
+
+type MessageDay
+    = ClickDay Day
+
+
+elementPickDay : Year -> Month -> Element.Element MessageDay
+elementPickDay year month =
+    let
+        weekdayOfFirst =
+            Time.toWeekday Time.utc <|
+                toPosix Time.utc <|
+                    MkTimestamp
+                        { date =
+                            MkDate
+                                { year = year
+                                , month = month
+                                , day = MkDay 1
+                                }
+                        , time =
+                            MkTime
+                                { hour = MkHour 12
+                                , minute = MkMinute 0
+                                , second = MkSecond 0
+                                }
+                        }
+
+        daysPre =
+            let
+                count =
+                    case weekdayOfFirst of
+                        Time.Mon ->
+                            7
+
+                        Time.Tue ->
+                            1
+
+                        Time.Wed ->
+                            2
+
+                        Time.Thu ->
+                            3
+
+                        Time.Fri ->
+                            4
+
+                        Time.Sat ->
+                            5
+
+                        Time.Sun ->
+                            6
+            in
+            List.repeat count Nothing
+
+        daysMiddle =
+            List.map (Just << MkDay << (\n -> n + 1)) <| List.range 0 (daysInMonth year month)
+
+        daysPost =
+            List.repeat 14 Nothing
+
+        days =
+            List.take (7 * 6) <| daysPre ++ daysMiddle ++ daysPost
+
+        toListsOfSeven : List a -> List (List a)
+        toListsOfSeven xs =
+            if List.length xs > 7 then
+                List.take 7 xs :: toListsOfSeven (List.drop 7 xs)
+
+            else
+                [ xs ]
+
+        dayMatrix =
+            toListsOfSeven days
+
+        elementDay : Maybe Day -> Element.Element MessageDay
+        elementDay maybeDay =
+            Element.el
+                [ Element.width <| Element.px 33
+                , Element.height <| Element.px 33
+                , Element.padding 5
+                ]
+            <|
+                case maybeDay of
+                    Nothing ->
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                        <|
+                            Element.el
+                                [ Element.centerX
+                                , Element.centerY
+                                ]
+                            <|
+                                Element.none
+
+                    Just day ->
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height Element.fill
+                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                            , Element.Events.onClick <| ClickDay day
+                            ]
+                        <|
+                            Element.el
+                                [ Element.centerX
+                                , Element.centerY
+                                ]
+                            <|
+                                Element.text <|
+                                    String.fromInt <|
+                                        unDay day
+    in
+    Element.column
+        []
+    <|
+        List.map
+            (Element.row
+                []
+                << List.map elementDay
+            )
+            dayMatrix
 
 
 yearToString : Year -> String
