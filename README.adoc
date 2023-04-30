@@ -51,7 +51,7 @@ link:./setup[Setup]:: Nix overlay
 link:./server[Server]:: HTTP API, Server executable, CLI-client executable
 link:./frontend[Frontend]:: Single page web application
 link:./static[Static]:: Static files directly visible from HTML
-link:./final[Final]:: Wrapper and NixOS module
+link:./final[Final]:: Configuration, wrapper and NixOS module
 
 === Binary Cache
 
