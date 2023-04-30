@@ -41,5 +41,16 @@
           StateDirectory = "mensam";
         };
       };
+      users.users = {
+        mensam = {
+          uid = 377;
+          group = "mensam";
+          description = "Mensam user";
+          home = "/var/lib/mensam";
+        };
+      };
+      users.groups = {
+        mensam.gid = 377;
+      };
     };
   }
