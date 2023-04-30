@@ -38,6 +38,7 @@ login ::
   , MonadIO m
   , MonadLogger m
   , MonadSecret m
+  , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseLogin) responses
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   , IsMember (WithStatus 500 ()) responses
@@ -45,39 +46,52 @@ login ::
   AuthResult UserAuthenticated ->
   m (Union responses)
 login auth =
-  handleAuth auth $ \authenticated -> do
-    logDebug $ "Creating JWT for user: " <> T.pack (show authenticated)
+  handleAuth auth $ \authenticatedWithoutSession -> do
+    logInfo "Logging in user."
+    timeCurrent <- liftIO T.getCurrentTime
     maybeTimeout <- do
-      timeCurrent <- liftIO T.getCurrentTime
       durationValid <- authTimeoutSeconds . configAuth <$> configuration
       let maybeTimeExpiration =
             (`T.addUTCTime` timeCurrent)
               <$> (T.secondsToNominalDiffTime . fromInteger <$> durationValid)
       pure maybeTimeExpiration
-    logDebug $ "JWT timeout has been set: " <> T.pack (show maybeTimeout)
-    eitherJwt <- do
-      jwk <- secretsJwk <$> secrets
-      let jwtSettings = mkJwtSettings jwk
-      liftIO $ makeJWT authenticated jwtSettings maybeTimeout
-    case eitherJwt of
-      Left err -> do
-        logError $ "Failed to create JWT: " <> T.pack (show err)
+    logDebug "Creating session."
+    seldaResult <-
+      runSeldaTransactionT $
+        userSessionCreate (userAuthenticatedId authenticatedWithoutSession) timeCurrent maybeTimeout
+    case seldaResult of
+      SeldaFailure _ -> do
+        -- TODO: Here we can theoretically return a more accurate error
+        logWarn "Failed to create new session."
         respond $ WithStatus @500 ()
-      Right jwtByteString ->
-        case T.decodeUtf8' $ B.toStrict jwtByteString of
+      SeldaSuccess sessionIdentifier -> do
+        logInfo "Created session successfully."
+        let authenticatedWithSession = authenticatedWithoutSession {userAuthenticatedSession = Just sessionIdentifier}
+        logDebug $ "Creating JWT for user: " <> T.pack (show authenticatedWithSession)
+        logDebug $ "JWT timeout has been set: " <> T.pack (show maybeTimeout)
+        eitherJwt <- do
+          jwk <- secretsJwk <$> secrets
+          let jwtSettings = mkJwtSettings jwk
+          liftIO $ makeJWT authenticatedWithSession jwtSettings maybeTimeout
+        case eitherJwt of
           Left err -> do
-            logError $ "Failed to decode JWT as UTF-8: " <> T.pack (show err)
+            logError $ "Failed to create JWT: " <> T.pack (show err)
             respond $ WithStatus @500 ()
-          Right jwtText -> do
-            let jwt = MkJwt jwtText
-            logInfo "Created JWT successfully."
-            logInfo "User logged in successfully."
-            respond $
-              WithStatus @200
-                MkResponseLogin
-                  { responseLoginJwt = jwt
-                  , responseLoginExpiration = maybeTimeout
-                  }
+          Right jwtByteString ->
+            case T.decodeUtf8' $ B.toStrict jwtByteString of
+              Left err -> do
+                logError $ "Failed to decode JWT as UTF-8: " <> T.pack (show err)
+                respond $ WithStatus @500 ()
+              Right jwtText -> do
+                let jwt = MkJwt jwtText
+                logInfo "Created JWT successfully."
+                logInfo "User logged in successfully."
+                respond $
+                  WithStatus @200
+                    MkResponseLogin
+                      { responseLoginJwt = jwt
+                      , responseLoginExpiration = maybeTimeout
+                      }
 
 register ::
   ( MonadIO m
