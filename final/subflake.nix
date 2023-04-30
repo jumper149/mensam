@@ -47,7 +47,12 @@
   overlays.default = final: prev: {
     mensam = {
       exe = self.subflakes.server.packages.x86_64-linux.default;
-      full = packages.x86_64-linux.default;
+      full = {
+        server = packages.x86_64-linux.default;
+        client = packages.x86_64-linux.mensam-client;
+        init = packages.x86_64-linux.mensam-init;
+        openapi = packages.x86_64-linux.mensam-openapi;
+      };
       config.default = config;
     };
   };
