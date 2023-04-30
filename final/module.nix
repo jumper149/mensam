@@ -16,7 +16,7 @@
     config = lib.mkIf config.services.mensam.enable {
       environment = {
         etc."mensam.json".text = builtins.toJSON (
-          lib.recursiveUpdate pkgs.mensam-jumper149.config.default config.services.mensam.config
+          lib.recursiveUpdate pkgs.mensam.config.default config.services.mensam.config
         );
       };
       nixpkgs.overlays = [
@@ -36,7 +36,7 @@
         ];
         serviceConfig = {
           DynamicUser = true;
-          ExecStart = "${pkgs.mensam-jumper149.exe}/bin/mensam-server";
+          ExecStart = "${pkgs.mensam.exe}/bin/mensam-server";
           LogsDirectory = "mensam";
         };
       };
