@@ -1,16 +1,19 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Mensam.Client.Application.Options where
 
 import Mensam.Client.Application.Options.Class
 
-import Control.Monad.Logger.CallStack
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Control
 import Control.Monad.Trans.Control.Identity
 import Control.Monad.Trans.Reader
+import Data.Foldable
 import Data.Kind
+import Options.Applicative
+import Servant.Client
 
 type OptionsT :: (Type -> Type) -> Type -> Type
 newtype OptionsT m a = MkOptionsT {unOptionsT :: ReaderT Options m a}
@@ -29,9 +32,31 @@ runOptionsT :: OptionsT m a -> Options -> m a
 runOptionsT = runReaderT . unOptionsT
 
 runAppOptionsT ::
-  (MonadIO m, MonadLogger m) =>
+  MonadIO m =>
   OptionsT m a ->
   m a
 runAppOptionsT tma = do
-  logInfo "Parsing command line options."
-  runOptionsT tma undefined -- TODO
+  parsedOptions <- liftIO $ execParser parserInfoOptions
+  runOptionsT tma parsedOptions
+
+parserInfoOptions :: ParserInfo Options
+parserInfoOptions = info parserOptions fullDesc
+
+parserOptions :: Parser Options
+parserOptions = do
+  optionBaseUrl <-
+    option readBaseUrl $
+      fold
+        [ long "base-url"
+        , help "Base URL to connect to a Mensam server instance"
+        ]
+  pure
+    MkOptions
+      { optionBaseUrl
+      }
+
+readBaseUrl :: ReadM BaseUrl
+readBaseUrl = eitherReader $ \string ->
+  case parseBaseUrl string of
+    Left err -> Left $ "Failed to parse base URL: " ++ show err
+    Right baseUrl -> Right baseUrl

@@ -66,6 +66,7 @@ common dependencies
     , monad-logger
     , mtl
     , openapi3
+    , optparse-applicative
     , password
     , resource-pool
     , selda

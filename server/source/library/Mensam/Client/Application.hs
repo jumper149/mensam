@@ -7,6 +7,8 @@ import Mensam.Client.Application.Event.Class
 import Mensam.Client.Application.HttpClient
 import Mensam.Client.Application.MensamClient
 import Mensam.Client.Application.MensamClient.Class
+import Mensam.Client.Application.Options
+import Mensam.Client.Application.Options.Class
 import Mensam.Client.UI.Brick.Events (ClientEvent)
 
 import Brick.BChan (BChan)
@@ -21,6 +23,7 @@ import Data.Kind
 type Transformers :: Stack
 type Transformers =
   NilT
+    :.|> OptionsT
     :.|> NoLoggingT
     :.|> HttpClientT
     :.|> MensamClientT
@@ -30,6 +33,7 @@ type ApplicationT :: (Type -> Type) -> Type -> Type
 newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
+  deriving newtype (MonadOptions)
   deriving newtype (MonadLogger)
   deriving newtype (MonadMensamClient)
   deriving newtype (MonadEvent)
@@ -44,6 +48,7 @@ runApplicationT chan app = do
     runTransformers :: MonadIO m => RunStackT Transformers m a
     runTransformers =
       RunNilT
+        :..> runAppOptionsT
         :..> runNoLoggingT
         :..> runAppHttpClientT
         :..> runAppMensamClientT
