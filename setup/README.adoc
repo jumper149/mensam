@@ -1,12 +1,3 @@
 = Setup
 
-It's possible to use a development configuration.
-Modify `deployment.json` and use the name of a configuration.
-
-`nixpublic`:: Deployment configuration
-`development`:: Development configuration
-
-[source,bash]
-----
-echo "\"nixpublic\"" > deployment.json
-----
+There is not a lot going on here, just an overlay that is used everywhere.
