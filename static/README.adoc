@@ -1,0 +1,3 @@
+= Static
+
+Static files are bundled and will be served at runtime from the server.
