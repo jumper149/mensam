@@ -17,11 +17,6 @@ import Servant.API hiding (BasicAuth, Header)
 import Servant.Auth
 import Servant.Client
 import Servant.Client.Core qualified as Core
-import Servant.HTML.Blaze
-import Text.Blaze.Html
-
-instance MimeUnrender HTML Markup where
-  mimeUnrender Proxy = error "blaze-html doesn't support parsing"
 
 type AuthData :: [Type] -> Type
 data AuthData xs :: Type where
