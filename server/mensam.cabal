@@ -125,6 +125,8 @@ library
     , Mensam.Client.Application.HttpClient.Class
     , Mensam.Client.Application.MensamClient
     , Mensam.Client.Application.MensamClient.Class
+    , Mensam.Client.Application.Options
+    , Mensam.Client.Application.Options.Class
     , Mensam.Client.Debug
     , Mensam.Client.OrphanInstances
     , Mensam.Client.UI
