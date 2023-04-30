@@ -8,7 +8,7 @@ BUILT_ICONS = $(patsubst $(SOURCE)%, $(BUILD)%, $(ICONS))
 BUILT_FILES =
 
 .PHONY: all
-all: $(BUILD)/favicon.ico $(BUILD)/favicon.png $(BUILT_FAVICONS) $(BUILD)/stylesheet.css $(BUILD)/fonts.css $(BUILT_ICONS) $(BUILT_FILES)
+all: $(BUILD)/favicon.ico $(BUILD)/favicon.png $(BUILT_FAVICONS) $(BUILD)/fonts.css $(BUILT_ICONS) $(BUILT_FILES)
 
 $(BUILD)/favicon.ico: $(BUILD)/favicon.png $(BUILD)
 	cp "$<" "$@"
@@ -18,9 +18,6 @@ $(BUILD)/favicon.png: $(BUILD)/favicon-32x32.png $(BUILD)
 
 $(BUILT_FAVICONS): $(BUILD)/favicon-%.png: $(SOURCE)/favicon.xpm $(BUILD)
 	convert "$<" -scale "$*" "$@"
-
-$(BUILD)/stylesheet.css: $(SOURCE)/stylesheet.less $(BUILD)
-	lessc "$<" "$@"
 
 $(BUILD)/fonts.css: $(SOURCE)/fonts.css $(BUILD)
 	cp "$<" "$@"

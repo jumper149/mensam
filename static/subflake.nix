@@ -19,7 +19,6 @@
       ];
       nativeBuildInputs = [
         imagemagick
-        lessc
       ];
     };
 
