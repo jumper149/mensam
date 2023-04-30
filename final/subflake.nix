@@ -31,7 +31,7 @@
   packages.x86_64-linux.mensam-client =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-client-full" ''
-      ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-client
+      ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-client $@
     '';
 
   packages.x86_64-linux.config =

@@ -12,6 +12,7 @@ import Control.Monad.Trans.Control.Identity
 import Control.Monad.Trans.Reader
 import Data.Kind
 import Network.HTTP.Client qualified as Network
+import Network.HTTP.Client.TLS qualified as Network
 
 type HttpClientT :: (Type -> Type) -> Type -> Type
 newtype HttpClientT m a = MkHttpClientT {unHttpClientT :: ReaderT Network.Manager m a}
@@ -35,6 +36,6 @@ runAppHttpClientT ::
   m a
 runAppHttpClientT tma = do
   logInfo "Creating new HTTP manager."
-  manager <- liftIO $ Network.newManager Network.defaultManagerSettings
+  manager <- liftIO $ Network.newManager Network.tlsManagerSettings
   logInfo "Created new HTTP manager."
   runHttpClientT tma manager
