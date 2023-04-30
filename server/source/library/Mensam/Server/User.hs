@@ -14,6 +14,7 @@ import Control.Monad.Trans.Class
 import Data.Kind
 import Data.Password.Bcrypt
 import Data.Text qualified as T
+import Data.Time qualified as T
 import Database.Selda qualified as Selda
 import GHC.Generics
 import Text.Email.Parser
@@ -49,7 +50,12 @@ userAuthenticate username password = do
           pure $ Left AuthenticationErrorWrongPassword
         PasswordCheckSuccess -> do
           lift $ logInfo "Password authentication succeeded."
-          pure $ Right MkUserAuthenticated {userAuthenticatedId = MkIdentifierUser $ Selda.fromId $ dbUser_id dbUser}
+          pure $
+            Right
+              MkUserAuthenticated
+                { userAuthenticatedId = MkIdentifierUser $ Selda.fromId @DbUser $ dbUser_id dbUser
+                , userAuthenticatedSession = Nothing
+                }
 
 userLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -131,3 +137,45 @@ userProfile username = do
     Just dbId -> do
       lift $ logInfo "Looked up user successfully."
       pure $ Just $ MkIdentifierUser $ Selda.fromId @DbUser dbId
+
+userSessionGet ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSession ->
+  SeldaTransactionT m Session
+userSessionGet identifier = do
+  lift $ logDebug $ "Get session info with identifier: " <> T.pack (show identifier)
+  dbSession <- Selda.queryOne $ do
+    dbSession <- Selda.select tableSession
+    Selda.restrict $ dbSession Selda.! #dbSession_id Selda..== Selda.literal (Selda.toId @DbSession $ unIdentifierSession identifier)
+    pure dbSession
+  lift $ logInfo "Got session info successfully."
+  pure
+    MkSession
+      { sessionId = MkIdentifierSession $ Selda.fromId @DbSession $ dbSession_id dbSession
+      , sessionTimeCreated = dbSession_time_created dbSession
+      , sessionTimeExpired = dbSession_time_expired dbSession
+      }
+
+userSessionCreate ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierUser ->
+  -- | session created
+  T.UTCTime ->
+  -- | session expires
+  Maybe T.UTCTime ->
+  SeldaTransactionT m IdentifierSession
+userSessionCreate userIdentifier timeCreated maybeTimeExpired = do
+  lift $ logDebug $ "Creating session for user: " <> T.pack (show userIdentifier)
+  lift $ logDebug "Inserting session into database."
+  dbSessionId <-
+    Selda.insertWithPK
+      tableSession
+      [ MkDbSession
+          { dbSession_id = Selda.def
+          , dbSession_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
+          , dbSession_time_created = timeCreated
+          , dbSession_time_expired = maybeTimeExpired
+          }
+      ]
+  lift $ logInfo "Created session successfully."
+  pure $ MkIdentifierSession $ Selda.fromId @DbSession dbSessionId

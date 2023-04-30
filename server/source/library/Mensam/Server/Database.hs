@@ -22,6 +22,9 @@ createDatabase = do
     lift $ logDebug "Creating table 'user'."
     Selda.createTable tableUser
 
+    lift $ logDebug "Creating table 'session'."
+    Selda.createTable tableSession
+
     lift $ logDebug "Creating table 'space'."
     Selda.createTable tableSpace
 

@@ -69,12 +69,13 @@ login auth =
             logError $ "Failed to decode JWT as UTF-8: " <> T.pack (show err)
             respond $ WithStatus @500 ()
           Right jwtText -> do
+            let jwt = MkJwt jwtText
             logInfo "Created JWT successfully."
             logInfo "User logged in successfully."
             respond $
               WithStatus @200
                 MkResponseLogin
-                  { responseLoginJwt = MkJwt jwtText
+                  { responseLoginJwt = jwt
                   , responseLoginExpiration = maybeTimeout
                   }
 

@@ -6,14 +6,16 @@ import Mensam.API.Data.User.Username
 import Data.Aeson qualified as A
 import Data.Int
 import Data.Kind
+import Data.Time qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
 import Text.Email.OrphanInstances ()
 import Text.Email.Parser
 
 type UserAuthenticated :: Type
-newtype UserAuthenticated = MkUserAuthenticated
+data UserAuthenticated = MkUserAuthenticated
   { userAuthenticatedId :: IdentifierUser
+  , userAuthenticatedSession :: Maybe IdentifierSession
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -33,6 +35,22 @@ data User = MkUser
 
 type IdentifierUser :: Type
 newtype IdentifierUser = MkIdentifierUser {unIdentifierUser :: Int64}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
+
+type Session :: Type
+data Session = MkSession
+  { sessionId :: IdentifierSession
+  , sessionTimeCreated :: T.UTCTime
+  , sessionTimeExpired :: Maybe T.UTCTime
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "session") Session
+
+type IdentifierSession :: Type
+newtype IdentifierSession = MkIdentifierSession {unIdentifierSession :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
 

@@ -40,6 +40,25 @@ tableUser =
     ]
     (fromJust . T.stripPrefix "dbUser_")
 
+type DbSession :: Type
+data DbSession = MkDbSession
+  { dbSession_id :: Selda.ID DbSession
+  , dbSession_user :: Selda.ID DbUser
+  , dbSession_time_created :: Selda.UTCTime
+  , dbSession_time_expired :: Maybe Selda.UTCTime
+  }
+  deriving stock (Generic, Show)
+  deriving anyclass (Selda.SqlRow)
+
+tableSession :: Selda.Table DbSession
+tableSession =
+  Selda.tableFieldMod
+    "session"
+    [ #dbSession_id Selda.:- Selda.autoPrimary
+    , #dbSession_user Selda.:- Selda.foreignKey tableUser #dbUser_id
+    ]
+    (fromJust . T.stripPrefix "dbSession_")
+
 type DbSpace :: Type
 data DbSpace = MkDbSpace
   { dbSpace_id :: Selda.ID DbSpace
