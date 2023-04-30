@@ -11,15 +11,40 @@ import Control.Monad.Trans.Class
 import Data.Text qualified as T
 import Database.Selda qualified as Selda
 
-initDatabase :: MonadSeldaPool m => m ()
-initDatabase = void $ runSeldaTransactionT $ do
-  Selda.createTable tableUser
-  Selda.createTable tableSpace
-  Selda.createTable tableSpaceUser
-  Selda.createTable tableDesk
-  Selda.createTable tableReservation
+createDatabase ::
+  ( MonadSeldaPool m
+  , MonadLogger m
+  ) =>
+  m ()
+createDatabase = do
+  logDebug "Creating database."
+  result <- runSeldaTransactionT $ do
+    lift $ logDebug "Creating table 'user'."
+    Selda.createTable tableUser
 
-checkDatabase :: (MonadLogger m, MonadSeldaPool m) => m ()
+    lift $ logDebug "Creating table 'space'."
+    Selda.createTable tableSpace
+
+    lift $ logDebug "Creating table 'space_user'."
+    Selda.createTable tableSpaceUser
+
+    lift $ logDebug "Creating table 'desk'."
+    Selda.createTable tableDesk
+
+    lift $ logDebug "Creating table 'reservation'."
+    Selda.createTable tableReservation
+
+    lift $ logInfo "Committing transaction."
+
+  case result of
+    SeldaSuccess () -> logInfo "Created database."
+    SeldaFailure err -> logError $ "Failed to create database: " <> T.pack (show err)
+
+checkDatabase ::
+  ( MonadLogger m
+  , MonadSeldaPool m
+  ) =>
+  m ()
 checkDatabase = void $ runSeldaTransactionT $ do
   lift $ logInfo "Checking for overlapping reservations."
   reservationsOverlapping <- Selda.query $ do

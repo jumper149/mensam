@@ -4,9 +4,11 @@ import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Configuration
 
 import Control.Monad.IO.Class
+import Control.Monad.Logger.CallStack
 import Crypto.JOSE.JWK qualified as JOSE
 import Data.Kind
 import Servant.Auth.Server
+import System.Posix.Files
 
 type Secrets :: Type
 newtype Secrets = MkSecrets
@@ -16,8 +18,16 @@ newtype Secrets = MkSecrets
 initSecrets ::
   ( MonadConfigured m
   , MonadIO m
+  , MonadLogger m
   ) =>
   m ()
 initSecrets = do
   config <- configuration
-  liftIO $ writeKey $ authJwkFilepath $ configAuth config
+  logDebug "Checking JWK."
+  jwkExists <- liftIO $ fileExist $ authJwkFilepath $ configAuth config
+  if jwkExists
+    then logWarn "JWK already exists. Skipping."
+    else do
+      logDebug "Initializing JWK."
+      liftIO $ writeKey $ authJwkFilepath $ configAuth config
+      logDebug "Initialized JWK."

@@ -29,10 +29,11 @@ initialize = do
       runAppTimedLoggingT . deComposeT $ do
         traverse_ logLine preLog
         runAppConfiguredT . deComposeT $ do
-          logDebug "Initialize secrets."
+          logDebug "Initializing secrets."
           initSecrets
           logInfo "Initialized secrets."
           runSeldaPoolT . deComposeT $ do
-            logDebug "Initialize database."
-            initDatabase
+            logDebug "Initializing database."
+            createDatabase
+            checkDatabase
             logInfo "Initialized database."
