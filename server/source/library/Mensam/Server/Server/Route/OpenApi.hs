@@ -6,9 +6,12 @@ import Mensam.API.Route.Api.OpenApi qualified as Route.Api.OpenApi
 import Mensam.API.Route.OpenApi
 import Mensam.API.Route.OpenApi qualified as Route.OpenApi
 import Mensam.Server.Application.Configured.Class
+import Mensam.Server.Configuration
+import Mensam.Server.Configuration.BaseUrl
 
 import Data.List qualified as L
 import Data.Text qualified as T
+import Numeric.Natural
 import Servant.Links
 import Servant.Server.Generic
 import Text.Blaze.Html qualified as Blaze
@@ -24,8 +27,11 @@ handler =
     { routeRender = render
     }
 
-render :: Monad m => m Blaze.Html
-render =
+render ::
+  (MonadConfigured m) =>
+  m Blaze.Html
+render = do
+  baseUrl <- configBaseUrl <$> configuration
   pure $
     Blaze.docTypeHtml $ do
       Blaze.head $ do
@@ -37,10 +43,10 @@ render =
         Blaze.meta
           Blaze.! Blaze.Attributes.name "viewport"
           Blaze.! Blaze.Attributes.content "width=device-width, initial-scale=1"
-        -- TODO: Avoiding dependency for now. We should host fonts ourselves if we want this.
-        -- Blaze.link
-        --   Blaze.! Blaze.Attributes.href "https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700"
-        --   Blaze.! Blaze.Attributes.rel "stylesheet"
+        Blaze.link
+          Blaze.! Blaze.Attributes.rel "stylesheet"
+          Blaze.! Blaze.Attributes.type_ "text/css"
+          Blaze.! hrefWithDepth baseUrl (Just 0) "static/redoc.css"
 
         -- Redoc doesn't change outer page styles
         Blaze.style
@@ -70,3 +76,22 @@ relativePath origin destination = goBack ++ "/" ++ goForward
     _ : baseSegments -> L.intercalate "/" (".." <$ baseSegments)
   goForward :: String
   goForward = show $ linkURI destination
+
+hrefWithDepth ::
+  BaseUrl ->
+  -- | depth
+  Maybe Natural ->
+  Blaze.AttributeValue ->
+  Blaze.Attribute
+hrefWithDepth baseUrl depth ref = Blaze.Attributes.href $ withDepth baseUrl depth ref
+
+withDepth ::
+  BaseUrl ->
+  -- | depth
+  Maybe Natural ->
+  Blaze.AttributeValue ->
+  Blaze.AttributeValue
+withDepth baseUrl Nothing ref = Blaze.textValue (displayBaseUrl baseUrl) <> ref
+withDepth _ (Just 0) ref = "./" <> ref
+withDepth _ (Just 1) ref = "../" <> ref
+withDepth baseUrl (Just n) ref = withDepth baseUrl (Just $ pred n) $ "../" <> ref

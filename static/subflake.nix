@@ -22,6 +22,8 @@
       ];
     };
 
+  # Mensam: Fira
+  # Redoc: Montserrat, Roboto
   packages.x86_64-linux.fonts =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     stdenv.mkDerivation {
@@ -32,10 +34,12 @@
         cp -r ${pkgs.fira.outPath}/share/fonts/opentype build
         mv build/opentype build/fonts
         chmod --recursive +w build/fonts
+        cp ${pkgs.roboto.outPath}/share/fonts/truetype/* build/fonts
         for f in build/fonts/*
         do
           woff2_compress $f
         done
+        cp ${pkgs.montserrat.outPath}/share/fonts/woff2/* build/fonts
       '';
       installPhase = ''
         cp --recursive build $out
