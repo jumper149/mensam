@@ -1,7 +1,7 @@
 = Final
 
 It's possible to use a development configuration.
-Modify `deployment.json` and use the name of a configuration.
+Modify link:./deployment.json[`deployment.json`] and use the name of a configuration.
 
 `nixpublic`:: Deployment configuration
 `development`:: Development configuration
