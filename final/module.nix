@@ -38,6 +38,7 @@
           DynamicUser = true;
           ExecStart = "${pkgs.mensam.exe}/bin/mensam-server";
           LogsDirectory = "mensam";
+          StateDirectory = "mensam";
         };
       };
     };
