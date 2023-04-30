@@ -36,6 +36,7 @@ import Servant
 ui :: IO ()
 ui = do
   chan <- newBChan 10
+  runApplicationT chan $ pure () -- TODO: This should catch errors during initialization.
   tz <- liftIO T.getCurrentTimeZone
   let
     app :: App ClientState ClientEvent ClientName

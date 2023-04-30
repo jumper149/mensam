@@ -4,6 +4,7 @@ module Mensam.Client.Application.MensamClient where
 
 import Mensam.Client.Application.HttpClient.Class
 import Mensam.Client.Application.MensamClient.Class
+import Mensam.Client.Application.Options.Class
 
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans
@@ -33,19 +34,13 @@ runMensamClientT :: MensamClientT m a -> ClientEnv -> m a
 runMensamClientT = runReaderT . unMensamClientT
 
 runAppMensamClientT ::
-  (MonadIO m, MonadHttpClient m, MonadLogger m) =>
+  (MonadIO m, MonadHttpClient m, MonadLogger m, MonadOptions m) =>
   MensamClientT m a ->
   m a
 runAppMensamClientT tma = do
   logInfo "Creating HTTP client environment."
   manager <- httpManager
-  let baseUrl =
-        BaseUrl
-          { baseUrlScheme = Http
-          , baseUrlHost = "localhost"
-          , baseUrlPort = 8177
-          , baseUrlPath = "/api"
-          }
+  baseUrl <- optionBaseUrl <$> options
   let clientEnv = mkClientEnv manager baseUrl
   logInfo "Created HTTP client environment."
   runMensamClientT tma clientEnv
