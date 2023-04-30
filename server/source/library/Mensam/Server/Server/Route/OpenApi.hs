@@ -32,6 +32,26 @@ render = do
     Blaze.docTypeHtml $ do
       Blaze.head $ do
         Blaze.title $ Blaze.toMarkup @T.Text "Mensam API"
+        Blaze.link
+          Blaze.! Blaze.Attributes.rel "icon"
+          Blaze.! Blaze.Attributes.type_ "image/png"
+          Blaze.! Blaze.Attributes.sizes "32x32"
+          Blaze.! Blaze.Attributes.href "static/favicon.png"
+        Blaze.link
+          Blaze.! Blaze.Attributes.rel "icon"
+          Blaze.! Blaze.Attributes.type_ "image/png"
+          Blaze.! Blaze.Attributes.sizes "192x192"
+          Blaze.! Blaze.Attributes.href "static/favicon-192x192.png"
+        Blaze.link
+          Blaze.! Blaze.Attributes.rel "icon"
+          Blaze.! Blaze.Attributes.type_ "image/png"
+          Blaze.! Blaze.Attributes.sizes "512x512"
+          Blaze.! Blaze.Attributes.href "static/favicon-512x512.png"
+        Blaze.link
+          Blaze.! Blaze.Attributes.rel "apple-touch-icon"
+          Blaze.! Blaze.Attributes.type_ "image/png"
+          Blaze.! Blaze.Attributes.sizes "512x512"
+          Blaze.! Blaze.Attributes.href "static/favicon-512x512.png"
 
         --  needed for adaptive design
         Blaze.meta
