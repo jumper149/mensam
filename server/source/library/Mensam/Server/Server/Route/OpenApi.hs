@@ -6,12 +6,9 @@ import Mensam.API.Route.Api.OpenApi qualified as Route.Api.OpenApi
 import Mensam.API.Route.OpenApi
 import Mensam.API.Route.OpenApi qualified as Route.OpenApi
 import Mensam.Server.Application.Configured.Class
-import Mensam.Server.Configuration
-import Mensam.Server.Configuration.BaseUrl
 
 import Data.List qualified as L
 import Data.Text qualified as T
-import Numeric.Natural
 import Servant.Links
 import Servant.Server.Generic
 import Text.Blaze.Html qualified as Blaze
@@ -31,7 +28,6 @@ render ::
   (MonadConfigured m) =>
   m Blaze.Html
 render = do
-  baseUrl <- configBaseUrl <$> configuration
   pure $
     Blaze.docTypeHtml $ do
       Blaze.head $ do
@@ -46,7 +42,7 @@ render = do
         Blaze.link
           Blaze.! Blaze.Attributes.rel "stylesheet"
           Blaze.! Blaze.Attributes.type_ "text/css"
-          Blaze.! hrefWithDepth baseUrl (Just 0) "static/redoc.css"
+          Blaze.! Blaze.Attributes.href "static/redoc.css"
 
         -- Redoc doesn't change outer page styles
         Blaze.style
@@ -62,8 +58,7 @@ render = do
           linkCurrent = Route.OpenApi.routeRender . Route.routeOpenApi $ allFieldLinks
           linkOpenApiJson = Route.Api.OpenApi.routeJson . Route.Api.routeOpenApi . Route.routeApi $ allFieldLinks
         redoc Blaze.! specUrl (Blaze.stringValue $ relativePath linkCurrent linkOpenApiJson) $ ""
-        -- TODO: We should host Redoc ourselves.
-        Blaze.script Blaze.! Blaze.Attributes.src "https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js" $ ""
+        Blaze.script Blaze.! Blaze.Attributes.src "static/redoc.standalone.js" $ ""
 
 -- | Assuming that links don't have trailing slashes.
 relativePath :: Link -> Link -> String
@@ -76,22 +71,3 @@ relativePath origin destination = goBack ++ "/" ++ goForward
     _ : baseSegments -> L.intercalate "/" (".." <$ baseSegments)
   goForward :: String
   goForward = show $ linkURI destination
-
-hrefWithDepth ::
-  BaseUrl ->
-  -- | depth
-  Maybe Natural ->
-  Blaze.AttributeValue ->
-  Blaze.Attribute
-hrefWithDepth baseUrl depth ref = Blaze.Attributes.href $ withDepth baseUrl depth ref
-
-withDepth ::
-  BaseUrl ->
-  -- | depth
-  Maybe Natural ->
-  Blaze.AttributeValue ->
-  Blaze.AttributeValue
-withDepth baseUrl Nothing ref = Blaze.textValue (displayBaseUrl baseUrl) <> ref
-withDepth _ (Just 0) ref = "./" <> ref
-withDepth _ (Just 1) ref = "../" <> ref
-withDepth baseUrl (Just n) ref = withDepth baseUrl (Just $ pred n) $ "../" <> ref
