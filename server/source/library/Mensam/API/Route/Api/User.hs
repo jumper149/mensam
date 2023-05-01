@@ -37,7 +37,7 @@ data Routes route = Routes
           :> Description
               "Logout from a user session.\n\
               \The token used with this request will be invalidated."
-          :> "login"
+          :> "logout"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> UVerb
               POST
@@ -98,7 +98,9 @@ newtype ResponseLogout = MkResponseLogout
   { responseLogoutUnit :: ()
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving newtype (A.FromJSON, A.ToJSON)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseLogout") ResponseLogout
 
 type RequestRegister :: Type
 data RequestRegister = MkRequestRegister
