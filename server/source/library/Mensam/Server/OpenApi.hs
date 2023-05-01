@@ -87,6 +87,7 @@ instance ToSchema Route.User.Jwt where
           & example ?~ A.String "eyJhbGciOiJIUzUxMiJ9.eyJkYXQiOnsiaWQiOnsidW5JZGVudGlmaWVyVXNlciI6Mn19LCJleHAiOjEuNjgwMzAyMDY3Njc1OTUxMjYyZTl9.6RGNeoQC7nrA4O_IYfaMchojHLk-ScKSBi1f7-R1_qhUdttNIzVJzZfORvt5IzSfo9ye4OnHphDLDiU76qFxEQ"
 
 deriving via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth instance ToSchema ErrorBasicAuth
+deriving newtype instance ToSchema ErrorBearerAuth
 deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBodyJson instance ToSchema ErrorParseBodyJson
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
 deriving via A.CustomJSON (JSONSettings "Mk" "user") User instance ToSchema User

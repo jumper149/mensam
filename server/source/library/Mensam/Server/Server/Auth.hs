@@ -2,6 +2,7 @@
 
 module Mensam.Server.Server.Auth where
 
+import Mensam.API.Aeson
 import Mensam.API.Data.User
 import Mensam.API.Data.User.Username
 import Mensam.Server.Application.SeldaPool.Class
@@ -26,7 +27,8 @@ handleAuth ::
   AuthResult a ->
   (a -> m (Union responses)) ->
   m (Union responses)
-handleAuth authResult handler =
+handleAuth authResult handler = do
+  logDebug "Handling result of Basic authentication."
   case authResult of
     Authenticated authenticated -> do
       logInfo "Starting handler after successful authentication."
@@ -40,6 +42,31 @@ handleAuth authResult handler =
     Indefinite -> do
       logInfo "Can't access handler, because authentication failed for some reason."
       respond $ WithStatus @401 MkErrorBasicAuthIndefinite
+
+handleAuthBearer ::
+  ( MonadLogger m
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  ) =>
+  AuthResult a ->
+  (a -> m (Union responses)) ->
+  m (Union responses)
+handleAuthBearer authResult handler = do
+  logDebug "Handling result of Bearer authentication."
+  case authResult of
+    Authenticated authenticated -> do
+      logInfo "Starting handler after successful authentication."
+      handler authenticated
+    BadPassword -> do
+      logError "Didn't expect to handle NoSuchUser in Bearer authentication."
+      logWarn "Returning a HTTP 401 response even though this case was unexpected."
+      respond $ WithStatus @401 $ MkErrorBearerAuth $ MkStaticText @"indefinite"
+    NoSuchUser -> do
+      logError "Didn't expect to handle NoSuchUser in Bearer authentication."
+      logWarn "Returning a HTTP 401 response even though this case was unexpected."
+      respond $ WithStatus @401 $ MkErrorBearerAuth $ MkStaticText @"indefinite"
+    Indefinite -> do
+      logInfo "Can't access handler, because authentication failed for some reason."
+      respond $ WithStatus @401 $ MkErrorBearerAuth $ MkStaticText @"indefinite"
 
 deriving anyclass instance FromJWT UserAuthenticated
 deriving anyclass instance ToJWT UserAuthenticated

@@ -99,13 +99,13 @@ logout ::
   , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseLogout) responses
-  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
   m (Union responses)
 logout auth =
-  handleAuth auth $ \authenticated -> do
+  handleAuthBearer auth $ \authenticated -> do
     logInfo "Logging out user."
     case userAuthenticatedSession authenticated of
       Nothing -> do

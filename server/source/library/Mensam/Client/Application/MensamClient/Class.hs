@@ -61,7 +61,7 @@ endpointLogout ::
   ClientM
     ( Union
         '[ WithStatus 200 Route.Api.User.ResponseLogout
-         , WithStatus 401 ErrorBasicAuth
+         , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
          ]
     )

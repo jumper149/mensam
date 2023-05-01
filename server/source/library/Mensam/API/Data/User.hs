@@ -63,3 +63,8 @@ data ErrorBasicAuth
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth
+
+type ErrorBearerAuth :: Type
+newtype ErrorBearerAuth = MkErrorBearerAuth {unErrorBearerAuth :: StaticText "indefinite"}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)

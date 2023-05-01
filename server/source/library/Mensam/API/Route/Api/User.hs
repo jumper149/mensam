@@ -43,7 +43,7 @@ data Routes route = Routes
               POST
               '[JSON]
               [ WithStatus 200 ResponseLogout
-              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
   , routeRegister ::
