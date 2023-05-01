@@ -3,11 +3,18 @@
     options = {
       services.mensam = {
         enable = lib.mkEnableOption "Mensam.";
+        environment = lib.mkOption {
+          default = { };
+          type = with lib.types; attrsOf string;
+          description = ''
+            Environment variables to overwrite the default environment variables.
+          '';
+        };
         config = lib.mkOption {
           default = { };
           type = with lib.types; attrsOf anything;
           description = ''
-            Configuration, that will be merged with default options and serialized to JSON.
+            Configuration that will be merged with default options and serialized to JSON.
             `lib.recursiveUpdate` is used to merge these changes.
           '';
         };
@@ -30,7 +37,7 @@
           MENSAM_CONFIG_FILE = "/etc/mensam.json";
           MENSAM_LOG_FILE = "/var/log/mensam/access.log";
           MENSAM_LOG_LEVEL = "LevelInfo";
-        };
+        } // config.services.mensam.environment;
         restartTriggers = [
           config.environment.etc."mensam.json".source
         ];
