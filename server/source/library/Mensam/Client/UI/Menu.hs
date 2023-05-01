@@ -61,7 +61,8 @@ menuDraw = \case
 menuHandleEvent :: BrickEvent ClientName ClientEvent -> ApplicationT (EventM ClientName ScreenMenuState) ()
 menuHandleEvent event =
   case event of
-    VtyEvent (EvKey KEsc []) -> lift halt
+    VtyEvent (EvKey KEsc []) -> do
+      sendEvent ClientEventExit
     VtyEvent (EvKey KEnter []) -> do
       s <- lift get
       case listSelectedElement $ _screenStateMenuList s of

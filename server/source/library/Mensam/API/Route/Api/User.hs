@@ -31,6 +31,21 @@ data Routes route = Routes
               , WithStatus 401 ErrorBasicAuth
               , WithStatus 500 ()
               ]
+  , routeLogout ::
+      route
+        :- Summary "Logout"
+          :> Description
+              "Logout from a user session.\n\
+              \The token used with this request will be invalidated."
+          :> "login"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseLogout
+              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 500 ()
+              ]
   , routeRegister ::
       route
         :- Summary "Register"
@@ -75,6 +90,13 @@ data ResponseLogin = MkResponseLogin
 
 type Jwt :: Type
 newtype Jwt = MkJwt {unJwt :: T.Text}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
+
+type ResponseLogout :: Type
+newtype ResponseLogout = MkResponseLogout
+  { responseLogoutUnit :: ()
+  }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
 

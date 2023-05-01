@@ -9,12 +9,14 @@ import Data.Kind
 
 type ClientEvent :: Type
 data ClientEvent
-  = ClientEventSwitchToScreenLogin
+  = ClientEventExit
+  | ClientEventSwitchToScreenLogin
   | ClientEventSwitchToScreenRegister
   | ClientEventSwitchToScreenSpaces
   | ClientEventSwitchToScreenDesks Space
   | ClientEventSwitchToScreenMenu
   | ClientEventSendRequestLogin Credentials
+  | ClientEventSendRequestLogout
   | ClientEventSendRequestRegister Route.User.RequestRegister
   | ClientEventSendRequestCreateSpace Route.Booking.RequestSpaceCreate
   | ClientEventSendRequestCreateDesk Space Route.Booking.RequestDeskCreate

@@ -92,6 +92,13 @@ handleEvent :: BChan ClientEvent -> BrickEvent ClientName ClientEvent -> EventM 
 handleEvent chan = \case
   AppEvent event ->
     case event of
+      ClientEventExit -> do
+        clientState <- get
+        case clientState ^. clientStateJwt of
+          Just _ -> do
+            runApplicationT chan $ sendEvent ClientEventSendRequestLogout
+            runApplicationT chan $ sendEvent ClientEventExit
+          Nothing -> halt
       ClientEventSwitchToScreenLogin -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateLogin $ MkScreenLoginState loginFormInitial}
       ClientEventSwitchToScreenRegister -> modify $ \s -> s {_clientStateScreenState = ClientScreenStateRegister $ MkScreenRegisterState registerFormInitial}
       ClientEventSwitchToScreenSpaces -> do
@@ -141,6 +148,16 @@ handleEvent chan = \case
             modify $ \s -> s {_clientStateJwt = Just jwt}
             runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
           err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+      ClientEventSendRequestLogout -> do
+        clientState <- get
+        case clientState ^. clientStateJwt of
+          Just jwt -> do
+            result <- runApplicationT chan $ mensamCall $ endpointLogout $ DataJWTWithSession jwt
+            case result of
+              Right (Z (I (WithStatus @200 (Route.User.MkResponseLogout ())))) ->
+                modify $ \s -> s {_clientStateJwt = Nothing}
+              err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
+          Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
       ClientEventSendRequestRegister request -> do
         result <- runApplicationT chan $ mensamCall $ endpointRegister request
         case result of

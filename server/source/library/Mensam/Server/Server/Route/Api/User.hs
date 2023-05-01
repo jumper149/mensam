@@ -29,6 +29,7 @@ handler ::
 handler =
   Routes
     { routeLogin = login
+    , routeLogout = logout
     , routeRegister = register
     , routeProfile = profile
     }
@@ -92,6 +93,41 @@ login auth =
                       { responseLoginJwt = jwt
                       , responseLoginExpiration = maybeTimeout
                       }
+
+logout ::
+  ( MonadConfigured m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseLogout) responses
+  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  m (Union responses)
+logout auth =
+  handleAuth auth $ \authenticated -> do
+    logInfo "Logging out user."
+    case userAuthenticatedSession authenticated of
+      Nothing -> do
+        logWarn "Tried to logout even though there is no session associated with this authentication."
+        respond $ WithStatus @500 ()
+      Just sessionIdentifier -> do
+        logDebug $ "Deleting session: " <> T.pack (show sessionIdentifier)
+        seldaResult <-
+          runSeldaTransactionT $
+            userSessionDelete sessionIdentifier
+        case seldaResult of
+          SeldaFailure _ -> do
+            -- TODO: Here we can theoretically return a more accurate error
+            logWarn "Failed to delete session."
+            respond $ WithStatus @500 ()
+          SeldaSuccess () -> do
+            logInfo "User loggout out successfully"
+            respond $
+              WithStatus @200
+                MkResponseLogout
+                  { responseLogoutUnit = ()
+                  }
 
 register ::
   ( MonadIO m

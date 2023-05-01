@@ -118,6 +118,7 @@ deriving via A.CustomJSON (JSONSettings "SpaceOrderCategory" "") SpaceOrderCateg
 deriving newtype instance ToSchema a => ToSchema (OrderByCategories a)
 
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseLogin") Route.User.ResponseLogin instance ToSchema Route.User.ResponseLogin
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseLogout") Route.User.ResponseLogin instance ToSchema Route.User.ResponseLogout
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") Route.User.RequestRegister instance ToSchema Route.User.RequestRegister
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseProfile") Route.User.ResponseProfile instance ToSchema Route.User.ResponseProfile
 

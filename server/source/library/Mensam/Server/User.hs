@@ -206,3 +206,24 @@ userSessionCreate userIdentifier timeCreated maybeTimeExpired = do
       ]
   lift $ logInfo "Created session successfully."
   pure $ MkIdentifierSession $ Selda.fromId @DbSession dbSessionId
+
+userSessionDelete ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSession ->
+  SeldaTransactionT m ()
+userSessionDelete identifier = do
+  lift $ logDebug $ "Deleting session from database: " <> T.pack (show identifier)
+  count <-
+    Selda.deleteFrom tableSession $ \dbSession ->
+      dbSession Selda.! #dbSession_id Selda..== Selda.literal (Selda.toId @DbSession (unIdentifierSession identifier))
+  case count of
+    1 -> do
+      lift $ logInfo "Deleted session successfully."
+      pure ()
+    0 -> do
+      lift $ logWarn $ "Failed to delete session. There is no matching session: " <> T.pack (show identifier)
+      pure ()
+    n -> do
+      let message = "Critical failure when trying to delete a single session. Multiple sessions have been deleted: " <> T.pack (show n)
+      lift $ logError message
+      error $ T.unpack message

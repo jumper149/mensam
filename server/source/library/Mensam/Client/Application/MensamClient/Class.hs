@@ -56,6 +56,15 @@ endpointLogin ::
          , WithStatus 500 ()
          ]
     )
+endpointLogout ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.User.ResponseLogout
+         , WithStatus 401 ErrorBasicAuth
+         , WithStatus 500 ()
+         ]
+    )
 endpointRegister ::
   Route.Api.User.RequestRegister ->
   ClientM
@@ -150,6 +159,7 @@ Route.Api.Routes
   , Route.Api.routeUser =
     Route.Api.User.Routes
       { Route.Api.User.routeLogin = endpointLogin
+      , Route.Api.User.routeLogout = endpointLogout
       , Route.Api.User.routeRegister = endpointRegister
       , Route.Api.User.routeProfile = endpointProfile
       }
