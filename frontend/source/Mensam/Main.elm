@@ -162,15 +162,36 @@ init flags url navigationKey =
         [ update SetTimeZoneHere
         , \(MkModel model) ->
             ( MkModel model
-            , Task.perform (Auth << CheckExpirationExplicit) Time.now
-            )
-        , \(MkModel model) ->
-            case Url.Parser.parse urlParser url of
-                Nothing ->
-                    update (SetUrl RouteLanding) (MkModel model)
+            , Task.perform
+                (\now ->
+                    Messages
+                        [ Auth <| CheckExpirationExplicit now
+                        , Raw <|
+                            \(MkModel m) ->
+                                case Url.Parser.parse urlParser url of
+                                    Nothing ->
+                                        update (SetUrl RouteLanding) (MkModel m)
 
-                Just route ->
-                    update (SetUrl route) (MkModel model)
+                                    Just route ->
+                                        let
+                                            redirectedRoute =
+                                                case route of
+                                                    RouteLanding ->
+                                                        case m.authenticated of
+                                                            Nothing ->
+                                                                RouteLanding
+
+                                                            Just _ ->
+                                                                RouteSpaces
+
+                                                    _ ->
+                                                        route
+                                        in
+                                        update (SetUrl redirectedRoute) (MkModel m)
+                        ]
+                )
+                Time.now
+            )
         ]
     <|
         MkModel modelStorage
@@ -178,6 +199,8 @@ init flags url navigationKey =
 
 type Message
     = EmptyMessage
+    | Messages (List Message)
+    | Raw (Model -> ( Model, Cmd Message ))
     | SetUrl Route
     | SetModel Route
     | ReportError Mensam.Error.Error
@@ -208,6 +231,12 @@ update message (MkModel model) =
     case message of
         EmptyMessage ->
             ( MkModel model, Platform.Cmd.none )
+
+        Messages messages ->
+            updates (List.map update messages) <| MkModel model
+
+        Raw f ->
+            f <| MkModel model
 
         SetUrl route ->
             updates
