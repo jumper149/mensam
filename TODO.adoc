@@ -1,10 +1,5 @@
 = TODO
 
-* [ ] Track JWTs in database.
-  ** [ ] Create table with: JWT, userid, timestamp, validBool
-  ** [ ] When validating JWT, check the JWT table.
-  ** API stays the same.
-
 * [ ] Initialize state automatically on startup.
   ** [ ] Secrets: JWK
   ** [ ] SQLite Database
