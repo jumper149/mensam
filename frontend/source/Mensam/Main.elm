@@ -9,6 +9,8 @@ import Element.Font
 import Html.Attributes
 import Json.Decode
 import Json.Encode
+import Mensam.Api.Login
+import Mensam.Api.Logout
 import Mensam.Color
 import Mensam.Error
 import Mensam.Font
@@ -191,6 +193,7 @@ type Message
 
 type MessageAuth
     = SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
+    | UnsetSession
     | Logout
 
 
@@ -266,9 +269,30 @@ update message (MkModel model) =
             , Mensam.Storage.setStorage <| Mensam.Storage.MkStorage session
             )
 
+        Auth UnsetSession ->
+            ( MkModel { model | authenticated = Nothing }, Mensam.Storage.unsetStorage )
+
         Auth Logout ->
             updates
-                [ \(MkModel m) -> ( MkModel { m | authenticated = Nothing }, Mensam.Storage.unsetStorage )
+                [ \(MkModel m) ->
+                    case m.authenticated of
+                        Nothing ->
+                            update EmptyMessage <| MkModel m
+
+                        Just { jwt } ->
+                            ( MkModel m
+                            , Mensam.Api.Logout.request { jwt = jwt } <|
+                                \response ->
+                                    case response of
+                                        Ok Mensam.Api.Logout.Success ->
+                                            Auth UnsetSession
+
+                                        Ok (Mensam.Api.Logout.ErrorAuth error) ->
+                                            ReportError <| Mensam.Api.Login.errorAuth error
+
+                                        Err error ->
+                                            ReportError <| Mensam.Error.http error
+                            )
                 , update (SetUrl <| RouteLanding)
                 ]
             <|
