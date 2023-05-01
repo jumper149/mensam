@@ -15,6 +15,6 @@
   }
 , "auth":
   { "jwk-filepath": "/var/lib/mensam/mensam-jwk.secret"
-  , "timeout-seconds": 900
+  , "timeout-seconds": 1209600
   }
 }
