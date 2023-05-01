@@ -2,6 +2,21 @@
 
 __**A desk-booking web application.**__
 
+****
+Website:: https://mensam.felixspringer.xyz[**mensam.felixspringer.xyz**]
++
+[CAUTION]
+====
+This is currently just a showcase.
+The database may be wiped at any point, so don't expect your data to be persistent at the moment.
+Data will be carefully migrated after the first actual release.
+====
+
+OpenAPI::
+https://mensam.felixspringer.xyz/openapi[Rendered] or https://mensam.felixspringer.xyz/api/openapi[JSON]
+****
+
+____
 Are you hosting a **coworking space**, a **hot-desk office** or a community space like a **hacker space**?
 
 Desks are a limited resource.
@@ -9,6 +24,7 @@ Your members will be disappointed when they arrive at your location and realize 
 Sometimes there are desks available, but a user has some special requirement like a power outlet or the user just wants to sit close to a window.
 
 In these cases you probably want to set up a desk-booking solution like __Mensam__.
+____
 
 == Usage
 
