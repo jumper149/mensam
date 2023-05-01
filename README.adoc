@@ -10,10 +10,6 @@ Sometimes there are desks available, but a user has some special requirement lik
 
 In these cases you probably want to set up a desk-booking solution like __Mensam__.
 
-== Documentation
-
-View the https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/jumper149/mensam/main/final/openapi.json[OpenAPI specification].
-
 == Usage
 
 __This section describes the goal of an MVP.__
@@ -36,6 +32,10 @@ Depending on the setup of the __Space__, it is listed publically or only accessi
 After joining a __Space__ you can create a __Reservation__ for a __Desk__.
 You will be able to see other __Reservations__, so you can plan around them.
 Mensam will deny overlapping reservations.
+
+== Documentation
+
+View the https://mensam.felixspringer.xyz/openapi[OpenAPI specification].
 
 == Development
 
