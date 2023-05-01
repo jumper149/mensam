@@ -764,17 +764,69 @@ elementNavigationBar (MkModel model) =
                     ]
                 <|
                     Element.text "Mensam"
+
+        screenTitleText =
+            case model.screen of
+                ScreenLanding _ ->
+                    Nothing
+
+                ScreenRegister _ ->
+                    Nothing
+
+                ScreenLogin _ ->
+                    Nothing
+
+                ScreenSpaces _ ->
+                    Just "Spaces"
+
+                ScreenSpace screenModel ->
+                    Just <| "Space: " ++ String.fromInt screenModel.space.id
+
+                NoScreen ->
+                    Nothing
+
+        screenTitle =
+            case screenTitleText of
+                Nothing ->
+                    Element.none
+
+                Just text ->
+                    Element.el
+                        [ Element.height Element.fill
+                        , Element.paddingXY 20 0
+                        , Element.centerX
+                        , Element.Font.family [ Mensam.Font.sansSerif ]
+                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
+                        , Element.Font.color Mensam.Color.bright.white
+                        , Element.Font.italic
+                        , Element.Font.extraLight
+                        , Element.Font.size 17
+                        ]
+                    <|
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            ]
+                        <|
+                            Element.text text
     in
-    Element.row
+    Element.el
         [ Element.width Element.fill
         , Element.height <| Element.px 60
         , Element.Background.color Mensam.Color.bright.black
-        , Element.Font.family [ Mensam.Font.condensed ]
-        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-        , Element.Font.light
-        , Element.Font.size 17
         ]
-        (title :: elementsTabDescription ++ [ errorViewer, loginStatus ])
+    <|
+        Element.row
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            , Element.Font.family [ Mensam.Font.condensed ]
+            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+            , Element.Font.light
+            , Element.Font.size 17
+            , Element.behindContent screenTitle
+            ]
+            (title :: elementsTabDescription ++ [ errorViewer, loginStatus ])
 
 
 errorScreen : Mensam.Error.Error
