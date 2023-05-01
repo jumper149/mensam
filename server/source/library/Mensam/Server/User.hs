@@ -156,12 +156,10 @@ userSessionValidate identifier = do
     return session
   case maybeSession of
     Nothing -> do
-      lift $ logWarn "Session validation failed because session does not exist."
+      lift $ logInfo "Session validation failed. Session does not exist."
       pure SessionInvalid
     Just _dbSession -> do
       lift $ logDebug "Queried session from database for validation. Checking whether session is still valid."
-      -- TODO: Currently there is no flag to disable sessions in the database, but that can be added in the future.
-      --       We could also just remove sessions from the table, but a flag is probably better.
       lift $ logInfo "Session validation succeeded."
       pure SessionValid
 
