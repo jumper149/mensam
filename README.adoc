@@ -3,7 +3,7 @@
 __**A desk-booking web application.**__
 
 ****
-Website:: https://mensam.felixspringer.xyz[**mensam.felixspringer.xyz**]
+Public instance:: https://mensam.felixspringer.xyz[**mensam.felixspringer.xyz**]
 +
 [CAUTION]
 ====
@@ -12,7 +12,7 @@ The database may be wiped at any point, so don't expect your data to be persiste
 Data will be carefully migrated after the first actual release.
 ====
 
-OpenAPI::
+OpenAPI specification::
 https://mensam.felixspringer.xyz/openapi[Rendered] or https://mensam.felixspringer.xyz/api/openapi[JSON]
 ****
 
@@ -48,10 +48,6 @@ Depending on the setup of the __Space__, it is listed publically or only accessi
 After joining a __Space__ you can create a __Reservation__ for a __Desk__.
 You will be able to see other __Reservations__, so you can plan around them.
 Mensam will deny overlapping reservations.
-
-== Documentation
-
-View the https://mensam.felixspringer.xyz/openapi[OpenAPI specification].
 
 == Development
 
