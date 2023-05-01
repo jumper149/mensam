@@ -159,14 +159,18 @@ init flags url navigationKey =
                     }
     in
     updates
-        [ \(MkModel model) ->
+        [ update SetTimeZoneHere
+        , \(MkModel model) ->
+            ( MkModel model
+            , Task.perform (Auth << CheckExpirationExplicit) Time.now
+            )
+        , \(MkModel model) ->
             case Url.Parser.parse urlParser url of
                 Nothing ->
                     update (SetUrl RouteLanding) (MkModel model)
 
                 Just route ->
                     update (SetUrl route) (MkModel model)
-        , update SetTimeZoneHere
         ]
     <|
         MkModel modelStorage
@@ -195,6 +199,8 @@ type MessageAuth
     = SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
     | UnsetSession
     | Logout
+    | CheckExpiration
+    | CheckExpirationExplicit Time.Posix
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
@@ -297,6 +303,21 @@ update message (MkModel model) =
                 ]
             <|
                 MkModel model
+
+        Auth CheckExpiration ->
+            update (Auth <| CheckExpirationExplicit model.time.now) <| MkModel model
+
+        Auth (CheckExpirationExplicit now) ->
+            case model.authenticated of
+                Nothing ->
+                    update EmptyMessage <| MkModel model
+
+                Just authentication ->
+                    if isExpired now authentication then
+                        update (Auth UnsetSession) <| MkModel model
+
+                    else
+                        update EmptyMessage <| MkModel model
 
         MessageLanding (Mensam.Screen.Landing.MessagePure m) ->
             case model.screen of
@@ -460,6 +481,16 @@ update message (MkModel model) =
 
                         Nothing ->
                             update (ReportError errorNoAuth) <| MkModel model
+
+
+isExpired : Time.Posix -> Authentication -> Bool
+isExpired now authentication =
+    case authentication.expiration of
+        Nothing ->
+            False
+
+        Just expiration ->
+            Time.posixToMillis now > Time.posixToMillis expiration
 
 
 view : Model -> Browser.Document Message
@@ -693,6 +724,7 @@ elementNavigationBar (MkModel model) =
                     case model.authenticated of
                         Nothing ->
                             SetUrl RouteLanding
+
                         Just _ ->
                             SetUrl RouteSpaces
                 ]
