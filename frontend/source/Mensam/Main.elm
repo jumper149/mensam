@@ -559,17 +559,7 @@ elementNavigationBar : Model -> Element.Element Message
 elementNavigationBar (MkModel model) =
     let
         tabDescriptions =
-            [ { name = "Spaces"
-              , message = SetUrl RouteSpaces
-              , active =
-                    case model.screen of
-                        ScreenSpaces _ ->
-                            True
-
-                        _ ->
-                            False
-              }
-            ]
+            []
 
         viewTabDescriptions description =
             Element.el
@@ -699,7 +689,12 @@ elementNavigationBar (MkModel model) =
                 , Element.Font.size 25
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                 , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
-                , Element.Events.onClick <| SetUrl RouteLanding
+                , Element.Events.onClick <|
+                    case model.authenticated of
+                        Nothing ->
+                            SetUrl RouteLanding
+                        Just _ ->
+                            SetUrl RouteSpaces
                 ]
             <|
                 Element.el
