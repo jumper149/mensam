@@ -47,7 +47,7 @@ login ::
   AuthResult UserAuthenticated ->
   m (Union responses)
 login auth =
-  handleAuth auth $ \authenticatedWithoutSession -> do
+  handleAuthBasic auth $ \authenticatedWithoutSession -> do
     logInfo "Logging in user."
     timeCurrent <- liftIO T.getCurrentTime
     maybeTimeout <- do

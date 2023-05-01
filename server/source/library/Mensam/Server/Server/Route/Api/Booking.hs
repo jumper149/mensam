@@ -42,14 +42,14 @@ createSpace ::
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseSpaceCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
   Either String RequestSpaceCreate ->
   m (Union responses)
 createSpace auth eitherRequest =
-  handleAuth auth $ \authenticated ->
+  handleAuthBearer auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -73,14 +73,14 @@ joinSpace ::
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceJoin) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
   Either String RequestSpaceJoin ->
   m (Union responses)
 joinSpace auth eitherRequest =
-  handleAuth auth $ \authenticated ->
+  handleAuthBearer auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to join space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -111,14 +111,14 @@ listSpaces ::
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceList) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
   Either String RequestSpaceList ->
   m (Union responses)
 listSpaces auth eitherRequest =
-  handleAuth auth $ \authenticated ->
+  handleAuthBearer auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to list spaces: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -138,14 +138,14 @@ createDesk ::
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseDeskCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
   Either String RequestDeskCreate ->
   m (Union responses)
 createDesk auth eitherRequest =
-  handleAuth auth $ \authenticated ->
+  handleAuthBearer auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create desk: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -178,14 +178,14 @@ listDesks ::
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseDeskList) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
   Either String RequestDeskList ->
   m (Union responses)
 listDesks auth eitherRequest =
-  handleAuth auth $ \authenticated ->
+  handleAuthBearer auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to list desks: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -223,7 +223,7 @@ createReservation ::
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseReservationCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 409 (StaticText "Desk is not available within the given time window.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -231,7 +231,7 @@ createReservation ::
   Either String RequestReservationCreate ->
   m (Union responses)
 createReservation auth eitherRequest = do
-  handleAuth auth $ \authenticated ->
+  handleAuthBearer auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create reservation: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
@@ -274,14 +274,14 @@ cancelReservation ::
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseReservationCancel) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBasicAuth) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
   Either String RequestReservationCancel ->
   m (Union responses)
 cancelReservation auth eitherRequest = do
-  handleAuth auth $ \authenticated ->
+  handleAuthBearer auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to cancel reservation: " <> T.pack (show request)
       let reservationIdentifier = requestReservationCancelId request

@@ -91,7 +91,7 @@ endpointSpaceCreate ::
     ( Union
         '[ WithStatus 201 Route.Api.Booking.ResponseSpaceCreate
          , WithStatus 400 ErrorParseBodyJson
-         , WithStatus 401 ErrorBasicAuth
+         , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
          ]
     )
@@ -102,7 +102,7 @@ endpointSpaceList ::
     ( Union
         '[ WithStatus 200 Route.Api.Booking.ResponseSpaceList
          , WithStatus 400 ErrorParseBodyJson
-         , WithStatus 401 ErrorBasicAuth
+         , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
          ]
     )
@@ -113,7 +113,7 @@ endpointDeskCreate ::
     ( Union
         '[ WithStatus 201 Route.Api.Booking.ResponseDeskCreate
          , WithStatus 400 ErrorParseBodyJson
-         , WithStatus 401 ErrorBasicAuth
+         , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
          ]
     )
@@ -124,7 +124,7 @@ endpointDeskList ::
     ( Union
         '[ WithStatus 200 Route.Api.Booking.ResponseDeskList
          , WithStatus 400 ErrorParseBodyJson
-         , WithStatus 401 ErrorBasicAuth
+         , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
          ]
     )
@@ -135,7 +135,7 @@ endpointReservationCreate ::
     ( Union
         '[ WithStatus 201 Route.Api.Booking.ResponseReservationCreate
          , WithStatus 400 ErrorParseBodyJson
-         , WithStatus 401 ErrorBasicAuth
+         , WithStatus 401 ErrorBearerAuth
          , WithStatus 409 (StaticText "Desk is not available within the given time window.")
          , WithStatus 500 ()
          ]
@@ -147,7 +147,7 @@ endpointReservationCancel ::
     ( Union
         '[ WithStatus 200 Route.Api.Booking.ResponseReservationCancel
          , WithStatus 400 ErrorParseBodyJson
-         , WithStatus 401 ErrorBasicAuth
+         , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
          ]
     )

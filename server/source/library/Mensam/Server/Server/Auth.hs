@@ -20,14 +20,14 @@ import Servant hiding (BasicAuthResult (..))
 import Servant.Auth.JWT.WithSession
 import Servant.Auth.Server
 
-handleAuth ::
+handleAuthBasic ::
   ( MonadLogger m
   , IsMember (WithStatus 401 ErrorBasicAuth) responses
   ) =>
   AuthResult a ->
   (a -> m (Union responses)) ->
   m (Union responses)
-handleAuth authResult handler = do
+handleAuthBasic authResult handler = do
   logDebug "Handling result of Basic authentication."
   case authResult of
     Authenticated authenticated -> do

@@ -33,7 +33,7 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 201 ResponseSpaceCreate
               , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
   , routeSpaceJoin ::
@@ -50,7 +50,7 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 200 ResponseSpaceJoin
               , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
   , routeSpaceList ::
@@ -67,7 +67,7 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 200 ResponseSpaceList
               , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
   , routeDeskCreate ::
@@ -86,7 +86,7 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 201 ResponseDeskCreate
               , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
   , routeDeskList ::
@@ -103,7 +103,7 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 200 ResponseDeskList
               , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
   , routeReservationCreate ::
@@ -121,7 +121,7 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 201 ResponseReservationCreate
               , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 401 ErrorBearerAuth
               , WithStatus 409 (StaticText "Desk is not available within the given time window.")
               , WithStatus 500 ()
               ]
@@ -139,7 +139,7 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 200 ResponseReservationCancel
               , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBasicAuth
+              , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
   }
