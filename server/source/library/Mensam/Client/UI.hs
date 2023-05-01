@@ -102,7 +102,7 @@ handleEvent chan = \case
               runApplicationT chan $
                 mensamCall $
                   endpointSpaceList
-                    (DataJWT jwt)
+                    (DataJWTWithSession jwt)
                     (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
             case result of
               Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
@@ -118,7 +118,7 @@ handleEvent chan = \case
               runApplicationT chan $
                 mensamCall $
                   endpointDeskList
-                    (DataJWT jwt)
+                    (DataJWTWithSession jwt)
                     ( Route.Booking.MkRequestDeskList
                         { Route.Booking.requestDeskListSpace = Identifier $ spaceId space
                         , Route.Booking.requestDeskListTimeBegin = Nothing
@@ -150,7 +150,7 @@ handleEvent chan = \case
         clientState <- get
         case clientState ^. clientStateJwt of
           Just jwt -> do
-            result <- runApplicationT chan $ mensamCall $ endpointSpaceCreate (DataJWT jwt) request
+            result <- runApplicationT chan $ mensamCall $ endpointSpaceCreate (DataJWTWithSession jwt) request
             case result of
               Right (Z (I (WithStatus @201 (Route.Booking.MkResponseSpaceCreate _)))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
@@ -159,7 +159,7 @@ handleEvent chan = \case
         clientState <- get
         case clientState ^. clientStateJwt of
           Just jwt -> do
-            result <- runApplicationT chan $ mensamCall $ endpointDeskCreate (DataJWT jwt) request
+            result <- runApplicationT chan $ mensamCall $ endpointDeskCreate (DataJWTWithSession jwt) request
             case result of
               Right (Z (I (WithStatus @201 (Route.Booking.MkResponseDeskCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
@@ -168,7 +168,7 @@ handleEvent chan = \case
         clientState <- get
         case clientState ^. clientStateJwt of
           Just jwt -> do
-            result <- runApplicationT chan $ mensamCall $ endpointReservationCreate (DataJWT jwt) request
+            result <- runApplicationT chan $ mensamCall $ endpointReservationCreate (DataJWTWithSession jwt) request
             case result of
               Right (Z (I (WithStatus @201 (Route.Booking.MkResponseReservationCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}

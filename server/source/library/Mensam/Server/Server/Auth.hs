@@ -8,6 +8,7 @@ import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.User
 
 import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Crypto.JOSE.JWK qualified as JOSE
 import Data.Kind
@@ -15,6 +16,7 @@ import Data.Password.Bcrypt
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Servant hiding (BasicAuthResult (..))
+import Servant.Auth.JWT.WithSession
 import Servant.Auth.Server
 
 handleAuth ::
@@ -41,6 +43,27 @@ handleAuth authResult handler =
 
 deriving anyclass instance FromJWT UserAuthenticated
 deriving anyclass instance ToJWT UserAuthenticated
+
+instance WithSession UserAuthenticated where
+  validateSession MkRunLoginInIO {runLoginInIO} authenticated@MkUserAuthenticated {userAuthenticatedSession} =
+    runLoginInIO $
+      case userAuthenticatedSession of
+        Nothing -> do
+          logDebug "Authenticating user without session."
+          pure $ Authenticated authenticated
+        Just sessionIdentifier -> do
+          logInfo "Validating session before authenticating user."
+          seldaValidationResult <- runSeldaTransactionT $ userSessionValidate sessionIdentifier
+          case seldaValidationResult of
+            SeldaFailure err -> do
+              -- This case should not occur under normal circumstances.
+              -- The transaction in this case is just a read transaction.
+              logError "Session validation failed because of a database error."
+              throwM err
+            SeldaSuccess validity ->
+              case validity of
+                SessionInvalid -> pure Indefinite
+                SessionValid -> pure $ Authenticated authenticated
 
 instance FromBasicAuthData UserAuthenticated where
   fromBasicAuthData BasicAuthData {basicAuthUsername, basicAuthPassword} MkRunLoginInIO {runLoginInIO} =
@@ -82,9 +105,11 @@ instance FromBasicAuthData UserAuthenticated where
 
 type instance BasicAuthCfg = RunLoginInIO
 
+type instance SessionCfg = RunLoginInIO
+
 type RunLoginInIO :: Type
 data RunLoginInIO = forall m.
-  (MonadLogger m, MonadSeldaPool m, MonadThrow m) =>
+  (MonadIO m, MonadLogger m, MonadSeldaPool m, MonadThrow m) =>
   MkRunLoginInIO {runLoginInIO :: m (AuthResult UserAuthenticated) -> IO (AuthResult UserAuthenticated)}
 
 mkJwtSettings :: JOSE.JWK -> JWTSettings

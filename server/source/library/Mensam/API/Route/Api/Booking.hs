@@ -14,6 +14,7 @@ import Deriving.Aeson qualified as A
 import GHC.Generics
 import Servant.API hiding (BasicAuth)
 import Servant.Auth
+import Servant.Auth.JWT.WithSession
 
 type Routes :: Type -> Type
 data Routes route = Routes
@@ -25,7 +26,7 @@ data Routes route = Routes
               \You will be an administrator of this newly created space.\n"
           :> "space"
           :> "create"
-          :> Auth '[JWT] UserAuthenticated
+          :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
           :> UVerb
               PUT
@@ -42,7 +43,7 @@ data Routes route = Routes
               "Become a member of a space.\n"
           :> "space"
           :> "join"
-          :> Auth '[JWT] UserAuthenticated
+          :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceJoin
           :> UVerb
               POST
@@ -59,7 +60,7 @@ data Routes route = Routes
               "List visible spaces.\n"
           :> "space"
           :> "list"
-          :> Auth '[JWT] UserAuthenticated
+          :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceList
           :> UVerb
               POST
@@ -78,7 +79,7 @@ data Routes route = Routes
               \You have to be an administrator for that space to create desks.\n"
           :> "desk"
           :> "create"
-          :> Auth '[JWT] UserAuthenticated
+          :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate
           :> UVerb
               PUT
@@ -95,7 +96,7 @@ data Routes route = Routes
               "List desks.\n"
           :> "desk"
           :> "list"
-          :> Auth '[JWT] UserAuthenticated
+          :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskList
           :> UVerb
               POST
@@ -113,7 +114,7 @@ data Routes route = Routes
               \A desk can only be reserved by one user at any time.\n"
           :> "reservation"
           :> "create"
-          :> Auth '[JWT] UserAuthenticated
+          :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationCreate
           :> UVerb
               PUT
@@ -131,7 +132,7 @@ data Routes route = Routes
               "Cancel a desk reservation.\n"
           :> "reservation"
           :> "cancel"
-          :> Auth '[JWT] UserAuthenticated
+          :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationCancel
           :> UVerb
               POST

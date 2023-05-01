@@ -15,6 +15,7 @@ import GHC.Generics
 import Network.HTTP.Types
 import Servant.API hiding (BasicAuth, Header)
 import Servant.Auth
+import Servant.Auth.JWT.WithSession
 import Servant.Client
 import Servant.Client.Core qualified as Core
 
@@ -22,6 +23,7 @@ type AuthData :: [Type] -> Type
 data AuthData xs :: Type where
   DataBasicAuth :: Credentials -> AuthData (BasicAuth ': auths)
   DataJWT :: Jwt -> AuthData (JWT ': auths)
+  DataJWTWithSession :: Jwt -> AuthData (JWTWithSession ': auths)
   DataCookie :: Cookies -> AuthData (Cookie ': auths)
   DataNextAuth :: AuthData xs -> AuthData (x ': xs)
 
@@ -32,6 +34,9 @@ instance HasClient m api => HasClient m (Auth auths a :> api) where
       clientWithRoute (Proxy @m) (Proxy @api) $
         req {Core.requestHeaders = credentialsAuthorizationHeader credentials <| Core.requestHeaders req}
     DataJWT token ->
+      clientWithRoute (Proxy @m) (Proxy @api) $
+        req {Core.requestHeaders = jwTokenAuthorizationHeader token <| Core.requestHeaders req}
+    DataJWTWithSession token ->
       clientWithRoute (Proxy @m) (Proxy @api) $
         req {Core.requestHeaders = jwTokenAuthorizationHeader token <| Core.requestHeaders req}
     DataCookie cookies ->

@@ -188,6 +188,7 @@ library
     , Control.Monad.Logger.OrphanInstances
     , Deriving.Aeson.OrphanInstances
     , Servant.Auth.OrphanInstances
+    , Servant.Auth.JWT.WithSession
     , System.Posix.Signals.Patterns
     , Text.Email.OrphanInstances
     , Text.Email.Text

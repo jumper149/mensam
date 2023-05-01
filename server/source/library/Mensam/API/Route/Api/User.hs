@@ -12,6 +12,7 @@ import Deriving.Aeson qualified as A
 import GHC.Generics
 import Servant.API hiding (BasicAuth)
 import Servant.Auth
+import Servant.Auth.JWT.WithSession
 import Text.Email.Parser
 
 type Routes :: Type -> Type
@@ -22,7 +23,7 @@ data Routes route = Routes
           :> Description
               "Login to your user account.\n"
           :> "login"
-          :> Auth '[BasicAuth, JWT] UserAuthenticated
+          :> Auth '[BasicAuth, JWTWithSession] UserAuthenticated
           :> UVerb
               POST
               '[JSON]

@@ -64,7 +64,7 @@ f = do
 
   liftIO $ putStrLn "Login with JWT."
   let token = Route.User.responseLoginJwt responseLogin
-  nextLoginResult <- endpointLogin $ DataNextAuth $ DataJWT token
+  nextLoginResult <- endpointLogin $ DataNextAuth $ DataJWTWithSession token
   liftIO $ print nextLoginResult
   nextResponseLogin <-
     case resultLogin of
@@ -79,7 +79,7 @@ f = do
           , Route.Booking.requestSpaceCreateVisibility = MkVisibilitySpaceVisible
           , Route.Booking.requestSpaceCreateAccessibility = MkAccessibilitySpaceJoinable
           }
-  resultSpaceCreate <- endpointSpaceCreate (DataJWT nextToken) requestSpaceCreate
+  resultSpaceCreate <- endpointSpaceCreate (DataJWTWithSession nextToken) requestSpaceCreate
   liftIO $ print resultSpaceCreate
 
   liftIO $ putStrLn "Create desk."
@@ -88,7 +88,7 @@ f = do
           { Route.Booking.requestDeskCreateName = MkNameDesk "neptune"
           , Route.Booking.requestDeskCreateSpace = Name spacename
           }
-  resultDeskCreate <- endpointDeskCreate (DataJWT nextToken) requestDeskCreate
+  resultDeskCreate <- endpointDeskCreate (DataJWTWithSession nextToken) requestDeskCreate
   liftIO $ print resultDeskCreate
 
   liftIO $ putStrLn "Create desk."
@@ -97,7 +97,7 @@ f = do
           { Route.Booking.requestDeskCreateName = MkNameDesk "saturn"
           , Route.Booking.requestDeskCreateSpace = Name spacename
           }
-  resultDeskCreate2 <- endpointDeskCreate (DataJWT nextToken) requestDeskCreate2
+  resultDeskCreate2 <- endpointDeskCreate (DataJWTWithSession nextToken) requestDeskCreate2
   liftIO $ print resultDeskCreate2
 
   liftIO $ putStrLn "List desks."
@@ -107,7 +107,7 @@ f = do
           , Route.Booking.requestDeskListTimeBegin = Nothing
           , Route.Booking.requestDeskListTimeEnd = Nothing
           }
-  resultDeskList <- endpointDeskList (DataJWT nextToken) requestDeskList
+  resultDeskList <- endpointDeskList (DataJWTWithSession nextToken) requestDeskList
   liftIO $ print resultDeskList
 
   liftIO $ putStrLn "Create reservation."
@@ -120,7 +120,7 @@ f = do
                 currentTime
                 (T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime` currentTime)
           }
-  resultReservationCreate <- endpointReservationCreate (DataJWT nextToken) requestReservationCreate
+  resultReservationCreate <- endpointReservationCreate (DataJWTWithSession nextToken) requestReservationCreate
   liftIO $ print resultReservationCreate
 
   pure ()

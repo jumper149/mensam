@@ -20,6 +20,7 @@ import Servant.RawM.Client ()
 
 import Data.OpenApi qualified
 import Servant.Auth qualified
+import Servant.Auth.JWT.WithSession qualified as Servant.Auth
 
 type MonadMensamClient :: (Type -> Type) -> Constraint
 class Monad m => MonadMensamClient m where
@@ -47,7 +48,7 @@ deriving via
 endpointOpenApi ::
   ClientM Data.OpenApi.OpenApi
 endpointLogin ::
-  AuthData '[Servant.Auth.BasicAuth, Servant.Auth.JWT] ->
+  AuthData '[Servant.Auth.BasicAuth, Servant.Auth.JWTWithSession] ->
   ClientM
     ( Union
         '[ WithStatus 200 Route.Api.User.ResponseLogin
@@ -75,7 +76,7 @@ endpointProfile ::
          ]
     )
 endpointSpaceCreate ::
-  AuthData '[Servant.Auth.JWT] ->
+  AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestSpaceCreate ->
   ClientM
     ( Union
@@ -86,7 +87,7 @@ endpointSpaceCreate ::
          ]
     )
 endpointSpaceList ::
-  AuthData '[Servant.Auth.JWT] ->
+  AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestSpaceList ->
   ClientM
     ( Union
@@ -97,7 +98,7 @@ endpointSpaceList ::
          ]
     )
 endpointDeskCreate ::
-  AuthData '[Servant.Auth.JWT] ->
+  AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestDeskCreate ->
   ClientM
     ( Union
@@ -108,7 +109,7 @@ endpointDeskCreate ::
          ]
     )
 endpointDeskList ::
-  AuthData '[Servant.Auth.JWT] ->
+  AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestDeskList ->
   ClientM
     ( Union
@@ -119,7 +120,7 @@ endpointDeskList ::
          ]
     )
 endpointReservationCreate ::
-  AuthData '[Servant.Auth.JWT] ->
+  AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestReservationCreate ->
   ClientM
     ( Union
@@ -131,7 +132,7 @@ endpointReservationCreate ::
          ]
     )
 endpointReservationCancel ::
-  AuthData '[Servant.Auth.JWT] ->
+  AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestReservationCancel ->
   ClientM
     ( Union

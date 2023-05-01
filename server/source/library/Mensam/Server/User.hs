@@ -138,6 +138,33 @@ userProfile username = do
       lift $ logInfo "Looked up user successfully."
       pure $ Just $ MkIdentifierUser $ Selda.fromId @DbUser dbId
 
+type SessionValidity :: Type
+data SessionValidity
+  = SessionValid
+  | SessionInvalid
+  deriving stock (Eq, Generic, Ord, Read, Show)
+
+userSessionValidate ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSession ->
+  SeldaTransactionT m SessionValidity
+userSessionValidate identifier = do
+  lift $ logDebug $ "Querying session " <> T.pack (show identifier) <> " from database to validate."
+  maybeSession :: Maybe DbSession <- Selda.queryUnique $ do
+    session <- Selda.select tableSession
+    Selda.restrict $ session Selda.! #dbSession_id Selda..== Selda.literal (Selda.toId @DbSession $ unIdentifierSession identifier)
+    return session
+  case maybeSession of
+    Nothing -> do
+      lift $ logWarn "Session validation failed because session does not exist."
+      pure SessionInvalid
+    Just _dbSession -> do
+      lift $ logDebug "Queried session from database for validation. Checking whether session is still valid."
+      -- TODO: Currently there is no flag to disable sessions in the database, but that can be added in the future.
+      --       We could also just remove sessions from the table, but a flag is probably better.
+      lift $ logInfo "Session validation succeeded."
+      pure SessionValid
+
 userSessionGet ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSession ->
