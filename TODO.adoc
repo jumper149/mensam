@@ -18,3 +18,5 @@
 * [ ] `nixosConfigurations` can test the `nixosModule`.
 
 * [ ] Add loading screen to HTML wrapper for frontend.
+
+* [ ] Frontend: Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
