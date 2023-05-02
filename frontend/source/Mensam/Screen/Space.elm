@@ -9,7 +9,7 @@ import Html.Attributes
 import Mensam.Api.DeskList
 import Mensam.Api.ReservationCreate
 import Mensam.Auth.Bearer
-import Mensam.Color
+import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
 import Mensam.Time
@@ -114,7 +114,7 @@ element model =
                         ]
                     <|
                         Element.el
-                            [ Element.Background.color Mensam.Color.bright.black
+                            [ Element.Background.color Mensam.Element.Color.bright.black
                             , Element.centerX
                             , Element.width <| Element.maximum 500 <| Element.fill
                             , Element.height <| Element.px 465
@@ -137,9 +137,9 @@ element model =
                                     , Element.spacing 10
                                     ]
                                     [ Element.Input.button
-                                        [ Element.Background.color Mensam.Color.bright.blue
-                                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
-                                        , Element.Font.color Mensam.Color.dark.black
+                                        [ Element.Background.color Mensam.Element.Color.bright.blue
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
                                         , Element.width Element.fill
                                         , Element.padding 10
                                         ]
@@ -166,9 +166,9 @@ element model =
                                                         ]
                                         }
                                     , Element.Input.button
-                                        [ Element.Background.color Mensam.Color.bright.blue
-                                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
-                                        , Element.Font.color Mensam.Color.dark.black
+                                        [ Element.Background.color Mensam.Element.Color.bright.blue
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
                                         , Element.width Element.fill
                                         , Element.padding 10
                                         ]
@@ -214,9 +214,9 @@ element model =
                                     , Element.alignBottom
                                     ]
                                     [ Element.Input.button
-                                        [ Element.Background.color Mensam.Color.bright.yellow
-                                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
-                                        , Element.Font.color Mensam.Color.dark.black
+                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
                                         , Element.width Element.fill
                                         , Element.padding 10
                                         ]
@@ -232,9 +232,9 @@ element model =
                                                 Element.text "Abort"
                                         }
                                     , Element.Input.button
-                                        [ Element.Background.color Mensam.Color.bright.yellow
-                                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
-                                        , Element.Font.color Mensam.Color.dark.black
+                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
                                         , Element.width Element.fill
                                         , Element.padding 10
                                         ]

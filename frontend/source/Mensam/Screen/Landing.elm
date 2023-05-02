@@ -5,7 +5,7 @@ import Element.Background
 import Element.Font
 import Element.Input
 import Html.Attributes
-import Mensam.Color
+import Mensam.Element.Color
 import Mensam.Element.Font
 
 
@@ -21,7 +21,7 @@ init =
 element : Model -> Element.Element Message
 element () =
     Element.el
-        [ Element.Font.color Mensam.Color.bright.white
+        [ Element.Font.color Mensam.Element.Color.bright.white
         , Element.Font.size 16
         , Element.width Element.fill
         , Element.height Element.fill
@@ -37,7 +37,7 @@ element () =
                 [ Element.Font.size 40
                 , Element.Font.extraLight
                 , Element.Font.italic
-                , Element.Font.color Mensam.Color.bright.yellow
+                , Element.Font.color Mensam.Element.Color.bright.yellow
                 , Element.centerX
                 ]
               <|
@@ -60,9 +60,9 @@ element () =
                     , Element.spacing 30
                     ]
                     [ Element.Input.button
-                        [ Element.Background.color Mensam.Color.bright.yellow
-                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
-                        , Element.Font.color Mensam.Color.dark.black
+                        [ Element.Background.color Mensam.Element.Color.bright.yellow
+                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                        , Element.Font.color Mensam.Element.Color.dark.black
                         , Element.width Element.fill
                         , Element.padding 10
                         ]
@@ -78,9 +78,9 @@ element () =
                                 Element.text "Sign up"
                         }
                     , Element.Input.button
-                        [ Element.Background.color Mensam.Color.bright.yellow
-                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
-                        , Element.Font.color Mensam.Color.dark.black
+                        [ Element.Background.color Mensam.Element.Color.bright.yellow
+                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                        , Element.Font.color Mensam.Element.Color.dark.black
                         , Element.width Element.fill
                         , Element.padding 10
                         ]
@@ -99,7 +99,7 @@ element () =
             , Element.el
                 [ Element.Font.size 30
                 , Element.Font.bold
-                , Element.Font.color Mensam.Color.bright.magenta
+                , Element.Font.color Mensam.Element.Color.bright.magenta
                 , Element.centerX
                 ]
               <|
@@ -110,7 +110,7 @@ element () =
             , Element.el
                 [ Element.Font.size 20
                 , Element.Font.regular
-                , Element.Font.color Mensam.Color.dark.magenta
+                , Element.Font.color Mensam.Element.Color.dark.magenta
                 , Element.centerX
                 ]
               <|

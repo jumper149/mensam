@@ -7,7 +7,7 @@ import Element.Font
 import Html.Attributes
 import Mensam.Api.SpaceList
 import Mensam.Auth.Bearer
-import Mensam.Color
+import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
 
@@ -45,11 +45,11 @@ element model =
                 [ Element.el
                     [ Element.alignRight
                     , Element.padding 10
-                    , Element.Background.color Mensam.Color.bright.yellow
-                    , Element.Font.color Mensam.Color.dark.black
+                    , Element.Background.color Mensam.Element.Color.bright.yellow
+                    , Element.Font.color Mensam.Element.Color.dark.black
                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                    , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
+                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
                     , Element.Events.onClick <| MessagePure OpenDialogToCreate
                     ]
                   <|

@@ -8,7 +8,7 @@ import Html.Attributes
 import Html.Events
 import Json.Decode
 import Mensam.Api.Register
-import Mensam.Color
+import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
 
@@ -38,7 +38,7 @@ element : Model -> Element.Element Message
 element model =
     Element.el
         [ Element.Background.color (Element.rgba 1 1 1 0.1)
-        , Element.Font.color Mensam.Color.bright.white
+        , Element.Font.color Mensam.Element.Color.bright.white
         , Element.Font.size 16
         , Element.centerX
         , Element.centerY
@@ -56,7 +56,7 @@ element model =
                 Element.text "Register"
             , Element.Input.username
                 [ onEnter <| MessageEffect Submit
-                , Element.Font.color Mensam.Color.dark.black
+                , Element.Font.color Mensam.Element.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterUsername
                 , text = model.username
@@ -65,7 +65,7 @@ element model =
                 }
             , Element.Input.newPassword
                 [ onEnter <| MessageEffect Submit
-                , Element.Font.color Mensam.Color.dark.black
+                , Element.Font.color Mensam.Element.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterPassword
                 , text = model.password
@@ -75,7 +75,7 @@ element model =
                 }
             , Element.Input.email
                 [ onEnter <| MessageEffect Submit
-                , Element.Font.color Mensam.Color.dark.black
+                , Element.Font.color Mensam.Element.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterEmail
                 , text = model.email
@@ -100,15 +100,15 @@ element model =
                         [ Element.height <| Element.px 14
                         , Element.paddingXY 5 0
                         , Element.Font.size 14
-                        , Element.Font.color Mensam.Color.bright.red
+                        , Element.Font.color Mensam.Element.Color.bright.red
                         ]
                       <|
                         Element.text <|
                             model.hint
                     , Element.Input.button
-                        [ Element.Background.color Mensam.Color.bright.yellow
-                        , Element.mouseOver [ Element.Background.color Mensam.Color.bright.green ]
-                        , Element.Font.color Mensam.Color.dark.black
+                        [ Element.Background.color Mensam.Element.Color.bright.yellow
+                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                        , Element.Font.color Mensam.Element.Color.dark.black
                         , Element.width Element.fill
                         , Element.padding 10
                         ]
