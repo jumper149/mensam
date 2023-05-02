@@ -7,7 +7,6 @@ import Element.Font
 import Element.Input
 import Html.Attributes
 import Mensam.Api.DeskList
-import Mensam.Api.Login
 import Mensam.Api.ReservationCreate
 import Mensam.Auth.Bearer
 import Mensam.Color
@@ -472,7 +471,7 @@ deskList jwt model =
                                     Mensam.Error.undefined
 
                 Ok (Mensam.Api.DeskList.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Mensam.Api.Login.errorAuth error
+                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
 
                 Err error ->
                     MessageEffect <| ReportError <| Mensam.Error.http error
@@ -519,7 +518,7 @@ reservationCreate jwt model { desk } =
                                     Mensam.Error.undefined
 
                 Ok (Mensam.Api.ReservationCreate.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Mensam.Api.Login.errorAuth error
+                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
 
                 Err error ->
                     MessageEffect <| ReportError <| Mensam.Error.http error

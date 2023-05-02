@@ -8,6 +8,7 @@ import Html.Attributes
 import Html.Events
 import Json.Decode
 import Mensam.Api.Login
+import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
 import Mensam.Color
 import Mensam.Element.Font
@@ -186,10 +187,11 @@ onEnter msg =
 login : Model -> Cmd Message
 login model =
     Mensam.Api.Login.request
-        (Mensam.Api.Login.BasicAuth
-            { username = model.username
-            , password = model.password
-            }
+        (Mensam.Api.Login.BasicAuth <|
+            Mensam.Auth.Basic.MkCredentials
+                { username = model.username
+                , password = model.password
+                }
         )
     <|
         \result ->
@@ -197,13 +199,13 @@ login model =
                 Ok (Mensam.Api.Login.Success value) ->
                     MessageEffect <| SetSession value
 
-                Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthUsername) ->
+                Ok (Mensam.Api.Login.ErrorAuth Mensam.Auth.Basic.ErrorUsername) ->
                     MessagePure <| SetHintUsername
 
-                Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthPassword) ->
+                Ok (Mensam.Api.Login.ErrorAuth Mensam.Auth.Basic.ErrorPassword) ->
                     MessagePure <| SetHintPassword
 
-                Ok (Mensam.Api.Login.ErrorAuth Mensam.Api.Login.ErrorAuthIndefinite) ->
+                Ok (Mensam.Api.Login.ErrorAuth Mensam.Auth.Basic.ErrorIndefinite) ->
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Authentication" <|

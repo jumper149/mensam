@@ -9,7 +9,6 @@ import Element.Font
 import Html.Attributes
 import Json.Decode
 import Json.Encode
-import Mensam.Api.Login
 import Mensam.Api.Logout
 import Mensam.Auth.Bearer
 import Mensam.Color
@@ -321,7 +320,7 @@ update message (MkModel model) =
                                             Auth UnsetSession
 
                                         Ok (Mensam.Api.Logout.ErrorAuth error) ->
-                                            ReportError <| Mensam.Api.Login.errorAuth error
+                                            ReportError <| Mensam.Auth.Bearer.error error
 
                                         Err error ->
                                             ReportError <| Mensam.Error.http error

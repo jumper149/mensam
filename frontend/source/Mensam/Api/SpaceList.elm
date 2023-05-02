@@ -3,7 +3,6 @@ module Mensam.Api.SpaceList exposing (..)
 import Http
 import Json.Decode
 import Json.Encode
-import Mensam.Api.Login
 import Mensam.Auth.Bearer
 import Url.Builder
 
@@ -17,7 +16,7 @@ type alias Request =
 type Response
     = Success { spaces : List { id : Int, name : String } }
     | ErrorBody String
-    | ErrorAuth Mensam.Api.Login.ErrorAuth
+    | ErrorAuth Mensam.Auth.Bearer.Error
 
 
 request : Request -> (Result Http.Error Response -> a) -> Cmd a
@@ -64,7 +63,7 @@ responseResult httpResponse =
                             Err <| Http.BadBody <| Json.Decode.errorToString err
 
                 401 ->
-                    case Json.Decode.decodeString decodeBody401 body of
+                    case Json.Decode.decodeString Mensam.Auth.Bearer.decodeBody401 body of
                         Ok error ->
                             Ok <| ErrorAuth error
 
@@ -118,23 +117,3 @@ decodeBody200 =
 decodeBody400 : Json.Decode.Decoder String
 decodeBody400 =
     Json.Decode.field "error" Json.Decode.string
-
-
-decodeBody401 : Json.Decode.Decoder Mensam.Api.Login.ErrorAuth
-decodeBody401 =
-    Json.Decode.string
-        |> Json.Decode.andThen
-            (\string ->
-                case string of
-                    "username" ->
-                        Json.Decode.succeed Mensam.Api.Login.ErrorAuthUsername
-
-                    "password" ->
-                        Json.Decode.succeed Mensam.Api.Login.ErrorAuthPassword
-
-                    "indefinite" ->
-                        Json.Decode.succeed Mensam.Api.Login.ErrorAuthIndefinite
-
-                    _ ->
-                        Json.Decode.fail <| "Trying to decode authentication error, but this option is not supported: " ++ string
-            )

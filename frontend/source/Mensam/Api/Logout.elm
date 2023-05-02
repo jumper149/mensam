@@ -2,7 +2,6 @@ module Mensam.Api.Logout exposing (..)
 
 import Http
 import Json.Decode
-import Mensam.Api.Login
 import Mensam.Auth.Bearer
 import Url.Builder
 
@@ -14,7 +13,7 @@ type alias Request =
 
 type Response
     = Success
-    | ErrorAuth Mensam.Api.Login.ErrorAuth
+    | ErrorAuth Mensam.Auth.Bearer.Error
 
 
 request : Request -> (Result Http.Error Response -> a) -> Cmd a
@@ -52,7 +51,7 @@ responseResult httpResponse =
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
                 401 ->
-                    case Json.Decode.decodeString Mensam.Api.Login.decodeBody401 body of
+                    case Json.Decode.decodeString Mensam.Auth.Bearer.decodeBody401 body of
                         Ok value ->
                             Ok <| ErrorAuth value
 

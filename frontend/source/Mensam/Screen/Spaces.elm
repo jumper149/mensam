@@ -5,7 +5,6 @@ import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
-import Mensam.Api.Login
 import Mensam.Api.SpaceList
 import Mensam.Auth.Bearer
 import Mensam.Color
@@ -214,8 +213,7 @@ spaceList jwt =
                 Ok (Mensam.Api.SpaceList.ErrorAuth error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Authentication" <|
-                                Mensam.Api.Login.errorAuth error
+                            Mensam.Auth.Bearer.error error
 
                 Err error ->
                     MessageEffect <| ReportError <| Mensam.Error.http error

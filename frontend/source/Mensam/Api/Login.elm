@@ -4,45 +4,20 @@ import Base64
 import Http
 import Iso8601
 import Json.Decode
+import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
-import Mensam.Error
 import Time
 import Url.Builder
 
 
 type Request
-    = BasicAuth
-        { username : String
-        , password : String
-        }
-    | Bearer
-        { jwt : Mensam.Auth.Bearer.Jwt
-        }
+    = BasicAuth Mensam.Auth.Basic.Credentials
+    | Bearer Mensam.Auth.Bearer.Jwt
 
 
 type Response
     = Success { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
-    | ErrorAuth ErrorAuth
-
-
-type ErrorAuth
-    = ErrorAuthUsername
-    | ErrorAuthPassword
-    | ErrorAuthIndefinite
-
-
-errorAuth : ErrorAuth -> Mensam.Error.Error
-errorAuth error =
-    Mensam.Error.message "Authentication failed" <|
-        case error of
-            ErrorAuthUsername ->
-                Mensam.Error.message "Unknown username" Mensam.Error.undefined
-
-            ErrorAuthPassword ->
-                Mensam.Error.message "Bad password" Mensam.Error.undefined
-
-            ErrorAuthIndefinite ->
-                Mensam.Error.message "Indefinite" Mensam.Error.undefined
+    | ErrorAuth Mensam.Auth.Basic.Error
 
 
 request : Request -> (Result Http.Error Response -> a) -> Cmd a
@@ -51,12 +26,12 @@ request body handleResult =
         { method = "POST"
         , headers =
             [ case body of
-                BasicAuth { username, password } ->
+                BasicAuth (Mensam.Auth.Basic.MkCredentials credentials) ->
                     Http.header
                         "Authorization"
-                        ("Basic " ++ Base64.encode (username ++ ":" ++ password))
+                        ("Basic " ++ Base64.encode (credentials.username ++ ":" ++ credentials.password))
 
-                Bearer { jwt } ->
+                Bearer jwt ->
                     Mensam.Auth.Bearer.authorizationHeader jwt
             ]
         , url =
@@ -118,20 +93,20 @@ decodeBody200 =
         (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)
 
 
-decodeBody401 : Json.Decode.Decoder ErrorAuth
+decodeBody401 : Json.Decode.Decoder Mensam.Auth.Basic.Error
 decodeBody401 =
     Json.Decode.string
         |> Json.Decode.andThen
             (\string ->
                 case string of
                     "username" ->
-                        Json.Decode.succeed ErrorAuthUsername
+                        Json.Decode.succeed Mensam.Auth.Basic.ErrorUsername
 
                     "password" ->
-                        Json.Decode.succeed ErrorAuthPassword
+                        Json.Decode.succeed Mensam.Auth.Basic.ErrorPassword
 
                     "indefinite" ->
-                        Json.Decode.succeed ErrorAuthIndefinite
+                        Json.Decode.succeed Mensam.Auth.Basic.ErrorIndefinite
 
                     _ ->
                         Json.Decode.fail <| "Trying to decode authentication error, but this option is not supported: " ++ string
