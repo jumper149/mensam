@@ -3,16 +3,11 @@ module Mensam.Main exposing (..)
 import Browser
 import Browser.Navigation
 import Element
-import Element.Background
-import Element.Events
-import Element.Font
-import Html.Attributes
 import Json.Encode
 import Mensam.Api.Logout
 import Mensam.Auth.Bearer
 import Mensam.Element
-import Mensam.Element.Color
-import Mensam.Element.Font
+import Mensam.Element.Header
 import Mensam.Error
 import Mensam.Screen.Landing
 import Mensam.Screen.Login
@@ -505,6 +500,61 @@ isExpired now authentication =
             Time.posixToMillis now > Time.posixToMillis expiration
 
 
+headerMessage : Model -> Mensam.Element.Header.Message -> Message
+headerMessage (MkModel model) message =
+    case message of
+        Mensam.Element.Header.ClickMensam ->
+            case model.authenticated of
+                Nothing ->
+                    SetUrl RouteLanding
+
+                Just _ ->
+                    SetUrl RouteSpaces
+
+        Mensam.Element.Header.SignIn ->
+            SetUrl <| RouteLogin Nothing
+
+        Mensam.Element.Header.SignOut ->
+            Auth Logout
+
+        Mensam.Element.Header.ClickErrors ->
+            if model.viewErrors then
+                HideErrors
+
+            else
+                ViewErrors
+
+
+headerContent : Model -> Mensam.Element.Header.Content
+headerContent (MkModel model) =
+    { errors = model.errors
+    , unfoldErrors = model.viewErrors
+    , authenticated =
+        case model.authenticated of
+            Nothing ->
+                False
+
+            Just _ ->
+                True
+    , title =
+        case model.screen of
+            ScreenLanding _ ->
+                Nothing
+
+            ScreenRegister _ ->
+                Nothing
+
+            ScreenLogin _ ->
+                Nothing
+
+            ScreenSpaces _ ->
+                Just "Spaces"
+
+            ScreenSpace screenModel ->
+                Just <| "Space: " ++ String.fromInt screenModel.space.id
+    }
+
+
 view : Model -> Browser.Document Message
 view (MkModel model) =
     Mensam.Element.document <|
@@ -513,7 +563,7 @@ view (MkModel model) =
             , Element.height Element.fill
             , Element.spacing 10
             ]
-            [ elementNavigationBar <| MkModel model
+            [ Element.map (headerMessage <| MkModel model) <| Mensam.Element.Header.element <| headerContent <| MkModel model
             , Element.column
                 [ Element.width Element.fill
                 , Element.height Element.fill
@@ -541,217 +591,6 @@ view (MkModel model) =
 subscriptions : Model -> Sub Message
 subscriptions _ =
     Time.every 100 SetTimeNow
-
-
-elementNavigationBar : Model -> Element.Element Message
-elementNavigationBar (MkModel model) =
-    let
-        tabDescriptions =
-            []
-
-        viewTabDescriptions description =
-            Element.el
-                [ Element.Events.onClick description.message
-                , Element.height Element.fill
-                , Element.paddingXY 20 0
-                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.3 ]
-                , if description.active then
-                    Element.Background.color <| Element.rgba 1 1 1 0.1
-
-                  else
-                    Element.Background.color <| Element.rgba 1 1 1 0
-                ]
-            <|
-                Element.el
-                    [ Element.centerX
-                    , Element.centerY
-                    ]
-                <|
-                    Element.text description.name
-
-        elementsTabDescription =
-            List.map viewTabDescriptions tabDescriptions
-
-        errorViewer =
-            case model.errors of
-                [] ->
-                    Element.none
-
-                errors ->
-                    Element.el
-                        [ Element.Events.onClick <|
-                            if model.viewErrors then
-                                HideErrors
-
-                            else
-                                ViewErrors
-                        , Element.height Element.fill
-                        , Element.paddingXY 20 0
-                        , Element.alignRight
-                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                        , Element.mouseOver
-                            [ Element.Background.color <| Mensam.Element.Color.bright.white
-                            , Element.Font.color <| Mensam.Element.Color.dark.black
-                            ]
-                        , Element.Font.color Mensam.Element.Color.bright.red
-                        , Element.below <|
-                            if model.viewErrors then
-                                Element.el
-                                    [ Element.Font.family [ Mensam.Element.Font.condensed ]
-                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
-                                    , Element.width <| Element.px 200
-                                    , Element.padding 12
-                                    , Element.Background.color Mensam.Element.Color.bright.black
-                                    , Element.Font.color Mensam.Element.Color.bright.white
-                                    , Element.mouseOver
-                                        [ Element.Background.color <| Mensam.Element.Color.bright.white
-                                        , Element.Font.color <| Mensam.Element.Color.dark.black
-                                        ]
-                                    , Element.alignRight
-                                    ]
-                                <|
-                                    Element.column
-                                        [ Element.spacing 10
-                                        ]
-                                    <|
-                                        List.map Mensam.Error.toElement errors
-
-                            else
-                                Element.none
-                        ]
-                    <|
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            ]
-                        <|
-                            Element.text "?"
-
-        loginStatus =
-            case model.authenticated of
-                Nothing ->
-                    Element.el
-                        [ Element.Events.onClick <| SetUrl <| RouteLogin Nothing
-                        , Element.height Element.fill
-                        , Element.paddingXY 20 0
-                        , Element.alignRight
-                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                        , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.3 ]
-                        ]
-                    <|
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            ]
-                        <|
-                            Element.text "Sign in"
-
-                Just _ ->
-                    Element.el
-                        [ Element.Events.onClick <| Auth Logout
-                        , Element.height Element.fill
-                        , Element.paddingXY 20 0
-                        , Element.alignRight
-                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                        , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.3 ]
-                        ]
-                    <|
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            ]
-                        <|
-                            Element.text "Sign out"
-
-        title =
-            Element.el
-                [ Element.height Element.fill
-                , Element.paddingXY 20 0
-                , Element.alignLeft
-                , Element.Font.family [ Mensam.Element.Font.sansSerif ]
-                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
-                , Element.Font.color Mensam.Element.Color.bright.yellow
-                , Element.Font.italic
-                , Element.Font.extraLight
-                , Element.Font.size 25
-                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
-                , Element.Events.onClick <|
-                    case model.authenticated of
-                        Nothing ->
-                            SetUrl RouteLanding
-
-                        Just _ ->
-                            SetUrl RouteSpaces
-                ]
-            <|
-                Element.el
-                    [ Element.centerX
-                    , Element.centerY
-                    ]
-                <|
-                    Element.text "Mensam"
-
-        screenTitleText =
-            case model.screen of
-                ScreenLanding _ ->
-                    Nothing
-
-                ScreenRegister _ ->
-                    Nothing
-
-                ScreenLogin _ ->
-                    Nothing
-
-                ScreenSpaces _ ->
-                    Just "Spaces"
-
-                ScreenSpace screenModel ->
-                    Just <| "Space: " ++ String.fromInt screenModel.space.id
-
-        screenTitle =
-            case screenTitleText of
-                Nothing ->
-                    Element.none
-
-                Just text ->
-                    Element.el
-                        [ Element.height Element.fill
-                        , Element.paddingXY 20 0
-                        , Element.centerX
-                        , Element.Font.family [ Mensam.Element.Font.sansSerif ]
-                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
-                        , Element.Font.color Mensam.Element.Color.bright.white
-                        , Element.Font.italic
-                        , Element.Font.extraLight
-                        , Element.Font.size 17
-                        ]
-                    <|
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            ]
-                        <|
-                            Element.text text
-    in
-    Element.el
-        [ Element.width Element.fill
-        , Element.height <| Element.px 60
-        , Element.Background.color Mensam.Element.Color.bright.black
-        ]
-    <|
-        Element.row
-            [ Element.width Element.fill
-            , Element.height Element.fill
-            , Element.Font.family [ Mensam.Element.Font.condensed ]
-            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-            , Element.Font.light
-            , Element.Font.size 17
-            , Element.behindContent screenTitle
-            ]
-            (title :: elementsTabDescription ++ [ errorViewer, loginStatus ])
 
 
 errorScreen : Mensam.Error.Error
