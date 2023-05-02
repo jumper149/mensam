@@ -62,7 +62,7 @@ responseResult httpResponse =
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
                 401 ->
-                    case Json.Decode.decodeString decodeBody401 body of
+                    case Json.Decode.decodeString Mensam.Auth.Basic.decodeBody401 body of
                         Ok value ->
                             Ok <| ErrorAuth value
 
@@ -91,23 +91,3 @@ decodeBody200 =
     Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
         (Json.Decode.field "jwt" Mensam.Auth.Bearer.decode)
         (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)
-
-
-decodeBody401 : Json.Decode.Decoder Mensam.Auth.Basic.Error
-decodeBody401 =
-    Json.Decode.string
-        |> Json.Decode.andThen
-            (\string ->
-                case string of
-                    "username" ->
-                        Json.Decode.succeed Mensam.Auth.Basic.ErrorUsername
-
-                    "password" ->
-                        Json.Decode.succeed Mensam.Auth.Basic.ErrorPassword
-
-                    "indefinite" ->
-                        Json.Decode.succeed Mensam.Auth.Basic.ErrorIndefinite
-
-                    _ ->
-                        Json.Decode.fail <| "Trying to decode authentication error, but this option is not supported: " ++ string
-            )

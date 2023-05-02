@@ -1,5 +1,6 @@
 module Mensam.Auth.Basic exposing (..)
 
+import Json.Decode
 import Mensam.Error
 
 
@@ -28,3 +29,23 @@ error err =
 
             ErrorIndefinite ->
                 Mensam.Error.message "Indefinite" Mensam.Error.undefined
+
+
+decodeBody401 : Json.Decode.Decoder Error
+decodeBody401 =
+    Json.Decode.string
+        |> Json.Decode.andThen
+            (\string ->
+                case string of
+                    "username" ->
+                        Json.Decode.succeed ErrorUsername
+
+                    "password" ->
+                        Json.Decode.succeed ErrorPassword
+
+                    "indefinite" ->
+                        Json.Decode.succeed ErrorIndefinite
+
+                    _ ->
+                        Json.Decode.fail <| "Trying to decode basic authentication error, but this option is not supported: " ++ string
+            )
