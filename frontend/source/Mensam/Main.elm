@@ -7,7 +7,6 @@ import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
-import Json.Decode
 import Json.Encode
 import Mensam.Api.Logout
 import Mensam.Auth.Bearer
@@ -138,20 +137,14 @@ init flags url navigationKey =
             }
 
         modelStorage =
-            case Json.Decode.decodeValue Mensam.Storage.decoder flags of
+            case Mensam.Storage.parse flags of
                 Ok (Just (Mensam.Storage.MkStorage storage)) ->
                     { modelInit | authenticated = Just storage }
 
                 Ok Nothing ->
                     modelInit
 
-                Err err ->
-                    let
-                        error =
-                            Mensam.Error.message "Failed to decode `localStorage`" <|
-                                Mensam.Error.message (Json.Decode.errorToString err) <|
-                                    Mensam.Error.undefined
-                    in
+                Err error ->
                     { modelInit
                         | errors = error :: modelInit.errors
                     }

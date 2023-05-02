@@ -1,9 +1,15 @@
-port module Mensam.Storage exposing (..)
+port module Mensam.Storage exposing
+    ( Storage(..)
+    , parse
+    , setStorage
+    , unsetStorage
+    )
 
 import Iso8601
 import Json.Decode
 import Json.Encode
 import Mensam.Auth.Bearer
+import Mensam.Error
 import Time
 
 
@@ -27,6 +33,26 @@ unsetStorage =
     setStorageJson Json.Encode.null
 
 
+type alias StorageRaw =
+    Json.Encode.Value
+
+
+parse : StorageRaw -> Result Mensam.Error.Error (Maybe Storage)
+parse storageRaw =
+    case Json.Decode.decodeValue decoder storageRaw of
+        Ok (Just storage) ->
+            Ok (Just storage)
+
+        Ok Nothing ->
+            Ok Nothing
+
+        Err error ->
+            Err <|
+                Mensam.Error.message "Failed to decode `localStorage`" <|
+                    Mensam.Error.message (Json.Decode.errorToString error) <|
+                        Mensam.Error.undefined
+
+
 decoder : Json.Decode.Decoder (Maybe Storage)
 decoder =
     Json.Decode.nullable <|
@@ -35,7 +61,7 @@ decoder =
             (Json.Decode.field "expiration" <| Json.Decode.nullable Iso8601.decoder)
 
 
-encode : Storage -> Json.Encode.Value
+encode : Storage -> StorageRaw
 encode (MkStorage storage) =
     Json.Encode.object
         [ ( "jwt", Mensam.Auth.Bearer.encode storage.jwt )
