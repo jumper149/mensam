@@ -521,49 +521,19 @@ view (MkModel model) =
                 ]
                 [ case model.screen of
                     ScreenLanding screenModel ->
-                        Element.el
-                            [ Element.width Element.fill
-                            , Element.height Element.fill
-                            ]
-                        <|
-                            Element.map MessageLanding <|
-                                Mensam.Screen.Landing.element screenModel
+                        Mensam.Element.screen MessageLanding <| Mensam.Screen.Landing.element screenModel
 
                     ScreenLogin screenModel ->
-                        Element.el
-                            [ Element.width Element.fill
-                            , Element.height Element.fill
-                            ]
-                        <|
-                            Element.map MessageLogin <|
-                                Mensam.Screen.Login.element screenModel
+                        Mensam.Element.screen MessageLogin <| Mensam.Screen.Login.element screenModel
 
                     ScreenRegister screenModel ->
-                        Element.el
-                            [ Element.width Element.fill
-                            , Element.height Element.fill
-                            ]
-                        <|
-                            Element.map MessageRegister <|
-                                Mensam.Screen.Register.element screenModel
+                        Mensam.Element.screen MessageRegister <| Mensam.Screen.Register.element screenModel
 
                     ScreenSpaces screenModel ->
-                        Element.el
-                            [ Element.width Element.fill
-                            , Element.height Element.fill
-                            ]
-                        <|
-                            Element.map MessageSpaces <|
-                                Mensam.Screen.Spaces.element screenModel
+                        Mensam.Element.screen MessageSpaces <| Mensam.Screen.Spaces.element screenModel
 
                     ScreenSpace screenModel ->
-                        Element.el
-                            [ Element.width Element.fill
-                            , Element.height Element.fill
-                            ]
-                        <|
-                            Element.map MessageSpace <|
-                                Mensam.Screen.Space.element screenModel
+                        Mensam.Element.screen MessageSpace <| Mensam.Screen.Space.element screenModel
                 ]
             ]
 

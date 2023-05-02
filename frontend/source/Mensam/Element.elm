@@ -37,3 +37,13 @@ document element =
                 element
         ]
     }
+
+
+screen : (msgScreen -> msg) -> Element.Element msgScreen -> Element.Element msg
+screen embedMessage element =
+    Element.map embedMessage <|
+        Element.el
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            ]
+            element
