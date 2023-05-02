@@ -37,8 +37,8 @@ error err =
                 Mensam.Error.message "Indefinite" Mensam.Error.undefined
 
 
-decodeBody401 : Json.Decode.Decoder Error
-decodeBody401 =
+http401BodyDecoder : Json.Decode.Decoder Error
+http401BodyDecoder =
     Json.Decode.string
         |> Json.Decode.andThen
             (\string ->

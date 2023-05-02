@@ -70,7 +70,7 @@ responseResult httpResponse =
                             Err <| Http.BadBody <| Json.Decode.errorToString err
 
                 401 ->
-                    case Json.Decode.decodeString Mensam.Auth.Bearer.decodeBody401 body of
+                    case Json.Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
                         Ok error ->
                             Ok <| ErrorAuth error
 

@@ -51,7 +51,7 @@ responseResult httpResponse =
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
                 401 ->
-                    case Json.Decode.decodeString Mensam.Auth.Bearer.decodeBody401 body of
+                    case Json.Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
                         Ok value ->
                             Ok <| ErrorAuth value
 
