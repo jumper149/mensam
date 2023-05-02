@@ -1,6 +1,5 @@
 module Mensam.Api.Login exposing (..)
 
-import Base64
 import Http
 import Iso8601
 import Json.Decode
