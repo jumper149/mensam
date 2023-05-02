@@ -89,5 +89,5 @@ responseResult httpResponse =
 decodeBody200 : Json.Decode.Decoder { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
 decodeBody200 =
     Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
-        (Json.Decode.field "jwt" Mensam.Auth.Bearer.decode)
+        (Json.Decode.field "jwt" Mensam.Auth.Bearer.decoder)
         (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)

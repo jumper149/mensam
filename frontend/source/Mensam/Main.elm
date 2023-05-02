@@ -138,7 +138,7 @@ init flags url navigationKey =
             }
 
         modelStorage =
-            case Json.Decode.decodeValue Mensam.Storage.decode flags of
+            case Json.Decode.decodeValue Mensam.Storage.decoder flags of
                 Ok (Just (Mensam.Storage.MkStorage storage)) ->
                     { modelInit | authenticated = Just storage }
 

@@ -10,8 +10,8 @@ type Jwt
     = MkJwt String
 
 
-decode : Json.Decode.Decoder Jwt
-decode =
+decoder : Json.Decode.Decoder Jwt
+decoder =
     Json.Decode.map MkJwt Json.Decode.string
 
 
