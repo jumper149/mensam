@@ -1,4 +1,4 @@
-module Mensam.Font exposing (..)
+module Mensam.Element.Font exposing (..)
 
 import Element.Font
 

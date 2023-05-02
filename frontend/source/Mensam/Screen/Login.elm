@@ -9,8 +9,8 @@ import Html.Events
 import Json.Decode
 import Mensam.Api.Login
 import Mensam.Color
+import Mensam.Element.Font
 import Mensam.Error
-import Mensam.Font
 import Mensam.Jwt
 import Time
 
@@ -98,7 +98,7 @@ element model =
                             Element.el
                                 [ Element.centerX
                                 , Element.centerY
-                                , Element.Font.family [ Mensam.Font.condensed ]
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
                             <|
@@ -121,7 +121,7 @@ element model =
                             Element.el
                                 [ Element.centerX
                                 , Element.centerY
-                                , Element.Font.family [ Mensam.Font.condensed ]
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
                             <|

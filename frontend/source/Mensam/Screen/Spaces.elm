@@ -8,8 +8,8 @@ import Html.Attributes
 import Mensam.Api.Login
 import Mensam.Api.SpaceList
 import Mensam.Color
+import Mensam.Element.Font
 import Mensam.Error
-import Mensam.Font
 import Mensam.Jwt
 
 
@@ -57,7 +57,7 @@ element model =
                     Element.el
                         [ Element.centerX
                         , Element.centerY
-                        , Element.Font.family [ Mensam.Font.condensed ]
+                        , Element.Font.family [ Mensam.Element.Font.condensed ]
                         , Element.Font.size 17
                         , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                         ]
@@ -70,7 +70,7 @@ element model =
             , Element.padding 10
             , Element.Background.color (Element.rgba 0 0 0 0.1)
             , Element.Font.size 16
-            , Element.Font.family [ Mensam.Font.condensed ]
+            , Element.Font.family [ Mensam.Element.Font.condensed ]
             ]
           <|
             Element.indexedTable

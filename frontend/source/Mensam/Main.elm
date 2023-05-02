@@ -12,8 +12,8 @@ import Json.Encode
 import Mensam.Api.Login
 import Mensam.Api.Logout
 import Mensam.Color
+import Mensam.Element.Font
 import Mensam.Error
-import Mensam.Font
 import Mensam.Jwt
 import Mensam.Screen.Landing
 import Mensam.Screen.Login
@@ -511,7 +511,7 @@ view (MkModel model) =
             , Element.Font.color Mensam.Color.dark.black
             , Element.Font.regular
             , Element.Font.size 20
-            , Element.Font.family [ Mensam.Font.sansSerif ]
+            , Element.Font.family [ Mensam.Element.Font.sansSerif ]
             ]
           <|
             Element.el
@@ -647,7 +647,7 @@ elementNavigationBar (MkModel model) =
                         , Element.below <|
                             if model.viewErrors then
                                 Element.el
-                                    [ Element.Font.family [ Mensam.Font.condensed ]
+                                    [ Element.Font.family [ Mensam.Element.Font.condensed ]
                                     , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
                                     , Element.width <| Element.px 200
                                     , Element.padding 12
@@ -718,7 +718,7 @@ elementNavigationBar (MkModel model) =
                 [ Element.height Element.fill
                 , Element.paddingXY 20 0
                 , Element.alignLeft
-                , Element.Font.family [ Mensam.Font.sansSerif ]
+                , Element.Font.family [ Mensam.Element.Font.sansSerif ]
                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
                 , Element.Font.color Mensam.Color.bright.yellow
                 , Element.Font.italic
@@ -769,7 +769,7 @@ elementNavigationBar (MkModel model) =
                         [ Element.height Element.fill
                         , Element.paddingXY 20 0
                         , Element.centerX
-                        , Element.Font.family [ Mensam.Font.sansSerif ]
+                        , Element.Font.family [ Mensam.Element.Font.sansSerif ]
                         , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
                         , Element.Font.color Mensam.Color.bright.white
                         , Element.Font.italic
@@ -793,7 +793,7 @@ elementNavigationBar (MkModel model) =
         Element.row
             [ Element.width Element.fill
             , Element.height Element.fill
-            , Element.Font.family [ Mensam.Font.condensed ]
+            , Element.Font.family [ Mensam.Element.Font.condensed ]
             , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
             , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
             , Element.Font.light

@@ -10,8 +10,8 @@ import Mensam.Api.DeskList
 import Mensam.Api.Login
 import Mensam.Api.ReservationCreate
 import Mensam.Color
+import Mensam.Element.Font
 import Mensam.Error
-import Mensam.Font
 import Mensam.Jwt
 import Mensam.Time
 import Time
@@ -101,7 +101,7 @@ element model =
         , Element.padding 10
         , Element.Background.color (Element.rgba 0 0 0 0.1)
         , Element.Font.size 16
-        , Element.Font.family [ Mensam.Font.condensed ]
+        , Element.Font.family [ Mensam.Element.Font.condensed ]
         , Element.inFront <|
             case model.viewDetailed of
                 Nothing ->
@@ -149,7 +149,7 @@ element model =
                                             Element.el
                                                 [ Element.centerX
                                                 , Element.centerY
-                                                , Element.Font.family [ Mensam.Font.condensed ]
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
                                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                                 ]
                                             <|
@@ -178,7 +178,7 @@ element model =
                                             Element.el
                                                 [ Element.centerX
                                                 , Element.centerY
-                                                , Element.Font.family [ Mensam.Font.condensed ]
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
                                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                                 ]
                                             <|
@@ -226,7 +226,7 @@ element model =
                                             Element.el
                                                 [ Element.centerX
                                                 , Element.centerY
-                                                , Element.Font.family [ Mensam.Font.condensed ]
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
                                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                                 ]
                                             <|
@@ -244,7 +244,7 @@ element model =
                                             Element.el
                                                 [ Element.centerX
                                                 , Element.centerY
-                                                , Element.Font.family [ Mensam.Font.condensed ]
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
                                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                                 ]
                                             <|

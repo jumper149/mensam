@@ -6,7 +6,7 @@ import Element.Font
 import Element.Input
 import Html.Attributes
 import Mensam.Color
-import Mensam.Font
+import Mensam.Element.Font
 
 
 type alias Model =
@@ -71,7 +71,7 @@ element () =
                             Element.el
                                 [ Element.centerX
                                 , Element.centerY
-                                , Element.Font.family [ Mensam.Font.condensed ]
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
                             <|
@@ -89,7 +89,7 @@ element () =
                             Element.el
                                 [ Element.centerX
                                 , Element.centerY
-                                , Element.Font.family [ Mensam.Font.condensed ]
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
                                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
                             <|

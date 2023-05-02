@@ -4,7 +4,7 @@ import Element
 import Element.Font
 import Html.Attributes
 import Http
-import Mensam.Font
+import Mensam.Element.Font
 import Tree
 
 
@@ -61,7 +61,7 @@ treeToString tree =
 toElement : Error -> Element.Element msg
 toElement (MkError forest) =
     Element.el
-        [ Element.Font.family [ Mensam.Font.condensed ]
+        [ Element.Font.family [ Mensam.Element.Font.condensed ]
         , Element.Font.size 15
         , Element.Font.alignLeft
         ]
