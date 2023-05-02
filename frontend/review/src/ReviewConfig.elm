@@ -13,6 +13,7 @@ when inside the directory containing this file.
 
 import NoBooleanCase
 import NoDuplicatePorts
+import NoUnmatchedUnit
 import NoUnsafePorts
 import NoUnusedPorts
 import Review.Rule exposing (Rule)
@@ -22,6 +23,7 @@ config : List Rule
 config =
     [ NoBooleanCase.rule
     , NoDuplicatePorts.rule
+    , NoUnmatchedUnit.rule
     , NoUnsafePorts.rule NoUnsafePorts.any
     , NoUnusedPorts.rule
     ]
