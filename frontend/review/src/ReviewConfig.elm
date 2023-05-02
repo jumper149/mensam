@@ -15,6 +15,13 @@ import NoBooleanCase
 import NoDuplicatePorts
 import NoUnmatchedUnit
 import NoUnsafePorts
+import NoUnused.CustomTypeConstructorArgs
+import NoUnused.CustomTypeConstructors
+import NoUnused.Dependencies
+import NoUnused.Exports
+import NoUnused.Parameters
+import NoUnused.Patterns
+import NoUnused.Variables
 import NoUnusedPorts
 import Review.Rule exposing (Rule)
 
@@ -25,5 +32,12 @@ config =
     , NoDuplicatePorts.rule
     , NoUnmatchedUnit.rule
     , NoUnsafePorts.rule NoUnsafePorts.any
+    , NoUnused.CustomTypeConstructors.rule []
+    , NoUnused.CustomTypeConstructorArgs.rule
+    , NoUnused.Dependencies.rule
+    , NoUnused.Exports.rule
+    , NoUnused.Parameters.rule
+    , NoUnused.Patterns.rule
+    , NoUnused.Variables.rule
     , NoUnusedPorts.rule
     ]
