@@ -136,7 +136,6 @@ type MessagePure
     = EnterUsername String
     | EnterPassword String
     | EnterEmail String
-    | ToggleEmailVisible Bool
 
 
 updatePure : MessagePure -> Model -> Model
@@ -151,15 +150,11 @@ updatePure message model =
         EnterEmail email ->
             { model | email = email }
 
-        ToggleEmailVisible emailVisible ->
-            { model | emailVisible = emailVisible }
-
 
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Submit
     | Submitted
-    | Login
 
 
 onEnter : msg -> Element.Attribute msg

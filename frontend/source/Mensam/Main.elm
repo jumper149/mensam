@@ -67,7 +67,6 @@ type Screen
     | ScreenLogin Mensam.Screen.Login.Model
     | ScreenSpaces Mensam.Screen.Spaces.Model
     | ScreenSpace Mensam.Screen.Space.Model
-    | NoScreen
 
 
 type Route
@@ -222,7 +221,6 @@ type MessageAuth
     = SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
     | UnsetSession
     | Logout
-    | CheckExpiration
     | CheckExpirationExplicit Time.Posix
 
 
@@ -333,9 +331,6 @@ update message (MkModel model) =
             <|
                 MkModel model
 
-        Auth CheckExpiration ->
-            update (Auth <| CheckExpirationExplicit model.time.now) <| MkModel model
-
         Auth (CheckExpirationExplicit now) ->
             case model.authenticated of
                 Nothing ->
@@ -348,20 +343,8 @@ update message (MkModel model) =
                     else
                         update EmptyMessage <| MkModel model
 
-        MessageLanding (Mensam.Screen.Landing.MessagePure m) ->
-            case model.screen of
-                ScreenLanding screenModel ->
-                    update EmptyMessage <|
-                        MkModel { model | screen = ScreenLanding <| Mensam.Screen.Landing.updatePure m screenModel }
-
-                _ ->
-                    update (ReportError errorScreen) <| MkModel model
-
         MessageLanding (Mensam.Screen.Landing.MessageEffect m) ->
             case m of
-                Mensam.Screen.Landing.ReportError error ->
-                    update (ReportError error) <| MkModel model
-
                 Mensam.Screen.Landing.Login ->
                     update (SetUrl <| RouteLogin Nothing) <| MkModel model
 
@@ -399,9 +382,6 @@ update message (MkModel model) =
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
-
-                Mensam.Screen.Register.Login ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenLogin Mensam.Screen.Login.init }
 
         MessageLogin (Mensam.Screen.Login.MessagePure m) ->
             case model.screen of
@@ -601,9 +581,6 @@ view (MkModel model) =
                                 <|
                                     Element.map MessageSpace <|
                                         Mensam.Screen.Space.element screenModel
-
-                            NoScreen ->
-                                Element.none
                         ]
                     ]
         ]
@@ -781,9 +758,6 @@ elementNavigationBar (MkModel model) =
 
                 ScreenSpace screenModel ->
                     Just <| "Space: " ++ String.fromInt screenModel.space.id
-
-                NoScreen ->
-                    Nothing
 
         screenTitle =
             case screenTitleText of

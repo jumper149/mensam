@@ -5,7 +5,6 @@ import Iso8601
 import Json.Decode
 import Json.Encode
 import Mensam.Api.Login
-import Mensam.Error
 import Mensam.Jwt
 import Time
 import Url.Builder

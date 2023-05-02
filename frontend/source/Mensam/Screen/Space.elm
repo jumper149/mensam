@@ -107,7 +107,7 @@ element model =
                 Nothing ->
                     Element.none
 
-                Just x ->
+                Just _ ->
                     Element.el
                         [ Element.width Element.fill
                         , Element.height Element.fill
@@ -356,8 +356,7 @@ type Message
 
 
 type MessagePure
-    = EmptyMessage
-    | SetDesks
+    = SetDesks
         (List
             { desk :
                 { id : Int
@@ -394,9 +393,6 @@ type MessagePure
 updatePure : MessagePure -> Model -> Model
 updatePure message model =
     case message of
-        EmptyMessage ->
-            model
-
         SetDesks desks ->
             { model | desks = desks }
 
@@ -451,16 +447,6 @@ updatePure message model =
                             model.timeSelected
                     in
                     Mensam.Time.MkTime { timeSelected | minute = minute }
-            }
-
-        PickTime (Mensam.Time.SetSecond second) ->
-            { model
-                | timeSelected =
-                    let
-                        (Mensam.Time.MkTime timeSelected) =
-                            model.timeSelected
-                    in
-                    Mensam.Time.MkTime { timeSelected | second = second }
             }
 
 

@@ -6,7 +6,6 @@ import Element.Font
 import Element.Input
 import Html.Attributes
 import Mensam.Color
-import Mensam.Error
 import Mensam.Font
 
 
@@ -123,22 +122,9 @@ element () =
 
 
 type Message
-    = MessagePure MessagePure
-    | MessageEffect MessageEffect
-
-
-type MessagePure
-    = EmptyMessage
-
-
-updatePure : MessagePure -> Model -> Model
-updatePure message model =
-    case message of
-        EmptyMessage ->
-            model
+    = MessageEffect MessageEffect
 
 
 type MessageEffect
-    = ReportError Mensam.Error.Error
-    | Login
+    = Login
     | Register

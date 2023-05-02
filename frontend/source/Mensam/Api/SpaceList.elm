@@ -4,7 +4,6 @@ import Http
 import Json.Decode
 import Json.Encode
 import Mensam.Api.Login
-import Mensam.Error
 import Mensam.Jwt
 import Url.Builder
 
