@@ -20,3 +20,5 @@
 * [ ] Add loading screen to HTML wrapper for frontend.
 
 * [ ] Frontend: Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
+
+* [ ] Frontend: Add link to source code somewhere on the landing page. Maybe in a footer?
