@@ -9,10 +9,10 @@ import Html.Attributes
 import Mensam.Api.DeskList
 import Mensam.Api.Login
 import Mensam.Api.ReservationCreate
+import Mensam.Auth.Bearer
 import Mensam.Color
 import Mensam.Element.Font
 import Mensam.Error
-import Mensam.Jwt
 import Mensam.Time
 import Time
 
@@ -456,7 +456,7 @@ type MessageEffect
     | SubmitReservation
 
 
-deskList : Mensam.Jwt.Jwt -> Model -> Cmd Message
+deskList : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
 deskList jwt model =
     Mensam.Api.DeskList.request { jwt = jwt, space = model.space } <|
         \result ->
@@ -478,7 +478,7 @@ deskList jwt model =
                     MessageEffect <| ReportError <| Mensam.Error.http error
 
 
-reservationCreate : Mensam.Jwt.Jwt -> Model -> { desk : { id : Int } } -> Cmd Message
+reservationCreate : Mensam.Auth.Bearer.Jwt -> Model -> { desk : { id : Int } } -> Cmd Message
 reservationCreate jwt model { desk } =
     Mensam.Api.ReservationCreate.request
         { jwt = jwt

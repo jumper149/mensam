@@ -3,12 +3,12 @@ module Mensam.Api.Logout exposing (..)
 import Http
 import Json.Decode
 import Mensam.Api.Login
-import Mensam.Jwt
+import Mensam.Auth.Bearer
 import Url.Builder
 
 
 type alias Request =
-    { jwt : Mensam.Jwt.Jwt
+    { jwt : Mensam.Auth.Bearer.Jwt
     }
 
 
@@ -22,7 +22,7 @@ request body handleResult =
     Http.request
         { method = "POST"
         , headers =
-            [ Mensam.Jwt.authorizationHeader body.jwt
+            [ Mensam.Auth.Bearer.authorizationHeader body.jwt
             ]
         , url =
             Url.Builder.absolute

@@ -8,10 +8,10 @@ import Html.Attributes
 import Html.Events
 import Json.Decode
 import Mensam.Api.Login
+import Mensam.Auth.Bearer
 import Mensam.Color
 import Mensam.Element.Font
 import Mensam.Error
-import Mensam.Jwt
 import Time
 
 
@@ -163,7 +163,7 @@ type MessageEffect
     = ReportError Mensam.Error.Error
     | SubmitLogin
     | Register
-    | SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
+    | SetSession { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
 
 
 onEnter : msg -> Element.Attribute msg

@@ -1,4 +1,4 @@
-module Mensam.Jwt exposing (..)
+module Mensam.Auth.Bearer exposing (..)
 
 import Http
 import Json.Decode

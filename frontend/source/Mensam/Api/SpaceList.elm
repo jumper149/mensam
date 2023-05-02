@@ -4,12 +4,12 @@ import Http
 import Json.Decode
 import Json.Encode
 import Mensam.Api.Login
-import Mensam.Jwt
+import Mensam.Auth.Bearer
 import Url.Builder
 
 
 type alias Request =
-    { jwt : Mensam.Jwt.Jwt
+    { jwt : Mensam.Auth.Bearer.Jwt
     , order : List { category : String, order : String }
     }
 
@@ -25,7 +25,7 @@ request body handleResult =
     Http.request
         { method = "POST"
         , headers =
-            [ Mensam.Jwt.authorizationHeader body.jwt
+            [ Mensam.Auth.Bearer.authorizationHeader body.jwt
             ]
         , url =
             Url.Builder.absolute

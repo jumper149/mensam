@@ -3,13 +3,13 @@ port module Mensam.Storage exposing (..)
 import Iso8601
 import Json.Decode
 import Json.Encode
-import Mensam.Jwt
+import Mensam.Auth.Bearer
 import Time
 
 
 type Storage
     = MkStorage
-        { jwt : Mensam.Jwt.Jwt
+        { jwt : Mensam.Auth.Bearer.Jwt
         , expiration : Maybe Time.Posix
         }
 
@@ -31,14 +31,14 @@ decode : Json.Decode.Decoder (Maybe Storage)
 decode =
     Json.Decode.nullable <|
         Json.Decode.map2 (\jwt expiration -> MkStorage { jwt = jwt, expiration = expiration })
-            (Json.Decode.field "jwt" Mensam.Jwt.decode)
+            (Json.Decode.field "jwt" Mensam.Auth.Bearer.decode)
             (Json.Decode.field "expiration" <| Json.Decode.nullable Iso8601.decoder)
 
 
 encode : Storage -> Json.Encode.Value
 encode (MkStorage storage) =
     Json.Encode.object
-        [ ( "jwt", Mensam.Jwt.encode storage.jwt )
+        [ ( "jwt", Mensam.Auth.Bearer.encode storage.jwt )
         , ( "expiration"
           , case storage.expiration of
                 Nothing ->

@@ -4,8 +4,8 @@ import Base64
 import Http
 import Iso8601
 import Json.Decode
+import Mensam.Auth.Bearer
 import Mensam.Error
-import Mensam.Jwt
 import Time
 import Url.Builder
 
@@ -16,12 +16,12 @@ type Request
         , password : String
         }
     | Bearer
-        { jwt : Mensam.Jwt.Jwt
+        { jwt : Mensam.Auth.Bearer.Jwt
         }
 
 
 type Response
-    = Success { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
+    = Success { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
     | ErrorAuth ErrorAuth
 
 
@@ -57,7 +57,7 @@ request body handleResult =
                         ("Basic " ++ Base64.encode (username ++ ":" ++ password))
 
                 Bearer { jwt } ->
-                    Mensam.Jwt.authorizationHeader jwt
+                    Mensam.Auth.Bearer.authorizationHeader jwt
             ]
         , url =
             Url.Builder.absolute
@@ -111,10 +111,10 @@ responseResult httpResponse =
                     Err <| Http.BadStatus status
 
 
-decodeBody200 : Json.Decode.Decoder { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
+decodeBody200 : Json.Decode.Decoder { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
 decodeBody200 =
     Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
-        (Json.Decode.field "jwt" Mensam.Jwt.decode)
+        (Json.Decode.field "jwt" Mensam.Auth.Bearer.decode)
         (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)
 
 

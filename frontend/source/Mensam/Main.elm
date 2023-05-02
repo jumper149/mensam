@@ -11,10 +11,10 @@ import Json.Decode
 import Json.Encode
 import Mensam.Api.Login
 import Mensam.Api.Logout
+import Mensam.Auth.Bearer
 import Mensam.Color
 import Mensam.Element.Font
 import Mensam.Error
-import Mensam.Jwt
 import Mensam.Screen.Landing
 import Mensam.Screen.Login
 import Mensam.Screen.Register
@@ -56,7 +56,7 @@ type Model
 
 
 type alias Authentication =
-    { jwt : Mensam.Jwt.Jwt
+    { jwt : Mensam.Auth.Bearer.Jwt
     , expiration : Maybe Time.Posix
     }
 
@@ -218,7 +218,7 @@ type Message
 
 
 type MessageAuth
-    = SetSession { jwt : Mensam.Jwt.Jwt, expiration : Maybe Time.Posix }
+    = SetSession { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
     | UnsetSession
     | Logout
     | CheckExpirationExplicit Time.Posix

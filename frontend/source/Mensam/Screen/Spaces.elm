@@ -7,10 +7,10 @@ import Element.Font
 import Html.Attributes
 import Mensam.Api.Login
 import Mensam.Api.SpaceList
+import Mensam.Auth.Bearer
 import Mensam.Color
 import Mensam.Element.Font
 import Mensam.Error
-import Mensam.Jwt
 
 
 type alias Model =
@@ -200,7 +200,7 @@ type MessageEffect
     | ChooseSpace { id : Int }
 
 
-spaceList : Mensam.Jwt.Jwt -> Cmd Message
+spaceList : Mensam.Auth.Bearer.Jwt -> Cmd Message
 spaceList jwt =
     Mensam.Api.SpaceList.request { jwt = jwt, order = [] } <|
         \result ->
