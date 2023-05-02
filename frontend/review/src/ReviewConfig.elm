@@ -11,9 +11,15 @@ when inside the directory containing this file.
 
 -}
 
+import NoDuplicatePorts
+import NoUnsafePorts
+import NoUnusedPorts
 import Review.Rule exposing (Rule)
 
 
 config : List Rule
 config =
-    []
+    [ NoDuplicatePorts.rule
+    , NoUnsafePorts.rule NoUnsafePorts.any
+    , NoUnusedPorts.rule
+    ]
