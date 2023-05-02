@@ -55,6 +55,7 @@
       src = ./.;
       buildPhase = ''
         elm-format --yes source
+        elm-format --yes review/src
       '';
       installPhase = ''
         mkdir $out
