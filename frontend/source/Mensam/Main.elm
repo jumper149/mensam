@@ -10,6 +10,7 @@ import Html.Attributes
 import Json.Encode
 import Mensam.Api.Logout
 import Mensam.Auth.Bearer
+import Mensam.Element
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
@@ -506,87 +507,65 @@ isExpired now authentication =
 
 view : Model -> Browser.Document Message
 view (MkModel model) =
-    { title = "Mensam"
-    , body =
-        [ Element.layout
-            [ Element.Background.gradient { angle = 0, steps = [ Mensam.Element.Color.dark.yellow, Mensam.Element.Color.bright.yellow ] }
-            , Element.Font.color Mensam.Element.Color.dark.black
-            , Element.Font.regular
-            , Element.Font.size 20
-            , Element.Font.family [ Mensam.Element.Font.sansSerif ]
+    Mensam.Element.document <|
+        Element.column
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            , Element.spacing 10
             ]
-          <|
-            Element.el
-                [ Element.htmlAttribute <| Html.Attributes.style "min-width" "393px"
-                , Element.htmlAttribute <| Html.Attributes.style "max-width" "851px"
-                , Element.htmlAttribute <| Html.Attributes.style "margin-left" "auto"
-                , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
-                , Element.width Element.fill
+            [ elementNavigationBar <| MkModel model
+            , Element.column
+                [ Element.width Element.fill
                 , Element.height Element.fill
-                , Element.Background.color Mensam.Element.Color.dark.black
-                , Element.Font.color Mensam.Element.Color.bright.white
+                , Element.padding 20
                 ]
-            <|
-                Element.column
-                    [ Element.width Element.fill
-                    , Element.height Element.fill
-                    , Element.spacing 10
-                    ]
-                    [ elementNavigationBar <| MkModel model
-                    , Element.column
-                        [ Element.width Element.fill
-                        , Element.height Element.fill
-                        , Element.padding 20
-                        ]
-                        [ case model.screen of
-                            ScreenLanding screenModel ->
-                                Element.el
-                                    [ Element.width Element.fill
-                                    , Element.height Element.fill
-                                    ]
-                                <|
-                                    Element.map MessageLanding <|
-                                        Mensam.Screen.Landing.element screenModel
+                [ case model.screen of
+                    ScreenLanding screenModel ->
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                        <|
+                            Element.map MessageLanding <|
+                                Mensam.Screen.Landing.element screenModel
 
-                            ScreenLogin screenModel ->
-                                Element.el
-                                    [ Element.width Element.fill
-                                    , Element.height Element.fill
-                                    ]
-                                <|
-                                    Element.map MessageLogin <|
-                                        Mensam.Screen.Login.element screenModel
+                    ScreenLogin screenModel ->
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                        <|
+                            Element.map MessageLogin <|
+                                Mensam.Screen.Login.element screenModel
 
-                            ScreenRegister screenModel ->
-                                Element.el
-                                    [ Element.width Element.fill
-                                    , Element.height Element.fill
-                                    ]
-                                <|
-                                    Element.map MessageRegister <|
-                                        Mensam.Screen.Register.element screenModel
+                    ScreenRegister screenModel ->
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                        <|
+                            Element.map MessageRegister <|
+                                Mensam.Screen.Register.element screenModel
 
-                            ScreenSpaces screenModel ->
-                                Element.el
-                                    [ Element.width Element.fill
-                                    , Element.height Element.fill
-                                    ]
-                                <|
-                                    Element.map MessageSpaces <|
-                                        Mensam.Screen.Spaces.element screenModel
+                    ScreenSpaces screenModel ->
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                        <|
+                            Element.map MessageSpaces <|
+                                Mensam.Screen.Spaces.element screenModel
 
-                            ScreenSpace screenModel ->
-                                Element.el
-                                    [ Element.width Element.fill
-                                    , Element.height Element.fill
-                                    ]
-                                <|
-                                    Element.map MessageSpace <|
-                                        Mensam.Screen.Space.element screenModel
-                        ]
-                    ]
-        ]
-    }
+                    ScreenSpace screenModel ->
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                        <|
+                            Element.map MessageSpace <|
+                                Mensam.Screen.Space.element screenModel
+                ]
+            ]
 
 
 subscriptions : Model -> Sub Message
