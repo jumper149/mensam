@@ -14,6 +14,17 @@ Use `elm-format` to format Elm.
 elm-format --yes source
 ----
 
+=== Linting
+
+Use `elm-review` to lint Elm.
+Unfortunately this doesn't work well with Nix, so this has to be called manually.
+
+[source,bash]
+----
+# Review Elm.
+elm-review
+----
+
 === Nix
 
 Elm dependencies are pinned in link:./elm-srcs.nix[elm-srcs.nix].
