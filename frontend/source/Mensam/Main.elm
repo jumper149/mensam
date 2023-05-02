@@ -149,41 +149,44 @@ init flags url navigationKey =
                         | errors = error :: modelInit.errors
                     }
     in
-    updates
-        [ update SetTimeZoneHere
-        , \(MkModel model) ->
-            ( MkModel model
-            , Task.perform
-                (\now ->
-                    Messages
-                        [ Auth <| CheckExpirationExplicit now
-                        , Raw <|
-                            \(MkModel m) ->
-                                case Url.Parser.parse urlParser url of
-                                    Nothing ->
-                                        update (SetUrl RouteLanding) (MkModel m)
+    update
+        (Messages
+            [ SetTimeZoneHere
+            , Raw <|
+                \(MkModel model) ->
+                    ( MkModel model
+                    , Task.perform
+                        (\now ->
+                            Messages
+                                [ Auth <| CheckExpirationExplicit now
+                                , Raw <|
+                                    \(MkModel m) ->
+                                        case Url.Parser.parse urlParser url of
+                                            Nothing ->
+                                                update (SetUrl RouteLanding) (MkModel m)
 
-                                    Just route ->
-                                        let
-                                            redirectedRoute =
-                                                case route of
-                                                    RouteLanding ->
-                                                        case m.authenticated of
-                                                            Nothing ->
-                                                                RouteLanding
+                                            Just route ->
+                                                let
+                                                    redirectedRoute =
+                                                        case route of
+                                                            RouteLanding ->
+                                                                case m.authenticated of
+                                                                    Nothing ->
+                                                                        RouteLanding
 
-                                                            Just _ ->
-                                                                RouteSpaces
+                                                                    Just _ ->
+                                                                        RouteSpaces
 
-                                                    _ ->
-                                                        route
-                                        in
-                                        update (SetUrl redirectedRoute) (MkModel m)
-                        ]
-                )
-                Time.now
-            )
-        ]
+                                                            _ ->
+                                                                route
+                                                in
+                                                update (SetUrl redirectedRoute) (MkModel m)
+                                ]
+                        )
+                        Time.now
+                    )
+            ]
+        )
     <|
         MkModel modelStorage
 
@@ -229,10 +232,12 @@ update message (MkModel model) =
             f <| MkModel model
 
         SetUrl route ->
-            updates
-                [ \m -> ( m, Browser.Navigation.pushUrl model.navigationKey <| routeToUrl route )
-                , update (SetModel route)
-                ]
+            update
+                (Messages
+                    [ Raw <| \m -> ( m, Browser.Navigation.pushUrl model.navigationKey <| routeToUrl route )
+                    , SetModel route
+                    ]
+                )
             <|
                 MkModel model
 
@@ -298,28 +303,31 @@ update message (MkModel model) =
             ( MkModel { model | authenticated = Nothing }, Mensam.Storage.unsetStorage )
 
         Auth Logout ->
-            updates
-                [ \(MkModel m) ->
-                    case m.authenticated of
-                        Nothing ->
-                            update EmptyMessage <| MkModel m
+            update
+                (Messages
+                    [ Raw <|
+                        \(MkModel m) ->
+                            case m.authenticated of
+                                Nothing ->
+                                    update EmptyMessage <| MkModel m
 
-                        Just { jwt } ->
-                            ( MkModel m
-                            , Mensam.Api.Logout.request { jwt = jwt } <|
-                                \response ->
-                                    case response of
-                                        Ok Mensam.Api.Logout.Success ->
-                                            Auth UnsetSession
+                                Just { jwt } ->
+                                    ( MkModel m
+                                    , Mensam.Api.Logout.request { jwt = jwt } <|
+                                        \response ->
+                                            case response of
+                                                Ok Mensam.Api.Logout.Success ->
+                                                    Auth UnsetSession
 
-                                        Ok (Mensam.Api.Logout.ErrorAuth error) ->
-                                            ReportError <| Mensam.Auth.Bearer.error error
+                                                Ok (Mensam.Api.Logout.ErrorAuth error) ->
+                                                    ReportError <| Mensam.Auth.Bearer.error error
 
-                                        Err error ->
-                                            ReportError <| Mensam.Error.http error
-                            )
-                , update (SetUrl <| RouteLanding)
-                ]
+                                                Err error ->
+                                                    ReportError <| Mensam.Error.http error
+                                    )
+                    , SetUrl <| RouteLanding
+                    ]
+                )
             <|
                 MkModel model
 
@@ -402,10 +410,12 @@ update message (MkModel model) =
                     update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
 
                 Mensam.Screen.Login.SetSession session ->
-                    updates
-                        [ update (Auth <| SetSession session)
-                        , update (SetUrl RouteSpaces)
-                        ]
+                    update
+                        (Messages
+                            [ Auth <| SetSession session
+                            , SetUrl RouteSpaces
+                            ]
+                        )
                     <|
                         MkModel model
 
@@ -806,17 +816,17 @@ errorNoAuth =
 
 
 updates : List (model -> ( model, Platform.Cmd.Cmd message )) -> model -> ( model, Platform.Cmd.Cmd message )
-updates x model =
-    case x of
+updates messages model =
+    case messages of
         [] ->
             ( model, Platform.Cmd.none )
 
-        u :: us ->
+        updateNow :: otherMessages ->
             let
-                ( modelU, cmdU ) =
-                    u model
+                ( modelUpdated, cmdUpdated ) =
+                    updateNow model
 
-                ( modelUs, cmdUs ) =
-                    updates us modelU
+                ( modelFinal, cmdFinal ) =
+                    updates otherMessages modelUpdated
             in
-            ( modelUs, Platform.Cmd.batch [ cmdU, cmdUs ] )
+            ( modelFinal, Platform.Cmd.batch [ cmdUpdated, cmdFinal ] )
