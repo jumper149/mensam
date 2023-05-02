@@ -28,7 +28,7 @@ error err =
                 Mensam.Error.message "Bad password" Mensam.Error.undefined
 
             ErrorIndefinite ->
-                Mensam.Error.message "Indefinite" Mensam.Error.undefined
+                Mensam.Error.undefined
 
 
 http401BodyDecoder : Json.Decode.Decoder Error

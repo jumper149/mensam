@@ -34,7 +34,7 @@ error err =
     Mensam.Error.message "Bearer authentication failed" <|
         case err of
             ErrorIndefinite ->
-                Mensam.Error.message "Indefinite" Mensam.Error.undefined
+                Mensam.Error.undefined
 
 
 http401BodyDecoder : Json.Decode.Decoder Error
