@@ -26,10 +26,8 @@ request body handleResult =
         { method = "POST"
         , headers =
             [ case body of
-                BasicAuth (Mensam.Auth.Basic.MkCredentials credentials) ->
-                    Http.header
-                        "Authorization"
-                        ("Basic " ++ Base64.encode (credentials.username ++ ":" ++ credentials.password))
+                BasicAuth credentials ->
+                    Mensam.Auth.Basic.authorizationHeader credentials
 
                 Bearer jwt ->
                     Mensam.Auth.Bearer.authorizationHeader jwt

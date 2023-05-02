@@ -1,5 +1,7 @@
 module Mensam.Auth.Basic exposing (..)
 
+import Base64
+import Http
 import Json.Decode
 import Mensam.Error
 
@@ -9,6 +11,13 @@ type Credentials
         { username : String
         , password : String
         }
+
+
+authorizationHeader : Credentials -> Http.Header
+authorizationHeader (MkCredentials credentials) =
+    Http.header
+        "Authorization"
+        ("Basic " ++ Base64.encode (credentials.username ++ ":" ++ credentials.password))
 
 
 type Error
