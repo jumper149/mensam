@@ -16,3 +16,5 @@
       **** [ ] Frontend (URL, screen, API, ...) should be able to handle this confirmation link.
 
 * [ ] `nixosConfigurations` can test the `nixosModule`.
+
+* [ ] Add loading screen to HTML wrapper for frontend.
