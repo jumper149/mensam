@@ -805,11 +805,11 @@ errorNoAuth =
     Mensam.Error.message "Can't make request without JWT" Mensam.Error.undefined
 
 
-updates : List (Model -> ( Model, Platform.Cmd.Cmd Message )) -> Model -> ( Model, Platform.Cmd.Cmd Message )
+updates : List (model -> ( model, Platform.Cmd.Cmd message )) -> model -> ( model, Platform.Cmd.Cmd message )
 updates x model =
     case x of
         [] ->
-            update EmptyMessage model
+            ( model, Platform.Cmd.none )
 
         u :: us ->
             let
