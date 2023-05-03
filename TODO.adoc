@@ -19,6 +19,8 @@
 
 * [ ] Add loading screen to HTML wrapper for frontend.
 
+* [ ] Add fallback HTML to be served from nginx when mensam-server is not running.
+
 * [ ] Frontend: Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
 
 * [ ] Frontend: Add link to source code somewhere on the landing page. Maybe in a footer?
