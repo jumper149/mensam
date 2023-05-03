@@ -561,15 +561,15 @@ view (MkModel model) =
         Element.column
             [ Element.width Element.fill
             , Element.height Element.fill
-            , Element.spacing 10
             ]
             [ Element.map (headerMessage <| MkModel model) <| Mensam.Element.Header.element <| headerContent <| MkModel model
-            , Element.column
+            , Element.el
                 [ Element.width Element.fill
                 , Element.height Element.fill
                 , Element.padding 20
                 ]
-                [ case model.screen of
+              <|
+                case model.screen of
                     ScreenLanding screenModel ->
                         Mensam.Element.screen MessageLanding <| Mensam.Screen.Landing.element screenModel
 
@@ -584,7 +584,6 @@ view (MkModel model) =
 
                     ScreenSpace screenModel ->
                         Mensam.Element.screen MessageSpace <| Mensam.Screen.Space.element screenModel
-                ]
             ]
 
 
