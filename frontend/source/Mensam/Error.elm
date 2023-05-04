@@ -1,4 +1,12 @@
-module Mensam.Error exposing (Error, group, http, message, toElement, toString, undefined)
+module Mensam.Error exposing
+    ( Error
+    , group
+    , http
+    , message
+    , toElement
+    , toString
+    , undefined
+    )
 
 import Element
 import Element.Font
