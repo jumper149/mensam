@@ -38,6 +38,10 @@
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeText "mensam.json" (builtins.toJSON config);
 
+  packages.x86_64-linux.fallback =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    writeText "fallback.html" (builtins.readFile ./fallback.html);
+
   deployment = builtins.fromJSON (builtins.readFile ./deployment.json);
 
   config =
@@ -54,6 +58,7 @@
         client = packages.x86_64-linux.mensam-client;
         init = packages.x86_64-linux.mensam-init;
         openapi = packages.x86_64-linux.mensam-openapi;
+        fallback = packages.x86_64-linux.fallback;
       };
       config.default = config;
     };
