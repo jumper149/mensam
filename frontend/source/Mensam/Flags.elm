@@ -12,7 +12,7 @@ import Mensam.Storage
 
 type Flags
     = MkFlags
-        { maybeStorage : Maybe Mensam.Storage.Storage
+        { storage : Maybe Mensam.Storage.Storage
         }
 
 
@@ -34,5 +34,5 @@ parse flagsRaw =
 
 decoder : Json.Decode.Decoder Flags
 decoder =
-    Json.Decode.map (\maybeStorage -> MkFlags { maybeStorage = maybeStorage })
-        Mensam.Storage.decoder
+    Json.Decode.map (\storage -> MkFlags { storage = storage })
+        (Json.Decode.field "storage" Mensam.Storage.decoder)

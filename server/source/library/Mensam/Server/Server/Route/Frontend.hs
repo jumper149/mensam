@@ -57,8 +57,11 @@ handler segments = do
       body $ do
         H.div ! H.A.id "mensam-frontend" $ ""
         script
-          "var storedData = localStorage.getItem('mensam-frontend-storage');\
-          \var flags = storedData ? JSON.parse(storedData) : null;\
+          "var storageName = 'mensam-frontend-storage';\
+          \var storageUnsafe = localStorage.getItem(storageName);\
+          \var flags = {\
+          \  storage: storageUnsafe ? JSON.parse(storageUnsafe) : null,\
+          \};\
           \\
           \var app = Elm.Main.init({\
           \  node: document.getElementById('mensam-frontend'),\
@@ -66,7 +69,7 @@ handler segments = do
           \});\
           \\
           \app.ports.setStorageJson.subscribe(function(state) {\
-          \  localStorage.setItem('mensam-frontend-storage', JSON.stringify(state));\
+          \  localStorage.setItem(storageName, JSON.stringify(state));\
           \});"
 
 hrefWithDepth ::

@@ -136,7 +136,7 @@ init flagsRaw url navigationKey =
         modelFlags =
             case Mensam.Flags.parse flagsRaw of
                 Ok (Mensam.Flags.MkFlags flags) ->
-                    case flags.maybeStorage of
+                    case flags.storage of
                         Just (Mensam.Storage.MkStorage storage) ->
                             { modelInit | authenticated = Just storage }
 
