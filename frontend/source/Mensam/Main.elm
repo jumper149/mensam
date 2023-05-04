@@ -9,6 +9,7 @@ import Mensam.Auth.Bearer
 import Mensam.Element
 import Mensam.Element.Header
 import Mensam.Error
+import Mensam.Flags
 import Mensam.Screen.Landing
 import Mensam.Screen.Login
 import Mensam.Screen.Register
@@ -117,8 +118,8 @@ onUrlChange _ =
     EmptyMessage
 
 
-init : Json.Encode.Value -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
-init flags url navigationKey =
+init : Mensam.Flags.FlagsRaw -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
+init flagsRaw url navigationKey =
     let
         modelInit =
             { navigationKey = navigationKey
@@ -132,13 +133,15 @@ init flags url navigationKey =
                 }
             }
 
-        modelStorage =
-            case Mensam.Storage.parse flags of
-                Ok (Just (Mensam.Storage.MkStorage storage)) ->
-                    { modelInit | authenticated = Just storage }
+        modelFlags =
+            case Mensam.Flags.parse flagsRaw of
+                Ok (Mensam.Flags.MkFlags flags) ->
+                    case flags.maybeStorage of
+                        Just (Mensam.Storage.MkStorage storage) ->
+                            { modelInit | authenticated = Just storage }
 
-                Ok Nothing ->
-                    modelInit
+                        Nothing ->
+                            modelInit
 
                 Err error ->
                     { modelInit
@@ -184,7 +187,7 @@ init flags url navigationKey =
             ]
         )
     <|
-        MkModel modelStorage
+        MkModel modelFlags
 
 
 type Message
