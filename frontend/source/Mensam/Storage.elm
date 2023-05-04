@@ -1,5 +1,6 @@
 port module Mensam.Storage exposing
     ( Storage(..)
+    , StorageRaw
     , parse
     , setStorage
     , unsetStorage

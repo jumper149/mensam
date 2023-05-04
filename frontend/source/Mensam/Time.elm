@@ -268,26 +268,26 @@ type MessageDay
 elementPickDay : ModelDay -> Element.Element MessageDay
 elementPickDay (MkModelDay model) =
     let
-        weekdayOfFirst =
-            Time.toWeekday Time.utc <|
-                toPosix Time.utc <|
-                    MkTimestamp
-                        { date =
-                            MkDate
-                                { year = model.year
-                                , month = model.month
-                                , day = MkDay 1
-                                }
-                        , time =
-                            MkTime
-                                { hour = MkHour 12
-                                , minute = MkMinute 0
-                                , second = MkSecond 0
-                                }
-                        }
-
         daysPre =
             let
+                weekdayOfFirst =
+                    Time.toWeekday Time.utc <|
+                        toPosix Time.utc <|
+                            MkTimestamp
+                                { date =
+                                    MkDate
+                                        { year = model.year
+                                        , month = model.month
+                                        , day = MkDay 1
+                                        }
+                                , time =
+                                    MkTime
+                                        { hour = MkHour 12
+                                        , minute = MkMinute 0
+                                        , second = MkSecond 0
+                                        }
+                                }
+
                 count =
                     case weekdayOfFirst of
                         Time.Mon ->
