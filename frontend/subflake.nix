@@ -17,22 +17,16 @@
         registryDat = ./registry.dat;
       };
 
-      installPhase =
-        let
-          outputJavaScript = false;
-          srcdir = "./source";
-          elmfile = module: "${srcdir}/${builtins.replaceStrings ["."] ["/"] module}.elm";
-          targets = ["Main"];
-        in ''
-          mkdir -p $out
+      installPhase = ''
+        mkdir -p $out
 
-          echo "Compile 'Main' module."
-          elm make ./source/Main.elm --output $out/main.js --optimize
+        echo "Compile 'Main' module."
+        elm make ./source/Main.elm --output $out/main.js --optimize
 
-          echo "Uglify 'main.js'."
-          uglifyjs $out/main.js --compress 'pure_funcs="F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9",pure_getters,keep_fargs=false,unsafe_comps,unsafe' | uglifyjs --mangle --output $out/frontend.js
-          rm $out/main.js
-        '';
+        echo "Uglify 'main.js'."
+        uglifyjs $out/main.js --compress 'pure_funcs="F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9",pure_getters,keep_fargs=false,unsafe_comps,unsafe' | uglifyjs --mangle --output $out/frontend.js
+        rm $out/main.js
+      '';
     };
 
   devShells.x86_64-linux.default =
