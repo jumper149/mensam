@@ -6,11 +6,30 @@ module Mensam.Server.Database.Schema where
 
 import Mensam.Server.Database.Extra
 
+import Data.ByteString qualified as BS
 import Data.Kind
 import Data.Maybe
 import Data.Text qualified as T
 import Database.Selda qualified as Selda
 import GHC.Generics
+
+type DbJwk :: Type
+data DbJwk = MkDbJwk
+  { dbJwk_id :: Selda.ID DbJwk
+  , dbJwk_jwk :: BS.ByteString
+  , dbJwk_created :: Selda.UTCTime
+  }
+  deriving stock (Generic, Show)
+  deriving anyclass (Selda.SqlRow)
+
+tableJwk :: Selda.Table DbJwk
+tableJwk =
+  Selda.tableFieldMod
+    "jwk"
+    [ #dbJwk_id Selda.:- Selda.autoPrimary
+    , #dbJwk_jwk Selda.:- Selda.unique
+    ]
+    (fromJust . T.stripPrefix "dbJwk_")
 
 type DbUser :: Type
 data DbUser = MkDbUser

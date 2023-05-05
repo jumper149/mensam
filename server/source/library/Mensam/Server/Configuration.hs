@@ -28,9 +28,8 @@ data Configuration = Configuration
     via A.CustomJSON (JSONSettings "" "config") Configuration
 
 type AuthConfig :: Type
-data AuthConfig = AuthConfig
-  { authJwkFilepath :: FilePath
-  , authTimeoutSeconds :: Maybe Integer
+newtype AuthConfig = AuthConfig
+  { authTimeoutSeconds :: Maybe Integer
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

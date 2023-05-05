@@ -33,8 +33,8 @@ type Transformers =
     :.|> EnvironmentT
     :.|> TimedLoggingT
     :.|> ConfiguredT
-    :.|> SecretT
     :.|> SeldaPoolT
+    :.|> SecretT
     :.|> EmailT
 
 type ApplicationT :: (Type -> Type) -> Type -> Type
@@ -46,12 +46,12 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
   deriving newtype (MonadLogger)
   deriving newtype (MonadConfigured)
-  deriving newtype (MonadSecret)
   deriving newtype (MonadSeldaPool)
+  deriving newtype (MonadSecret)
   deriving newtype (MonadEmail)
 
 runApplicationT ::
-  (MonadBaseControlIdentity IO m, MonadUnliftIO m) =>
+  (MonadBaseControlIdentity IO m, MonadMask m, MonadUnliftIO m) =>
   ApplicationT m a ->
   m a
 runApplicationT app = do
@@ -65,8 +65,8 @@ runApplicationT app = do
           :..> runAppTimedLoggingT
           . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
-          :..> runAppSecretT
           :..> runSeldaPoolT
+          :..> runAppSecretT
           :..> runAppEmailT
 
   runStackT runTransformers $ unApplicationT app

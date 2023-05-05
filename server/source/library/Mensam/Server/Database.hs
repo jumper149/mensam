@@ -19,6 +19,9 @@ createDatabase ::
 createDatabase = do
   logDebug "Creating database."
   result <- runSeldaTransactionT $ do
+    lift $ logDebug "Creating table 'jwk'."
+    Selda.createTable tableJwk
+
     lift $ logDebug "Creating table 'user'."
     Selda.createTable tableUser
 
