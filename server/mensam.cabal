@@ -66,6 +66,7 @@ common dependencies
     , monad-control-identity
     , monad-logger
     , mtl
+    , network
     , openapi3
     , optparse-applicative
     , password
@@ -85,6 +86,7 @@ common dependencies
     , servant-server
     , singletons
     , singletons-th
+    , smtp-mail
     , sop-core
     , text
     , time

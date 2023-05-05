@@ -3,7 +3,13 @@
   , "connection-pool-timeout-seconds": 10
   , "connection-pool-max-number-of-connections": 4
   }
-, "email-config": null
+, "email-config":
+  { "hostname": ""
+  , "port": 465
+  , "username": ""
+  , "password": ""
+  , "tls": true
+  }
 , "port": 8177
 , "base-url":
   { "scheme": "https"
