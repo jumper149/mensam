@@ -1,8 +1,9 @@
 = TODO
 
 * [ ] Initialize state automatically on startup.
-  ** [ ] Secrets: JWK
-  ** [ ] SQLite Database
+  ** [x] Secrets: JWK
+  ** [x] SQLite Database
+  ** [ ] Remove old `mensam-init`, which is redundant now.
 
 * [ ] Run weeder as part of `nix flake check`.
 
