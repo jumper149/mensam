@@ -8,7 +8,7 @@ BUILT_ICONS = $(patsubst $(SOURCE)%, $(BUILD)%, $(ICONS))
 BUILT_FILES =
 
 .PHONY: all
-all: $(BUILD)/favicon.ico $(BUILD)/favicon.png $(BUILT_FAVICONS) $(BUILD)/fonts.css $(BUILD)/redoc.css $(BUILT_ICONS) $(BUILT_FILES)
+all: $(BUILD)/favicon.ico $(BUILD)/favicon.png $(BUILT_FAVICONS) $(BUILD)/fonts.css $(BUILD)/redoc.css $(BUILD)/fallback.html $(BUILT_ICONS) $(BUILT_FILES)
 
 $(BUILD)/favicon.ico: $(BUILD)/favicon.png $(BUILD)
 	cp "$<" "$@"
@@ -23,6 +23,9 @@ $(BUILD)/fonts.css: $(SOURCE)/fonts.css $(BUILD)
 	cp "$<" "$@"
 
 $(BUILD)/redoc.css: $(SOURCE)/redoc.css $(BUILD)
+	cp "$<" "$@"
+
+$(BUILD)/fallback.html: $(SOURCE)/fallback.html $(BUILD)
 	cp "$<" "$@"
 
 $(BUILT_ICONS): $(BUILD)/icons/%: $(SOURCE)/icons/% $(BUILD)/icons

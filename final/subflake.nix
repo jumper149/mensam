@@ -40,12 +40,7 @@
 
   packages.x86_64-linux.fallback =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    writeTextFile {
-      name = "fallback.html";
-      text = builtins.readFile ./fallback.html;
-      executable = false;
-      destination = "/fallback.html";
-    };
+    self.subflakes.static.packages.x86_64-linux.default;
 
   deployment = builtins.fromJSON (builtins.readFile ./deployment.json);
 
