@@ -3,7 +3,7 @@
 __**A desk-booking web application.**__
 
 ****
-Public instance:: https://mensam.felixspringer.xyz[**mensam.felixspringer.xyz**]
+Public instance:: https://mens.am[**mens.am**]
 +
 [CAUTION]
 ====
@@ -13,7 +13,7 @@ Data will be carefully migrated after the first actual release.
 ====
 
 OpenAPI specification::
-https://mensam.felixspringer.xyz/openapi[Rendered] or https://mensam.felixspringer.xyz/api/openapi[JSON]
+https://mens.am/openapi[Rendered] or https://mens.am/api/openapi[JSON]
 ****
 
 ____
@@ -32,7 +32,7 @@ __This section describes the goal of an MVP.__
 
 === Setup
 
-As the operator you simply visit an instance of Mensam, such as https://mensam.felixspringer.xyz[mensam.felixspringer.xyz].
+As the operator you simply visit an instance of Mensam, such as https://mens.am[mens.am].
 
 First you will have to create a __User__ account for yourself.
 Now you create a new __Space__ for your location.

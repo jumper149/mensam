@@ -8,7 +8,7 @@
 , "base-url":
   { "scheme": "https"
   , "authority":
-    { "host": "mensam.felixspringer.xyz"
+    { "host": "mens.am"
     , "port": null
     }
   , "path": []
