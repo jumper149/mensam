@@ -6,6 +6,7 @@ import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Configuration
 import Mensam.Server.Configuration.SQLite
+import Mensam.Server.Database
 
 import Control.Monad.Catch
 import Control.Monad.IO.Unlift
@@ -21,6 +22,7 @@ import Data.Text qualified as T
 import Database.Selda
 import Database.Selda.Backend
 import Database.Selda.SQLite
+import System.Posix.Files
 
 type SeldaPoolT :: (Type -> Type) -> Type -> Type
 newtype SeldaPoolT m a = SeldaPoolT {unSeldaPoolT :: ReaderT SeldaPoolContext m a}
@@ -28,6 +30,10 @@ newtype SeldaPoolT m a = SeldaPoolT {unSeldaPoolT :: ReaderT SeldaPoolContext m 
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
   deriving newtype (MonadIO)
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
+  deriving newtype
+    ( -- | TODO: We shouldn't need this instance.
+      MonadLogger
+    )
 
 instance (MonadLogger m, MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaPoolT m) where
   runSeldaTransactionT tma = do
@@ -64,7 +70,7 @@ deriving via
   instance
     (MonadLogger (t2 m), MonadMask (t2 m), MonadUnliftIO (t2 m), MonadIO (ComposeT SeldaPoolT t2 m)) => MonadSeldaPool (ComposeT SeldaPoolT t2 m)
 
-runSeldaPoolT :: (MonadConfigured m, MonadLogger m, MonadUnliftIO m) => SeldaPoolT m a -> m a
+runSeldaPoolT :: (MonadConfigured m, MonadLogger m, MonadMask m, MonadUnliftIO m) => SeldaPoolT m a -> m a
 runSeldaPoolT tma = do
   logDebug "Initializing SQLite connection pool for Selda."
   config <- configSqlite <$> configuration
@@ -94,7 +100,16 @@ runSeldaPoolT tma = do
           { seldaConnectionPool = pool
           , seldaAlreadyInTransaction = False
           }
-  runReaderT (unSeldaPoolT tma) context
+  (`runReaderT` context) $ unSeldaPoolT $ do
+    lift $ logDebug "Checking SQLite file."
+    sqliteExists <- liftIO $ fileExist $ sqliteFilepath config
+    if sqliteExists
+      then lift $ logDebug "SQLite file exists."
+      else do
+        lift $ logDebug "SQLite file doesn't exist."
+        lift $ logInfo "Creating new SQLite database file."
+        createDatabase
+    tma
 
 type SeldaPoolContext :: Type
 data SeldaPoolContext = MkSeldaPoolContext
