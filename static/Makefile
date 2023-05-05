@@ -1,4 +1,4 @@
-SOURCE = static
+SOURCE = source
 BUILD = build
 ICONS = $(wildcard $(SOURCE)/icons/*)
 FAVICON_RESOLUTIONS = 32x32 192x192 512x512
