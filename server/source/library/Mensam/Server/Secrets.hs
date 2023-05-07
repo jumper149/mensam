@@ -20,18 +20,6 @@ newtype Secrets = MkSecrets
   { secretsJwk :: JOSE.JWK
   }
 
-initSecrets ::
-  ( MonadSeldaPool m
-  , MonadLogger m
-  ) =>
-  m ()
-initSecrets = do
-  logDebug "Initializing JWK."
-  seldaResult <- runSeldaTransactionT jwkSetLatest
-  case seldaResult of
-    SeldaFailure err -> logError $ "Failed to initialize JWK: " <> T.pack (show err)
-    SeldaSuccess _ -> logInfo "Initialized JWK."
-
 jwkGetLatest ::
   ( MonadSeldaPool m
   , MonadLogger m
