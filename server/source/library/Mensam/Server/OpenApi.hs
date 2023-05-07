@@ -92,6 +92,7 @@ deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBod
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
 deriving via A.CustomJSON (JSONSettings "Mk" "user") User instance ToSchema User
 deriving newtype instance ToSchema IdentifierUser
+deriving newtype instance ToSchema ConfirmationSecret
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
 deriving newtype instance ToSchema IdentifierSpace
 deriving newtype instance ToSchema NameSpace

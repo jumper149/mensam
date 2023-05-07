@@ -182,10 +182,14 @@ register eitherRequest =
 
 confirm ::
   ( MonadEmail m
+  , MonadIO m
   , MonadLogger m
+  , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseConfirm) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 410 ()) responses
+  , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
   Either String RequestConfirm ->
@@ -197,12 +201,29 @@ confirm auth eitherRequest =
         logInfo $ "Failed to parse request: " <> T.pack (show err)
         respond $ WithStatus @400 $ MkErrorParseBodyJson err
       Right request@MkRequestConfirm {requestConfirmSecret} -> do
-        logDebug "Confirming email."
-        respond $
-          WithStatus @200
-            MkResponseConfirm
-              { responseConfirmUnit = ()
-              }
+        logDebug $ "Running confirmation: " <> T.pack (show request)
+        seldaResult <-
+          runSeldaTransactionT $
+            userConfirmationConfirm (userAuthenticatedId authenticated) requestConfirmSecret
+        case seldaResult of
+          SeldaFailure _err -> do
+            -- TODO: Here we can theoretically return a more accurate error
+            logWarn "Failed to confirm due to database error."
+            respond $ WithStatus @500 ()
+          SeldaSuccess (Left err) -> do
+            logInfo "Failed to confirm."
+            case err of
+              MkConfirmationErrorExpired ->
+                respond $ WithStatus @410 ()
+              MkConfirmationErrorEffectInvalid ->
+                respond $ WithStatus @500 ()
+          SeldaSuccess (Right ()) -> do
+            logInfo "Ran confirmation."
+            respond $
+              WithStatus @200
+                MkResponseConfirm
+                  { responseConfirmUnit = ()
+                  }
 
 profile ::
   ( MonadIO m

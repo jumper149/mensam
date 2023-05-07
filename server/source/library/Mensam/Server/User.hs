@@ -2,6 +2,7 @@
 
 module Mensam.Server.User where
 
+import Mensam.API.Aeson
 import Mensam.API.Data.User
 import Mensam.API.Data.User.Username
 import Mensam.Server.Application.SeldaPool.Class
@@ -11,11 +12,15 @@ import Mensam.Server.Database.Schema
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
+import Data.Aeson qualified as A
 import Data.Kind
 import Data.Password.Bcrypt
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
+import Data.Text.Lazy.Encoding qualified as TL
 import Data.Time qualified as T
 import Database.Selda qualified as Selda
+import Deriving.Aeson qualified as A
 import GHC.Generics
 import Text.Email.Parser
 import Text.Email.Text
@@ -225,3 +230,65 @@ userSessionDelete identifier = do
       let message = "Critical failure when trying to delete a single session. Multiple sessions have been deleted: " <> T.pack (show n)
       lift $ logError message
       error $ T.unpack message
+
+userConfirmationConfirm ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierUser ->
+  ConfirmationSecret ->
+  SeldaTransactionT m (Either ConfirmationError ())
+userConfirmationConfirm identifier secret = do
+  lift $ logDebug $ "Attempting confirmation: " <> T.pack (show (identifier, secret))
+  dbConfirmation <- Selda.queryOne $ do
+    dbConfirmation <- Selda.select tableConfirmation
+    Selda.restrict $
+      (dbConfirmation Selda.! #dbConfirmation_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser identifier))
+        Selda..&& (dbConfirmation Selda.! #dbConfirmation_secret Selda..== Selda.literal (unConfirmationSecret secret))
+    pure dbConfirmation
+  currentTime <- lift $ liftIO T.getCurrentTime
+  if currentTime >= dbConfirmation_expired dbConfirmation
+    then do
+      lift $ logInfo $ "Confirmation has already expired: " <> T.pack (show $ dbConfirmation_expired dbConfirmation)
+      pure $ Left MkConfirmationErrorExpired
+    else do
+      lift $ logDebug $ "Parsing confirmation effect: " <> T.pack (show $ dbConfirmation_effect dbConfirmation)
+      case A.eitherDecode $ TL.encodeUtf8 $ TL.fromStrict $ dbConfirmation_secret dbConfirmation of
+        Left err -> do
+          lift $ logError $ "Failed to parse confirmation effect: " <> T.pack (show err)
+          pure $ Left MkConfirmationErrorEffectInvalid
+        Right effect -> do
+          lift $ logInfo "Looked up confirmation. Running effect."
+          case effect of
+            MkConfirmationEffectEmailValidation -> do
+              lift $ logDebug "Confirming email address."
+              -- TODO: Implement email confirmation.
+              lift $ logDebug "Confirmed email address."
+              pure ()
+          lift $ logDebug "Deleting confirmation."
+          count <- Selda.deleteFrom tableConfirmation $ \dbConfirmation' ->
+            dbConfirmation' Selda.! #dbConfirmation_id Selda..== Selda.literal (dbConfirmation_id dbConfirmation)
+          case count of
+            1 -> do
+              lift $ logInfo "Deleted confirmation successfully."
+              pure $ Right ()
+            0 -> do
+              let message :: T.Text = "Failed to delete confirmation. No confirmation deleted."
+              lift $ logWarn message
+              error $ T.unpack message
+            n -> do
+              let message :: T.Text = "Critical failure when trying to delete a single confirmation. Multiple confirmations have been deleted: " <> T.pack (show n)
+              lift $ logError message
+              error $ T.unpack message
+
+type ConfirmationError :: Type
+data ConfirmationError
+  = MkConfirmationErrorExpired
+  | MkConfirmationErrorEffectInvalid
+  deriving stock (Eq, Generic, Ord, Read, Show)
+
+type ConfirmationEffect :: Type
+data ConfirmationEffect
+  = MkConfirmationEffectEmailValidation
+  deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkConfirmationEffect" "") ConfirmationEffect

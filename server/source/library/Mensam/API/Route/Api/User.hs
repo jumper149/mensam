@@ -141,7 +141,7 @@ newtype ResponseRegister = MkResponseRegister
 
 type RequestConfirm :: Type
 newtype RequestConfirm = MkRequestConfirm
-  { requestConfirmSecret :: ()
+  { requestConfirmSecret :: ConfirmationSecret
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

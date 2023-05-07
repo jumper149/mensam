@@ -6,6 +6,7 @@ import Mensam.API.Data.User.Username
 import Data.Aeson qualified as A
 import Data.Int
 import Data.Kind
+import Data.Text qualified as T
 import Data.Time qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
@@ -51,6 +52,11 @@ data Session = MkSession
 
 type IdentifierSession :: Type
 newtype IdentifierSession = MkIdentifierSession {unIdentifierSession :: Int64}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
+
+type ConfirmationSecret :: Type
+newtype ConfirmationSecret = MkConfirmationSecret {unConfirmationSecret :: T.Text}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
 

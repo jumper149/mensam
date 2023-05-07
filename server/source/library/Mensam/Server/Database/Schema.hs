@@ -59,6 +59,27 @@ tableUser =
     ]
     (fromJust . T.stripPrefix "dbUser_")
 
+type DbConfirmation :: Type
+data DbConfirmation = MkDbConfirmation
+  { dbConfirmation_id :: Selda.ID DbConfirmation
+  , dbConfirmation_user :: Selda.ID DbUser
+  , dbConfirmation_secret :: Selda.Text
+  , dbConfirmation_expired :: Selda.UTCTime
+  , dbConfirmation_effect :: Selda.Text
+  }
+  deriving stock (Generic, Show)
+  deriving anyclass (Selda.SqlRow)
+
+tableConfirmation :: Selda.Table DbConfirmation
+tableConfirmation =
+  Selda.tableFieldMod
+    "confirmation"
+    [ #dbConfirmation_id Selda.:- Selda.autoPrimary
+    , #dbConfirmation_user Selda.:- Selda.foreignKey tableUser #dbUser_id
+    , #dbConfirmation_secret Selda.:+ #dbConfirmation_user Selda.:- Selda.unique
+    ]
+    (fromJust . T.stripPrefix "dbConfirmation_")
+
 type DbSession :: Type
 data DbSession = MkDbSession
   { dbSession_id :: Selda.ID DbSession
