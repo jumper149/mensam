@@ -3,13 +3,14 @@
 * [ ] Run weeder as part of `nix flake check`.
 
 * [ ] Email backend.
-  ** [ ] Implement `EmailT` with an instance `MonadEmail`.
-  ** [ ] Send a mail on registration.
+  ** [x] Implement `EmailT` with an instance `MonadEmail`.
+  ** [x] Send a mail on registration.
     *** [ ] The registration mail may include a link to confirm the user's email.
       **** The registration should still be considered complete, even when the confirmation didn't happen yet. User's don't want to look into their mails before booking a desk.
       **** [ ] Database column in user table to track email confirmation.
       **** [ ] New backend route to handle this confirmation
       **** [ ] Frontend (URL, screen, API, ...) should be able to handle this confirmation link.
+  ** [ ] Make emails look good instead of sending just plain text.
 
 * [ ] `nixosConfigurations` can test the `nixosModule`.
 
