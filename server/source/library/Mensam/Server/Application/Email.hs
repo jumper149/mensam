@@ -15,7 +15,10 @@ import Control.Monad.Trans.Control.Identity
 import Control.Monad.Trans.Reader
 import Data.Kind
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
+import Network.Mail.Mime
 import Network.Mail.SMTP
+import Text.Email.Text
 
 type EmailT :: (Type -> Type) -> Type -> Type
 newtype EmailT m a = MkEmailT {unEmailT :: ReaderT (Maybe EmailConfig) m a}
@@ -30,10 +33,29 @@ instance (MonadIO m, MonadLogger m) => MonadEmail (EmailT m) where
       Nothing -> do
         lift $ logWarn "A requested email was not sent."
       Just MkEmailConfig {emailHostname, emailPort, emailUsername, emailPassword, emailTls} -> do
-        let port = toEnum $ fromEnum emailPort
+        let
+          port = toEnum $ fromEnum emailPort
+          mimeMail =
+            Mail
+              { mailFrom =
+                  Address
+                    { addressName = Just "Mensam Notifier"
+                    , addressEmail = T.pack emailUsername
+                    }
+              , mailTo =
+                  [ Address
+                      { addressName = Nothing
+                      , addressEmail = toText $ emailRecipient email
+                      }
+                  ]
+              , mailCc = []
+              , mailBcc = []
+              , mailHeaders = []
+              , mailParts = [[plainPart $ TL.fromStrict $ emailBody email]]
+              }
         if emailTls
-          then lift . liftIO $ sendMailWithLoginTLS' emailHostname port emailUsername emailPassword email
-          else lift . liftIO $ sendMailWithLogin' emailHostname port emailUsername emailPassword email
+          then lift . liftIO $ sendMailWithLoginTLS' emailHostname port emailUsername emailPassword mimeMail
+          else lift . liftIO $ sendMailWithLogin' emailHostname port emailUsername emailPassword mimeMail
         lift $ logInfo "Sent an email."
 
 deriving via

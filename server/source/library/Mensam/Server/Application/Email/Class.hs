@@ -4,11 +4,13 @@ import Control.Monad.Trans.Class
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Elevator
 import Data.Kind
-import Network.Mail.Mime
+import Data.Text qualified as T
+import GHC.Generics
+import Text.Email.Parser
 
 type MonadEmail :: (Type -> Type) -> Constraint
 class Monad m => MonadEmail m where
-  sendEmail :: Mail -> m ()
+  sendEmail :: Email -> m ()
 
 instance
   ( Monad (t m)
@@ -28,3 +30,10 @@ deriving via
     , MonadEmail (t2 m)
     ) =>
     MonadEmail (ComposeT t1 t2 m)
+
+type Email :: Type
+data Email = MkEmail
+  { emailRecipient :: EmailAddress
+  , emailBody :: T.Text
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)

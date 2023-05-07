@@ -5,6 +5,7 @@ import Mensam.API.Data.User
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.User
 import Mensam.Server.Application.Configured.Class
+import Mensam.Server.Application.Email.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Configuration
@@ -24,7 +25,7 @@ import Servant.Auth.Server
 import Servant.Server.Generic
 
 handler ::
-  (MonadConfigured m, MonadIO m, MonadLogger m, MonadSecret m, MonadSeldaPool m) =>
+  (MonadConfigured m, MonadEmail m, MonadIO m, MonadLogger m, MonadSecret m, MonadSeldaPool m) =>
   Routes (AsServerT m)
 handler =
   Routes
@@ -130,7 +131,8 @@ logout auth =
                   }
 
 register ::
-  ( MonadIO m
+  ( MonadEmail m
+  , MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseRegister) responses
@@ -160,6 +162,12 @@ register eitherRequest =
           respond $ WithStatus @500 ()
         SeldaSuccess _userIdentifier -> do
           logInfo "Registered new user."
+          logDebug "Sending confirmation email."
+          sendEmail
+            MkEmail
+              { emailRecipient = requestRegisterEmail
+              , emailBody = "You have been registered successfully."
+              }
           respond $
             WithStatus @201
               MkResponseRegister

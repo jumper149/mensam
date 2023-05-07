@@ -2,6 +2,7 @@ module Mensam.Server.Server.Route.Api where
 
 import Mensam.API.Route.Api
 import Mensam.Server.Application.Configured.Class
+import Mensam.Server.Application.Email.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Server.Route.Api.Booking qualified
@@ -13,7 +14,7 @@ import Control.Monad.Logger.CallStack
 import Servant.Server.Generic
 
 handler ::
-  (MonadConfigured m, MonadLogger m, MonadSecret m, MonadSeldaPool m, MonadUnliftIO m) =>
+  (MonadConfigured m, MonadEmail m, MonadLogger m, MonadSecret m, MonadSeldaPool m, MonadUnliftIO m) =>
   Routes (AsServerT m)
 handler =
   Routes
