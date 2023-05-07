@@ -1,10 +1,5 @@
 = TODO
 
-* [ ] Initialize state automatically on startup.
-  ** [x] Secrets: JWK
-  ** [x] SQLite Database
-  ** [ ] Remove old `mensam-init`, which is redundant now.
-
 * [ ] Run weeder as part of `nix flake check`.
 
 * [ ] Email backend.

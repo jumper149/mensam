@@ -6,9 +6,6 @@ cradle:
     - path: "source/executable/test/Main.hs"
       component: "mensam:exe:mensam-test"
 
-    - path: "source/executable/init/Main.hs"
-      component: "mensam:exe:mensam-init"
-
     - path: "source/executable/openapi/Main.hs"
       component: "mensam:exe:mensam-openapi"
 

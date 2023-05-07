@@ -6,14 +6,6 @@
       MENSAM_CONFIG_FILE="${packages.x86_64-linux.config}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server
     '';
 
-  packages.x86_64-linux.mensam-init =
-    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    writeScriptBin "mensam-init-full" ''
-      export MENSAM_CONFIG_FILE="${packages.x86_64-linux.config}"
-      export MENSAM_LOG_LEVEL=LevelWarn
-      ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-init
-    '';
-
   packages.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-test-full" ''
@@ -56,7 +48,6 @@
       full = {
         server = packages.x86_64-linux.default;
         client = packages.x86_64-linux.mensam-client;
-        init = packages.x86_64-linux.mensam-init;
         openapi = packages.x86_64-linux.mensam-openapi;
         fallback = packages.x86_64-linux.fallback;
       };
@@ -75,20 +66,6 @@
       src = ./.;
       buildPhase = ''
         set +e
-        INIT_LOG="$(mensam-init-full || echo "Server initialization exited abnormally.")"
-        set -e
-        echo "$INIT_LOG"
-
-        if [ -z "$INIT_LOG" ];
-        then
-          echo "Successfully checked initialization log."
-        else
-          echo "Warnings/Errors/Unknowns detected in initialization log."
-          echo "$INIT_LOG"
-          exit 1
-        fi
-
-        set +e
         TEST_LOG="$(mensam-test-full || echo "Server test exited abnormally.")"
         set -e
         echo "$TEST_LOG"
@@ -106,7 +83,6 @@
         mkdir $out
       '';
       buildInputs = [
-        packages.x86_64-linux.mensam-init
         packages.x86_64-linux.mensam-test
       ];
     };
