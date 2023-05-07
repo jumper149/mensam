@@ -149,7 +149,12 @@ elementErrors errors unfoldErrors =
                         Element.column
                             [ Element.width <| Element.px 200
                             , Element.alignRight
-                            , Element.padding 12
+                            , Element.paddingEach
+                                { top = 19
+                                , right = 12
+                                , bottom = 12
+                                , left = 12
+                                }
                             , Element.spacing 10
                             , Element.Background.color Mensam.Element.Color.bright.black
                             , Element.Font.color Mensam.Element.Color.bright.white
