@@ -163,15 +163,20 @@ register eitherRequest =
         SeldaSuccess _userIdentifier -> do
           logInfo "Registered new user."
           logDebug "Sending confirmation email."
-          sendEmail
-            MkEmail
-              { emailRecipient = requestRegisterEmail
-              , emailBody = "You have been registered successfully."
-              }
+          sendEmailResult <-
+            sendEmail
+              MkEmail
+                { emailRecipient = requestRegisterEmail
+                , emailBody = "You have been registered successfully."
+                }
+          let emailSent =
+                case sendEmailResult of
+                  EmailSent -> True
+                  EmailFailedToSend -> False
           respond $
             WithStatus @201
               MkResponseRegister
-                { responseRegisterEmailSent = False
+                { responseRegisterEmailSent = emailSent
                 }
 
 profile ::

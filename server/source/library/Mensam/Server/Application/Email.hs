@@ -7,6 +7,7 @@ import Mensam.Server.Application.Email.Class
 import Mensam.Server.Configuration
 import Mensam.Server.Configuration.Email
 
+import Control.Exception
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
@@ -32,6 +33,7 @@ instance (MonadIO m, MonadLogger m) => MonadEmail (EmailT m) where
     case maybeEmailConfig of
       Nothing -> do
         lift $ logWarn "A requested email was not sent."
+        pure EmailFailedToSend
       Just MkEmailConfig {emailHostname, emailPort, emailUsername, emailPassword, emailTls} -> do
         let
           port = toEnum $ fromEnum emailPort
@@ -53,10 +55,18 @@ instance (MonadIO m, MonadLogger m) => MonadEmail (EmailT m) where
               , mailHeaders = []
               , mailParts = [[plainPart $ TL.fromStrict $ emailBody email]]
               }
-        if emailTls
-          then lift . liftIO $ sendMailWithLoginTLS' emailHostname port emailUsername emailPassword mimeMail
-          else lift . liftIO $ sendMailWithLogin' emailHostname port emailUsername emailPassword mimeMail
-        lift $ logInfo "Sent an email."
+        sendMailResult <-
+          lift . liftIO . try $
+            if emailTls
+              then sendMailWithLoginTLS' emailHostname port emailUsername emailPassword mimeMail
+              else sendMailWithLogin' emailHostname port emailUsername emailPassword mimeMail
+        case sendMailResult of
+          Left (err :: SomeException) -> do
+            lift $ logWarn $ "Failed to send an email: " <> T.pack (show err)
+            pure EmailFailedToSend
+          Right () -> do
+            lift $ logInfo "Sent an email."
+            pure EmailSent
 
 deriving via
   EmailT ((t2 :: (Type -> Type) -> Type -> Type) m)

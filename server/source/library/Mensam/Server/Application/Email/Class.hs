@@ -10,7 +10,7 @@ import Text.Email.Parser
 
 type MonadEmail :: (Type -> Type) -> Constraint
 class Monad m => MonadEmail m where
-  sendEmail :: Email -> m ()
+  sendEmail :: Email -> m SendEmailResult
 
 instance
   ( Monad (t m)
@@ -37,3 +37,8 @@ data Email = MkEmail
   , emailBody :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
+
+type SendEmailResult :: Type
+data SendEmailResult
+  = EmailSent
+  | EmailFailedToSend
