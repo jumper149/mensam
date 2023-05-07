@@ -41,7 +41,7 @@ instance (MonadIO m, MonadLogger m) => MonadEmail (EmailT m) where
             Mail
               { mailFrom =
                   Address
-                    { addressName = Just "Mensam Notifier"
+                    { addressName = Just "Mensam"
                     , addressEmail = T.pack emailUsername
                     }
               , mailTo =
