@@ -32,6 +32,7 @@ handler =
     { routeLogin = login
     , routeLogout = logout
     , routeRegister = register
+    , routeConfirm = confirm
     , routeProfile = profile
     }
 
@@ -178,6 +179,30 @@ register eitherRequest =
               MkResponseRegister
                 { responseRegisterEmailSent = emailSent
                 }
+
+confirm ::
+  ( MonadEmail m
+  , MonadLogger m
+  , IsMember (WithStatus 200 ResponseConfirm) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestConfirm ->
+  m (Union responses)
+confirm auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    case eitherRequest of
+      Left err -> do
+        logInfo $ "Failed to parse request: " <> T.pack (show err)
+        respond $ WithStatus @400 $ MkErrorParseBodyJson err
+      Right request@MkRequestConfirm {requestConfirmSecret} -> do
+        logDebug "Confirming email."
+        respond $
+          WithStatus @200
+            MkResponseConfirm
+              { responseConfirmUnit = ()
+              }
 
 profile ::
   ( MonadIO m

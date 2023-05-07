@@ -61,6 +61,21 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 500 ()
               ]
+  , routeConfirm ::
+      route
+        :- Summary "Confirm"
+          :> Description
+              "Confirm your email address.\n"
+          :> "confirm"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestConfirm
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseConfirm
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              ]
   , routeProfile ::
       route
         :- Summary "Request User Profile"
@@ -123,6 +138,24 @@ newtype ResponseRegister = MkResponseRegister
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseRegister") ResponseRegister
+
+type RequestConfirm :: Type
+newtype RequestConfirm = MkRequestConfirm
+  { requestConfirmSecret :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestConfirm") RequestConfirm
+
+type ResponseConfirm :: Type
+newtype ResponseConfirm = MkResponseConfirm
+  { responseConfirmUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseConfirm") ResponseConfirm
 
 type ResponseProfile :: Type
 data ResponseProfile = MkResponseProfile

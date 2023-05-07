@@ -74,6 +74,16 @@ endpointRegister ::
          , WithStatus 500 ()
          ]
     )
+endpointConfirm ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.User.RequestConfirm ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.User.ResponseConfirm
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         ]
+    )
 endpointProfile ::
   Username ->
   ClientM
@@ -161,6 +171,7 @@ Route.Api.Routes
       { Route.Api.User.routeLogin = endpointLogin
       , Route.Api.User.routeLogout = endpointLogout
       , Route.Api.User.routeRegister = endpointRegister
+      , Route.Api.User.routeConfirm = endpointConfirm
       , Route.Api.User.routeProfile = endpointProfile
       }
   , Route.Api.routeBooking =
