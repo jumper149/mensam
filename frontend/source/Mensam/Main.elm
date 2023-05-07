@@ -374,10 +374,21 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
-                Mensam.Screen.Register.Submitted ->
+                Mensam.Screen.Register.Submitted { emailSent } ->
                     case model.screen of
                         ScreenRegister screenModel ->
-                            update (SetUrl <| RouteLogin <| Just { username = screenModel.username, password = screenModel.password, hint = "" }) <| MkModel model
+                            update
+                                (Messages
+                                    [ SetUrl <| RouteLogin <| Just { username = screenModel.username, password = screenModel.password, hint = "" }
+                                    , if emailSent then
+                                        EmptyMessage
+
+                                      else
+                                        ReportError <| Mensam.Error.message "Failed to send confirmation email" Mensam.Error.undefined
+                                    ]
+                                )
+                            <|
+                                MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model

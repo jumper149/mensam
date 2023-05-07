@@ -69,7 +69,7 @@ endpointRegister ::
   Route.Api.User.RequestRegister ->
   ClientM
     ( Union
-        '[ WithStatus 201 ()
+        '[ WithStatus 201 Route.Api.User.ResponseRegister
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 500 ()
          ]

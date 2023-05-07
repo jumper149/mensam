@@ -161,7 +161,7 @@ handleEvent chan = \case
       ClientEventSendRequestRegister request -> do
         result <- runApplicationT chan $ mensamCall $ endpointRegister request
         case result of
-          Right (Z (I (WithStatus @201 ()))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenLogin
+          Right (Z (I (WithStatus @201 (Route.User.MkResponseRegister _)))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenLogin
           err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
       ClientEventSendRequestCreateSpace request -> do
         clientState <- get

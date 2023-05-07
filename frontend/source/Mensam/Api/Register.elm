@@ -16,6 +16,8 @@ type alias Request =
 
 type Response
     = Success
+        { emailSent : Bool
+        }
     | ErrorBody String
 
 
@@ -66,8 +68,8 @@ responseResult httpResponse =
             case metadata.statusCode of
                 201 ->
                     case Json.Decode.decodeString decodeBody201 body of
-                        Ok () ->
-                            Ok <| Success
+                        Ok value ->
+                            Ok <| Success value
 
                         Err err ->
                             Err <| Http.BadBody <| Json.Decode.errorToString err
@@ -86,18 +88,10 @@ encodeBody body =
         ]
 
 
-decodeBody201 : Json.Decode.Decoder ()
+decodeBody201 : Json.Decode.Decoder { emailSent : Bool }
 decodeBody201 =
-    Json.Decode.list (Json.Decode.succeed ())
-        |> Json.Decode.andThen
-            (\x ->
-                case x of
-                    [] ->
-                        Json.Decode.succeed ()
-
-                    _ ->
-                        Json.Decode.fail "Trying to decode empty list, but list has elements."
-            )
+    Json.Decode.map (\emailSent -> { emailSent = emailSent })
+        (Json.Decode.field "email-sent" Json.Decode.bool)
 
 
 decodeBody400 : Json.Decode.Decoder String

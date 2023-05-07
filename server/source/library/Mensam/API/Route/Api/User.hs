@@ -36,7 +36,7 @@ data Routes route = Routes
         :- Summary "Logout"
           :> Description
               "Logout from a user session.\n\
-              \The token used with this request will be invalidated."
+              \The token used with this request will be invalidated.\n"
           :> "logout"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> UVerb
@@ -50,13 +50,14 @@ data Routes route = Routes
       route
         :- Summary "Register"
           :> Description
-              "Register a new user account.\n"
+              "Register a new user account.\n\
+              \A confirmation email will be sent to the given email address.\n"
           :> "register"
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister
           :> UVerb
               POST
               '[JSON]
-              [ WithStatus 201 ()
+              [ WithStatus 201 ResponseRegister
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 500 ()
               ]
@@ -113,6 +114,15 @@ data RequestRegister = MkRequestRegister
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") RequestRegister
+
+type ResponseRegister :: Type
+newtype ResponseRegister = MkResponseRegister
+  { responseRegisterEmailSent :: Bool
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseRegister") ResponseRegister
 
 type ResponseProfile :: Type
 data ResponseProfile = MkResponseProfile

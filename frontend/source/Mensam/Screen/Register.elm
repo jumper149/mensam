@@ -154,7 +154,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Submit
-    | Submitted
+    | Submitted { emailSent : Bool }
 
 
 onEnter : msg -> Element.Attribute msg
@@ -179,8 +179,8 @@ register model =
     Mensam.Api.Register.request { email = model.email, emailVisible = model.emailVisible, name = model.username, password = model.password } <|
         \result ->
             case result of
-                Ok Mensam.Api.Register.Success ->
-                    MessageEffect <| Submitted
+                Ok (Mensam.Api.Register.Success value) ->
+                    MessageEffect <| Submitted value
 
                 Ok (Mensam.Api.Register.ErrorBody error) ->
                     MessageEffect <| ReportError <| Mensam.Error.message "Bad request body" <| Mensam.Error.message error <| Mensam.Error.undefined
