@@ -158,7 +158,6 @@ elementErrors errors unfoldErrors =
                             , Element.spacing 10
                             , Element.Background.color Mensam.Element.Color.bright.black
                             , Element.Font.color Mensam.Element.Color.bright.white
-                            , Element.Font.family [ Mensam.Element.Font.condensed ]
                             , Element.mouseOver
                                 [ Element.Background.color <| Mensam.Element.Color.bright.white
                                 , Element.Font.color <| Mensam.Element.Color.dark.black

@@ -69,8 +69,8 @@ treeToString tree =
 toElement : Error -> Element.Element msg
 toElement (MkError forest) =
     Element.el
-        [ Element.Font.family [ Mensam.Element.Font.condensed ]
-        , Element.Font.size 15
+        [ Element.Font.family [ Mensam.Element.Font.monospace ]
+        , Element.Font.size 12
         , Element.Font.alignLeft
         ]
     <|
