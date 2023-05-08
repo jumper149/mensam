@@ -13,6 +13,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Aeson qualified as A
+import Data.Aeson.Text qualified as A
 import Data.Kind
 import Data.Password.Bcrypt
 import Data.Text qualified as T
@@ -119,6 +120,7 @@ userCreate username password emailAddress emailAddressVisible = do
               if emailAddressVisible
                 then MkDbEmailVisibility_visible
                 else MkDbEmailVisibility_hidden
+          , dbUser_email_validated = False
           }
   lift $ logDebug "Inserting user into database."
   dbUserId <- Selda.insertWithPK tableUser [dbUser]
@@ -258,11 +260,44 @@ userConfirmationConfirm identifier secret = do
         Right effect -> do
           lift $ logInfo "Looked up confirmation. Running effect."
           case effect of
-            MkConfirmationEffectEmailValidation -> do
+            MkConfirmationEffectEmailValidation emailAddress -> do
               lift $ logDebug "Confirming email address."
               -- TODO: Implement email confirmation.
-              lift $ logDebug "Confirmed email address."
-              pure ()
+              dbUser <- Selda.queryOne $ do
+                dbUser <- Selda.select tableUser
+                Selda.restrict $ dbUser Selda.! #dbUser_id Selda..== Selda.literal (Selda.toId @DbUser (unIdentifierUser identifier))
+                return dbUser
+              if fromText (dbUser_email dbUser) == Right emailAddress
+                then do
+                  count <-
+                    Selda.update
+                      tableUser
+                      ( \dbUserRow ->
+                          dbUserRow Selda.! #dbUser_id Selda..== Selda.literal (Selda.toId @DbUser (unIdentifierUser identifier))
+                      )
+                      ( \dbUserRow ->
+                          dbUserRow
+                            `Selda.with` [ #dbUser_email_validated
+                                            Selda.:= Selda.literal True
+                                         ]
+                      )
+                  case count of
+                    1 -> do
+                      lift $ logInfo "Validated email address."
+                      pure ()
+                    0 -> do
+                      let message :: T.Text = "Failed to validate email address. User not found."
+                      lift $ logError message
+                      error $ T.unpack message
+                    n -> do
+                      let message :: T.Text = "Critical failure when trying to validate a single email address. Multiple users have been affected: " <> T.pack (show n)
+                      lift $ logError message
+                      error $ T.unpack message
+                  lift $ logDebug "Confirmed email address."
+                else do
+                  let message :: T.Text = "Email address has changed. Can't confirm it now."
+                  lift $ logWarn message
+                  error $ T.unpack message
           lift $ logDebug "Deleting confirmation."
           count <- Selda.deleteFrom tableConfirmation $ \dbConfirmation' ->
             dbConfirmation' Selda.! #dbConfirmation_id Selda..== Selda.literal (dbConfirmation_id dbConfirmation)
@@ -279,6 +314,31 @@ userConfirmationConfirm identifier secret = do
               lift $ logError message
               error $ T.unpack message
 
+userConfirmationCreate ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierUser ->
+  ConfirmationEffect ->
+  T.UTCTime ->
+  SeldaTransactionT m ConfirmationSecret
+userConfirmationCreate userIdentifier effect expires = do
+  lift $ logDebug $ "Creating confirmation for user: " <> T.pack (show userIdentifier)
+  lift $ logDebug "Generating secret for confirmation."
+  let secret :: ConfirmationSecret = undefined -- TODO
+  lift $ logDebug "Generating secret for confirmation."
+  dbConfirmationId <-
+    Selda.insertWithPK
+      tableConfirmation
+      [ MkDbConfirmation
+          { dbConfirmation_id = Selda.def
+          , dbConfirmation_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
+          , dbConfirmation_secret = unConfirmationSecret secret
+          , dbConfirmation_expired = expires
+          , dbConfirmation_effect = TL.toStrict $ A.encodeToLazyText effect
+          }
+      ]
+  lift $ logInfo $ "Created confirmation successfully: " <> T.pack (show dbConfirmationId)
+  pure secret
+
 type ConfirmationError :: Type
 data ConfirmationError
   = MkConfirmationErrorExpired
@@ -286,9 +346,9 @@ data ConfirmationError
   deriving stock (Eq, Generic, Ord, Read, Show)
 
 type ConfirmationEffect :: Type
-data ConfirmationEffect
-  = MkConfirmationEffectEmailValidation
-  deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
+newtype ConfirmationEffect
+  = MkConfirmationEffectEmailValidation EmailAddress
+  deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkConfirmationEffect" "") ConfirmationEffect

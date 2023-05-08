@@ -82,6 +82,8 @@ endpointConfirm ::
         '[ WithStatus 200 Route.Api.User.ResponseConfirm
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
+         , WithStatus 410 ()
+         , WithStatus 500 ()
          ]
     )
 endpointProfile ::

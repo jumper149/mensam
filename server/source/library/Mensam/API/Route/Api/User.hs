@@ -75,6 +75,8 @@ data Routes route = Routes
               [ WithStatus 200 ResponseConfirm
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
+              , WithStatus 410 ()
+              , WithStatus 500 ()
               ]
   , routeProfile ::
       route
