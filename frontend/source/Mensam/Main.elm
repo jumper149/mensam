@@ -32,8 +32,8 @@ main =
         , view = view
         , update = update
         , subscriptions = subscriptions
-        , onUrlRequest = \_ -> EmptyMessage
-        , onUrlChange = onUrlChange
+        , onUrlRequest = FollowLink
+        , onUrlChange = ChangedUrl
         }
 
 
@@ -129,11 +129,6 @@ urlParser =
         ]
 
 
-onUrlChange : Url.Url -> Message
-onUrlChange _ =
-    EmptyMessage
-
-
 init : Mensam.Flags.FlagsRaw -> Url.Url -> Browser.Navigation.Key -> ( Model, Platform.Cmd.Cmd Message )
 init flagsRaw url navigationKey =
     let
@@ -210,6 +205,8 @@ type Message
     = EmptyMessage
     | Messages (List Message)
     | Raw (Model -> ( Model, Cmd Message ))
+    | FollowLink Browser.UrlRequest
+    | ChangedUrl Url.Url
     | SetUrl Route
     | SetModel Route
     | ReportError Mensam.Error.Error
@@ -245,6 +242,48 @@ update message (MkModel model) =
 
         Raw f ->
             f <| MkModel model
+
+        FollowLink urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    case Url.Parser.parse urlParser url of
+                        Nothing ->
+                            update
+                                (ReportError <|
+                                    Mensam.Error.message "Invalid internal URL" <|
+                                        Mensam.Error.message (Url.toString url) <|
+                                            Mensam.Error.undefined
+                                )
+                            <|
+                                MkModel model
+
+                        Just route ->
+                            update (SetUrl route) <| MkModel model
+
+                Browser.External url ->
+                    update
+                        (ReportError <|
+                            Mensam.Error.message "External URL currently unsupported" <|
+                                Mensam.Error.message url <|
+                                    Mensam.Error.undefined
+                        )
+                    <|
+                        MkModel model
+
+        ChangedUrl url ->
+            case Url.Parser.parse urlParser url of
+                Nothing ->
+                    update
+                        (ReportError <|
+                            Mensam.Error.message "Invalid internal URL" <|
+                                Mensam.Error.message (Url.toString url) <|
+                                    Mensam.Error.undefined
+                        )
+                    <|
+                        MkModel model
+
+                Just route ->
+                    update (SetModel route) <| MkModel model
 
         SetUrl route ->
             update
