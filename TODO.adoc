@@ -1,21 +1,31 @@
 = TODO
 
-* [ ] Run weeder as part of `nix flake check`.
+* Continuous integration.
+  ** [ ] Run weeder as part of `nix flake check`.
+  ** [ ] Run elm-review as part of `nix flake check`.
+    *** https://github.com/jfmengels/elm-review/issues/157
+  ** [ ] Use `nixosConfigurations` to test the `nixosModule`.
 
 * [ ] Email backend.
   ** [x] Implement `EmailT` with an instance `MonadEmail`.
   ** [x] Send a mail on registration.
     *** [ ] The registration mail may include a link to confirm the user's email.
       **** The registration should still be considered complete, even when the confirmation didn't happen yet. User's don't want to look into their mails before booking a desk.
-      **** [ ] Database column in user table to track email confirmation.
-      **** [ ] New backend route to handle this confirmation
+      **** [x] Database column in user table to track email confirmation.
+      **** [x] New backend route to handle this confirmation
       **** [ ] Frontend (URL, screen, API, ...) should be able to handle this confirmation link.
   ** [ ] Make emails look good instead of sending just plain text.
 
-* [ ] `nixosConfigurations` can test the `nixosModule`.
+* Frontend.
+  ** [ ] Add loading screen to HTML wrapper for frontend.
+  ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
+  ** [ ] Add link to source code somewhere on the landing page. Maybe in a footer?
 
-* [ ] Add loading screen to HTML wrapper for frontend.
-
-* [ ] Frontend: Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
-
-* [ ] Frontend: Add link to source code somewhere on the landing page. Maybe in a footer?
+* [ ] Database migrations.
+  ** [x] Database initialization is automatically handled during startup.
+  ** [ ] Database migration is automatically handled during startup.
+  ** My current idea:
+    *** A new table (maybe in a separate schema) to track the database version.
+    *** Every mensam release will be associated with a database version.
+    *** During startup, check whether the database version is up-to-date.
+    *** If not, then automatically run the migration and finally bump the database version.
