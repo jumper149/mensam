@@ -7,6 +7,7 @@ import Json.Encode
 import Mensam.Api.Logout
 import Mensam.Auth.Bearer
 import Mensam.Element
+import Mensam.Element.Footer
 import Mensam.Element.Header
 import Mensam.Error
 import Mensam.Flags
@@ -569,6 +570,12 @@ headerContent (MkModel model) =
     }
 
 
+footerContent : Mensam.Element.Footer.Content
+footerContent =
+    { sourceUrl = "https://github.com/jumper149/mensam"
+    }
+
+
 view : Model -> Browser.Document Message
 view (MkModel model) =
     Mensam.Element.document <|
@@ -598,6 +605,7 @@ view (MkModel model) =
 
                     ScreenSpace screenModel ->
                         Mensam.Element.screen MessageSpace <| Mensam.Screen.Space.element screenModel
+            , Mensam.Element.Footer.element <| footerContent
             ]
 
 
