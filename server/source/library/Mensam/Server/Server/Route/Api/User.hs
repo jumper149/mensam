@@ -15,6 +15,7 @@ import Mensam.Server.User
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
+import Control.Monad.Trans.Class
 import Data.ByteString qualified as B
 import Data.Password.Bcrypt
 import Data.Text qualified as T
@@ -150,25 +151,29 @@ register eitherRequest =
     Right request@MkRequestRegister {requestRegisterName, requestRegisterPassword, requestRegisterEmail, requestRegisterEmailVisible} -> do
       logDebug $ "Registering new user: " <> T.pack (show request)
       seldaResult <-
-        runSeldaTransactionT $
-          userCreate
-            requestRegisterName
-            (mkPassword requestRegisterPassword)
-            requestRegisterEmail
-            requestRegisterEmailVisible
+        runSeldaTransactionT $ do
+          userIdentifier <-
+            userCreate
+              requestRegisterName
+              (mkPassword requestRegisterPassword)
+              requestRegisterEmail
+              requestRegisterEmailVisible
+          let effect = MkConfirmationEffectEmailValidation requestRegisterEmail
+          expirationTime <- lift . liftIO $ (T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime`) <$> T.getCurrentTime
+          userConfirmationCreate userIdentifier effect expirationTime
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
           logWarn "Failed to register new user."
           respond $ WithStatus @500 ()
-        SeldaSuccess _userIdentifier -> do
+        SeldaSuccess confirmationSecret -> do
           logInfo "Registered new user."
           logDebug "Sending confirmation email."
           sendEmailResult <-
             sendEmail
               MkEmail
                 { emailRecipient = requestRegisterEmail
-                , emailBody = "You have been registered successfully."
+                , emailBody = "You have been registered successfully: " <> T.pack (show confirmationSecret)
                 }
           let emailSent =
                 case sendEmailResult of

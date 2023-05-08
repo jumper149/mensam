@@ -23,6 +23,7 @@ import Data.Time qualified as T
 import Database.Selda qualified as Selda
 import Deriving.Aeson qualified as A
 import GHC.Generics
+import System.Random
 import Text.Email.Parser
 import Text.Email.Text
 
@@ -253,7 +254,7 @@ userConfirmationConfirm identifier secret = do
       pure $ Left MkConfirmationErrorExpired
     else do
       lift $ logDebug $ "Parsing confirmation effect: " <> T.pack (show $ dbConfirmation_effect dbConfirmation)
-      case A.eitherDecode $ TL.encodeUtf8 $ TL.fromStrict $ dbConfirmation_secret dbConfirmation of
+      case A.eitherDecode $ TL.encodeUtf8 $ TL.fromStrict $ dbConfirmation_effect dbConfirmation of
         Left err -> do
           lift $ logError $ "Failed to parse confirmation effect: " <> T.pack (show err)
           pure $ Left MkConfirmationErrorEffectInvalid
@@ -262,7 +263,6 @@ userConfirmationConfirm identifier secret = do
           case effect of
             MkConfirmationEffectEmailValidation emailAddress -> do
               lift $ logDebug "Confirming email address."
-              -- TODO: Implement email confirmation.
               dbUser <- Selda.queryOne $ do
                 dbUser <- Selda.select tableUser
                 Selda.restrict $ dbUser Selda.! #dbUser_id Selda..== Selda.literal (Selda.toId @DbUser (unIdentifierUser identifier))
@@ -315,7 +315,7 @@ userConfirmationConfirm identifier secret = do
               error $ T.unpack message
 
 userConfirmationCreate ::
-  (MonadLogger m, MonadSeldaPool m) =>
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   ConfirmationEffect ->
   T.UTCTime ->
@@ -323,7 +323,7 @@ userConfirmationCreate ::
 userConfirmationCreate userIdentifier effect expires = do
   lift $ logDebug $ "Creating confirmation for user: " <> T.pack (show userIdentifier)
   lift $ logDebug "Generating secret for confirmation."
-  let secret :: ConfirmationSecret = undefined -- TODO
+  secret <- MkConfirmationSecret . T.pack . show @Word <$> randomIO
   lift $ logDebug "Generating secret for confirmation."
   dbConfirmationId <-
     Selda.insertWithPK
