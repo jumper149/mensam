@@ -22,7 +22,7 @@ import Task
 import Time
 import Url
 import Url.Builder
-import Url.Parser
+import Url.Parser exposing ((</>))
 
 
 main : Program Json.Encode.Value Model Message
@@ -74,8 +74,22 @@ type Route
 
 
 routeToUrl : Route -> String
-routeToUrl _ =
-    Url.Builder.absolute [] []
+routeToUrl route =
+    case route of
+        RouteLanding ->
+            Url.Builder.absolute [] []
+
+        RouteLogin _ ->
+            Url.Builder.absolute [ "login" ] []
+
+        RouteRegister ->
+            Url.Builder.absolute [ "register" ] []
+
+        RouteSpaces ->
+            Url.Builder.absolute [ "spaces" ] []
+
+        RouteSpace id ->
+            Url.Builder.absolute [ "space", String.fromInt id ] []
 
 
 routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
@@ -111,6 +125,7 @@ urlParser =
         , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
         , Url.Parser.map RouteRegister <| Url.Parser.s "register"
         , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
+        , Url.Parser.map RouteSpace <| Url.Parser.s "space" </> Url.Parser.int
         ]
 
 
@@ -418,7 +433,7 @@ update message (MkModel model) =
                             update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Login.Register ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
+                    update (SetUrl RouteRegister) <| MkModel model
 
                 Mensam.Screen.Login.SetSession session ->
                     update
