@@ -57,18 +57,17 @@ spaceGet identifier = do
       , spaceName = MkNameSpace $ dbSpace_name dbSpace
       }
 
-spaceList ::
+spaceListVisible ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   OrderByCategories SpaceOrderCategory ->
   SeldaTransactionT m [Space]
-spaceList userIdentifier spaceOrder = do
+spaceListVisible userIdentifier spaceOrder = do
   lift $ logDebug $ "Looking up spaces visible by user: " <> T.pack (show userIdentifier)
   dbSpaces <- Selda.query $ do
-    dbSpaceUser <- Selda.select tableSpaceUser
-    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
-    dbSpace <- Selda.distinct $ Selda.select tableSpace
-    Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_space
+    dbSpace <- Selda.select tableSpace
+    Selda.restrict $
+      dbSpace Selda.! #dbSpace_visibility Selda..== Selda.literal MkDbSpaceVisibility_visible
     let categorySelector = \case
           SpaceOrderCategoryId -> Selda.MkSomeCol $ dbSpace Selda.! #dbSpace_id
           SpaceOrderCategoryName -> Selda.MkSomeCol $ dbSpace Selda.! #dbSpace_name

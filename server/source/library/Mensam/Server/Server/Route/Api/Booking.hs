@@ -122,7 +122,7 @@ listSpaces auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to list spaces: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        spaceList (userAuthenticatedId authenticated) (requestSpaceListOrder request)
+        spaceListVisible (userAuthenticatedId authenticated) (requestSpaceListOrder request)
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
