@@ -371,14 +371,19 @@ update message (MkModel model) =
                                         \response ->
                                             case response of
                                                 Ok Mensam.Api.Logout.Success ->
-                                                    Auth UnsetSession
+                                                    EmptyMessage
 
                                                 Ok (Mensam.Api.Logout.ErrorAuth error) ->
-                                                    ReportError <| Mensam.Auth.Bearer.error error
+                                                    ReportError <|
+                                                        Mensam.Error.message "The server-side session has already been invalidated" <|
+                                                            Mensam.Auth.Bearer.error error
 
                                                 Err error ->
-                                                    ReportError <| Mensam.Error.http error
+                                                    ReportError <|
+                                                        Mensam.Error.message "Unable to invalidate the server-side session" <|
+                                                            Mensam.Error.http error
                                     )
+                    , Auth UnsetSession
                     , SetUrl <| RouteLanding
                     ]
                 )
