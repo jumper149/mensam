@@ -23,7 +23,7 @@ type alias FlagsRaw =
 parse : FlagsRaw -> Result Mensam.Error.Error Flags
 parse flagsRaw =
     Result.mapError
-        (Mensam.Error.message "Failed to parse flags." << Mensam.Error.json)
+        (Mensam.Error.message "Failed to parse flags" << Mensam.Error.json)
     <|
         Json.Decode.decodeValue decoder flagsRaw
 

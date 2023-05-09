@@ -148,6 +148,7 @@ elementErrors errors unfoldErrors =
                     if unfoldErrors then
                         Element.column
                             [ Element.width <| Element.px 200
+                            , Element.htmlAttribute <| Html.Attributes.style "overflow-x" "hidden"
                             , Element.alignRight
                             , Element.paddingEach
                                 { top = 19
