@@ -2,6 +2,7 @@ module Mensam.Error exposing
     ( Error
     , group
     , http
+    , json
     , message
     , toElement
     , toString
@@ -12,6 +13,8 @@ import Element
 import Element.Font
 import Html.Attributes
 import Http
+import Json.Decode
+import Json.Encode
 import Mensam.Element.Font
 import Tree
 
@@ -135,3 +138,26 @@ http error =
 
             Http.BadBody body ->
                 message "Bad Body" <| message body <| undefined
+
+
+json : Json.Decode.Error -> Error
+json error =
+    message "Failed to parse JSON" <|
+        case error of
+            Json.Decode.Field field err ->
+                message ("Failed to parse field: " ++ field) <|
+                    json err
+
+            Json.Decode.Index index err ->
+                message ("Failed to parse list at index: " ++ String.fromInt index) <|
+                    json err
+
+            Json.Decode.OneOf errors ->
+                message "Failed to parse even one of the possible options" <|
+                    group <|
+                        List.map json errors
+
+            Json.Decode.Failure msg val ->
+                message msg <|
+                    message (Json.Encode.encode 0 val) <|
+                        undefined

@@ -1,9 +1,9 @@
-module Main exposing (..)
+module Main exposing (main)
 
-import Json.Encode
-import Mensam.Main
+import Json.Encode as Json
+import Mensam.Main as Mensam
 
 
-main : Program Json.Encode.Value Mensam.Main.Model Mensam.Main.Message
+main : Program Json.Value Mensam.Model Mensam.Message
 main =
-    Mensam.Main.main
+    Mensam.main

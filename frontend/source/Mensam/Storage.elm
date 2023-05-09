@@ -2,8 +2,8 @@ port module Mensam.Storage exposing
     ( Storage(..)
     , StorageRaw
     , decoder
-    , setStorage
-    , unsetStorage
+    , set
+    , unset
     )
 
 import Iso8601
@@ -23,13 +23,13 @@ type Storage
 port setStorageJson : Json.Encode.Value -> Cmd msg
 
 
-setStorage : Storage -> Cmd msg
-setStorage =
+set : Storage -> Cmd msg
+set =
     encode >> setStorageJson
 
 
-unsetStorage : Cmd msg
-unsetStorage =
+unset : Cmd msg
+unset =
     setStorageJson Json.Encode.null
 
 

@@ -350,11 +350,11 @@ update message (MkModel model) =
 
         Auth (SetSession session) ->
             ( MkModel { model | authenticated = Just session }
-            , Mensam.Storage.setStorage <| Mensam.Storage.MkStorage session
+            , Mensam.Storage.set <| Mensam.Storage.MkStorage session
             )
 
         Auth UnsetSession ->
-            ( MkModel { model | authenticated = Nothing }, Mensam.Storage.unsetStorage )
+            ( MkModel { model | authenticated = Nothing }, Mensam.Storage.unset )
 
         Auth Logout ->
             update
