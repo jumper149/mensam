@@ -142,22 +142,25 @@ http error =
 
 json : Json.Decode.Error -> Error
 json error =
-    message "Failed to parse JSON" <|
-        case error of
-            Json.Decode.Field field err ->
-                message ("Failed to parse field: " ++ field) <|
-                    json err
+    let
+        recurse err =
+            case err of
+                Json.Decode.Field field fieldErr ->
+                    message ("Field " ++ Json.Encode.encode 0 (Json.Encode.string field)) <|
+                        recurse fieldErr
 
-            Json.Decode.Index index err ->
-                message ("Failed to parse list at index: " ++ String.fromInt index) <|
-                    json err
+                Json.Decode.Index index indexErr ->
+                    message ("Index " ++ String.fromInt index) <|
+                        recurse indexErr
 
-            Json.Decode.OneOf errors ->
-                message "Failed to parse even one of the possible options" <|
-                    group <|
-                        List.map json errors
+                Json.Decode.OneOf errs ->
+                    message "One of" <|
+                        group <|
+                            List.map recurse errs
 
-            Json.Decode.Failure msg val ->
-                message msg <|
-                    message (Json.Encode.encode 0 val) <|
-                        undefined
+                Json.Decode.Failure msg val ->
+                    message msg <|
+                        message (Json.Encode.encode 0 val) <|
+                            undefined
+    in
+    message "JSON" <| recurse error
