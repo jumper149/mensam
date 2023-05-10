@@ -5,6 +5,7 @@ import Browser.Navigation
 import Element
 import Json.Encode
 import Mensam.Api.Logout
+import Mensam.Application
 import Mensam.Auth
 import Mensam.Auth.Bearer
 import Mensam.Element
@@ -207,7 +208,7 @@ update message (MkModel model) =
             ( MkModel model, Platform.Cmd.none )
 
         Messages messages ->
-            updates (List.map update messages) <| MkModel model
+            Mensam.Application.updates (List.map update messages) <| MkModel model
 
         Raw f ->
             f <| MkModel model
@@ -682,20 +683,3 @@ errorScreen =
 errorNoAuth : Mensam.Error.Error
 errorNoAuth =
     Mensam.Error.message "Can't make request without JWT" Mensam.Error.undefined
-
-
-updates : List (model -> ( model, Platform.Cmd.Cmd message )) -> model -> ( model, Platform.Cmd.Cmd message )
-updates messages model =
-    case messages of
-        [] ->
-            ( model, Platform.Cmd.none )
-
-        updateNow :: otherMessages ->
-            let
-                ( modelUpdated, cmdUpdated ) =
-                    updateNow model
-
-                ( modelFinal, cmdFinal ) =
-                    updates otherMessages modelUpdated
-            in
-            ( modelFinal, Platform.Cmd.batch [ cmdUpdated, cmdFinal ] )
