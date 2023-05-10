@@ -5,6 +5,7 @@ import Browser.Navigation
 import Element
 import Json.Encode
 import Mensam.Api.Logout
+import Mensam.Auth
 import Mensam.Auth.Bearer
 import Mensam.Element
 import Mensam.Element.Footer
@@ -41,7 +42,7 @@ type Model
     = MkModel
         { navigationKey : Browser.Navigation.Key
         , screen : Screen
-        , authenticated : Maybe Authentication
+        , authenticated : Mensam.Auth.Model
         , errors : List Mensam.Error.Error
         , viewErrors : Bool
         , time :
@@ -49,12 +50,6 @@ type Model
             , zone : Time.Zone
             }
         }
-
-
-type alias Authentication =
-    { jwt : Mensam.Auth.Bearer.Jwt
-    , expiration : Maybe Time.Posix
-    }
 
 
 type Screen
@@ -135,7 +130,7 @@ init flagsRaw url navigationKey =
         modelInit =
             { navigationKey = navigationKey
             , screen = ScreenLanding Mensam.Screen.Landing.init
-            , authenticated = Nothing
+            , authenticated = Mensam.Auth.SignedOut
             , errors = []
             , viewErrors = False
             , time =
@@ -149,7 +144,7 @@ init flagsRaw url navigationKey =
                 Ok (Mensam.Flags.MkFlags flags) ->
                     case flags.storage of
                         Just (Mensam.Storage.MkStorage storage) ->
-                            { modelInit | authenticated = Just storage }
+                            { modelInit | authenticated = Mensam.Auth.SignedIn <| Mensam.Auth.MkAuthentication storage }
 
                         Nothing ->
                             modelInit
@@ -181,10 +176,10 @@ init flagsRaw url navigationKey =
                                                         case route of
                                                             RouteLanding ->
                                                                 case m.authenticated of
-                                                                    Nothing ->
+                                                                    Mensam.Auth.SignedOut ->
                                                                         RouteLanding
 
-                                                                    Just _ ->
+                                                                    Mensam.Auth.SignedIn _ ->
                                                                         RouteSpaces
 
                                                             _ ->
@@ -349,12 +344,12 @@ update message (MkModel model) =
             )
 
         Auth (SetSession session) ->
-            ( MkModel { model | authenticated = Just session }
+            ( MkModel { model | authenticated = Mensam.Auth.SignedIn <| Mensam.Auth.MkAuthentication session }
             , Mensam.Storage.set <| Mensam.Storage.MkStorage session
             )
 
         Auth UnsetSession ->
-            ( MkModel { model | authenticated = Nothing }, Mensam.Storage.unset )
+            ( MkModel { model | authenticated = Mensam.Auth.SignedOut }, Mensam.Storage.unset )
 
         Auth Logout ->
             update
@@ -362,10 +357,10 @@ update message (MkModel model) =
                     [ Raw <|
                         \(MkModel m) ->
                             case m.authenticated of
-                                Nothing ->
+                                Mensam.Auth.SignedOut ->
                                     update EmptyMessage <| MkModel m
 
-                                Just { jwt } ->
+                                Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                                     ( MkModel m
                                     , Mensam.Api.Logout.request { jwt = jwt } <|
                                         \response ->
@@ -392,11 +387,11 @@ update message (MkModel model) =
 
         Auth (CheckExpirationExplicit now) ->
             case model.authenticated of
-                Nothing ->
+                Mensam.Auth.SignedOut ->
                     update EmptyMessage <| MkModel model
 
-                Just authentication ->
-                    if isExpired now authentication then
+                Mensam.Auth.SignedIn authentication ->
+                    if Mensam.Auth.isExpired authentication now then
                         update (Auth UnsetSession) <| MkModel model
 
                     else
@@ -504,13 +499,13 @@ update message (MkModel model) =
 
                 Mensam.Screen.Spaces.RefreshSpaces ->
                     case model.authenticated of
-                        Just { jwt } ->
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             ( MkModel model
                             , Platform.Cmd.map MessageSpaces <| Mensam.Screen.Spaces.spaceList jwt
                             )
-
-                        Nothing ->
-                            update (ReportError errorNoAuth) <| MkModel model
 
                 Mensam.Screen.Spaces.ChooseSpace { id } ->
                     update (SetUrl <| RouteSpace id) <| MkModel model
@@ -530,7 +525,7 @@ update message (MkModel model) =
 
                 Mensam.Screen.Space.RefreshDesks ->
                     case model.authenticated of
-                        Just { jwt } ->
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpace screenModel ->
                                     ( MkModel model
@@ -540,12 +535,12 @@ update message (MkModel model) =
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
 
-                        Nothing ->
+                        Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
                 Mensam.Screen.Space.SubmitReservation ->
                     case model.authenticated of
-                        Just { jwt } ->
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpace screenModel ->
                                     case screenModel.viewDetailed of
@@ -560,18 +555,8 @@ update message (MkModel model) =
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
 
-                        Nothing ->
+                        Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
-
-
-isExpired : Time.Posix -> Authentication -> Bool
-isExpired now authentication =
-    case authentication.expiration of
-        Nothing ->
-            False
-
-        Just expiration ->
-            Time.posixToMillis now > Time.posixToMillis expiration
 
 
 headerMessage : Model -> Mensam.Element.Header.Message -> Message
@@ -579,10 +564,10 @@ headerMessage (MkModel model) message =
     case message of
         Mensam.Element.Header.ClickMensam ->
             case model.authenticated of
-                Nothing ->
+                Mensam.Auth.SignedOut ->
                     SetUrl RouteLanding
 
-                Just _ ->
+                Mensam.Auth.SignedIn _ ->
                     SetUrl RouteSpaces
 
         Mensam.Element.Header.SignIn ->
@@ -605,10 +590,10 @@ headerContent (MkModel model) =
     , unfoldErrors = model.viewErrors
     , authenticated =
         case model.authenticated of
-            Nothing ->
+            Mensam.Auth.SignedOut ->
                 False
 
-            Just _ ->
+            Mensam.Auth.SignedIn _ ->
                 True
     , title =
         case model.screen of
