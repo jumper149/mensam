@@ -128,72 +128,45 @@ init : Mensam.Flags.FlagsRaw -> Url.Url -> Browser.Navigation.Key -> ( Model, Pl
 init flagsRaw url navigationKey =
     let
         modelInit =
-            { navigationKey = navigationKey
-            , screen = ScreenLanding Mensam.Screen.Landing.init
-            , authenticated = Mensam.Auth.SignedOut
-            , errors = []
-            , viewErrors = False
-            , time =
-                { now = Time.millisToPosix 0
-                , zone = Time.utc
-                }
-            }
-
-        modelFlags =
-            case Mensam.Flags.parse flagsRaw of
-                Ok (Mensam.Flags.MkFlags flags) ->
-                    case flags.storage of
-                        Just (Mensam.Storage.MkStorage storage) ->
-                            { modelInit | authenticated = Mensam.Auth.SignedIn <| Mensam.Auth.MkAuthentication storage }
-
-                        Nothing ->
-                            modelInit
-
-                Err error ->
-                    { modelInit
-                        | errors = error :: modelInit.errors
+            MkModel
+                { navigationKey = navigationKey
+                , screen = ScreenLanding Mensam.Screen.Landing.init
+                , authenticated = Mensam.Auth.SignedOut
+                , errors = []
+                , viewErrors = False
+                , time =
+                    { now = Time.millisToPosix 0
+                    , zone = Time.utc
                     }
+                }
+
+        withStorage =
+            \(MkModel model) ->
+                case Mensam.Flags.parse flagsRaw of
+                    Ok (Mensam.Flags.MkFlags flags) ->
+                        case flags.storage of
+                            Just (Mensam.Storage.MkStorage storage) ->
+                                MkModel
+                                    { model
+                                        | authenticated = Mensam.Auth.SignedIn <| Mensam.Auth.MkAuthentication storage
+                                    }
+
+                            Nothing ->
+                                MkModel
+                                    { model
+                                        | authenticated = Mensam.Auth.SignedOut
+                                    }
+
+                    Err error ->
+                        MkModel
+                            { model
+                                | errors = error :: model.errors
+                            }
+
+        modelFinal =
+            withStorage modelInit
     in
-    update
-        (Messages
-            [ SetTimeZoneHere
-            , Raw <|
-                \(MkModel model) ->
-                    ( MkModel model
-                    , Task.perform
-                        (\now ->
-                            Messages
-                                [ Auth <| CheckExpirationExplicit now
-                                , Raw <|
-                                    \(MkModel m) ->
-                                        case Url.Parser.parse urlParser url of
-                                            Nothing ->
-                                                update (SetUrl RouteLanding) (MkModel m)
-
-                                            Just route ->
-                                                let
-                                                    redirectedRoute =
-                                                        case route of
-                                                            RouteLanding ->
-                                                                case m.authenticated of
-                                                                    Mensam.Auth.SignedOut ->
-                                                                        RouteLanding
-
-                                                                    Mensam.Auth.SignedIn _ ->
-                                                                        RouteSpaces
-
-                                                            _ ->
-                                                                route
-                                                in
-                                                update (SetUrl redirectedRoute) (MkModel m)
-                                ]
-                        )
-                        Time.now
-                    )
-            ]
-        )
-    <|
-        MkModel modelFlags
+    update (InitModel { url = url }) modelFinal
 
 
 type Message
@@ -202,6 +175,7 @@ type Message
     | Raw (Model -> ( Model, Cmd Message ))
     | FollowLink Browser.UrlRequest
     | ChangedUrl Url.Url
+    | InitModel { url : Url.Url }
     | SetUrl Route
     | SetModel Route
     | ReportError Mensam.Error.Error
@@ -279,6 +253,48 @@ update message (MkModel model) =
 
                 Just route ->
                     update (SetModel route) <| MkModel model
+
+        InitModel { url } ->
+            update
+                (Messages
+                    [ SetTimeZoneHere
+                    , Raw <|
+                        \(MkModel model0) ->
+                            ( MkModel model0
+                            , Task.perform
+                                (\now ->
+                                    Messages
+                                        [ Auth <| CheckExpirationExplicit now
+                                        , Raw <|
+                                            \(MkModel m) ->
+                                                case Url.Parser.parse urlParser url of
+                                                    Nothing ->
+                                                        update (SetUrl RouteLanding) (MkModel m)
+
+                                                    Just route ->
+                                                        let
+                                                            redirectedRoute =
+                                                                case route of
+                                                                    RouteLanding ->
+                                                                        case m.authenticated of
+                                                                            Mensam.Auth.SignedOut ->
+                                                                                RouteLanding
+
+                                                                            Mensam.Auth.SignedIn _ ->
+                                                                                RouteSpaces
+
+                                                                    _ ->
+                                                                        route
+                                                        in
+                                                        update (SetUrl redirectedRoute) (MkModel m)
+                                        ]
+                                )
+                                Time.now
+                            )
+                    ]
+                )
+            <|
+                MkModel model
 
         SetUrl route ->
             update
