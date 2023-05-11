@@ -99,7 +99,12 @@ element model =
     Mensam.Element.Screen.element
         { main =
             Element.indexedTable
-                [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Background.color (Element.rgba 0 0 0 0.1)
+                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                , Element.Font.size 16
+                , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                 ]
                 { data = model.desks
                 , columns =

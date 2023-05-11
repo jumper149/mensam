@@ -44,6 +44,7 @@ element model =
         { main =
             Element.column
                 [ Element.width Element.fill
+                , Element.height Element.fill
                 ]
                 [ Element.el
                     [ Element.width Element.fill
@@ -76,109 +77,105 @@ element model =
                             <|
                                 Element.text "Create new Space"
                         ]
-                , Element.el
+                , Element.indexedTable
                     [ Element.width Element.fill
                     , Element.height Element.fill
-                    , Element.padding 10
                     , Element.Background.color (Element.rgba 0 0 0 0.1)
-                    , Element.Font.size 16
                     , Element.Font.family [ Mensam.Element.Font.condensed ]
+                    , Element.Font.size 16
+                    , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                     ]
-                  <|
-                    Element.indexedTable
-                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                    { data = model.spaces
+                    , columns =
+                        let
+                            cell =
+                                Element.el
+                                    [ Element.height <| Element.px 40
+                                    , Element.padding 10
+                                    ]
+                        in
+                        [ { header =
+                                Element.el
+                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                    ]
+                                <|
+                                    cell <|
+                                        Element.el
+                                            []
+                                        <|
+                                            Element.text "ID"
+                          , width = Element.px 100
+                          , view =
+                                \n (Mensam.Space.MkSpace space) ->
+                                    Element.el
+                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
+                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                        , let
+                                            alpha =
+                                                case model.selected of
+                                                    Nothing ->
+                                                        0.2
+
+                                                    Just m ->
+                                                        if m == n then
+                                                            0.4
+
+                                                        else
+                                                            0.2
+                                          in
+                                          Element.Background.color (Element.rgba 0 0 0 alpha)
+                                        ]
+                                    <|
+                                        cell <|
+                                            Element.el
+                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                            <|
+                                                Element.text <|
+                                                    Mensam.Space.identifierToString space.id
+                          }
+                        , { header =
+                                Element.el
+                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                    ]
+                                <|
+                                    cell <|
+                                        Element.el
+                                            []
+                                        <|
+                                            Element.text "Name"
+                          , width = Element.fill
+                          , view =
+                                \n (Mensam.Space.MkSpace space) ->
+                                    Element.el
+                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
+                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                        , let
+                                            alpha =
+                                                case model.selected of
+                                                    Nothing ->
+                                                        0.2
+
+                                                    Just m ->
+                                                        if m == n then
+                                                            0.4
+
+                                                        else
+                                                            0.2
+                                          in
+                                          Element.Background.color (Element.rgba 0 0 0 alpha)
+                                        ]
+                                    <|
+                                        cell <|
+                                            Element.el
+                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                            <|
+                                                Element.text <|
+                                                    Mensam.Space.nameToString space.name
+                          }
                         ]
-                        { data = model.spaces
-                        , columns =
-                            let
-                                cell =
-                                    Element.el
-                                        [ Element.height <| Element.px 40
-                                        , Element.padding 10
-                                        ]
-                            in
-                            [ { header =
-                                    Element.el
-                                        [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                        ]
-                                    <|
-                                        cell <|
-                                            Element.el
-                                                []
-                                            <|
-                                                Element.text "ID"
-                              , width = Element.px 100
-                              , view =
-                                    \n (Mensam.Space.MkSpace space) ->
-                                        Element.el
-                                            [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                            , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
-                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                            , let
-                                                alpha =
-                                                    case model.selected of
-                                                        Nothing ->
-                                                            0.2
-
-                                                        Just m ->
-                                                            if m == n then
-                                                                0.4
-
-                                                            else
-                                                                0.2
-                                              in
-                                              Element.Background.color (Element.rgba 0 0 0 alpha)
-                                            ]
-                                        <|
-                                            cell <|
-                                                Element.el
-                                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                                <|
-                                                    Element.text <|
-                                                        Mensam.Space.identifierToString space.id
-                              }
-                            , { header =
-                                    Element.el
-                                        [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                        ]
-                                    <|
-                                        cell <|
-                                            Element.el
-                                                []
-                                            <|
-                                                Element.text "Name"
-                              , width = Element.fill
-                              , view =
-                                    \n (Mensam.Space.MkSpace space) ->
-                                        Element.el
-                                            [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                            , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
-                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                            , let
-                                                alpha =
-                                                    case model.selected of
-                                                        Nothing ->
-                                                            0.2
-
-                                                        Just m ->
-                                                            if m == n then
-                                                                0.4
-
-                                                            else
-                                                                0.2
-                                              in
-                                              Element.Background.color (Element.rgba 0 0 0 alpha)
-                                            ]
-                                        <|
-                                            cell <|
-                                                Element.el
-                                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                                <|
-                                                    Element.text <|
-                                                        Mensam.Space.nameToString space.name
-                              }
-                            ]
-                        }
+                    }
                 ]
         , popup =
             model.create
