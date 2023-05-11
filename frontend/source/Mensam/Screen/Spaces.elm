@@ -209,12 +209,21 @@ spaceList jwt =
                     MessagePure <| SetSpaces value.spaces
 
                 Ok (Mensam.Api.SpaceList.ErrorBody error) ->
-                    MessageEffect <| ReportError <| Mensam.Error.message "Bad request body" <| Mensam.Error.message error <| Mensam.Error.undefined
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting spaces failed" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceList.ErrorAuth error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Auth.Bearer.error error
+                            Mensam.Error.message "Requesting spaces failed" <|
+                                Mensam.Auth.Bearer.error error
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting spaces failed" <|
+                                Mensam.Error.http error

@@ -183,7 +183,15 @@ register model =
                     MessageEffect <| Submitted value
 
                 Ok (Mensam.Api.Register.ErrorBody error) ->
-                    MessageEffect <| ReportError <| Mensam.Error.message "Bad request body" <| Mensam.Error.message error <| Mensam.Error.undefined
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Registration failed" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Registration failed" <|
+                                Mensam.Error.http error

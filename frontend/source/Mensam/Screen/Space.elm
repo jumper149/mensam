@@ -507,19 +507,27 @@ reservationCreate jwt model { desk } =
                 Ok Mensam.Api.ReservationCreate.ErrorTimeUnavailable ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Bad request" <|
-                                Mensam.Error.message "Requested time unavailable" <|
-                                    Mensam.Error.undefined
+                            Mensam.Error.message "Reservation request failed" <|
+                                Mensam.Error.message "Bad request" <|
+                                    Mensam.Error.message "Requested time unavailable" <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.ReservationCreate.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Bad request body" <|
-                                Mensam.Error.message error <|
-                                    Mensam.Error.undefined
+                            Mensam.Error.message "Reservation request failed" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.ReservationCreate.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Reservation request failed" <|
+                                Mensam.Auth.Bearer.error error
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Reservation request failed" <|
+                                Mensam.Error.http error

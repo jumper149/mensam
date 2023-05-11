@@ -208,8 +208,12 @@ login model =
                 Ok (Mensam.Api.Login.ErrorAuth Mensam.Auth.Basic.ErrorIndefinite) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Authentication" <|
-                                Mensam.Error.message "Indefinite" Mensam.Error.undefined
+                            Mensam.Error.message "Login failed" <|
+                                Mensam.Error.message "Authentication" <|
+                                    Mensam.Error.message "Indefinite" Mensam.Error.undefined
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Login failed" <|
+                                Mensam.Error.http error
