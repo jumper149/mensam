@@ -12,12 +12,13 @@ import Mensam.Auth.Bearer
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
+import Mensam.Space
 import Mensam.Time
 import Time
 
 
 type alias Model =
-    { space : { id : Int }
+    { space : Mensam.Space.Identifier
     , desks :
         List
             { desk :
@@ -61,9 +62,9 @@ type PickerVisibility
     | TimePickerVisible
 
 
-init : { id : Int, time : { now : Time.Posix, zone : Time.Zone } } -> Model
+init : { id : Mensam.Space.Identifier, time : { now : Time.Posix, zone : Time.Zone } } -> Model
 init args =
-    { space = { id = args.id }
+    { space = args.id
     , desks = []
     , selected = Nothing
     , viewDetailed = Nothing

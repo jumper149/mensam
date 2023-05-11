@@ -10,10 +10,11 @@ import Mensam.Auth.Bearer
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
+import Mensam.Space
 
 
 type alias Model =
-    { spaces : List { id : Int, name : String }
+    { spaces : List Mensam.Space.Space
     , selected : Maybe Int
     , create : Maybe ()
     }
@@ -96,10 +97,10 @@ element model =
                                         Element.text "ID"
                       , width = Element.px 100
                       , view =
-                            \n x ->
+                            \n (Mensam.Space.MkSpace space) ->
                                 Element.el
                                     [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                    , Element.Events.onClick <| MessageEffect <| ChooseSpace { id = x.id }
+                                    , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                     , let
                                         alpha =
@@ -122,7 +123,7 @@ element model =
                                             [ Element.width <| Element.maximum 100 <| Element.fill ]
                                         <|
                                             Element.text <|
-                                                String.fromInt x.id
+                                                Mensam.Space.identifierToString space.id
                       }
                     , { header =
                             Element.el
@@ -136,10 +137,10 @@ element model =
                                         Element.text "Name"
                       , width = Element.fill
                       , view =
-                            \n x ->
+                            \n (Mensam.Space.MkSpace space) ->
                                 Element.el
                                     [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                    , Element.Events.onClick <| MessageEffect <| ChooseSpace { id = x.id }
+                                    , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                     , let
                                         alpha =
@@ -162,7 +163,7 @@ element model =
                                             [ Element.width <| Element.maximum 100 <| Element.fill ]
                                         <|
                                             Element.text <|
-                                                x.name
+                                                Mensam.Space.nameToString space.name
                       }
                     ]
                 }
@@ -175,7 +176,7 @@ type Message
 
 
 type MessagePure
-    = SetSpaces (List { id : Int, name : String })
+    = SetSpaces (List Mensam.Space.Space)
     | SetSelected (Maybe Int)
     | OpenDialogToCreate
 
@@ -196,7 +197,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshSpaces
-    | ChooseSpace { id : Int }
+    | ChooseSpace Mensam.Space.Identifier
 
 
 spaceList : Mensam.Auth.Bearer.Jwt -> Cmd Message

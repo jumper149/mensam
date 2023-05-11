@@ -4,6 +4,7 @@ import Http
 import Json.Decode
 import Json.Encode
 import Mensam.Auth.Bearer
+import Mensam.Space
 import Url.Builder
 
 
@@ -14,7 +15,7 @@ type alias Request =
 
 
 type Response
-    = Success { spaces : List { id : Int, name : String } }
+    = Success { spaces : List Mensam.Space.Space }
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -103,13 +104,18 @@ encodeBody body =
         ]
 
 
-decodeBody200 : Json.Decode.Decoder { spaces : List { id : Int, name : String } }
+decodeBody200 : Json.Decode.Decoder { spaces : List Mensam.Space.Space }
 decodeBody200 =
     Json.Decode.map (\x -> { spaces = x }) <|
         Json.Decode.field "spaces" <|
             Json.Decode.list <|
                 Json.Decode.map2
-                    (\x y -> { id = x, name = y })
+                    (\x y ->
+                        Mensam.Space.MkSpace
+                            { id = Mensam.Space.MkIdentifier x
+                            , name = Mensam.Space.MkName y
+                            }
+                    )
                     (Json.Decode.field "id" Json.Decode.int)
                     (Json.Decode.field "name" Json.Decode.string)
 

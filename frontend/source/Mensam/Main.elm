@@ -18,6 +18,7 @@ import Mensam.Screen.Login
 import Mensam.Screen.Register
 import Mensam.Screen.Space
 import Mensam.Screen.Spaces
+import Mensam.Space
 import Mensam.Storage
 import Platform.Cmd
 import Task
@@ -66,7 +67,7 @@ type Route
     | RouteLogin (Maybe Mensam.Screen.Login.Model)
     | RouteRegister
     | RouteSpaces
-    | RouteSpace Int
+    | RouteSpace Mensam.Space.Identifier
 
 
 routeToUrl : Route -> String
@@ -84,8 +85,8 @@ routeToUrl route =
         RouteSpaces ->
             Url.Builder.absolute [ "spaces" ] []
 
-        RouteSpace id ->
-            Url.Builder.absolute [ "space", String.fromInt id ] []
+        RouteSpace identifier ->
+            Url.Builder.absolute [ "space", Mensam.Space.identifierToString identifier ] []
 
 
 routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
@@ -109,9 +110,9 @@ routeToModelUpdate route (MkModel model) =
             update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <|
                 MkModel { model | screen = ScreenSpaces Mensam.Screen.Spaces.init }
 
-        RouteSpace id ->
+        RouteSpace identifier ->
             update (MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks) <|
-                MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = id, time = model.time } }
+                MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = identifier, time = model.time } }
 
 
 urlParser : Url.Parser.Parser (Route -> c) c
@@ -121,7 +122,7 @@ urlParser =
         , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
         , Url.Parser.map RouteRegister <| Url.Parser.s "register"
         , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
-        , Url.Parser.map RouteSpace <| Url.Parser.s "space" </> Url.Parser.int
+        , Url.Parser.map RouteSpace <| Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         ]
 
 
@@ -524,8 +525,8 @@ update message (MkModel model) =
                             , Platform.Cmd.map MessageSpaces <| Mensam.Screen.Spaces.spaceList jwt
                             )
 
-                Mensam.Screen.Spaces.ChooseSpace { id } ->
-                    update (SetUrl <| RouteSpace id) <| MkModel model
+                Mensam.Screen.Spaces.ChooseSpace identifier ->
+                    update (SetUrl <| RouteSpace identifier) <| MkModel model
 
         MessageSpace (Mensam.Screen.Space.MessagePure m) ->
             case model.screen of
@@ -627,7 +628,7 @@ headerContent (MkModel model) =
                 Just "Spaces"
 
             ScreenSpace screenModel ->
-                Just <| "Space: " ++ String.fromInt screenModel.space.id
+                Just <| "Space: " ++ Mensam.Space.identifierToString screenModel.space
     }
 
 

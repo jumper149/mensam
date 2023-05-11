@@ -5,13 +5,14 @@ import Iso8601
 import Json.Decode
 import Json.Encode
 import Mensam.Auth.Bearer
+import Mensam.Space
 import Time
 import Url.Builder
 
 
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
-    , space : { id : Int }
+    , space : Mensam.Space.Identifier
     }
 
 
@@ -113,7 +114,7 @@ encodeBody body =
         [ ( "space"
           , Json.Encode.object
                 [ ( "tag", Json.Encode.string "identifier" )
-                , ( "value", Json.Encode.int body.space.id )
+                , ( "value", Mensam.Space.identifierEncode body.space )
                 ]
           )
         ]
