@@ -184,83 +184,69 @@ element model =
             model.create
                 |> (Maybe.map <|
                         \formData ->
-                            Element.el
-                                [ Element.width Element.fill
+                            Element.column
+                                [ Element.spacing 20
+                                , Element.width Element.fill
                                 , Element.height Element.fill
-                                , Element.paddingXY 30 30
                                 ]
-                            <|
-                                Element.el
-                                    [ Element.Background.color Mensam.Element.Color.bright.black
-                                    , Element.centerX
-                                    , Element.width <| Element.maximum 500 <| Element.fill
-                                    , Element.height <| Element.px 465
-                                    , Element.paddingXY 30 30
+                                [ Element.el
+                                    [ Element.Font.size 30
+                                    , Element.Font.hairline
                                     ]
-                                <|
-                                    Element.column
-                                        [ Element.spacing 20
+                                  <|
+                                    Element.text "Create space"
+                                , Element.Input.text
+                                    [ onEnter <| MessageEffect <| SubmitCreate formData
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    ]
+                                    { onChange = MessagePure << EnterSpaceName << Mensam.Space.MkName
+                                    , text = Mensam.Space.nameToString formData.name
+                                    , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
+                                    , label = Element.Input.labelAbove [] <| Element.text "Name"
+                                    }
+                                , Element.row
+                                    [ Element.width Element.fill
+                                    , Element.spacing 10
+                                    , Element.alignBottom
+                                    ]
+                                    [ Element.Input.button
+                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
                                         , Element.width Element.fill
-                                        , Element.height Element.fill
+                                        , Element.padding 10
                                         ]
-                                        [ Element.el
-                                            [ Element.Font.size 30
-                                            , Element.Font.hairline
-                                            ]
-                                          <|
-                                            Element.text "Create space"
-                                        , Element.Input.text
-                                            [ onEnter <| MessageEffect <| SubmitCreate formData
-                                            , Element.Font.color Mensam.Element.Color.dark.black
-                                            ]
-                                            { onChange = MessagePure << EnterSpaceName << Mensam.Space.MkName
-                                            , text = Mensam.Space.nameToString formData.name
-                                            , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
-                                            , label = Element.Input.labelAbove [] <| Element.text "Name"
-                                            }
-                                        , Element.row
-                                            [ Element.width Element.fill
-                                            , Element.spacing 10
-                                            , Element.alignBottom
-                                            ]
-                                            [ Element.Input.button
-                                                [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                                , Element.Font.color Mensam.Element.Color.dark.black
-                                                , Element.width Element.fill
-                                                , Element.padding 10
+                                        { onPress = Just <| MessagePure <| CloseDialogToCreate
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                                 ]
-                                                { onPress = Just <| MessagePure <| CloseDialogToCreate
-                                                , label =
-                                                    Element.el
-                                                        [ Element.centerX
-                                                        , Element.centerY
-                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                        ]
-                                                    <|
-                                                        Element.text "Abort"
-                                                }
-                                            , Element.Input.button
-                                                [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                                , Element.Font.color Mensam.Element.Color.dark.black
-                                                , Element.width Element.fill
-                                                , Element.padding 10
-                                                ]
-                                                { onPress = Just <| MessageEffect <| SubmitCreate formData
-                                                , label =
-                                                    Element.el
-                                                        [ Element.centerX
-                                                        , Element.centerY
-                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                        ]
-                                                    <|
-                                                        Element.text "Submit"
-                                                }
-                                            ]
+                                            <|
+                                                Element.text "Abort"
+                                        }
+                                    , Element.Input.button
+                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                        , Element.width Element.fill
+                                        , Element.padding 10
                                         ]
+                                        { onPress = Just <| MessageEffect <| SubmitCreate formData
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                ]
+                                            <|
+                                                Element.text "Submit"
+                                        }
+                                    ]
+                                ]
                    )
         }
 

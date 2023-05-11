@@ -196,150 +196,136 @@ element model =
             model.viewDetailed
                 |> (Maybe.map <|
                         \_ ->
-                            Element.el
-                                [ Element.width Element.fill
+                            Element.column
+                                [ Element.spacing 20
+                                , Element.width Element.fill
                                 , Element.height Element.fill
-                                , Element.paddingXY 30 30
                                 ]
-                            <|
-                                Element.el
-                                    [ Element.Background.color Mensam.Element.Color.bright.black
-                                    , Element.centerX
-                                    , Element.width <| Element.maximum 500 <| Element.fill
-                                    , Element.height <| Element.px 465
-                                    , Element.paddingXY 30 30
+                                [ Element.el
+                                    [ Element.Font.size 30
+                                    , Element.Font.hairline
                                     ]
-                                <|
-                                    Element.column
-                                        [ Element.spacing 20
+                                  <|
+                                    Element.text "Create reservation"
+                                , Element.row
+                                    [ Element.width Element.fill
+                                    , Element.spacing 10
+                                    ]
+                                    [ Element.Input.button
+                                        [ Element.Background.color Mensam.Element.Color.bright.blue
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
                                         , Element.width Element.fill
-                                        , Element.height Element.fill
+                                        , Element.padding 10
                                         ]
-                                        [ Element.el
-                                            [ Element.Font.size 30
-                                            , Element.Font.hairline
-                                            ]
-                                          <|
-                                            Element.text "Create reservation"
-                                        , Element.row
-                                            [ Element.width Element.fill
-                                            , Element.spacing 10
-                                            ]
-                                            [ Element.Input.button
-                                                [ Element.Background.color Mensam.Element.Color.bright.blue
-                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                                , Element.Font.color Mensam.Element.Color.dark.black
-                                                , Element.width Element.fill
-                                                , Element.padding 10
+                                        { onPress = Just <| MessagePure <| ViewDatePicker
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                                 ]
-                                                { onPress = Just <| MessagePure <| ViewDatePicker
-                                                , label =
-                                                    Element.el
-                                                        [ Element.centerX
-                                                        , Element.centerY
-                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            <|
+                                                Element.text <|
+                                                    let
+                                                        date =
+                                                            Mensam.Time.unDate model.dateSelected
+                                                    in
+                                                    String.concat
+                                                        [ Mensam.Time.yearToString date.year
+                                                        , ", "
+                                                        , Mensam.Time.monthToString date.month
+                                                        , " "
+                                                        , Mensam.Time.dayToString date.day
                                                         ]
-                                                    <|
-                                                        Element.text <|
-                                                            let
-                                                                date =
-                                                                    Mensam.Time.unDate model.dateSelected
-                                                            in
-                                                            String.concat
-                                                                [ Mensam.Time.yearToString date.year
-                                                                , ", "
-                                                                , Mensam.Time.monthToString date.month
-                                                                , " "
-                                                                , Mensam.Time.dayToString date.day
-                                                                ]
-                                                }
-                                            , Element.Input.button
-                                                [ Element.Background.color Mensam.Element.Color.bright.blue
-                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                                , Element.Font.color Mensam.Element.Color.dark.black
-                                                , Element.width Element.fill
-                                                , Element.padding 10
-                                                ]
-                                                { onPress = Just <| MessagePure <| ViewTimePicker
-                                                , label =
-                                                    Element.el
-                                                        [ Element.centerX
-                                                        , Element.centerY
-                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                        ]
-                                                    <|
-                                                        Element.text <|
-                                                            Mensam.Time.timeToString model.timeSelected
-                                                }
-                                            ]
-                                        , Element.el
-                                            [ Element.width Element.fill
-                                            ]
-                                          <|
-                                            case model.pickerVisibility of
-                                                DatePickerVisible ->
-                                                    Element.el
-                                                        [ Element.centerX
-                                                        ]
-                                                    <|
-                                                        Element.map (MessagePure << PickDate) <|
-                                                            Mensam.Time.elementPickDate model.modelDate
-
-                                                TimePickerVisible ->
-                                                    Element.el
-                                                        [ Element.centerX
-                                                        ]
-                                                    <|
-                                                        Element.map (MessagePure << PickTime) <|
-                                                            Mensam.Time.elementPickTime model.timeSelected
-
-                                                PickerInvisible ->
-                                                    Element.none
-                                        , Element.row
-                                            [ Element.width Element.fill
-                                            , Element.spacing 10
-                                            , Element.alignBottom
-                                            ]
-                                            [ Element.Input.button
-                                                [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                                , Element.Font.color Mensam.Element.Color.dark.black
-                                                , Element.width Element.fill
-                                                , Element.padding 10
-                                                ]
-                                                { onPress = Just <| MessagePure <| ViewDetailed Nothing
-                                                , label =
-                                                    Element.el
-                                                        [ Element.centerX
-                                                        , Element.centerY
-                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                        ]
-                                                    <|
-                                                        Element.text "Abort"
-                                                }
-                                            , Element.Input.button
-                                                [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                                , Element.Font.color Mensam.Element.Color.dark.black
-                                                , Element.width Element.fill
-                                                , Element.padding 10
-                                                ]
-                                                { onPress = Just <| MessageEffect <| SubmitReservation
-                                                , label =
-                                                    Element.el
-                                                        [ Element.centerX
-                                                        , Element.centerY
-                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                        ]
-                                                    <|
-                                                        Element.text "Submit"
-                                                }
-                                            ]
+                                        }
+                                    , Element.Input.button
+                                        [ Element.Background.color Mensam.Element.Color.bright.blue
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                        , Element.width Element.fill
+                                        , Element.padding 10
                                         ]
+                                        { onPress = Just <| MessagePure <| ViewTimePicker
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                ]
+                                            <|
+                                                Element.text <|
+                                                    Mensam.Time.timeToString model.timeSelected
+                                        }
+                                    ]
+                                , Element.el
+                                    [ Element.width Element.fill
+                                    ]
+                                  <|
+                                    case model.pickerVisibility of
+                                        DatePickerVisible ->
+                                            Element.el
+                                                [ Element.centerX
+                                                ]
+                                            <|
+                                                Element.map (MessagePure << PickDate) <|
+                                                    Mensam.Time.elementPickDate model.modelDate
+
+                                        TimePickerVisible ->
+                                            Element.el
+                                                [ Element.centerX
+                                                ]
+                                            <|
+                                                Element.map (MessagePure << PickTime) <|
+                                                    Mensam.Time.elementPickTime model.timeSelected
+
+                                        PickerInvisible ->
+                                            Element.none
+                                , Element.row
+                                    [ Element.width Element.fill
+                                    , Element.spacing 10
+                                    , Element.alignBottom
+                                    ]
+                                    [ Element.Input.button
+                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                        , Element.width Element.fill
+                                        , Element.padding 10
+                                        ]
+                                        { onPress = Just <| MessagePure <| ViewDetailed Nothing
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                ]
+                                            <|
+                                                Element.text "Abort"
+                                        }
+                                    , Element.Input.button
+                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                        , Element.width Element.fill
+                                        , Element.padding 10
+                                        ]
+                                        { onPress = Just <| MessageEffect <| SubmitReservation
+                                        , label =
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                ]
+                                            <|
+                                                Element.text "Submit"
+                                        }
+                                    ]
+                                ]
                    )
         }
 
