@@ -11,6 +11,7 @@ import Mensam.Api.ReservationCreate
 import Mensam.Auth.Bearer
 import Mensam.Element.Color
 import Mensam.Element.Font
+import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Time
@@ -95,259 +96,252 @@ init args =
 
 element : Model -> Element.Element Message
 element model =
-    Element.el
-        [ Element.width Element.fill
-        , Element.height Element.fill
-        , Element.padding 10
-        , Element.Background.color (Element.rgba 0 0 0 0.1)
-        , Element.Font.size 16
-        , Element.Font.family [ Mensam.Element.Font.condensed ]
-        , Element.inFront <|
-            case model.viewDetailed of
-                Nothing ->
-                    Element.none
-
-                Just _ ->
-                    Element.el
-                        [ Element.width Element.fill
-                        , Element.height Element.fill
-                        , Element.paddingXY 30 30
-                        ]
-                    <|
-                        Element.el
-                            [ Element.Background.color Mensam.Element.Color.bright.black
-                            , Element.centerX
-                            , Element.width <| Element.maximum 500 <| Element.fill
-                            , Element.height <| Element.px 465
-                            , Element.paddingXY 30 30
-                            ]
-                        <|
-                            Element.column
-                                [ Element.spacing 20
-                                , Element.width Element.fill
-                                , Element.height Element.fill
-                                ]
-                                [ Element.el
-                                    [ Element.Font.size 30
-                                    , Element.Font.hairline
-                                    ]
-                                  <|
-                                    Element.text "Create reservation"
-                                , Element.row
-                                    [ Element.width Element.fill
-                                    , Element.spacing 10
-                                    ]
-                                    [ Element.Input.button
-                                        [ Element.Background.color Mensam.Element.Color.bright.blue
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
-                                        , Element.width Element.fill
-                                        , Element.padding 10
-                                        ]
-                                        { onPress = Just <| MessagePure <| ViewDatePicker
-                                        , label =
-                                            Element.el
-                                                [ Element.centerX
-                                                , Element.centerY
-                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                ]
-                                            <|
-                                                Element.text <|
-                                                    let
-                                                        date =
-                                                            Mensam.Time.unDate model.dateSelected
-                                                    in
-                                                    String.concat
-                                                        [ Mensam.Time.yearToString date.year
-                                                        , ", "
-                                                        , Mensam.Time.monthToString date.month
-                                                        , " "
-                                                        , Mensam.Time.dayToString date.day
-                                                        ]
-                                        }
-                                    , Element.Input.button
-                                        [ Element.Background.color Mensam.Element.Color.bright.blue
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
-                                        , Element.width Element.fill
-                                        , Element.padding 10
-                                        ]
-                                        { onPress = Just <| MessagePure <| ViewTimePicker
-                                        , label =
-                                            Element.el
-                                                [ Element.centerX
-                                                , Element.centerY
-                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                ]
-                                            <|
-                                                Element.text <|
-                                                    Mensam.Time.timeToString model.timeSelected
-                                        }
-                                    ]
-                                , Element.el
-                                    [ Element.width Element.fill
-                                    ]
-                                  <|
-                                    case model.pickerVisibility of
-                                        DatePickerVisible ->
-                                            Element.el
-                                                [ Element.centerX
-                                                ]
-                                            <|
-                                                Element.map (MessagePure << PickDate) <|
-                                                    Mensam.Time.elementPickDate model.modelDate
-
-                                        TimePickerVisible ->
-                                            Element.el
-                                                [ Element.centerX
-                                                ]
-                                            <|
-                                                Element.map (MessagePure << PickTime) <|
-                                                    Mensam.Time.elementPickTime model.timeSelected
-
-                                        PickerInvisible ->
-                                            Element.none
-                                , Element.row
-                                    [ Element.width Element.fill
-                                    , Element.spacing 10
-                                    , Element.alignBottom
-                                    ]
-                                    [ Element.Input.button
-                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
-                                        , Element.width Element.fill
-                                        , Element.padding 10
-                                        ]
-                                        { onPress = Just <| MessagePure <| ViewDetailed Nothing
-                                        , label =
-                                            Element.el
-                                                [ Element.centerX
-                                                , Element.centerY
-                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                ]
-                                            <|
-                                                Element.text "Abort"
-                                        }
-                                    , Element.Input.button
-                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
-                                        , Element.width Element.fill
-                                        , Element.padding 10
-                                        ]
-                                        { onPress = Just <| MessageEffect <| SubmitReservation
-                                        , label =
-                                            Element.el
-                                                [ Element.centerX
-                                                , Element.centerY
-                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                ]
-                                            <|
-                                                Element.text "Submit"
-                                        }
-                                    ]
-                                ]
-        ]
-    <|
-        Element.indexedTable
-            [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-            ]
-            { data = model.desks
-            , columns =
-                let
-                    cell =
-                        Element.el
-                            [ Element.height <| Element.px 40
-                            , Element.padding 10
-                            ]
-                in
-                [ { header =
-                        Element.el
-                            [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                            ]
-                        <|
-                            cell <|
-                                Element.el
-                                    []
-                                <|
-                                    Element.text "ID"
-                  , width = Element.px 100
-                  , view =
-                        \n x ->
-                            Element.el
-                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
-                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                , let
-                                    alpha =
-                                        case model.selected of
-                                            Nothing ->
-                                                0.2
-
-                                            Just m ->
-                                                if m == n then
-                                                    0.4
-
-                                                else
-                                                    0.2
-                                  in
-                                  Element.Background.color (Element.rgba 0 0 0 alpha)
-                                ]
-                            <|
-                                cell <|
-                                    Element.el
-                                        [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                    <|
-                                        Element.text <|
-                                            String.fromInt x.desk.id
-                  }
-                , { header =
-                        Element.el
-                            [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                            ]
-                        <|
-                            cell <|
-                                Element.el
-                                    []
-                                <|
-                                    Element.text "Name"
-                  , width = Element.fill
-                  , view =
-                        \n x ->
-                            Element.el
-                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
-                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                , let
-                                    alpha =
-                                        case model.selected of
-                                            Nothing ->
-                                                0.2
-
-                                            Just m ->
-                                                if m == n then
-                                                    0.4
-
-                                                else
-                                                    0.2
-                                  in
-                                  Element.Background.color (Element.rgba 0 0 0 alpha)
-                                ]
-                            <|
-                                cell <|
-                                    Element.el
-                                        [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                    <|
-                                        Element.text <|
-                                            x.desk.name
-                  }
+    Mensam.Element.Screen.element
+        { main =
+            Element.indexedTable
+                [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                 ]
-            }
+                { data = model.desks
+                , columns =
+                    let
+                        cell =
+                            Element.el
+                                [ Element.height <| Element.px 40
+                                , Element.padding 10
+                                ]
+                    in
+                    [ { header =
+                            Element.el
+                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                ]
+                            <|
+                                cell <|
+                                    Element.el
+                                        []
+                                    <|
+                                        Element.text "ID"
+                      , width = Element.px 100
+                      , view =
+                            \n x ->
+                                Element.el
+                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                    , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
+                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                    , let
+                                        alpha =
+                                            case model.selected of
+                                                Nothing ->
+                                                    0.2
+
+                                                Just m ->
+                                                    if m == n then
+                                                        0.4
+
+                                                    else
+                                                        0.2
+                                      in
+                                      Element.Background.color (Element.rgba 0 0 0 alpha)
+                                    ]
+                                <|
+                                    cell <|
+                                        Element.el
+                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                        <|
+                                            Element.text <|
+                                                String.fromInt x.desk.id
+                      }
+                    , { header =
+                            Element.el
+                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                ]
+                            <|
+                                cell <|
+                                    Element.el
+                                        []
+                                    <|
+                                        Element.text "Name"
+                      , width = Element.fill
+                      , view =
+                            \n x ->
+                                Element.el
+                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                    , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
+                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                    , let
+                                        alpha =
+                                            case model.selected of
+                                                Nothing ->
+                                                    0.2
+
+                                                Just m ->
+                                                    if m == n then
+                                                        0.4
+
+                                                    else
+                                                        0.2
+                                      in
+                                      Element.Background.color (Element.rgba 0 0 0 alpha)
+                                    ]
+                                <|
+                                    cell <|
+                                        Element.el
+                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                        <|
+                                            Element.text <|
+                                                x.desk.name
+                      }
+                    ]
+                }
+        , popup =
+            model.viewDetailed
+                |> (Maybe.map <|
+                        \_ ->
+                            Element.el
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                , Element.paddingXY 30 30
+                                ]
+                            <|
+                                Element.el
+                                    [ Element.Background.color Mensam.Element.Color.bright.black
+                                    , Element.centerX
+                                    , Element.width <| Element.maximum 500 <| Element.fill
+                                    , Element.height <| Element.px 465
+                                    , Element.paddingXY 30 30
+                                    ]
+                                <|
+                                    Element.column
+                                        [ Element.spacing 20
+                                        , Element.width Element.fill
+                                        , Element.height Element.fill
+                                        ]
+                                        [ Element.el
+                                            [ Element.Font.size 30
+                                            , Element.Font.hairline
+                                            ]
+                                          <|
+                                            Element.text "Create reservation"
+                                        , Element.row
+                                            [ Element.width Element.fill
+                                            , Element.spacing 10
+                                            ]
+                                            [ Element.Input.button
+                                                [ Element.Background.color Mensam.Element.Color.bright.blue
+                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                                , Element.Font.color Mensam.Element.Color.dark.black
+                                                , Element.width Element.fill
+                                                , Element.padding 10
+                                                ]
+                                                { onPress = Just <| MessagePure <| ViewDatePicker
+                                                , label =
+                                                    Element.el
+                                                        [ Element.centerX
+                                                        , Element.centerY
+                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                        ]
+                                                    <|
+                                                        Element.text <|
+                                                            let
+                                                                date =
+                                                                    Mensam.Time.unDate model.dateSelected
+                                                            in
+                                                            String.concat
+                                                                [ Mensam.Time.yearToString date.year
+                                                                , ", "
+                                                                , Mensam.Time.monthToString date.month
+                                                                , " "
+                                                                , Mensam.Time.dayToString date.day
+                                                                ]
+                                                }
+                                            , Element.Input.button
+                                                [ Element.Background.color Mensam.Element.Color.bright.blue
+                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                                , Element.Font.color Mensam.Element.Color.dark.black
+                                                , Element.width Element.fill
+                                                , Element.padding 10
+                                                ]
+                                                { onPress = Just <| MessagePure <| ViewTimePicker
+                                                , label =
+                                                    Element.el
+                                                        [ Element.centerX
+                                                        , Element.centerY
+                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                        ]
+                                                    <|
+                                                        Element.text <|
+                                                            Mensam.Time.timeToString model.timeSelected
+                                                }
+                                            ]
+                                        , Element.el
+                                            [ Element.width Element.fill
+                                            ]
+                                          <|
+                                            case model.pickerVisibility of
+                                                DatePickerVisible ->
+                                                    Element.el
+                                                        [ Element.centerX
+                                                        ]
+                                                    <|
+                                                        Element.map (MessagePure << PickDate) <|
+                                                            Mensam.Time.elementPickDate model.modelDate
+
+                                                TimePickerVisible ->
+                                                    Element.el
+                                                        [ Element.centerX
+                                                        ]
+                                                    <|
+                                                        Element.map (MessagePure << PickTime) <|
+                                                            Mensam.Time.elementPickTime model.timeSelected
+
+                                                PickerInvisible ->
+                                                    Element.none
+                                        , Element.row
+                                            [ Element.width Element.fill
+                                            , Element.spacing 10
+                                            , Element.alignBottom
+                                            ]
+                                            [ Element.Input.button
+                                                [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                                , Element.Font.color Mensam.Element.Color.dark.black
+                                                , Element.width Element.fill
+                                                , Element.padding 10
+                                                ]
+                                                { onPress = Just <| MessagePure <| ViewDetailed Nothing
+                                                , label =
+                                                    Element.el
+                                                        [ Element.centerX
+                                                        , Element.centerY
+                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                        ]
+                                                    <|
+                                                        Element.text "Abort"
+                                                }
+                                            , Element.Input.button
+                                                [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                                , Element.Font.color Mensam.Element.Color.dark.black
+                                                , Element.width Element.fill
+                                                , Element.padding 10
+                                                ]
+                                                { onPress = Just <| MessageEffect <| SubmitReservation
+                                                , label =
+                                                    Element.el
+                                                        [ Element.centerX
+                                                        , Element.centerY
+                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                        ]
+                                                    <|
+                                                        Element.text "Submit"
+                                                }
+                                            ]
+                                        ]
+                   )
+        }
 
 
 type Message
