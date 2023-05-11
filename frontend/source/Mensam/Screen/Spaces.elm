@@ -5,6 +5,7 @@ import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
+import Mensam.Api.SpaceCreate
 import Mensam.Api.SpaceList
 import Mensam.Auth.Bearer
 import Mensam.Element.Color
@@ -16,7 +17,12 @@ import Mensam.Space
 type alias Model =
     { spaces : List Mensam.Space.Space
     , selected : Maybe Int
-    , create : Maybe ()
+    , create :
+        Maybe
+            { name : Mensam.Space.Name
+            , visible : Bool
+            , joinable : Bool
+            }
     }
 
 
@@ -179,6 +185,7 @@ type MessagePure
     = SetSpaces (List Mensam.Space.Space)
     | SetSelected (Maybe Int)
     | OpenDialogToCreate
+    | CloseDialogToCreate
 
 
 updatePure : MessagePure -> Model -> Model
@@ -191,7 +198,17 @@ updatePure message model =
             { model | selected = selection }
 
         OpenDialogToCreate ->
-            { model | create = Just () }
+            { model
+                | create =
+                    Just
+                        { name = Mensam.Space.MkName ""
+                        , visible = True
+                        , joinable = True
+                        }
+            }
+
+        CloseDialogToCreate ->
+            { model | create = Nothing }
 
 
 type MessageEffect
@@ -226,4 +243,39 @@ spaceList jwt =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Requesting spaces failed" <|
+                                Mensam.Error.http error
+
+
+spaceCreate :
+    { jwt : Mensam.Auth.Bearer.Jwt
+    , name : Mensam.Space.Name
+    , accessibility : Mensam.Space.Accessibility
+    , visibility : Mensam.Space.Visibility
+    }
+    -> Cmd Message
+spaceCreate req =
+    Mensam.Api.SpaceCreate.request req <|
+        \result ->
+            case result of
+                Ok (Mensam.Api.SpaceCreate.Success _) ->
+                    MessagePure CloseDialogToCreate
+
+                Ok (Mensam.Api.SpaceCreate.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Creating space failed" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceCreate.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Creating space failed" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Creating space failed" <|
                                 Mensam.Error.http error
