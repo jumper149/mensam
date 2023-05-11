@@ -4,12 +4,16 @@ import Element
 import Element.Background
 import Element.Events
 import Element.Font
+import Element.Input
 import Html.Attributes
+import Html.Events
+import Json.Decode
 import Mensam.Api.SpaceCreate
 import Mensam.Api.SpaceList
 import Mensam.Auth.Bearer
 import Mensam.Element.Color
 import Mensam.Element.Font
+import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 
@@ -36,144 +40,229 @@ init =
 
 element : Model -> Element.Element Message
 element model =
-    Element.column
-        [ Element.width Element.fill
-        ]
-        [ Element.el
-            [ Element.width Element.fill
-            , Element.height <| Element.px 70
-            , Element.padding 10
-            ]
-          <|
-            Element.row
+    Mensam.Element.Screen.element
+        { main =
+            Element.column
                 [ Element.width Element.fill
-                , Element.spacing 30
                 ]
                 [ Element.el
-                    [ Element.alignRight
+                    [ Element.width Element.fill
+                    , Element.height <| Element.px 70
                     , Element.padding 10
-                    , Element.Background.color Mensam.Element.Color.bright.yellow
-                    , Element.Font.color Mensam.Element.Color.dark.black
-                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                    , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                    , Element.Events.onClick <| MessagePure OpenDialogToCreate
                     ]
                   <|
-                    Element.el
-                        [ Element.centerX
-                        , Element.centerY
-                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                        , Element.Font.size 17
-                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                    Element.row
+                        [ Element.width Element.fill
+                        , Element.spacing 30
                         ]
-                    <|
-                        Element.text "Create new Space"
-                ]
-        , Element.el
-            [ Element.width Element.fill
-            , Element.height Element.fill
-            , Element.padding 10
-            , Element.Background.color (Element.rgba 0 0 0 0.1)
-            , Element.Font.size 16
-            , Element.Font.family [ Mensam.Element.Font.condensed ]
-            ]
-          <|
-            Element.indexedTable
-                [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                ]
-                { data = model.spaces
-                , columns =
-                    let
-                        cell =
+                        [ Element.el
+                            [ Element.alignRight
+                            , Element.padding 10
+                            , Element.Background.color Mensam.Element.Color.bright.yellow
+                            , Element.Font.color Mensam.Element.Color.dark.black
+                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                            , Element.Events.onClick <| MessagePure OpenDialogToCreate
+                            ]
+                          <|
                             Element.el
-                                [ Element.height <| Element.px 40
-                                , Element.padding 10
-                                ]
-                    in
-                    [ { header =
-                            Element.el
-                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                [ Element.centerX
+                                , Element.centerY
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                , Element.Font.size 17
+                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
                             <|
-                                cell <|
-                                    Element.el
-                                        []
-                                    <|
-                                        Element.text "ID"
-                      , width = Element.px 100
-                      , view =
-                            \n (Mensam.Space.MkSpace space) ->
-                                Element.el
-                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                    , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
-                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                    , let
-                                        alpha =
-                                            case model.selected of
-                                                Nothing ->
-                                                    0.2
-
-                                                Just m ->
-                                                    if m == n then
-                                                        0.4
-
-                                                    else
-                                                        0.2
-                                      in
-                                      Element.Background.color (Element.rgba 0 0 0 alpha)
-                                    ]
-                                <|
-                                    cell <|
-                                        Element.el
-                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                        <|
-                                            Element.text <|
-                                                Mensam.Space.identifierToString space.id
-                      }
-                    , { header =
-                            Element.el
-                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                ]
-                            <|
-                                cell <|
-                                    Element.el
-                                        []
-                                    <|
-                                        Element.text "Name"
-                      , width = Element.fill
-                      , view =
-                            \n (Mensam.Space.MkSpace space) ->
-                                Element.el
-                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                    , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
-                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                    , let
-                                        alpha =
-                                            case model.selected of
-                                                Nothing ->
-                                                    0.2
-
-                                                Just m ->
-                                                    if m == n then
-                                                        0.4
-
-                                                    else
-                                                        0.2
-                                      in
-                                      Element.Background.color (Element.rgba 0 0 0 alpha)
-                                    ]
-                                <|
-                                    cell <|
-                                        Element.el
-                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                        <|
-                                            Element.text <|
-                                                Mensam.Space.nameToString space.name
-                      }
+                                Element.text "Create new Space"
+                        ]
+                , Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.padding 10
+                    , Element.Background.color (Element.rgba 0 0 0 0.1)
+                    , Element.Font.size 16
+                    , Element.Font.family [ Mensam.Element.Font.condensed ]
                     ]
-                }
-        ]
+                  <|
+                    Element.indexedTable
+                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                        ]
+                        { data = model.spaces
+                        , columns =
+                            let
+                                cell =
+                                    Element.el
+                                        [ Element.height <| Element.px 40
+                                        , Element.padding 10
+                                        ]
+                            in
+                            [ { header =
+                                    Element.el
+                                        [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                        ]
+                                    <|
+                                        cell <|
+                                            Element.el
+                                                []
+                                            <|
+                                                Element.text "ID"
+                              , width = Element.px 100
+                              , view =
+                                    \n (Mensam.Space.MkSpace space) ->
+                                        Element.el
+                                            [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                            , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
+                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                            , let
+                                                alpha =
+                                                    case model.selected of
+                                                        Nothing ->
+                                                            0.2
+
+                                                        Just m ->
+                                                            if m == n then
+                                                                0.4
+
+                                                            else
+                                                                0.2
+                                              in
+                                              Element.Background.color (Element.rgba 0 0 0 alpha)
+                                            ]
+                                        <|
+                                            cell <|
+                                                Element.el
+                                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                <|
+                                                    Element.text <|
+                                                        Mensam.Space.identifierToString space.id
+                              }
+                            , { header =
+                                    Element.el
+                                        [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                        ]
+                                    <|
+                                        cell <|
+                                            Element.el
+                                                []
+                                            <|
+                                                Element.text "Name"
+                              , width = Element.fill
+                              , view =
+                                    \n (Mensam.Space.MkSpace space) ->
+                                        Element.el
+                                            [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                            , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
+                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                            , let
+                                                alpha =
+                                                    case model.selected of
+                                                        Nothing ->
+                                                            0.2
+
+                                                        Just m ->
+                                                            if m == n then
+                                                                0.4
+
+                                                            else
+                                                                0.2
+                                              in
+                                              Element.Background.color (Element.rgba 0 0 0 alpha)
+                                            ]
+                                        <|
+                                            cell <|
+                                                Element.el
+                                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                <|
+                                                    Element.text <|
+                                                        Mensam.Space.nameToString space.name
+                              }
+                            ]
+                        }
+                ]
+        , popup =
+            model.create
+                |> (Maybe.map <|
+                        \formData ->
+                            Element.el
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                , Element.paddingXY 30 30
+                                ]
+                            <|
+                                Element.el
+                                    [ Element.Background.color Mensam.Element.Color.bright.black
+                                    , Element.centerX
+                                    , Element.width <| Element.maximum 500 <| Element.fill
+                                    , Element.height <| Element.px 465
+                                    , Element.paddingXY 30 30
+                                    ]
+                                <|
+                                    Element.column
+                                        [ Element.spacing 20
+                                        , Element.width Element.fill
+                                        , Element.height Element.fill
+                                        ]
+                                        [ Element.el
+                                            [ Element.Font.size 30
+                                            , Element.Font.hairline
+                                            ]
+                                          <|
+                                            Element.text "Create space"
+                                        , Element.Input.text
+                                            [ onEnter <| MessageEffect <| SubmitCreate formData
+                                            , Element.Font.color Mensam.Element.Color.dark.black
+                                            ]
+                                            { onChange = MessagePure << EnterSpaceName << Mensam.Space.MkName
+                                            , text = Mensam.Space.nameToString formData.name
+                                            , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
+                                            , label = Element.Input.labelAbove [] <| Element.text "Name"
+                                            }
+                                        , Element.row
+                                            [ Element.width Element.fill
+                                            , Element.spacing 10
+                                            , Element.alignBottom
+                                            ]
+                                            [ Element.Input.button
+                                                [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                                , Element.Font.color Mensam.Element.Color.dark.black
+                                                , Element.width Element.fill
+                                                , Element.padding 10
+                                                ]
+                                                { onPress = Just <| MessagePure <| CloseDialogToCreate
+                                                , label =
+                                                    Element.el
+                                                        [ Element.centerX
+                                                        , Element.centerY
+                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                        ]
+                                                    <|
+                                                        Element.text "Abort"
+                                                }
+                                            , Element.Input.button
+                                                [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                                , Element.Font.color Mensam.Element.Color.dark.black
+                                                , Element.width Element.fill
+                                                , Element.padding 10
+                                                ]
+                                                { onPress = Just <| MessageEffect <| SubmitCreate formData
+                                                , label =
+                                                    Element.el
+                                                        [ Element.centerX
+                                                        , Element.centerY
+                                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                        ]
+                                                    <|
+                                                        Element.text "Submit"
+                                                }
+                                            ]
+                                        ]
+                   )
+        }
 
 
 type Message
@@ -184,6 +273,7 @@ type Message
 type MessagePure
     = SetSpaces (List Mensam.Space.Space)
     | SetSelected (Maybe Int)
+    | EnterSpaceName Mensam.Space.Name
     | OpenDialogToCreate
     | CloseDialogToCreate
 
@@ -210,11 +300,45 @@ updatePure message model =
         CloseDialogToCreate ->
             { model | create = Nothing }
 
+        EnterSpaceName name ->
+            { model
+                | create =
+                    model.create
+                        |> (Maybe.map <|
+                                \create ->
+                                    { create
+                                        | name = name
+                                    }
+                           )
+            }
+
 
 type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshSpaces
     | ChooseSpace Mensam.Space.Identifier
+    | SubmitCreate
+        { name : Mensam.Space.Name
+        , visible : Bool
+        , joinable : Bool
+        }
+
+
+onEnter : msg -> Element.Attribute msg
+onEnter msg =
+    Element.htmlAttribute
+        (Html.Events.on "keyup"
+            (Json.Decode.field "key" Json.Decode.string
+                |> Json.Decode.andThen
+                    (\key ->
+                        if key == "Enter" then
+                            Json.Decode.succeed msg
+
+                        else
+                            Json.Decode.fail "Not the enter key"
+                    )
+            )
+        )
 
 
 spaceList : Mensam.Auth.Bearer.Jwt -> Cmd Message

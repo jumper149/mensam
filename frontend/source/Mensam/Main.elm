@@ -525,6 +525,32 @@ update message (MkModel model) =
                             , Platform.Cmd.map MessageSpaces <| Mensam.Screen.Spaces.spaceList jwt
                             )
 
+                Mensam.Screen.Spaces.SubmitCreate formData ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            ( MkModel model
+                            , Platform.Cmd.map MessageSpaces <|
+                                Mensam.Screen.Spaces.spaceCreate
+                                    { jwt = jwt
+                                    , name = formData.name
+                                    , accessibility =
+                                        if formData.joinable then
+                                            Mensam.Space.MkAccessibilityJoinable
+
+                                        else
+                                            Mensam.Space.MkAccessibilityInaccessible
+                                    , visibility =
+                                        if formData.visible then
+                                            Mensam.Space.MkVisibilityVisible
+
+                                        else
+                                            Mensam.Space.MkVisibilityHidden
+                                    }
+                            )
+
                 Mensam.Screen.Spaces.ChooseSpace identifier ->
                     update (SetUrl <| RouteSpace identifier) <| MkModel model
 
