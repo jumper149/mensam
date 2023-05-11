@@ -1,3 +1,10 @@
 = Static
 
 Static files are bundled and will be served at runtime from the server.
+This includes different kinds of files.
+
+Fallback Webpage:: HTML
+Icons:: Favicon, others
+Fonts:: WOFF2, CSS
+Redoc:: JavaScript, CSS
+Frontend:: JavaScript
