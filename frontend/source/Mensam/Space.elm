@@ -1,7 +1,7 @@
 module Mensam.Space exposing (..)
 
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 
 
 type Space
@@ -20,15 +20,15 @@ identifierToString (MkIdentifier identifier) =
     String.fromInt identifier
 
 
-identifierEncode : Identifier -> Json.Encode.Value
+identifierEncode : Identifier -> Encode.Value
 identifierEncode (MkIdentifier identifier) =
-    Json.Encode.int identifier
+    Encode.int identifier
 
 
-identifierDecoder : Json.Decode.Decoder Identifier
+identifierDecoder : Decode.Decoder Identifier
 identifierDecoder =
-    Json.Decode.map MkIdentifier
-        Json.Decode.int
+    Decode.map MkIdentifier
+        Decode.int
 
 
 type Name
@@ -40,9 +40,9 @@ nameToString (MkName name) =
     name
 
 
-nameEncode : Name -> Json.Encode.Value
+nameEncode : Name -> Encode.Value
 nameEncode =
-    Json.Encode.string << nameToString
+    Encode.string << nameToString
 
 
 type Accessibility
@@ -50,9 +50,9 @@ type Accessibility
     | MkAccessibilityInaccessible
 
 
-accessibilityEncode : Accessibility -> Json.Encode.Value
+accessibilityEncode : Accessibility -> Encode.Value
 accessibilityEncode accessibility =
-    Json.Encode.string <|
+    Encode.string <|
         case accessibility of
             MkAccessibilityJoinable ->
                 "joinable"
@@ -66,9 +66,9 @@ type Visibility
     | MkVisibilityHidden
 
 
-visibilityEncode : Visibility -> Json.Encode.Value
+visibilityEncode : Visibility -> Encode.Value
 visibilityEncode visibility =
-    Json.Encode.string <|
+    Encode.string <|
         case visibility of
             MkVisibilityVisible ->
                 "visible"

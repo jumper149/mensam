@@ -1,7 +1,7 @@
 module Mensam.Api.Logout exposing (..)
 
 import Http
-import Json.Decode
+import Json.Decode as Decode
 import Mensam.Auth.Bearer
 import Url.Builder
 
@@ -51,12 +51,12 @@ responseResult httpResponse =
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
                 401 ->
-                    case Json.Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
+                    case Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
                         Ok value ->
                             Ok <| ErrorAuth value
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
@@ -64,18 +64,18 @@ responseResult httpResponse =
         Http.GoodStatus_ metadata body ->
             case metadata.statusCode of
                 200 ->
-                    case Json.Decode.decodeString decodeBody200 body of
+                    case Decode.decodeString decodeBody200 body of
                         Ok () ->
                             Ok <| Success
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
 
 
-decodeBody200 : Json.Decode.Decoder ()
+decodeBody200 : Decode.Decoder ()
 decodeBody200 =
-    Json.Decode.map (\_ -> ())
-        (Json.Decode.field "unit" <| Json.Decode.list <| Json.Decode.succeed ())
+    Decode.map (\_ -> ())
+        (Decode.field "unit" <| Decode.list <| Decode.succeed ())

@@ -1,8 +1,8 @@
 module Mensam.Api.SpaceCreate exposing (..)
 
 import Http
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
 import Url.Builder
@@ -58,20 +58,20 @@ responseResult httpResponse =
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
                 400 ->
-                    case Json.Decode.decodeString decodeBody400 body of
+                    case Decode.decodeString decodeBody400 body of
                         Ok error ->
                             Ok <| ErrorBody error
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 401 ->
-                    case Json.Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
+                    case Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
                         Ok error ->
                             Ok <| ErrorAuth error
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
@@ -79,20 +79,20 @@ responseResult httpResponse =
         Http.GoodStatus_ metadata body ->
             case metadata.statusCode of
                 201 ->
-                    case Json.Decode.decodeString decodeBody201 body of
+                    case Decode.decodeString decodeBody201 body of
                         Ok response ->
                             Ok <| Success response
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
 
 
-encodeBody : Request -> Json.Encode.Value
+encodeBody : Request -> Encode.Value
 encodeBody body =
-    Json.Encode.object
+    Encode.object
         [ ( "name"
           , Mensam.Space.nameEncode body.name
           )
@@ -105,13 +105,13 @@ encodeBody body =
         ]
 
 
-decodeBody201 : Json.Decode.Decoder { id : Mensam.Space.Identifier }
+decodeBody201 : Decode.Decoder { id : Mensam.Space.Identifier }
 decodeBody201 =
-    Json.Decode.map
+    Decode.map
         (\id -> { id = id })
-        (Json.Decode.field "id" Mensam.Space.identifierDecoder)
+        (Decode.field "id" Mensam.Space.identifierDecoder)
 
 
-decodeBody400 : Json.Decode.Decoder String
+decodeBody400 : Decode.Decoder String
 decodeBody400 =
-    Json.Decode.field "error" Json.Decode.string
+    Decode.field "error" Decode.string

@@ -2,7 +2,7 @@ module Mensam.Auth.Basic exposing (..)
 
 import Base64
 import Http
-import Json.Decode
+import Json.Decode as Decode
 import Mensam.Error
 
 
@@ -40,21 +40,21 @@ error err =
                 Mensam.Error.undefined
 
 
-http401BodyDecoder : Json.Decode.Decoder Error
+http401BodyDecoder : Decode.Decoder Error
 http401BodyDecoder =
-    Json.Decode.string
-        |> Json.Decode.andThen
+    Decode.string
+        |> Decode.andThen
             (\string ->
                 case string of
                     "username" ->
-                        Json.Decode.succeed ErrorUsername
+                        Decode.succeed ErrorUsername
 
                     "password" ->
-                        Json.Decode.succeed ErrorPassword
+                        Decode.succeed ErrorPassword
 
                     "indefinite" ->
-                        Json.Decode.succeed ErrorIndefinite
+                        Decode.succeed ErrorIndefinite
 
                     _ ->
-                        Json.Decode.fail <| "Trying to decode basic authentication error, but this option is not supported: " ++ string
+                        Decode.fail <| "Trying to decode basic authentication error, but this option is not supported: " ++ string
             )

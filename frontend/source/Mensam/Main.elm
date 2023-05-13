@@ -3,7 +3,7 @@ module Mensam.Main exposing (..)
 import Browser
 import Browser.Navigation
 import Element
-import Json.Encode
+import Json.Encode as Encode
 import Mensam.Api.Logout
 import Mensam.Application
 import Mensam.Auth
@@ -28,7 +28,7 @@ import Url.Builder
 import Url.Parser exposing ((</>))
 
 
-main : Program Json.Encode.Value Model Message
+main : Program Encode.Value Model Message
 main =
     Browser.application
         { init = init

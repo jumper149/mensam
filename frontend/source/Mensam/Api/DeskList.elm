@@ -2,8 +2,8 @@ module Mensam.Api.DeskList exposing (..)
 
 import Http
 import Iso8601
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
 import Time
@@ -76,20 +76,20 @@ responseResult httpResponse =
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
                 400 ->
-                    case Json.Decode.decodeString decodeBody400 body of
+                    case Decode.decodeString decodeBody400 body of
                         Ok error ->
                             Ok <| ErrorBody error
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 401 ->
-                    case Json.Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
+                    case Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
                         Ok error ->
                             Ok <| ErrorAuth error
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
@@ -97,58 +97,58 @@ responseResult httpResponse =
         Http.GoodStatus_ metadata body ->
             case metadata.statusCode of
                 200 ->
-                    case Json.Decode.decodeString decodeBody200 body of
+                    case Decode.decodeString decodeBody200 body of
                         Ok response ->
                             Ok <| Success response
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
 
 
-encodeBody : Request -> Json.Encode.Value
+encodeBody : Request -> Encode.Value
 encodeBody body =
-    Json.Encode.object
+    Encode.object
         [ ( "space"
-          , Json.Encode.object
-                [ ( "tag", Json.Encode.string "identifier" )
+          , Encode.object
+                [ ( "tag", Encode.string "identifier" )
                 , ( "value", Mensam.Space.identifierEncode body.space )
                 ]
           )
         ]
 
 
-decodeBody200 : Json.Decode.Decoder { desks : List { desk : { id : Int, name : String, space : Int }, reservations : List { desk : Int, id : Int, status : String, timeBegin : Time.Posix, timeEnd : Time.Posix, user : Int } } }
+decodeBody200 : Decode.Decoder { desks : List { desk : { id : Int, name : String, space : Int }, reservations : List { desk : Int, id : Int, status : String, timeBegin : Time.Posix, timeEnd : Time.Posix, user : Int } } }
 decodeBody200 =
     let
         decodeDesk =
-            Json.Decode.map3
+            Decode.map3
                 (\id name space -> { id = id, name = name, space = space })
-                (Json.Decode.field "id" Json.Decode.int)
-                (Json.Decode.field "name" Json.Decode.string)
-                (Json.Decode.field "space" Json.Decode.int)
+                (Decode.field "id" Decode.int)
+                (Decode.field "name" Decode.string)
+                (Decode.field "space" Decode.int)
 
         decodeReservation =
-            Json.Decode.map6
+            Decode.map6
                 (\desk id status timeBegin timeEnd user -> { desk = desk, id = id, status = status, timeBegin = timeBegin, timeEnd = timeEnd, user = user })
-                (Json.Decode.field "desk" Json.Decode.int)
-                (Json.Decode.field "id" Json.Decode.int)
-                (Json.Decode.field "status" Json.Decode.string)
-                (Json.Decode.field "time-begin" Iso8601.decoder)
-                (Json.Decode.field "time-end" Iso8601.decoder)
-                (Json.Decode.field "user" Json.Decode.int)
+                (Decode.field "desk" Decode.int)
+                (Decode.field "id" Decode.int)
+                (Decode.field "status" Decode.string)
+                (Decode.field "time-begin" Iso8601.decoder)
+                (Decode.field "time-end" Iso8601.decoder)
+                (Decode.field "user" Decode.int)
     in
-    Json.Decode.map (\desks -> { desks = desks }) <|
-        Json.Decode.field "desks" <|
-            Json.Decode.list <|
-                Json.Decode.map2
+    Decode.map (\desks -> { desks = desks }) <|
+        Decode.field "desks" <|
+            Decode.list <|
+                Decode.map2
                     (\desk reservations -> { desk = desk, reservations = reservations })
-                    (Json.Decode.field "desk" decodeDesk)
-                    (Json.Decode.field "reservations" <| Json.Decode.list <| decodeReservation)
+                    (Decode.field "desk" decodeDesk)
+                    (Decode.field "reservations" <| Decode.list <| decodeReservation)
 
 
-decodeBody400 : Json.Decode.Decoder String
+decodeBody400 : Decode.Decoder String
 decodeBody400 =
-    Json.Decode.field "error" Json.Decode.string
+    Decode.field "error" Decode.string

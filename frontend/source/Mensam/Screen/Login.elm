@@ -6,7 +6,7 @@ import Element.Font
 import Element.Input
 import Html.Attributes
 import Html.Events
-import Json.Decode
+import Json.Decode as Decode
 import Mensam.Api.Login
 import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
@@ -171,14 +171,14 @@ onEnter : msg -> Element.Attribute msg
 onEnter msg =
     Element.htmlAttribute
         (Html.Events.on "keyup"
-            (Json.Decode.field "key" Json.Decode.string
-                |> Json.Decode.andThen
+            (Decode.field "key" Decode.string
+                |> Decode.andThen
                     (\key ->
                         if key == "Enter" then
-                            Json.Decode.succeed msg
+                            Decode.succeed msg
 
                         else
-                            Json.Decode.fail "Not the enter key"
+                            Decode.fail "Not the enter key"
                     )
             )
         )

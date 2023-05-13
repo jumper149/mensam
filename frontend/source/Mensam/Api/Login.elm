@@ -2,7 +2,7 @@ module Mensam.Api.Login exposing (..)
 
 import Http
 import Iso8601
-import Json.Decode
+import Json.Decode as Decode
 import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
 import Time
@@ -59,12 +59,12 @@ responseResult httpResponse =
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
                 401 ->
-                    case Json.Decode.decodeString Mensam.Auth.Basic.http401BodyDecoder body of
+                    case Decode.decodeString Mensam.Auth.Basic.http401BodyDecoder body of
                         Ok value ->
                             Ok <| ErrorAuth value
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
@@ -72,19 +72,19 @@ responseResult httpResponse =
         Http.GoodStatus_ metadata body ->
             case metadata.statusCode of
                 200 ->
-                    case Json.Decode.decodeString decodeBody200 body of
+                    case Decode.decodeString decodeBody200 body of
                         Ok value ->
                             Ok <| Success value
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
 
 
-decodeBody200 : Json.Decode.Decoder { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
+decodeBody200 : Decode.Decoder { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
 decodeBody200 =
-    Json.Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
-        (Json.Decode.field "jwt" Mensam.Auth.Bearer.decoder)
-        (Json.Decode.maybe <| Json.Decode.field "expiration" Iso8601.decoder)
+    Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
+        (Decode.field "jwt" Mensam.Auth.Bearer.decoder)
+        (Decode.maybe <| Decode.field "expiration" Iso8601.decoder)

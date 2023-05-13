@@ -7,8 +7,8 @@ port module Mensam.Storage exposing
     )
 
 import Iso8601
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Time
 
@@ -20,7 +20,7 @@ type Storage
         }
 
 
-port setStorageJson : Json.Encode.Value -> Cmd msg
+port setStorageJson : Encode.Value -> Cmd msg
 
 
 set : Storage -> Cmd msg
@@ -30,29 +30,29 @@ set =
 
 unset : Cmd msg
 unset =
-    setStorageJson Json.Encode.null
+    setStorageJson Encode.null
 
 
 type alias StorageRaw =
-    Json.Encode.Value
+    Encode.Value
 
 
-decoder : Json.Decode.Decoder (Maybe Storage)
+decoder : Decode.Decoder (Maybe Storage)
 decoder =
-    Json.Decode.nullable <|
-        Json.Decode.map2 (\jwt expiration -> MkStorage { jwt = jwt, expiration = expiration })
-            (Json.Decode.field "jwt" Mensam.Auth.Bearer.decoder)
-            (Json.Decode.field "expiration" <| Json.Decode.nullable Iso8601.decoder)
+    Decode.nullable <|
+        Decode.map2 (\jwt expiration -> MkStorage { jwt = jwt, expiration = expiration })
+            (Decode.field "jwt" Mensam.Auth.Bearer.decoder)
+            (Decode.field "expiration" <| Decode.nullable Iso8601.decoder)
 
 
 encode : Storage -> StorageRaw
 encode (MkStorage storage) =
-    Json.Encode.object
+    Encode.object
         [ ( "jwt", Mensam.Auth.Bearer.encode storage.jwt )
         , ( "expiration"
           , case storage.expiration of
                 Nothing ->
-                    Json.Encode.null
+                    Encode.null
 
                 Just expiration ->
                     Iso8601.encode expiration

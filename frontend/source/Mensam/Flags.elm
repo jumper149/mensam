@@ -4,8 +4,8 @@ module Mensam.Flags exposing
     , parse
     )
 
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Mensam.Error
 import Mensam.Storage
 
@@ -17,7 +17,7 @@ type Flags
 
 
 type alias FlagsRaw =
-    Json.Encode.Value
+    Encode.Value
 
 
 parse : FlagsRaw -> Result Mensam.Error.Error Flags
@@ -25,10 +25,10 @@ parse flagsRaw =
     Result.mapError
         (Mensam.Error.message "Failed to parse flags" << Mensam.Error.json)
     <|
-        Json.Decode.decodeValue decoder flagsRaw
+        Decode.decodeValue decoder flagsRaw
 
 
-decoder : Json.Decode.Decoder Flags
+decoder : Decode.Decoder Flags
 decoder =
-    Json.Decode.map (\storage -> MkFlags { storage = storage })
-        (Json.Decode.field "storage" Mensam.Storage.decoder)
+    Decode.map (\storage -> MkFlags { storage = storage })
+        (Decode.field "storage" Mensam.Storage.decoder)

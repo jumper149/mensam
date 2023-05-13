@@ -1,8 +1,8 @@
 module Mensam.Api.Register exposing (..)
 
 import Http
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Url.Builder
 
 
@@ -54,12 +54,12 @@ responseResult httpResponse =
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
                 400 ->
-                    case Json.Decode.decodeString decodeBody400 body of
+                    case Decode.decodeString decodeBody400 body of
                         Ok error ->
                             Ok <| ErrorBody error
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
@@ -67,33 +67,33 @@ responseResult httpResponse =
         Http.GoodStatus_ metadata body ->
             case metadata.statusCode of
                 201 ->
-                    case Json.Decode.decodeString decodeBody201 body of
+                    case Decode.decodeString decodeBody201 body of
                         Ok value ->
                             Ok <| Success value
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
 
 
-encodeBody : Request -> Json.Encode.Value
+encodeBody : Request -> Encode.Value
 encodeBody body =
-    Json.Encode.object
-        [ ( "email", Json.Encode.string body.email )
-        , ( "email-visible", Json.Encode.bool body.emailVisible )
-        , ( "name", Json.Encode.string body.name )
-        , ( "password", Json.Encode.string body.password )
+    Encode.object
+        [ ( "email", Encode.string body.email )
+        , ( "email-visible", Encode.bool body.emailVisible )
+        , ( "name", Encode.string body.name )
+        , ( "password", Encode.string body.password )
         ]
 
 
-decodeBody201 : Json.Decode.Decoder { emailSent : Bool }
+decodeBody201 : Decode.Decoder { emailSent : Bool }
 decodeBody201 =
-    Json.Decode.map (\emailSent -> { emailSent = emailSent })
-        (Json.Decode.field "email-sent" Json.Decode.bool)
+    Decode.map (\emailSent -> { emailSent = emailSent })
+        (Decode.field "email-sent" Decode.bool)
 
 
-decodeBody400 : Json.Decode.Decoder String
+decodeBody400 : Decode.Decoder String
 decodeBody400 =
-    Json.Decode.field "error" Json.Decode.string
+    Decode.field "error" Decode.string

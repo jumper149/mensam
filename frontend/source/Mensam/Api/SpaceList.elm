@@ -1,8 +1,8 @@
 module Mensam.Api.SpaceList exposing (..)
 
 import Http
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
 import Url.Builder
@@ -56,20 +56,20 @@ responseResult httpResponse =
         Http.BadStatus_ metadata body ->
             case metadata.statusCode of
                 400 ->
-                    case Json.Decode.decodeString decodeBody400 body of
+                    case Decode.decodeString decodeBody400 body of
                         Ok error ->
                             Ok <| ErrorBody error
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 401 ->
-                    case Json.Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
+                    case Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
                         Ok error ->
                             Ok <| ErrorAuth error
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
@@ -77,26 +77,26 @@ responseResult httpResponse =
         Http.GoodStatus_ metadata body ->
             case metadata.statusCode of
                 200 ->
-                    case Json.Decode.decodeString decodeBody200 body of
+                    case Decode.decodeString decodeBody200 body of
                         Ok response ->
                             Ok <| Success response
 
                         Err err ->
-                            Err <| Http.BadBody <| Json.Decode.errorToString err
+                            Err <| Http.BadBody <| Decode.errorToString err
 
                 status ->
                     Err <| Http.BadStatus status
 
 
-encodeBody : Request -> Json.Encode.Value
+encodeBody : Request -> Encode.Value
 encodeBody body =
-    Json.Encode.object
+    Encode.object
         [ ( "order"
-          , Json.Encode.list
+          , Encode.list
                 (\x ->
-                    Json.Encode.object
-                        [ ( "category", Json.Encode.string x.category )
-                        , ( "order", Json.Encode.string x.order )
+                    Encode.object
+                        [ ( "category", Encode.string x.category )
+                        , ( "order", Encode.string x.order )
                         ]
                 )
                 body.order
@@ -104,22 +104,22 @@ encodeBody body =
         ]
 
 
-decodeBody200 : Json.Decode.Decoder { spaces : List Mensam.Space.Space }
+decodeBody200 : Decode.Decoder { spaces : List Mensam.Space.Space }
 decodeBody200 =
-    Json.Decode.map (\x -> { spaces = x }) <|
-        Json.Decode.field "spaces" <|
-            Json.Decode.list <|
-                Json.Decode.map2
+    Decode.map (\x -> { spaces = x }) <|
+        Decode.field "spaces" <|
+            Decode.list <|
+                Decode.map2
                     (\x y ->
                         Mensam.Space.MkSpace
                             { id = Mensam.Space.MkIdentifier x
                             , name = Mensam.Space.MkName y
                             }
                     )
-                    (Json.Decode.field "id" Json.Decode.int)
-                    (Json.Decode.field "name" Json.Decode.string)
+                    (Decode.field "id" Decode.int)
+                    (Decode.field "name" Decode.string)
 
 
-decodeBody400 : Json.Decode.Decoder String
+decodeBody400 : Decode.Decoder String
 decodeBody400 =
-    Json.Decode.field "error" Json.Decode.string
+    Decode.field "error" Decode.string

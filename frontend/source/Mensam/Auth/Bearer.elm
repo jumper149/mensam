@@ -1,8 +1,8 @@
 module Mensam.Auth.Bearer exposing (..)
 
 import Http
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Mensam.Error
 
 
@@ -10,14 +10,14 @@ type Jwt
     = MkJwt String
 
 
-decoder : Json.Decode.Decoder Jwt
+decoder : Decode.Decoder Jwt
 decoder =
-    Json.Decode.map MkJwt Json.Decode.string
+    Decode.map MkJwt Decode.string
 
 
-encode : Jwt -> Json.Encode.Value
+encode : Jwt -> Encode.Value
 encode (MkJwt string) =
-    Json.Encode.string string
+    Encode.string string
 
 
 authorizationHeader : Jwt -> Http.Header
@@ -37,15 +37,15 @@ error err =
                 Mensam.Error.undefined
 
 
-http401BodyDecoder : Json.Decode.Decoder Error
+http401BodyDecoder : Decode.Decoder Error
 http401BodyDecoder =
-    Json.Decode.string
-        |> Json.Decode.andThen
+    Decode.string
+        |> Decode.andThen
             (\string ->
                 case string of
                     "indefinite" ->
-                        Json.Decode.succeed ErrorIndefinite
+                        Decode.succeed ErrorIndefinite
 
                     _ ->
-                        Json.Decode.fail <| "Trying to decode authentication error, but this option is not supported: " ++ string
+                        Decode.fail <| "Trying to decode authentication error, but this option is not supported: " ++ string
             )

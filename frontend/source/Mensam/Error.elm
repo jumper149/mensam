@@ -13,8 +13,8 @@ import Element
 import Element.Font
 import Html.Attributes
 import Http
-import Json.Decode
-import Json.Encode
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Mensam.Element.Font
 import Tree
 
@@ -140,27 +140,27 @@ http error =
                 message "Bad Body" <| message body <| undefined
 
 
-json : Json.Decode.Error -> Error
+json : Decode.Error -> Error
 json error =
     let
         recurse err =
             case err of
-                Json.Decode.Field field fieldErr ->
-                    message ("Field " ++ Json.Encode.encode 0 (Json.Encode.string field)) <|
+                Decode.Field field fieldErr ->
+                    message ("Field " ++ Encode.encode 0 (Encode.string field)) <|
                         recurse fieldErr
 
-                Json.Decode.Index index indexErr ->
+                Decode.Index index indexErr ->
                     message ("Index " ++ String.fromInt index) <|
                         recurse indexErr
 
-                Json.Decode.OneOf errs ->
+                Decode.OneOf errs ->
                     message "One of" <|
                         group <|
                             List.map recurse errs
 
-                Json.Decode.Failure msg val ->
+                Decode.Failure msg val ->
                     message msg <|
-                        message (Json.Encode.encode 0 val) <|
+                        message (Encode.encode 0 val) <|
                             undefined
     in
     message "JSON" <| recurse error
