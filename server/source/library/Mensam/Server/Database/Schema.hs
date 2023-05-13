@@ -146,7 +146,8 @@ data DbSpaceUser = MkDbSpaceUser
 
 type DbSpaceUserPermission :: Type
 data DbSpaceUserPermission
-  = MkDbSpaceUserPermission_edit_desk
+  = MkDbSpaceUserPermission_view_space
+  | MkDbSpaceUserPermission_edit_desk
   | MkDbSpaceUserPermission_create_reservation
   | MkDbSpaceUserPermission_cancel_reservation
   deriving stock (Bounded, Enum, Read, Show)

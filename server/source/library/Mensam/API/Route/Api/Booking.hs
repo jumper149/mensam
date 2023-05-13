@@ -53,6 +53,23 @@ data Routes route = Routes
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
+  , routeSpaceView ::
+      route
+        :- Summary "View Space"
+          :> Description
+              "View a single space in detail.\n"
+          :> "space"
+          :> "view"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceView
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseSpaceView
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 500 ()
+              ]
   , routeSpaceList ::
       route
         :- Summary "List Spaces"
@@ -182,6 +199,24 @@ newtype ResponseSpaceJoin = MkResponseSpaceJoin
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceJoin") ResponseSpaceJoin
+
+type RequestSpaceView :: Type
+newtype RequestSpaceView = MkRequestSpaceView
+  { requestSpaceViewId :: IdentifierSpace
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceView") RequestSpaceView
+
+type ResponseSpaceView :: Type
+newtype ResponseSpaceView = MkResponseSpaceView
+  { responseSpaceViewSpace :: SpaceView
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") ResponseSpaceView
 
 type RequestSpaceList :: Type
 newtype RequestSpaceList = MkRequestSpaceList

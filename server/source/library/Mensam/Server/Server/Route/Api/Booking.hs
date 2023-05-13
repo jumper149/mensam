@@ -30,6 +30,7 @@ handler =
     { routeSpaceCreate = createSpace
     , routeSpaceJoin = joinSpace
     , routeSpaceList = listSpaces
+    , routeSpaceView = viewSpace
     , routeDeskCreate = createDesk
     , routeDeskList = listDesks
     , routeReservationCreate = createReservation
@@ -104,6 +105,33 @@ joinSpace auth eitherRequest =
         SeldaSuccess () -> do
           logInfo "Created space."
           respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
+
+viewSpace ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseSpaceView) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestSpaceView ->
+  m (Union responses)
+viewSpace auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to view space: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        spaceView (userAuthenticatedId authenticated) (requestSpaceViewId request)
+      case seldaResult of
+        SeldaFailure _err -> do
+          -- TODO: Here we can theoretically return a more accurate error
+          logWarn "Failed to view space."
+          respond $ WithStatus @500 ()
+        SeldaSuccess space -> do
+          logInfo "Viewed space."
+          respond $ WithStatus @200 MkResponseSpaceView {responseSpaceViewSpace = space}
 
 listSpaces ::
   ( MonadIO m

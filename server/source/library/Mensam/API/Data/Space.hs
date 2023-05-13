@@ -5,9 +5,23 @@ import Mensam.API.Aeson
 import Data.Aeson qualified as A
 import Data.Int
 import Data.Kind
+import Data.Set qualified as S
 import Data.Text qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
+
+type SpaceView :: Type
+data SpaceView = MkSpaceView
+  { spaceViewId :: IdentifierSpace
+  , spaceViewName :: NameSpace
+  , spaceViewVisibility :: VisibilitySpace
+  , spaceViewAccessibility :: AccessibilitySpace
+  , spaceViewPermissions :: S.Set PermissionSpaceUser
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "spaceView") SpaceView
 
 type Space :: Type
 data Space = MkSpace
@@ -49,7 +63,8 @@ data AccessibilitySpace
 
 type PermissionSpaceUser :: Type
 data PermissionSpaceUser
-  = MkPermissionSpaceUserEditDesk
+  = MkPermissionSpaceUserViewSpace
+  | MkPermissionSpaceUserEditDesk
   | MkPermissionSpaceUserCreateReservation
   | MkPermissionSpaceUserCancelReservation
   deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)

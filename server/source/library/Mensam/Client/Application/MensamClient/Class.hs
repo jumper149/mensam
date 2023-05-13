@@ -107,6 +107,17 @@ endpointSpaceCreate ::
          , WithStatus 500 ()
          ]
     )
+endpointSpaceView ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestSpaceView ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceView
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 500 ()
+         ]
+    )
 endpointSpaceList ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestSpaceList ->
@@ -179,6 +190,7 @@ Route.Api.Routes
   , Route.Api.routeBooking =
     Route.Api.Booking.Routes
       { Route.Api.Booking.routeSpaceCreate = endpointSpaceCreate
+      , Route.Api.Booking.routeSpaceView = endpointSpaceView
       , Route.Api.Booking.routeSpaceList = endpointSpaceList
       , Route.Api.Booking.routeDeskCreate = endpointDeskCreate
       , Route.Api.Booking.routeDeskList = endpointDeskList

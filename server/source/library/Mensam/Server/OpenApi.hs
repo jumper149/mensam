@@ -93,11 +93,13 @@ deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier
 deriving via A.CustomJSON (JSONSettings "Mk" "user") User instance ToSchema User
 deriving newtype instance ToSchema IdentifierUser
 deriving newtype instance ToSchema ConfirmationSecret
+deriving via A.CustomJSON (JSONSettings "Mk" "spaceView") SpaceView instance ToSchema SpaceView
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
 deriving newtype instance ToSchema IdentifierSpace
 deriving newtype instance ToSchema NameSpace
 deriving via A.CustomJSON (JSONSettings "MkVisibilitySpace" "") VisibilitySpace instance ToSchema VisibilitySpace
 deriving via A.CustomJSON (JSONSettings "MkAccessibilitySpace" "") AccessibilitySpace instance ToSchema AccessibilitySpace
+deriving via A.CustomJSON (JSONSettings "MkPermissionSpaceUser" "") PermissionSpaceUser instance ToSchema PermissionSpaceUser
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Desk instance ToSchema Desk
 deriving newtype instance ToSchema IdentifierDesk
 deriving newtype instance ToSchema NameDesk
@@ -131,6 +133,8 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") Route.
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") Route.Booking.ResponseSpaceCreate instance ToSchema Route.Booking.ResponseSpaceCreate
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceJoin") Route.Booking.RequestSpaceJoin instance ToSchema Route.Booking.RequestSpaceJoin
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceJoin") Route.Booking.ResponseSpaceJoin instance ToSchema Route.Booking.ResponseSpaceJoin
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceView") Route.Booking.RequestSpaceView instance ToSchema Route.Booking.RequestSpaceView
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") Route.Booking.ResponseSpaceView instance ToSchema Route.Booking.ResponseSpaceView
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Route.Booking.RequestSpaceList instance ToSchema Route.Booking.RequestSpaceList
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") Route.Booking.ResponseSpaceList instance ToSchema Route.Booking.ResponseSpaceList
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") Route.Booking.RequestDeskCreate instance ToSchema Route.Booking.RequestDeskCreate
