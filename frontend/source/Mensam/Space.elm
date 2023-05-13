@@ -2,6 +2,17 @@ module Mensam.Space exposing (..)
 
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Set
+
+
+type SpaceView
+    = MkSpaceView
+        { id : Identifier
+        , name : Name
+        , visibility : Visibility
+        , accessibility : Accessibility
+        , permissions : Set.Set String
+        }
 
 
 type Space
@@ -61,6 +72,23 @@ accessibilityEncode accessibility =
                 "inaccessible"
 
 
+accessibilityDecoder : Decode.Decoder Accessibility
+accessibilityDecoder =
+    Decode.andThen
+        (\string ->
+            case string of
+                "joinable" ->
+                    Decode.succeed MkAccessibilityJoinable
+
+                "inaccessible" ->
+                    Decode.succeed MkAccessibilityInaccessible
+
+                _ ->
+                    Decode.fail <| "Trying to decode accessibility, but this option is not supported: " ++ string
+        )
+        Decode.string
+
+
 type Visibility
     = MkVisibilityVisible
     | MkVisibilityHidden
@@ -75,3 +103,20 @@ visibilityEncode visibility =
 
             MkVisibilityHidden ->
                 "hidden"
+
+
+visibilityDecoder : Decode.Decoder Visibility
+visibilityDecoder =
+    Decode.andThen
+        (\string ->
+            case string of
+                "visible" ->
+                    Decode.succeed MkVisibilityVisible
+
+                "hidden" ->
+                    Decode.succeed MkVisibilityHidden
+
+                _ ->
+                    Decode.fail <| "Trying to decode visibility, but this option is not supported: " ++ string
+        )
+        Decode.string

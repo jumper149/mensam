@@ -111,7 +111,13 @@ routeToModelUpdate route (MkModel model) =
                 MkModel { model | screen = ScreenSpaces Mensam.Screen.Spaces.init }
 
         RouteSpace identifier ->
-            update (MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks) <|
+            update
+                (Messages
+                    [ MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshSpace
+                    , MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks
+                    ]
+                )
+            <|
                 MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = identifier, time = model.time } }
 
 
@@ -567,6 +573,21 @@ update message (MkModel model) =
                 Mensam.Screen.Space.ReportError err ->
                     update (ReportError err) <| MkModel model
 
+                Mensam.Screen.Space.RefreshSpace ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpace screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.spaceView jwt screenModel
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
                 Mensam.Screen.Space.RefreshDesks ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
@@ -654,7 +675,7 @@ headerContent (MkModel model) =
                 Just "Spaces"
 
             ScreenSpace screenModel ->
-                Just <| "Space: " ++ Mensam.Space.identifierToString screenModel.space
+                Just <| Mensam.Space.nameToString screenModel.name
     }
 
 

@@ -8,6 +8,7 @@ import Element.Input
 import Html.Attributes
 import Mensam.Api.DeskList
 import Mensam.Api.ReservationCreate
+import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Element.Color
 import Mensam.Element.Font
@@ -20,6 +21,7 @@ import Time
 
 type alias Model =
     { space : Mensam.Space.Identifier
+    , name : Mensam.Space.Name
     , desks :
         List
             { desk :
@@ -66,6 +68,7 @@ type PickerVisibility
 init : { id : Mensam.Space.Identifier, time : { now : Time.Posix, zone : Time.Zone } } -> Model
 init args =
     { space = args.id
+    , name = Mensam.Space.MkName ""
     , desks = []
     , selected = Nothing
     , viewDetailed = Nothing
@@ -341,7 +344,8 @@ type Message
 
 
 type MessagePure
-    = SetDesks
+    = SetSpaceInfo Mensam.Space.SpaceView
+    | SetDesks
         (List
             { desk :
                 { id : Int
@@ -378,6 +382,9 @@ type MessagePure
 updatePure : MessagePure -> Model -> Model
 updatePure message model =
     case message of
+        SetSpaceInfo (Mensam.Space.MkSpaceView space) ->
+            { model | name = space.name }
+
         SetDesks desks ->
             { model | desks = desks }
 
@@ -437,8 +444,31 @@ updatePure message model =
 
 type MessageEffect
     = ReportError Mensam.Error.Error
+    | RefreshSpace
     | RefreshDesks
     | SubmitReservation
+
+
+spaceView : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
+spaceView jwt model =
+    Mensam.Api.SpaceView.request { jwt = jwt, id = model.space } <|
+        \result ->
+            case result of
+                Ok (Mensam.Api.SpaceView.Success value) ->
+                    MessagePure <| SetSpaceInfo value.space
+
+                Ok (Mensam.Api.SpaceView.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Bad request body" <|
+                                Mensam.Error.message error <|
+                                    Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceView.ErrorAuth error) ->
+                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <| ReportError <| Mensam.Error.http error
 
 
 deskList : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
