@@ -9,6 +9,7 @@ import Mensam.Server.Application.Email.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Configuration
+import Mensam.Server.Configuration.BaseUrl
 import Mensam.Server.Secrets
 import Mensam.Server.Server.Auth
 import Mensam.Server.User
@@ -20,10 +21,14 @@ import Data.ByteString qualified as B
 import Data.Password.Bcrypt
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
+import Data.Text.Lazy qualified as TL
 import Data.Time qualified as T
 import Servant hiding (BasicAuthResult (..))
 import Servant.Auth.Server
 import Servant.Server.Generic
+import Text.Blaze.Html.Renderer.Text qualified as T
+import Text.Blaze.Html5 qualified as H
+import Text.Blaze.Html5.Attributes qualified as H.A
 
 handler ::
   (MonadConfigured m, MonadEmail m, MonadIO m, MonadLogger m, MonadSecret m, MonadSeldaPool m) =>
@@ -133,7 +138,8 @@ logout auth =
                   }
 
 register ::
-  ( MonadEmail m
+  ( MonadConfigured m
+  , MonadEmail m
   , MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
@@ -169,11 +175,21 @@ register eitherRequest =
         SeldaSuccess confirmationSecret -> do
           logInfo "Registered new user."
           logDebug "Sending confirmation email."
+          config <- configuration
           sendEmailResult <-
             sendEmail
               MkEmail
                 { emailRecipient = requestRegisterEmail
-                , emailBody = "You have been registered successfully: " <> T.pack (show confirmationSecret)
+                , emailTitle = "Account Verification: " <> unUsername requestRegisterName
+                , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
+                    H.head $ do
+                      H.title $ H.text $ "Account Verification: " <> unUsername requestRegisterName
+                    H.body $ do
+                      H.p $ H.text $ "Welcome " <> unUsername requestRegisterName <> "!"
+                      H.p $ H.text "You have been registered successfully. Click the link to confirm your email address."
+                      let confirmLink :: T.Text = displayBaseUrl (configBaseUrl config) <> "register/confirm/" <> unConfirmationSecret confirmationSecret
+                      H.p $ H.a H.! H.A.href (H.textValue confirmLink) $ H.text confirmLink
+                      H.div $ H.small $ H.text "If you did not register this account, feel free to ignore this message."
                 }
           let emailSent =
                 case sendEmailResult of

@@ -52,8 +52,8 @@ instance (MonadIO m, MonadLogger m) => MonadEmail (EmailT m) where
                   ]
               , mailCc = []
               , mailBcc = []
-              , mailHeaders = []
-              , mailParts = [[plainPart $ TL.fromStrict $ emailBody email]]
+              , mailHeaders = [("Subject", emailTitle email)]
+              , mailParts = [[Network.Mail.Mime.htmlPart $ TL.fromStrict $ emailBodyHtml email]]
               }
         sendMailResult <-
           lift . liftIO . try $

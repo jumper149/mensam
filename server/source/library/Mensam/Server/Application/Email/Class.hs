@@ -34,7 +34,8 @@ deriving via
 type Email :: Type
 data Email = MkEmail
   { emailRecipient :: EmailAddress
-  , emailBody :: T.Text
+  , emailTitle :: T.Text
+  , emailBodyHtml :: T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
 
