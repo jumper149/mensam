@@ -16,12 +16,16 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Time
+import Set
 import Time
 
 
 type alias Model =
     { space : Mensam.Space.Identifier
     , name : Mensam.Space.Name
+    , visibility : Mensam.Space.Visibility
+    , accessibility : Mensam.Space.Accessibility
+    , permissions : Set.Set String
     , desks :
         List
             { desk :
@@ -69,6 +73,9 @@ init : { id : Mensam.Space.Identifier, time : { now : Time.Posix, zone : Time.Zo
 init args =
     { space = args.id
     , name = Mensam.Space.MkName ""
+    , visibility = Mensam.Space.MkVisibilityHidden
+    , accessibility = Mensam.Space.MkAccessibilityInaccessible
+    , permissions = Set.empty
     , desks = []
     , selected = Nothing
     , viewDetailed = Nothing
@@ -383,7 +390,12 @@ updatePure : MessagePure -> Model -> Model
 updatePure message model =
     case message of
         SetSpaceInfo (Mensam.Space.MkSpaceView space) ->
-            { model | name = space.name }
+            { model
+                | name = space.name
+                , visibility = space.visibility
+                , accessibility = space.accessibility
+                , permissions = space.permissions
+            }
 
         SetDesks desks ->
             { model | desks = desks }
