@@ -17,6 +17,9 @@
   ** [ ] Make emails look good instead of sending just plain text.
 
 * Frontend.
+  ** [ ] Allow setting the end time of a reservation.
+  ** [ ] Improve SVG time picker.
+  ** [ ] Terms and Conditions check during registration.
   ** [ ] Add loading screen to HTML wrapper for frontend.
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
 
