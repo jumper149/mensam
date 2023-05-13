@@ -6,9 +6,11 @@ import NoDeprecated
 import NoDuplicatePorts
 import NoExposingEverything
 import NoImportingEverything
+import NoInconsistentAliases
 import NoMissingTypeAnnotation
 import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
+import NoModuleOnExposedNames
 import NoPrematureLetComputation
 import NoUnmatchedUnit
 import NoUnsafePorts
@@ -30,8 +32,15 @@ config =
     , NoDeprecated.rule NoDeprecated.defaults
     , NoDuplicatePorts.rule
     , NoImportingEverything.rule []
+    , NoInconsistentAliases.rule <|
+        NoInconsistentAliases.noMissingAliases <|
+            NoInconsistentAliases.config
+                [ ( "Json.Decode", "Decode" )
+                , ( "Json.Encode", "Encode" )
+                ]
     , NoMissingTypeAnnotation.rule
     , NoMissingTypeExpose.rule
+    , NoModuleOnExposedNames.rule
     , NoPrematureLetComputation.rule
     , NoUnmatchedUnit.rule
     , NoUnsafePorts.rule NoUnsafePorts.any
