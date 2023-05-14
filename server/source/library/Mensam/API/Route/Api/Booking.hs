@@ -10,6 +10,7 @@ import Mensam.API.Order
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.Time qualified as T
+import Data.Time.Zones.All qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
 import Servant.API hiding (BasicAuth)
@@ -165,6 +166,7 @@ data Routes route = Routes
 type RequestSpaceCreate :: Type
 data RequestSpaceCreate = MkRequestSpaceCreate
   { requestSpaceCreateName :: NameSpace
+  , requestSpaceCreateTimezone :: T.TZLabel
   , requestSpaceCreateVisibility :: VisibilitySpace
   , requestSpaceCreateAccessibility :: AccessibilitySpace
   }

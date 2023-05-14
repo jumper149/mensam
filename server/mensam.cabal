@@ -93,6 +93,7 @@ common dependencies
     , time
     , transformers
     , transformers-base
+    , tz
     , unix
     , unliftio-core
     , vty
@@ -189,6 +190,7 @@ library
   other-modules:
     , Control.Monad.Catch.OrphanInstances
     , Control.Monad.Logger.OrphanInstances
+    , Data.Time.Zones.All.OrphanInstances
     , Deriving.Aeson.OrphanInstances
     , Servant.Auth.OrphanInstances
     , Servant.Auth.JWT.WithSession

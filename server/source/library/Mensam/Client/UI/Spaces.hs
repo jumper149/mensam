@@ -19,6 +19,7 @@ import Control.Monad.Trans.Class
 import Data.Kind
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
+import Data.Time.Zones.All qualified as T
 import Graphics.Vty.Input.Events
 import Lens.Micro.Platform
 
@@ -32,6 +33,7 @@ spacesListInitial =
 type NewSpaceInfo :: Type
 data NewSpaceInfo = MkLoginInfo
   { _newSpaceInfoName :: T.Text
+  , _newSpaceInfoTimezone :: T.TZLabel
   , _newSpaceInfoAccessibility :: AccessibilitySpace
   , _newSpaceInfoVisibility :: VisibilitySpace
   }
@@ -41,11 +43,13 @@ newSpaceFormInitial :: Form NewSpaceInfo e ClientName
 newSpaceFormInitial =
   newForm
     [ (str "Name: " <+>) @@= editTextField newSpaceInfoName ClientNameSpacesNewSpaceName (Just 1)
+    , (str "Timezone: " <+>) @@= radioField newSpaceInfoTimezone (map (\x -> (x, ClientNameSpacesNewSpaceTimezone x, T.pack $ show x)) [T.UTC, T.Europe__Berlin])
     , (str "Accessibility: " <+>) @@= radioField newSpaceInfoAccessibility (map (\x -> (x, ClientNameSpacesNewSpaceAccessibility x, T.pack $ show x)) [minBound @AccessibilitySpace .. maxBound])
     , (str "Visibility: " <+>) @@= radioField newSpaceInfoVisibility (map (\x -> (x, ClientNameSpacesNewSpaceVisibility x, T.pack $ show x)) [minBound @VisibilitySpace .. maxBound])
     ]
     MkLoginInfo
       { _newSpaceInfoName = ""
+      , _newSpaceInfoTimezone = T.UTC
       , _newSpaceInfoAccessibility = MkAccessibilitySpaceJoinable
       , _newSpaceInfoVisibility = MkVisibilitySpaceVisible
       }
@@ -108,6 +112,7 @@ spacesHandleEvent event = do
             ClientEventSendRequestCreateSpace
               Route.Booking.MkRequestSpaceCreate
                 { Route.Booking.requestSpaceCreateName = MkNameSpace $ newSpaceInfo ^. newSpaceInfoName
+                , Route.Booking.requestSpaceCreateTimezone = newSpaceInfo ^. newSpaceInfoTimezone
                 , Route.Booking.requestSpaceCreateVisibility = newSpaceInfo ^. newSpaceInfoVisibility
                 , Route.Booking.requestSpaceCreateAccessibility = newSpaceInfo ^. newSpaceInfoAccessibility
                 }

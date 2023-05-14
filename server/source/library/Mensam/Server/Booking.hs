@@ -19,6 +19,7 @@ import Data.Kind
 import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Time qualified as T
+import Data.Time.Zones.All qualified as T
 import Database.Selda qualified as Selda
 import GHC.Generics
 
@@ -71,6 +72,7 @@ spaceView userIdentifier spaceIdentifier = do
         MkSpaceView
           { spaceViewId = MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
           , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
+          , spaceViewTimezone = dbSpace_timezone dbSpace
           , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
           , spaceViewAccessibility = spaceAccessibilityDbToApi $ dbSpace_accessibility dbSpace
           , spaceViewPermissions = permissions
@@ -103,15 +105,17 @@ spaceListVisible userIdentifier spaceOrder = do
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   NameSpace ->
+  T.TZLabel ->
   VisibilitySpace ->
   AccessibilitySpace ->
   SeldaTransactionT m IdentifierSpace
-spaceCreate name visibility accessibility = do
+spaceCreate name timezoneLabel visibility accessibility = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
   let dbSpace =
         MkDbSpace
           { dbSpace_id = Selda.def
           , dbSpace_name = unNameSpace name
+          , dbSpace_timezone = timezoneLabel
           , dbSpace_visibility = spaceVisibilityApiToDb visibility
           , dbSpace_accessibility = spaceAccessibilityApiToDb accessibility
           }

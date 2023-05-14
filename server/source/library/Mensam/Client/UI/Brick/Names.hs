@@ -3,6 +3,7 @@ module Mensam.Client.UI.Brick.Names where
 import Mensam.API.Data.Space
 
 import Data.Kind
+import Data.Time.Zones.All qualified as T
 
 type ClientName :: Type
 data ClientName
@@ -14,6 +15,7 @@ data ClientName
   | ClientNameRegisterEmailVisible
   | ClientNameSpacesList
   | ClientNameSpacesNewSpaceName
+  | ClientNameSpacesNewSpaceTimezone T.TZLabel
   | ClientNameSpacesNewSpaceAccessibility AccessibilitySpace
   | ClientNameSpacesNewSpaceVisibility VisibilitySpace
   | ClientNameDesksNewDeskName

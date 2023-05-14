@@ -10,6 +10,8 @@ import Data.ByteString qualified as BS
 import Data.Kind
 import Data.Maybe
 import Data.Text qualified as T
+import Data.Time.Zones.All qualified as Time
+import Data.Time.Zones.All.OrphanInstances ()
 import Database.Selda qualified as Selda
 import GHC.Generics
 
@@ -104,6 +106,7 @@ type DbSpace :: Type
 data DbSpace = MkDbSpace
   { dbSpace_id :: Selda.ID DbSpace
   , dbSpace_name :: Selda.Text
+  , dbSpace_timezone :: Time.TZLabel
   , dbSpace_visibility :: DbSpaceVisibility
   , dbSpace_accessibility :: DbSpaceAccessibility
   }

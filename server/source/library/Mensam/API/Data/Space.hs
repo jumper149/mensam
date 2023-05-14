@@ -7,6 +7,8 @@ import Data.Int
 import Data.Kind
 import Data.Set qualified as S
 import Data.Text qualified as T
+import Data.Time.Zones.All qualified as T
+import Data.Time.Zones.All.OrphanInstances ()
 import Deriving.Aeson qualified as A
 import GHC.Generics
 
@@ -14,6 +16,7 @@ type SpaceView :: Type
 data SpaceView = MkSpaceView
   { spaceViewId :: IdentifierSpace
   , spaceViewName :: NameSpace
+  , spaceViewTimezone :: T.TZLabel
   , spaceViewVisibility :: VisibilitySpace
   , spaceViewAccessibility :: AccessibilitySpace
   , spaceViewPermissions :: S.Set PermissionSpaceUser

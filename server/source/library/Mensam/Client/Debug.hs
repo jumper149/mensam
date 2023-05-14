@@ -16,6 +16,7 @@ import Control.Monad.Trans.Class
 import Data.SOP
 import Data.Text qualified as T
 import Data.Time qualified as T
+import Data.Time.Zones.All qualified as T
 import Servant
 import Servant.Client
 import Text.Email.Parser
@@ -76,6 +77,7 @@ f = do
   let requestSpaceCreate =
         Route.Booking.MkRequestSpaceCreate
           { Route.Booking.requestSpaceCreateName = spacename
+          , Route.Booking.requestSpaceCreateTimezone = T.Europe__Paris
           , Route.Booking.requestSpaceCreateVisibility = MkVisibilitySpaceVisible
           , Route.Booking.requestSpaceCreateAccessibility = MkAccessibilitySpaceJoinable
           }
