@@ -146,7 +146,7 @@ init flagsRaw url navigationKey =
                 , time =
                     { now = Time.millisToPosix 0
                     , zone = Time.utc
-                    , zoneIdentifier = Mensam.Time.MkTimezoneIdentifier "UTC"
+                    , zoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
                     }
                 }
 

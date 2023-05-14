@@ -43,13 +43,13 @@ newSpaceFormInitial :: Form NewSpaceInfo e ClientName
 newSpaceFormInitial =
   newForm
     [ (str "Name: " <+>) @@= editTextField newSpaceInfoName ClientNameSpacesNewSpaceName (Just 1)
-    , (str "Timezone: " <+>) @@= radioField newSpaceInfoTimezone (map (\x -> (x, ClientNameSpacesNewSpaceTimezone x, T.pack $ show x)) [T.UTC, T.Europe__Berlin])
+    , (str "Timezone: " <+>) @@= radioField newSpaceInfoTimezone (map (\x -> (x, ClientNameSpacesNewSpaceTimezone x, T.pack $ show x)) [T.Etc__UTC, T.Europe__Berlin])
     , (str "Accessibility: " <+>) @@= radioField newSpaceInfoAccessibility (map (\x -> (x, ClientNameSpacesNewSpaceAccessibility x, T.pack $ show x)) [minBound @AccessibilitySpace .. maxBound])
     , (str "Visibility: " <+>) @@= radioField newSpaceInfoVisibility (map (\x -> (x, ClientNameSpacesNewSpaceVisibility x, T.pack $ show x)) [minBound @VisibilitySpace .. maxBound])
     ]
     MkLoginInfo
       { _newSpaceInfoName = ""
-      , _newSpaceInfoTimezone = T.UTC
+      , _newSpaceInfoTimezone = T.Etc__UTC
       , _newSpaceInfoAccessibility = MkAccessibilitySpaceJoinable
       , _newSpaceInfoVisibility = MkVisibilitySpaceVisible
       }
