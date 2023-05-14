@@ -10,6 +10,7 @@ import Mensam.API.Order
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
+import Mensam.Server.Database.Space
 
 import Control.Monad.Catch
 import Control.Monad.IO.Class
@@ -29,17 +30,14 @@ spaceLookupId ::
   SeldaTransactionT m (Maybe IdentifierSpace)
 spaceLookupId name = do
   lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
-  maybeDbId <- Selda.queryUnique $ do
-    dbSpace <- Selda.select tableSpace
-    Selda.restrict $ dbSpace Selda.! #dbSpace_name Selda..== Selda.literal (unNameSpace name)
-    pure $ dbSpace Selda.! #dbSpace_id
-  case maybeDbId of
+  maybeDbSpace <- Selda.queryUnique $ spaceLookup $ unNameSpace name
+  case maybeDbSpace of
     Nothing -> do
       lift $ logWarn $ "Failed to look up space. Name doesn't exist: " <> T.pack (show name)
       pure Nothing
-    Just dbId -> do
+    Just dbSpace -> do
       lift $ logInfo "Looked up space successfully."
-      pure $ Just $ MkIdentifierSpace $ Selda.fromId @DbSpace dbId
+      pure $ Just $ MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
 
 spaceView ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -50,24 +48,32 @@ spaceView userIdentifier spaceIdentifier = do
   lift $ logDebug $ "Get space info with identifier: " <> T.pack (show (spaceIdentifier, userIdentifier))
   permissions <- spaceUserPermissions spaceIdentifier userIdentifier
   maybeDbSpace <- Selda.queryUnique $ do
-    dbSpace <- Selda.select tableSpace
-    let selectViewPermission = do
-          dbSpaceUser <- Selda.select tableSpaceUser
-          Selda.restrict $
-            (dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier))
-              Selda..&& (dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier))
-              Selda..&& (dbSpaceUser Selda.! #dbSpaceUser_permission Selda..== Selda.literal MkDbSpaceUserPermission_view_space)
-          pure dbSpaceUser
+    dbSpace <- spaceGet (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
     Selda.restrict $
-      (dbSpace Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier))
-        Selda..&& ( (dbSpace Selda.! #dbSpace_visibility Selda..== Selda.literal MkDbSpaceVisibility_visible)
-                      Selda..|| (dbSpace Selda.! #dbSpace_id `Selda.isIn` (#dbSpaceUser_space `Selda.from` selectViewPermission))
-                  )
+      dbSpace Selda.! #dbSpace_visibility Selda..== Selda.literal MkDbSpaceVisibility_visible
+        Selda..|| Selda.literal (MkPermissionSpaceViewSpace `S.member` permissions)
     pure dbSpace
   case maybeDbSpace of
     Nothing -> undefined
     Just dbSpace -> do
-      lift $ logInfo "Got space info successfully."
+      lift $ logInfo "Got space successfully."
+      lift $ logDebug "Getting space roles."
+      spaceRoles <- do
+        dbSpaceRoles <- Selda.query $ spaceListRoles $ dbSpace_id dbSpace
+        dbSpaceRolesPermissions <- traverse (Selda.query . roleListPermissions . dbSpaceRole_id) dbSpaceRoles
+        let spaceRoles =
+              zipWith
+                ( \dbSpaceRole dbSpaceRolePermissions ->
+                    MkSpaceRole
+                      { spaceRoleId = MkIdentifierSpaceRole $ Selda.fromId $ dbSpaceRole_id dbSpaceRole
+                      , spaceRoleName = MkNameSpaceRole $ dbSpaceRole_name dbSpaceRole
+                      , spaceRolePermissions = S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> dbSpaceRolePermissions
+                      }
+                )
+                dbSpaceRoles
+                dbSpaceRolesPermissions
+        pure spaceRoles
+      lift $ logInfo "Got space roles successfully."
       pure
         MkSpaceView
           { spaceViewId = MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
@@ -76,6 +82,7 @@ spaceView userIdentifier spaceIdentifier = do
           , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
           , spaceViewAccessibility = spaceAccessibilityDbToApi $ dbSpace_accessibility dbSpace
           , spaceViewPermissions = permissions
+          , spaceViewRoles = S.fromList spaceRoles
           }
 
 spaceListVisible ::
@@ -102,6 +109,22 @@ spaceListVisible userIdentifier spaceOrder = do
           }
   pure $ fromDbSpace <$> dbSpaces
 
+spaceRoleLookupId ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  NameSpaceRole ->
+  SeldaTransactionT m (Maybe IdentifierSpaceRole)
+spaceRoleLookupId spaceIdentifier name = do
+  lift $ logDebug $ "Looking up space-role identifier with name: " <> T.pack (show name)
+  maybeDbSpaceRole <- Selda.queryUnique $ roleLookup (Selda.toId $ unIdentifierSpace spaceIdentifier) $ unNameSpaceRole name
+  case maybeDbSpaceRole of
+    Nothing -> do
+      lift $ logWarn $ "Failed to look up space-role. Name doesn't exist: " <> T.pack (show name)
+      pure Nothing
+    Just dbSpaceRole -> do
+      lift $ logInfo "Looked up space successfully."
+      pure $ Just $ MkIdentifierSpaceRole $ Selda.fromId $ dbSpaceRole_id dbSpaceRole
+
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   NameSpace ->
@@ -123,60 +146,74 @@ spaceCreate name timezoneLabel visibility accessibility = do
   lift $ logInfo "Created space successfully."
   pure $ MkIdentifierSpace $ Selda.fromId @DbSpace dbSpaceId
 
+spaceUserAdd ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  IdentifierUser ->
+  IdentifierSpaceRole ->
+  SeldaTransactionT m ()
+spaceUserAdd spaceIdentifier userIdentifier roleIdentifier = do
+  lift $ logDebug $ "Adding user " <> T.pack (show userIdentifier) <> " to space " <> T.pack (show spaceIdentifier) <> " as " <> T.pack (show roleIdentifier) <> "."
+  let dbSpaceUser =
+        MkDbSpaceUser
+          { dbSpaceUser_id = Selda.def
+          , dbSpaceUser_space = Selda.toId $ unIdentifierSpace spaceIdentifier
+          , dbSpaceUser_user = Selda.toId $ unIdentifierUser userIdentifier
+          , dbSpaceUser_role = Selda.toId $ unIdentifierSpaceRole roleIdentifier
+          }
+  _dbSpaceUserId <- Selda.insertWithPK tableSpaceUser [dbSpaceUser]
+  lift $ logInfo "Created space-user successfully."
+  pure ()
+
 spaceUserPermissions ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
-  SeldaTransactionT m (S.Set PermissionSpaceUser)
+  SeldaTransactionT m (S.Set PermissionSpace)
 spaceUserPermissions spaceIdentifier userIdentifier = do
-  lift $ logDebug $ "Looking up user " <> T.pack (show userIdentifier) <> " for space " <> T.pack (show spaceIdentifier) <> "."
-  lift $ logDebug "Looking up space permissions."
-  permissions <- Selda.query $ do
-    dbSpaceUser <- Selda.select tableSpaceUser
-    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
-    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
-    pure $ dbSpaceUser Selda.! #dbSpaceUser_permission
+  lift $ logDebug $ "Looking up user " <> T.pack (show userIdentifier) <> " permissions for space " <> T.pack (show spaceIdentifier) <> "."
+  permissions <-
+    Selda.query $
+      spaceUserListPermissions
+        (Selda.toId $ unIdentifierSpace spaceIdentifier)
+        (Selda.toId $ unIdentifierSpace spaceIdentifier)
   lift $ logInfo "Looked up space permissions successfully."
-  pure $ S.fromList $ spaceUserPermissionDbToApi <$> permissions
+  pure $ S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> permissions
 
-spaceUserPermissionGive ::
+spaceRoleCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
-  IdentifierUser ->
-  PermissionSpaceUser ->
-  SeldaTransactionT m ()
-spaceUserPermissionGive spaceIdentifier userIdentifier permission = do
-  lift $ logDebug $ "Giving user " <> T.pack (show userIdentifier) <> " permission " <> T.pack (show permission) <> " to space " <> T.pack (show spaceIdentifier) <> "."
-  let dbSpaceUser =
-        MkDbSpaceUser
-          { dbSpaceUser_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
-          , dbSpaceUser_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
-          , dbSpaceUser_permission = spaceUserPermissionApiToDb permission
+  NameSpaceRole ->
+  SeldaTransactionT m IdentifierSpaceRole
+spaceRoleCreate spaceIdentifier roleName = do
+  lift $ logDebug $ "Creating role: " <> T.pack (show (spaceIdentifier, roleName))
+  let dbSpaceRole =
+        MkDbSpaceRole
+          { dbSpaceRole_id = Selda.def
+          , dbSpaceRole_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
+          , dbSpaceRole_name = unNameSpaceRole roleName
           }
-  lift $ logDebug "Inserting space-user permission."
-  Selda.insert_ tableSpaceUser [dbSpaceUser]
-  lift $ logInfo "Gave user a space permission successfully."
+  lift $ logDebug "Inserting space-role into database."
+  dbSpaceRoleId <- Selda.insertWithPK tableSpaceRole [dbSpaceRole]
+  lift $ logInfo "Created role successfully."
+  pure $ MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole dbSpaceRoleId
 
-spaceUserPermissionRevoke ::
+spaceRolePermissionGive ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpace ->
-  IdentifierUser ->
-  PermissionSpaceUser ->
+  IdentifierSpaceRole ->
+  PermissionSpace ->
   SeldaTransactionT m ()
-spaceUserPermissionRevoke spaceIdentifier userIdentifier permission = do
-  lift $ logDebug $ "Revoking user " <> T.pack (show userIdentifier) <> " permission " <> T.pack (show permission) <> " to space " <> T.pack (show spaceIdentifier) <> "."
-  lift $ logDebug "Deleting space-user permission."
-  count <- Selda.deleteFrom tableSpaceUser $ \dbSpaceUser ->
-    let
-      isSpace = dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
-      isUser = dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
-      isPermission = dbSpaceUser Selda.! #dbSpaceUser_permission Selda..== Selda.literal (spaceUserPermissionApiToDb permission)
-     in
-      isSpace Selda..&& isUser Selda..&& isPermission
-  case count of
-    0 -> lift $ logWarn "Space permission for user cannot be revoked, because it has not been given."
-    1 -> lift $ logInfo "Revoked space permission for user successfully."
-    _ -> undefined
+spaceRolePermissionGive spaceRoleIdentifier permission = do
+  lift $ logDebug $ "Giving role " <> T.pack (show spaceRoleIdentifier) <> " permission " <> T.pack (show permission) <> "."
+  let dbSpaceRolePermission =
+        MkDbSpaceRolePermission
+          { dbSpaceRolePermission_id = Selda.def
+          , dbSpaceRolePermission_role = Selda.toId @DbSpaceRole $ unIdentifierSpaceRole spaceRoleIdentifier
+          , dbSpaceRolePermission_permission = spacePermissionApiToDb permission
+          }
+  lift $ logDebug "Inserting space-role permission."
+  Selda.insert_ tableSpaceRolePermission [dbSpaceRolePermission]
+  lift $ logInfo "Gave space-role a permission successfully."
 
 deskLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -401,16 +438,16 @@ spaceAccessibilityDbToApi = \case
   MkDbSpaceAccessibility_joinable -> MkAccessibilitySpaceJoinable
   MkDbSpaceAccessibility_inaccessible -> MkAccessibilitySpaceInaccessible
 
-spaceUserPermissionApiToDb :: PermissionSpaceUser -> DbSpaceUserPermission
-spaceUserPermissionApiToDb = \case
-  MkPermissionSpaceUserViewSpace -> MkDbSpaceUserPermission_view_space
-  MkPermissionSpaceUserEditDesk -> MkDbSpaceUserPermission_edit_desk
-  MkPermissionSpaceUserCreateReservation -> MkDbSpaceUserPermission_create_reservation
-  MkPermissionSpaceUserCancelReservation -> MkDbSpaceUserPermission_cancel_reservation
+spacePermissionApiToDb :: PermissionSpace -> DbSpacePermission
+spacePermissionApiToDb = \case
+  MkPermissionSpaceViewSpace -> MkDbSpacePermission_view_space
+  MkPermissionSpaceEditDesk -> MkDbSpacePermission_edit_desk
+  MkPermissionSpaceCreateReservation -> MkDbSpacePermission_create_reservation
+  MkPermissionSpaceCancelReservation -> MkDbSpacePermission_cancel_reservation
 
-spaceUserPermissionDbToApi :: DbSpaceUserPermission -> PermissionSpaceUser
-spaceUserPermissionDbToApi = \case
-  MkDbSpaceUserPermission_view_space -> MkPermissionSpaceUserViewSpace
-  MkDbSpaceUserPermission_edit_desk -> MkPermissionSpaceUserEditDesk
-  MkDbSpaceUserPermission_create_reservation -> MkPermissionSpaceUserCreateReservation
-  MkDbSpaceUserPermission_cancel_reservation -> MkPermissionSpaceUserCancelReservation
+spacePermissionDbToApi :: DbSpacePermission -> PermissionSpace
+spacePermissionDbToApi = \case
+  MkDbSpacePermission_view_space -> MkPermissionSpaceViewSpace
+  MkDbSpacePermission_edit_desk -> MkPermissionSpaceEditDesk
+  MkDbSpacePermission_create_reservation -> MkPermissionSpaceCreateReservation
+  MkDbSpacePermission_cancel_reservation -> MkPermissionSpaceCancelReservation

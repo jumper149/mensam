@@ -138,30 +138,70 @@ tableSpace =
     ]
     (fromJust . T.stripPrefix "dbSpace_")
 
-type DbSpaceUser :: Type
-data DbSpaceUser = MkDbSpaceUser
-  { dbSpaceUser_space :: Selda.ID DbSpace
-  , dbSpaceUser_user :: Selda.ID DbUser
-  , dbSpaceUser_permission :: DbSpaceUserPermission
+type DbSpaceRole :: Type
+data DbSpaceRole = MkDbSpaceRole
+  { dbSpaceRole_id :: Selda.ID DbSpaceRole
+  , dbSpaceRole_space :: Selda.ID DbSpace
+  , dbSpaceRole_name :: Selda.Text
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
 
-type DbSpaceUserPermission :: Type
-data DbSpaceUserPermission
-  = MkDbSpaceUserPermission_view_space
-  | MkDbSpaceUserPermission_edit_desk
-  | MkDbSpaceUserPermission_create_reservation
-  | MkDbSpaceUserPermission_cancel_reservation
+tableSpaceRole :: Selda.Table DbSpaceRole
+tableSpaceRole =
+  Selda.tableFieldMod
+    "space_role"
+    [ #dbSpaceRole_id Selda.:- Selda.autoPrimary
+    , #dbSpaceRole_space Selda.:+ #dbSpaceRole_name Selda.:- Selda.unique
+    , #dbSpaceRole_space Selda.:- Selda.foreignKey tableSpace #dbSpace_id
+    ]
+    (fromJust . T.stripPrefix "dbSpaceRole_")
+
+type DbSpaceRolePermission :: Type
+data DbSpaceRolePermission = MkDbSpaceRolePermission
+  { dbSpaceRolePermission_id :: Selda.ID DbSpaceRolePermission
+  , dbSpaceRolePermission_role :: Selda.ID DbSpaceRole
+  , dbSpaceRolePermission_permission :: DbSpacePermission
+  }
+  deriving stock (Generic, Show)
+  deriving anyclass (Selda.SqlRow)
+
+tableSpaceRolePermission :: Selda.Table DbSpaceRolePermission
+tableSpaceRolePermission =
+  Selda.tableFieldMod
+    "space_role_permission"
+    [ #dbSpaceRolePermission_id Selda.:- Selda.autoPrimary
+    , #dbSpaceRolePermission_role Selda.:+ #dbSpaceRolePermission_permission Selda.:- Selda.unique
+    , #dbSpaceRolePermission_role Selda.:- Selda.foreignKey tableSpaceRole #dbSpaceRole_id
+    ]
+    (fromJust . T.stripPrefix "dbSpaceRolePermission_")
+
+type DbSpacePermission :: Type
+data DbSpacePermission
+  = MkDbSpacePermission_view_space
+  | MkDbSpacePermission_edit_desk
+  | MkDbSpacePermission_create_reservation
+  | MkDbSpacePermission_cancel_reservation
   deriving stock (Bounded, Enum, Read, Show)
-  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceUserPermission_" DbSpaceUserPermission)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpacePermission_" DbSpacePermission)
   deriving anyclass (Selda.SqlType)
+
+type DbSpaceUser :: Type
+data DbSpaceUser = MkDbSpaceUser
+  { dbSpaceUser_id :: Selda.ID DbSpaceUser
+  , dbSpaceUser_space :: Selda.ID DbSpace
+  , dbSpaceUser_user :: Selda.ID DbUser
+  , dbSpaceUser_role :: Selda.ID DbSpaceRole
+  }
+  deriving stock (Generic, Show)
+  deriving anyclass (Selda.SqlRow)
 
 tableSpaceUser :: Selda.Table DbSpaceUser
 tableSpaceUser =
   Selda.tableFieldMod
     "space_user"
-    [ #dbSpaceUser_space Selda.:+ #dbSpaceUser_user Selda.:+ #dbSpaceUser_permission Selda.:- Selda.primary
+    [ #dbSpaceUser_id Selda.:- Selda.autoPrimary
+    , #dbSpaceUser_space Selda.:+ #dbSpaceUser_user Selda.:- Selda.unique
     , #dbSpaceUser_space Selda.:- Selda.foreignKey tableSpace #dbSpace_id
     , #dbSpaceUser_user Selda.:- Selda.foreignKey tableUser #dbUser_id
     ]

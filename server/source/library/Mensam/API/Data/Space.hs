@@ -19,7 +19,8 @@ data SpaceView = MkSpaceView
   , spaceViewTimezone :: T.TZLabel
   , spaceViewVisibility :: VisibilitySpace
   , spaceViewAccessibility :: AccessibilitySpace
-  , spaceViewPermissions :: S.Set PermissionSpaceUser
+  , spaceViewRoles :: S.Set SpaceRole
+  , spaceViewPermissions :: S.Set PermissionSpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -64,16 +65,38 @@ data AccessibilitySpace
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkAccessibilitySpace" "") AccessibilitySpace
 
-type PermissionSpaceUser :: Type
-data PermissionSpaceUser
-  = MkPermissionSpaceUserViewSpace
-  | MkPermissionSpaceUserEditDesk
-  | MkPermissionSpaceUserCreateReservation
-  | MkPermissionSpaceUserCancelReservation
+type PermissionSpace :: Type
+data PermissionSpace
+  = MkPermissionSpaceViewSpace
+  | MkPermissionSpaceEditDesk
+  | MkPermissionSpaceCreateReservation
+  | MkPermissionSpaceCancelReservation
   deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "MkPermissionSpaceUser" "") PermissionSpaceUser
+    via A.CustomJSON (JSONSettings "MkPermissionSpace" "") PermissionSpace
+
+type SpaceRole :: Type
+data SpaceRole = MkSpaceRole
+  { spaceRoleId :: IdentifierSpaceRole
+  , spaceRoleName :: NameSpaceRole
+  , spaceRolePermissions :: S.Set PermissionSpace
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "spaceRole") SpaceRole
+
+type IdentifierSpaceRole :: Type
+newtype IdentifierSpaceRole = MkIdentifierSpaceRole {unIdentifierSpaceRole :: Int64}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
+
+type NameSpaceRole :: Type
+newtype NameSpaceRole = MkNameSpaceRole {unNameSpaceRole :: T.Text}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
+  deriving newtype (A.FromJSONKey, A.ToJSONKey)
 
 type SpaceOrderCategory :: Type
 data SpaceOrderCategory

@@ -185,8 +185,9 @@ newtype ResponseSpaceCreate = MkResponseSpaceCreate
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") ResponseSpaceCreate
 
 type RequestSpaceJoin :: Type
-newtype RequestSpaceJoin = MkRequestSpaceJoin
+data RequestSpaceJoin = MkRequestSpaceJoin
   { requestSpaceJoinSpace :: NameOrIdentifier NameSpace IdentifierSpace
+  , requestSpaceJoinRole :: NameOrIdentifier NameSpaceRole IdentifierSpaceRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

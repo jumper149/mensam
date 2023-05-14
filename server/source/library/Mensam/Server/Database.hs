@@ -34,6 +34,12 @@ createDatabase = do
     lift $ logDebug "Creating table 'space'."
     Selda.createTable tableSpace
 
+    lift $ logDebug "Creating table 'space_role'."
+    Selda.createTable tableSpaceRole
+
+    lift $ logDebug "Creating table 'space_role_permission'."
+    Selda.createTable tableSpaceRolePermission
+
     lift $ logDebug "Creating table 'space_user'."
     Selda.createTable tableSpaceUser
 

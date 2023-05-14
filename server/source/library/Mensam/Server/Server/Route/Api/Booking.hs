@@ -54,10 +54,25 @@ createSpace auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
+        lift $ logInfo "Create space."
         spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateTimezone request) (requestSpaceCreateVisibility request) (requestSpaceCreateAccessibility request)
-        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserEditDesk
-        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserCreateReservation
-        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserCancelReservation
+
+        do
+          lift $ logInfo "Create admin role and add user."
+          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Admin")
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditDesk
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCancelReservation
+          spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
+
+        do
+          lift $ logInfo "Create member role."
+          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Member")
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCancelReservation
+
         pure spaceIdentifier
       case seldaResult of
         SeldaFailure _err -> do
@@ -68,6 +83,7 @@ createSpace auth eitherRequest =
           logInfo "Created space."
           respond $ WithStatus @201 MkResponseSpaceCreate {responseSpaceCreateId = spaceIdentifier}
 
+-- TODO: This currently doesn't check, whether the user is actually allowed to do this.
 joinSpace ::
   ( MonadIO m
   , MonadLogger m
@@ -95,8 +111,17 @@ joinSpace auth eitherRequest =
                   let msg :: T.Text = "No matching space."
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
-        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserCreateReservation
-        spaceUserPermissionGive spaceIdentifier (userAuthenticatedId authenticated) MkPermissionSpaceUserCancelReservation
+        spaceRoleIdentifier <-
+          case requestSpaceJoinRole request of
+            Identifier spaceId -> pure spaceId
+            Name name ->
+              spaceRoleLookupId spaceIdentifier name >>= \case
+                Just identifier -> pure identifier
+                Nothing -> do
+                  let msg :: T.Text = "No matching space-role."
+                  lift $ logWarn msg
+                  throwM $ Selda.SqlError $ show msg
+        spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
@@ -188,7 +213,7 @@ createDesk auth eitherRequest =
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
         permissions <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
-        if MkPermissionSpaceUserEditDesk `S.member` permissions
+        if MkPermissionSpaceEditDesk `S.member` permissions
           then deskCreate (requestDeskCreateName request) spaceIdentifier
           else error "No permission"
       case seldaResult of
@@ -276,7 +301,7 @@ createReservation auth eitherRequest = do
             Identifier deskId -> pure deskId
         desk <- deskGet deskIdentifier
         permissions <- spaceUserPermissions (deskSpace desk) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceUserCreateReservation `S.member` permissions
+        if MkPermissionSpaceCreateReservation `S.member` permissions
           then
             reservationCreate
               deskIdentifier
@@ -319,7 +344,7 @@ cancelReservation auth eitherRequest = do
           desk <- deskGet $ reservationDesk reservation
           let spaceIdentifier :: IdentifierSpace = deskSpace desk
           spaceUserPermissions spaceIdentifier $ userAuthenticatedId authenticated
-        if MkPermissionSpaceUserCancelReservation `S.member` permissions
+        if MkPermissionSpaceCancelReservation `S.member` permissions
           then case reservationStatus reservation of
             MkStatusReservationCancelled -> error "Already cancelled."
             MkStatusReservationPlanned -> reservationCancel reservationIdentifier
