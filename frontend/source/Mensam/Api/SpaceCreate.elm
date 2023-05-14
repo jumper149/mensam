@@ -5,12 +5,14 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
+import Mensam.Time
 import Url.Builder
 
 
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
     , name : Mensam.Space.Name
+    , timezone : Mensam.Time.TimezoneIdentifier
     , accessibility : Mensam.Space.Accessibility
     , visibility : Mensam.Space.Visibility
     }
@@ -95,6 +97,9 @@ encodeBody body =
     Encode.object
         [ ( "name"
           , Mensam.Space.nameEncode body.name
+          )
+        , ( "timezone"
+          , Mensam.Time.timezoneIdentifierEncode body.timezone
           )
         , ( "accessibility"
           , Mensam.Space.accessibilityEncode body.accessibility

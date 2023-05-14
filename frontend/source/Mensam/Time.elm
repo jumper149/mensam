@@ -1,14 +1,51 @@
 module Mensam.Time exposing (..)
 
+import Dict
 import Element
 import Element.Background
 import Element.Events
 import Html.Attributes
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Svg
 import Svg.Attributes
 import Svg.Events
 import Time
 import Time.Extra
+import TimeZone
+
+
+type TimezoneIdentifier
+    = MkTimezoneIdentifier String
+
+
+mkTimezone : String -> Maybe ( TimezoneIdentifier, Time.Zone )
+mkTimezone name =
+    Maybe.map (\zone -> ( MkTimezoneIdentifier name, zone () )) <| Dict.get name TimeZone.zones
+
+
+unTimezoneIdentifier : TimezoneIdentifier -> String
+unTimezoneIdentifier (MkTimezoneIdentifier name) =
+    name
+
+
+timezoneIdentifierEncode : TimezoneIdentifier -> Encode.Value
+timezoneIdentifierEncode =
+    Encode.string << unTimezoneIdentifier
+
+
+timezoneIdentifierDecoder : Decode.Decoder TimezoneIdentifier
+timezoneIdentifierDecoder =
+    Decode.andThen
+        (\string ->
+            case mkTimezone string of
+                Nothing ->
+                    Decode.fail <| "Trying to decode time zone database identifier, but can't recognize: " ++ string
+
+                Just ( timezoneIdentifier, _ ) ->
+                    Decode.succeed timezoneIdentifier
+        )
+        Decode.string
 
 
 type Day

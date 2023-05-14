@@ -20,6 +20,7 @@ import Mensam.Screen.Space
 import Mensam.Screen.Spaces
 import Mensam.Space
 import Mensam.Storage
+import Mensam.Time
 import Platform.Cmd
 import Time
 import Url
@@ -49,6 +50,7 @@ type Model
         , time :
             { now : Time.Posix
             , zone : Time.Zone
+            , zoneIdentifier : Mensam.Time.TimezoneIdentifier
             }
         }
 
@@ -107,7 +109,7 @@ routeToModelUpdate route (MkModel model) =
 
         RouteSpaces ->
             update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <|
-                MkModel { model | screen = ScreenSpaces Mensam.Screen.Spaces.init }
+                MkModel { model | screen = ScreenSpaces <| Mensam.Screen.Spaces.init model.time.zoneIdentifier }
 
         RouteSpace identifier ->
             update
@@ -117,7 +119,7 @@ routeToModelUpdate route (MkModel model) =
                     ]
                 )
             <|
-                MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = identifier, time = model.time } }
+                MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = identifier, time = { now = model.time.now, zone = model.time.zone } } }
 
 
 urlParser : Url.Parser.Parser (Route -> c) c
@@ -144,6 +146,7 @@ init flagsRaw url navigationKey =
                 , time =
                     { now = Time.millisToPosix 0
                     , zone = Time.utc
+                    , zoneIdentifier = Mensam.Time.MkTimezoneIdentifier "UTC"
                     }
                 }
 
@@ -160,10 +163,7 @@ init flagsRaw url navigationKey =
 
                                         Nothing ->
                                             Mensam.Auth.SignedOut
-                                , time =
-                                    { now = flags.time.now
-                                    , zone = flags.time.zone
-                                    }
+                                , time = flags.time
                             }
 
                     Err error ->
@@ -503,6 +503,7 @@ update message (MkModel model) =
                             , Platform.Cmd.map MessageSpaces <|
                                 Mensam.Screen.Spaces.spaceCreate
                                     { jwt = jwt
+                                    , timezone = formData.timezone
                                     , name = formData.name
                                     , accessibility =
                                         if formData.joinable then

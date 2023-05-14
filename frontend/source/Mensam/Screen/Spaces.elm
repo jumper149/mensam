@@ -16,23 +16,27 @@ import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
+import Mensam.Time
 
 
 type alias Model =
     { spaces : List Mensam.Space.Space
     , selected : Maybe Int
+    , timezone : Mensam.Time.TimezoneIdentifier
     , create :
         Maybe
             { name : Mensam.Space.Name
+            , timezone : Mensam.Time.TimezoneIdentifier
             , visible : Bool
             , joinable : Bool
             }
     }
 
 
-init : Model
-init =
+init : Mensam.Time.TimezoneIdentifier -> Model
+init timezone =
     { spaces = []
+    , timezone = timezone
     , selected = Nothing
     , create = Nothing
     }
@@ -201,6 +205,15 @@ element model =
                                     , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
                                     , label = Element.Input.labelAbove [] <| Element.text "Name"
                                     }
+                                , Element.Input.text
+                                    [ onEnter <| MessageEffect <| SubmitCreate formData
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    ]
+                                    { onChange = MessagePure << EnterSpaceTimezone << Mensam.Time.MkTimezoneIdentifier
+                                    , text = Mensam.Time.unTimezoneIdentifier formData.timezone
+                                    , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Timezone"
+                                    , label = Element.Input.labelAbove [] <| Element.text "Timezone (IANA)"
+                                    }
                                 , Element.row
                                     [ Element.width Element.fill
                                     , Element.spacing 10
@@ -256,9 +269,10 @@ type Message
 type MessagePure
     = SetSpaces (List Mensam.Space.Space)
     | SetSelected (Maybe Int)
-    | EnterSpaceName Mensam.Space.Name
     | OpenDialogToCreate
     | CloseDialogToCreate
+    | EnterSpaceName Mensam.Space.Name
+    | EnterSpaceTimezone Mensam.Time.TimezoneIdentifier
 
 
 updatePure : MessagePure -> Model -> Model
@@ -275,6 +289,7 @@ updatePure message model =
                 | create =
                     Just
                         { name = Mensam.Space.MkName ""
+                        , timezone = model.timezone
                         , visible = True
                         , joinable = True
                         }
@@ -295,6 +310,18 @@ updatePure message model =
                            )
             }
 
+        EnterSpaceTimezone timezone ->
+            { model
+                | create =
+                    model.create
+                        |> (Maybe.map <|
+                                \create ->
+                                    { create
+                                        | timezone = timezone
+                                    }
+                           )
+            }
+
 
 type MessageEffect
     = ReportError Mensam.Error.Error
@@ -302,6 +329,7 @@ type MessageEffect
     | ChooseSpace Mensam.Space.Identifier
     | SubmitCreate
         { name : Mensam.Space.Name
+        , timezone : Mensam.Time.TimezoneIdentifier
         , visible : Bool
         , joinable : Bool
         }
@@ -356,6 +384,7 @@ spaceList jwt =
 spaceCreate :
     { jwt : Mensam.Auth.Bearer.Jwt
     , name : Mensam.Space.Name
+    , timezone : Mensam.Time.TimezoneIdentifier
     , accessibility : Mensam.Space.Accessibility
     , visibility : Mensam.Space.Visibility
     }

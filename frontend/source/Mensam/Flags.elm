@@ -4,13 +4,12 @@ module Mensam.Flags exposing
     , parse
     )
 
-import Dict
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Error
 import Mensam.Storage
+import Mensam.Time
 import Time
-import TimeZone
 
 
 type Flags
@@ -19,6 +18,7 @@ type Flags
         , time :
             { now : Time.Posix
             , zone : Time.Zone
+            , zoneIdentifier : Mensam.Time.TimezoneIdentifier
             }
         }
 
@@ -40,17 +40,17 @@ decoder =
     Decode.map2 (\storage time -> MkFlags { storage = storage, time = time })
         (Decode.field "storage" Mensam.Storage.decoder)
         (Decode.field "time" <|
-            Decode.map2 (\now zone -> { now = now, zone = zone })
+            Decode.map2 (\now ( zoneIdentifier, zone ) -> { now = now, zone = zone, zoneIdentifier = zoneIdentifier })
                 (Decode.field "now" (Decode.map Time.millisToPosix Decode.int))
                 (Decode.field "zone"
                     (Decode.andThen
                         (\string ->
-                            case Dict.get string TimeZone.zones of
+                            case Mensam.Time.mkTimezone string of
                                 Nothing ->
                                     Decode.fail <| "Trying to decode timezone, but this timezone is not supported: " ++ string
 
-                                Just x ->
-                                    Decode.succeed <| x ()
+                                Just ( identifier, zone ) ->
+                                    Decode.succeed ( identifier, zone )
                         )
                         Decode.string
                     )
