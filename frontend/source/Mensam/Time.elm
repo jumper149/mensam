@@ -19,9 +19,19 @@ type TimezoneIdentifier
     = MkTimezoneIdentifier String
 
 
+timezone : TimezoneIdentifier -> Time.Zone
+timezone (MkTimezoneIdentifier name) =
+    case Dict.get name TimeZone.zones of
+        Nothing ->
+            Time.utc
+
+        Just toZone ->
+            toZone ()
+
+
 mkTimezone : String -> Maybe ( TimezoneIdentifier, Time.Zone )
 mkTimezone name =
-    Maybe.map (\zone -> ( MkTimezoneIdentifier name, zone () )) <| Dict.get name TimeZone.zones
+    Maybe.map (\toZone -> ( MkTimezoneIdentifier name, toZone () )) <| Dict.get name TimeZone.zones
 
 
 unTimezoneIdentifier : TimezoneIdentifier -> String

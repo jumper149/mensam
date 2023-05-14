@@ -24,6 +24,7 @@ type alias Model =
     { space : Mensam.Space.Identifier
     , name : Mensam.Space.Name
     , timezone : Time.Zone
+    , timezoneIdentifier : Mensam.Time.TimezoneIdentifier
     , visibility : Mensam.Space.Visibility
     , accessibility : Mensam.Space.Accessibility
     , permissions : Set.Set String
@@ -71,6 +72,7 @@ init args =
     { space = args.id
     , name = Mensam.Space.MkName ""
     , timezone = Time.utc
+    , timezoneIdentifier = Mensam.Time.MkTimezoneIdentifier "UTC"
     , visibility = Mensam.Space.MkVisibilityHidden
     , accessibility = Mensam.Space.MkAccessibilityInaccessible
     , permissions = Set.empty
@@ -386,6 +388,8 @@ updatePure message model =
         SetSpaceInfo (Mensam.Space.MkSpaceView space) ->
             { model
                 | name = space.name
+                , timezone = Mensam.Time.timezone space.timezone
+                , timezoneIdentifier = space.timezone
                 , visibility = space.visibility
                 , accessibility = space.accessibility
                 , permissions = space.permissions

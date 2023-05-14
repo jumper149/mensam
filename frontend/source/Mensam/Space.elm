@@ -2,6 +2,7 @@ module Mensam.Space exposing (..)
 
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Mensam.Time
 import Set
 
 
@@ -9,6 +10,7 @@ type SpaceView
     = MkSpaceView
         { id : Identifier
         , name : Name
+        , timezone : Mensam.Time.TimezoneIdentifier
         , visibility : Visibility
         , accessibility : Accessibility
         , permissions : Set.Set String

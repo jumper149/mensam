@@ -5,6 +5,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
+import Mensam.Time
 import Set
 import Url.Builder
 
@@ -102,11 +103,12 @@ decodeBody200 : Decode.Decoder { space : Mensam.Space.SpaceView }
 decodeBody200 =
     Decode.map (\spaceView -> { space = spaceView }) <|
         Decode.field "space" <|
-            Decode.map5
-                (\id name visibility accessibility permissions ->
+            Decode.map6
+                (\id name timezone visibility accessibility permissions ->
                     Mensam.Space.MkSpaceView
                         { id = id
                         , name = Mensam.Space.MkName name
+                        , timezone = timezone
                         , visibility = visibility
                         , accessibility = accessibility
                         , permissions = Set.fromList permissions
@@ -114,6 +116,7 @@ decodeBody200 =
                 )
                 (Decode.field "id" Mensam.Space.identifierDecoder)
                 (Decode.field "name" Decode.string)
+                (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
                 (Decode.field "visibility" Mensam.Space.visibilityDecoder)
                 (Decode.field "accessibility" Mensam.Space.accessibilityDecoder)
                 (Decode.field "permissions" <| Decode.list Decode.string)
