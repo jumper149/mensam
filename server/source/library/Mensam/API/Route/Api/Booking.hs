@@ -247,7 +247,7 @@ data RequestDeskCreate = MkRequestDeskCreate
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") RequestDeskCreate
+    via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") RequestDeskCreate
 
 type ResponseDeskCreate :: Type
 newtype ResponseDeskCreate = MkResponseDeskCreate

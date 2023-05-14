@@ -50,37 +50,33 @@ element model =
                 [ Element.width Element.fill
                 , Element.height Element.fill
                 ]
-                [ Element.el
+                [ Element.row
                     [ Element.width Element.fill
                     , Element.height <| Element.px 70
                     , Element.padding 10
+                    , Element.spacing 30
                     ]
-                  <|
-                    Element.row
-                        [ Element.width Element.fill
-                        , Element.spacing 30
+                    [ Element.el
+                        [ Element.alignRight
+                        , Element.padding 10
+                        , Element.Background.color Mensam.Element.Color.bright.yellow
+                        , Element.Font.color Mensam.Element.Color.dark.black
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                        , Element.Events.onClick <| MessagePure OpenDialogToCreate
                         ]
-                        [ Element.el
-                            [ Element.alignRight
-                            , Element.padding 10
-                            , Element.Background.color Mensam.Element.Color.bright.yellow
-                            , Element.Font.color Mensam.Element.Color.dark.black
-                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                            , Element.Events.onClick <| MessagePure OpenDialogToCreate
+                      <|
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                            , Element.Font.size 17
+                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                             ]
-                          <|
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.Font.size 17
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Create new Space"
-                        ]
+                        <|
+                            Element.text "Create new Space"
+                    ]
                 , Element.indexedTable
                     [ Element.width Element.fill
                     , Element.height Element.fill

@@ -566,19 +566,44 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+                Mensam.Screen.Space.SubmitCreate ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpace screenModel ->
+                                    case screenModel.popup of
+                                        Just (Mensam.Screen.Space.PopupCreate { name }) ->
+                                            ( MkModel model
+                                            , Platform.Cmd.map MessageSpace <|
+                                                Mensam.Screen.Space.deskCreate
+                                                    { jwt = jwt
+                                                    , space = screenModel.space
+                                                    , name = name
+                                                    }
+                                            )
+
+                                        _ ->
+                                            update (ReportError errorScreen) <| MkModel model
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
                 Mensam.Screen.Space.SubmitReservation ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpace screenModel ->
-                                    case screenModel.viewDetailed of
-                                        Nothing ->
-                                            update (ReportError errorScreen) <| MkModel model
-
-                                        Just { desk } ->
+                                    case screenModel.popup of
+                                        Just (Mensam.Screen.Space.PopupReservation { desk }) ->
                                             ( MkModel model
                                             , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.reservationCreate jwt screenModel { desk = { id = desk.id } }
                                             )
+
+                                        _ ->
+                                            update (ReportError errorScreen) <| MkModel model
 
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
