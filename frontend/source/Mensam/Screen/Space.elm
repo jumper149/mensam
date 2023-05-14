@@ -23,6 +23,7 @@ import Time
 type alias Model =
     { space : Mensam.Space.Identifier
     , name : Mensam.Space.Name
+    , timezone : Time.Zone
     , visibility : Mensam.Space.Visibility
     , accessibility : Mensam.Space.Accessibility
     , permissions : Set.Set String
@@ -52,10 +53,6 @@ type alias Model =
                 , space : Int
                 }
             }
-    , time :
-        { now : Time.Posix
-        , zone : Time.Zone
-        }
     , pickerVisibility : PickerVisibility
     , modelDate : Mensam.Time.ModelDate
     , dateSelected : Mensam.Time.Date
@@ -73,16 +70,13 @@ init : { id : Mensam.Space.Identifier, time : { now : Time.Posix, zone : Time.Zo
 init args =
     { space = args.id
     , name = Mensam.Space.MkName ""
+    , timezone = Time.utc
     , visibility = Mensam.Space.MkVisibilityHidden
     , accessibility = Mensam.Space.MkAccessibilityInaccessible
     , permissions = Set.empty
     , desks = []
     , selected = Nothing
     , viewDetailed = Nothing
-    , time =
-        { now = args.time.now
-        , zone = args.time.zone
-        }
     , modelDate =
         let
             date =
@@ -512,13 +506,13 @@ reservationCreate jwt model { desk } =
         , desk = desk
         , timeWindow =
             { start =
-                Mensam.Time.toPosix model.time.zone <|
+                Mensam.Time.toPosix model.timezone <|
                     Mensam.Time.MkTimestamp
                         { date = model.dateSelected
                         , time = model.timeSelected
                         }
             , end =
-                Mensam.Time.toPosix model.time.zone <|
+                Mensam.Time.toPosix model.timezone <|
                     Mensam.Time.MkTimestamp
                         { date = model.dateSelected
                         , time = model.timeSelected
