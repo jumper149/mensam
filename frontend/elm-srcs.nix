@@ -45,6 +45,11 @@
         version = "1.1.1";
       };
 
+      "justinmimbs/timezone-data" = {
+        sha256 = "169awfn2jzjza68wdhwcbijs3vl2bx46g98lssj25hg9msjw0n6x";
+        version = "10.0.2";
+      };
+
       "mdgriffith/elm-ui" = {
         sha256 = "0ffcqv4a4ad400hwp824m3qq4jy82cqp5ghmhp1m0q7n004z6kgv";
         version = "1.1.8";

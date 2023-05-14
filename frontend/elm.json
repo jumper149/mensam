@@ -15,6 +15,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "justinmimbs/time-extra": "1.1.1",
+            "justinmimbs/timezone-data": "10.0.2",
             "mdgriffith/elm-ui": "1.1.8",
             "rtfeldman/elm-iso8601-date-strings": "1.1.4",
             "truqu/elm-base64": "2.0.4",

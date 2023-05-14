@@ -21,7 +21,6 @@ import Mensam.Screen.Spaces
 import Mensam.Space
 import Mensam.Storage
 import Platform.Cmd
-import Task
 import Time
 import Url
 import Url.Builder
@@ -148,22 +147,24 @@ init flagsRaw url navigationKey =
                     }
                 }
 
-        withStorage =
+        withFlags =
             \(MkModel model) ->
                 case Mensam.Flags.parse flagsRaw of
                     Ok (Mensam.Flags.MkFlags flags) ->
-                        case flags.storage of
-                            Just (Mensam.Storage.MkStorage storage) ->
-                                MkModel
-                                    { model
-                                        | authenticated = Mensam.Auth.SignedIn <| Mensam.Auth.MkAuthentication storage
-                                    }
+                        MkModel
+                            { model
+                                | authenticated =
+                                    case flags.storage of
+                                        Just (Mensam.Storage.MkStorage storage) ->
+                                            Mensam.Auth.SignedIn <| Mensam.Auth.MkAuthentication storage
 
-                            Nothing ->
-                                MkModel
-                                    { model
-                                        | authenticated = Mensam.Auth.SignedOut
+                                        Nothing ->
+                                            Mensam.Auth.SignedOut
+                                , time =
+                                    { now = flags.time.now
+                                    , zone = flags.time.zone
                                     }
+                            }
 
                     Err error ->
                         MkModel
@@ -172,7 +173,7 @@ init flagsRaw url navigationKey =
                             }
 
         modelFinal =
-            withStorage modelInit
+            withFlags modelInit
     in
     update (InitModel { url = url }) modelFinal
 
@@ -191,8 +192,6 @@ type Message
     | ViewErrors
     | HideErrors
     | SetTimeNow Time.Posix
-    | SetTimeZone Time.Zone
-    | SetTimeZoneHere
     | Auth MessageAuth
     | MessageLanding Mensam.Screen.Landing.Message
     | MessageRegister Mensam.Screen.Register.Message
@@ -265,40 +264,29 @@ update message (MkModel model) =
         InitModel { url } ->
             update
                 (Messages
-                    [ SetTimeZoneHere
+                    [ Auth <| CheckExpirationExplicit model.time.now
                     , Raw <|
-                        \(MkModel model0) ->
-                            ( MkModel model0
-                            , Task.perform
-                                (\now ->
-                                    Messages
-                                        [ Auth <| CheckExpirationExplicit now
-                                        , Raw <|
-                                            \(MkModel m) ->
-                                                case Url.Parser.parse urlParser url of
-                                                    Nothing ->
-                                                        update (SetUrl RouteLanding) (MkModel m)
+                        \(MkModel m) ->
+                            case Url.Parser.parse urlParser url of
+                                Nothing ->
+                                    update (SetUrl RouteLanding) (MkModel m)
 
-                                                    Just route ->
-                                                        let
-                                                            redirectedRoute =
-                                                                case route of
-                                                                    RouteLanding ->
-                                                                        case m.authenticated of
-                                                                            Mensam.Auth.SignedOut ->
-                                                                                RouteLanding
+                                Just route ->
+                                    let
+                                        redirectedRoute =
+                                            case route of
+                                                RouteLanding ->
+                                                    case m.authenticated of
+                                                        Mensam.Auth.SignedOut ->
+                                                            RouteLanding
 
-                                                                            Mensam.Auth.SignedIn _ ->
-                                                                                RouteSpaces
+                                                        Mensam.Auth.SignedIn _ ->
+                                                            RouteSpaces
 
-                                                                    _ ->
-                                                                        route
-                                                        in
-                                                        update (SetUrl redirectedRoute) (MkModel m)
-                                        ]
-                                )
-                                Time.now
-                            )
+                                                _ ->
+                                                    route
+                                    in
+                                    update (SetUrl redirectedRoute) (MkModel m)
                     ]
                 )
             <|
@@ -340,32 +328,6 @@ update message (MkModel model) =
                             in
                             { time | now = timestamp }
                     }
-
-        SetTimeZone zone ->
-            update EmptyMessage <|
-                MkModel
-                    { model
-                        | time =
-                            let
-                                time =
-                                    model.time
-                            in
-                            { time | zone = zone }
-                    }
-
-        SetTimeZoneHere ->
-            let
-                handleResult result =
-                    case result of
-                        Ok zone ->
-                            SetTimeZone zone
-
-                        Err _ ->
-                            ReportError <| Mensam.Error.message "Failed to set local timezone" <| Mensam.Error.undefined
-            in
-            ( MkModel model
-            , Task.attempt handleResult Time.here
-            )
 
         Auth (SetSession session) ->
             ( MkModel { model | authenticated = Mensam.Auth.SignedIn <| Mensam.Auth.MkAuthentication session }

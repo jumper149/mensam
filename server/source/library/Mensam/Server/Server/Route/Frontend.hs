@@ -59,14 +59,20 @@ handler segments = do
         script
           "var storageName = 'mensam-frontend-storage';\
           \var storageUnsafe = localStorage.getItem(storageName);\
-          \var flags = {\
-          \  storage: storageUnsafe ? JSON.parse(storageUnsafe) : null,\
-          \};\
           \\
-          \var app = Elm.Main.init({\
-          \  node: document.getElementById('mensam-frontend'),\
-          \  flags: flags\
-          \});\
+          \var flags = \
+          \  { storage: storageUnsafe ? JSON.parse(storageUnsafe) : null\
+          \  , time: \
+          \    { now: Date.now()\
+          \    , zone: Intl.DateTimeFormat().resolvedOptions().timeZone\
+          \    }\
+          \  };\
+          \\
+          \var app = Elm.Main.init(\
+          \  { node: document.getElementById('mensam-frontend')\
+          \  , flags: flags\
+          \  }\
+          \);\
           \\
           \app.ports.setStorageJson.subscribe(function(state) {\
           \  localStorage.setItem(storageName, JSON.stringify(state));\
