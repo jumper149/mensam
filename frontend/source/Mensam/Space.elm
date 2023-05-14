@@ -120,3 +120,26 @@ visibilityDecoder =
                     Decode.fail <| "Trying to decode visibility, but this option is not supported: " ++ string
         )
         Decode.string
+
+
+type Permission
+    = MkPermissionViewSpace
+    | MkPermissionEditDesk
+    | MkPermissionCreateReservation
+    | MkPermissionCancelReservation
+
+
+permissionToString : Permission -> String
+permissionToString permission =
+    case permission of
+        MkPermissionViewSpace ->
+            "view-space"
+
+        MkPermissionEditDesk ->
+            "edit-desk"
+
+        MkPermissionCreateReservation ->
+            "create-reservation"
+
+        MkPermissionCancelReservation ->
+            "cancel-reservation"
