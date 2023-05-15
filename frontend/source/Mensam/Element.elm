@@ -31,7 +31,7 @@ document element =
                 , Element.htmlAttribute <| Html.Attributes.style "margin-left" "auto"
                 , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
                 , Element.width Element.fill
-                , Element.height <| Element.minimum 750 Element.fill
+                , Element.height <| Element.minimum 851 Element.fill
                 , Element.Background.color Mensam.Element.Color.dark.black
                 ]
                 element
