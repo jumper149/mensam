@@ -94,7 +94,7 @@ login auth =
               Right jwtText -> do
                 let jwt = MkJwt jwtText
                 logInfo "Created JWT successfully."
-                logInfo "User logged in successfully."
+                logInfo "User login successful."
                 respond $
                   WithStatus @200
                     MkResponseLogin
@@ -130,7 +130,7 @@ logout auth =
             logWarn "Failed to delete session."
             respond $ WithStatus @500 ()
           SeldaSuccess () -> do
-            logInfo "User loggout out successfully"
+            logInfo "User logout out successfully"
             respond $
               WithStatus @200
                 MkResponseLogout
