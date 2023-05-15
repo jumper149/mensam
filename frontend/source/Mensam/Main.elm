@@ -500,7 +500,14 @@ update message (MkModel model) =
 
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageSpaces <|
+                            , Platform.Cmd.map
+                                (\msg ->
+                                    Messages
+                                        [ MessageSpaces msg
+                                        , MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces
+                                        ]
+                                )
+                              <|
                                 Mensam.Screen.Spaces.spaceCreate
                                     { jwt = jwt
                                     , timezone = formData.timezone
