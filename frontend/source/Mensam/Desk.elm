@@ -36,3 +36,8 @@ nameToString (MkName name) =
 nameEncode : Name -> Encode.Value
 nameEncode =
     Encode.string << nameToString
+
+
+nameDecoder : Decode.Decoder Name
+nameDecoder =
+    Decode.map MkName Decode.string

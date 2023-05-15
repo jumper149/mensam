@@ -5,6 +5,8 @@ import Iso8601
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
+import Mensam.Desk
+import Mensam.Reservation
 import Mensam.Space
 import Time
 import Url.Builder
@@ -21,14 +23,14 @@ type Response
         { desks :
             List
                 { desk :
-                    { id : Int
-                    , name : String
-                    , space : Int
+                    { id : Mensam.Desk.Identifier
+                    , name : Mensam.Desk.Name
+                    , space : Mensam.Space.Identifier
                     }
                 , reservations :
                     List
-                        { desk : Int
-                        , id : Int
+                        { desk : Mensam.Desk.Identifier
+                        , id : Mensam.Reservation.Identifier
                         , status : String
                         , timeBegin : Time.Posix
                         , timeEnd : Time.Posix
@@ -120,21 +122,40 @@ encodeBody body =
         ]
 
 
-decodeBody200 : Decode.Decoder { desks : List { desk : { id : Int, name : String, space : Int }, reservations : List { desk : Int, id : Int, status : String, timeBegin : Time.Posix, timeEnd : Time.Posix, user : Int } } }
+decodeBody200 :
+    Decode.Decoder
+        { desks :
+            List
+                { desk :
+                    { id : Mensam.Desk.Identifier
+                    , name : Mensam.Desk.Name
+                    , space : Mensam.Space.Identifier
+                    }
+                , reservations :
+                    List
+                        { desk : Mensam.Desk.Identifier
+                        , id : Mensam.Reservation.Identifier
+                        , status : String
+                        , timeBegin : Time.Posix
+                        , timeEnd : Time.Posix
+                        , user : Int
+                        }
+                }
+        }
 decodeBody200 =
     let
         decodeDesk =
             Decode.map3
                 (\id name space -> { id = id, name = name, space = space })
-                (Decode.field "id" Decode.int)
-                (Decode.field "name" Decode.string)
-                (Decode.field "space" Decode.int)
+                (Decode.field "id" Mensam.Desk.identifierDecoder)
+                (Decode.field "name" Mensam.Desk.nameDecoder)
+                (Decode.field "space" Mensam.Space.identifierDecoder)
 
         decodeReservation =
             Decode.map6
                 (\desk id status timeBegin timeEnd user -> { desk = desk, id = id, status = status, timeBegin = timeBegin, timeEnd = timeEnd, user = user })
-                (Decode.field "desk" Decode.int)
-                (Decode.field "id" Decode.int)
+                (Decode.field "desk" Mensam.Desk.identifierDecoder)
+                (Decode.field "id" Mensam.Reservation.identifierDecoder)
                 (Decode.field "status" Decode.string)
                 (Decode.field "time-begin" Iso8601.decoder)
                 (Decode.field "time-end" Iso8601.decoder)

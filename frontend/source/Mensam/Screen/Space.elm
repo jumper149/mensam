@@ -18,6 +18,7 @@ import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
+import Mensam.Reservation
 import Mensam.Space
 import Mensam.Time
 import Set
@@ -36,14 +37,14 @@ type alias Model =
     , desks :
         List
             { desk :
-                { id : Int
-                , name : String
-                , space : Int
+                { id : Mensam.Desk.Identifier
+                , name : Mensam.Desk.Name
+                , space : Mensam.Space.Identifier
                 }
             , reservations :
                 List
-                    { desk : Int
-                    , id : Int
+                    { desk : Mensam.Desk.Identifier
+                    , id : Mensam.Reservation.Identifier
                     , status : String
                     , timeBegin : Time.Posix
                     , timeEnd : Time.Posix
@@ -63,9 +64,9 @@ type PopupModel
         }
     | PopupReservation
         { desk :
-            { id : Int
-            , name : String
-            , space : Int
+            { id : Mensam.Desk.Identifier
+            , name : Mensam.Desk.Name
+            , space : Mensam.Space.Identifier
             }
         , pickerVisibility : PickerVisibility
         }
@@ -199,7 +200,7 @@ element model =
                                                 [ Element.width <| Element.maximum 100 <| Element.fill ]
                                             <|
                                                 Element.text <|
-                                                    String.fromInt x.desk.id
+                                                    Mensam.Desk.identifierToString x.desk.id
                           }
                         , { header =
                                 Element.el
@@ -239,7 +240,7 @@ element model =
                                                 [ Element.width <| Element.maximum 100 <| Element.fill ]
                                             <|
                                                 Element.text <|
-                                                    x.desk.name
+                                                    Mensam.Desk.nameToString x.desk.name
                           }
                         ]
                     }
@@ -460,14 +461,14 @@ type MessagePure
     | SetDesks
         (List
             { desk :
-                { id : Int
-                , name : String
-                , space : Int
+                { id : Mensam.Desk.Identifier
+                , name : Mensam.Desk.Name
+                , space : Mensam.Space.Identifier
                 }
             , reservations :
                 List
-                    { desk : Int
-                    , id : Int
+                    { desk : Mensam.Desk.Identifier
+                    , id : Mensam.Reservation.Identifier
                     , status : String
                     , timeBegin : Time.Posix
                     , timeEnd : Time.Posix
@@ -482,9 +483,9 @@ type MessagePure
     | ViewDetailed
         (Maybe
             { desk :
-                { id : Int
-                , name : String
-                , space : Int
+                { id : Mensam.Desk.Identifier
+                , name : Mensam.Desk.Name
+                , space : Mensam.Space.Identifier
                 }
             }
         )
@@ -715,7 +716,7 @@ deskCreate req =
                                 Mensam.Error.http error
 
 
-reservationCreate : Mensam.Auth.Bearer.Jwt -> Model -> { desk : { id : Int } } -> Cmd Message
+reservationCreate : Mensam.Auth.Bearer.Jwt -> Model -> { desk : { id : Mensam.Desk.Identifier } } -> Cmd Message
 reservationCreate jwt model { desk } =
     Mensam.Api.ReservationCreate.request
         { jwt = jwt

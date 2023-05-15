@@ -5,13 +5,15 @@ import Iso8601
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
+import Mensam.Desk
+import Mensam.Reservation
 import Time
 import Url.Builder
 
 
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
-    , desk : { id : Int }
+    , desk : { id : Mensam.Desk.Identifier }
     , timeWindow :
         { start : Time.Posix
         , end : Time.Posix
@@ -20,7 +22,7 @@ type alias Request =
 
 
 type Response
-    = Success { id : Int }
+    = Success { id : Mensam.Reservation.Identifier }
     | ErrorTimeUnavailable
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
@@ -108,7 +110,7 @@ encodeBody body =
         [ ( "desk"
           , Encode.object
                 [ ( "tag", Encode.string "identifier" )
-                , ( "value", Encode.int body.desk.id )
+                , ( "value", Mensam.Desk.identifierEncode body.desk.id )
                 ]
           )
         , ( "time-window"
@@ -120,11 +122,11 @@ encodeBody body =
         ]
 
 
-decodeBody201 : Decode.Decoder { id : Int }
+decodeBody201 : Decode.Decoder { id : Mensam.Reservation.Identifier }
 decodeBody201 =
     Decode.map
         (\id -> { id = id })
-        (Decode.field "id" Decode.int)
+        (Decode.field "id" Mensam.Reservation.identifierDecoder)
 
 
 decodeBody400 : Decode.Decoder String
