@@ -116,7 +116,7 @@ spaceRoleLookupId ::
   SeldaTransactionT m (Maybe IdentifierSpaceRole)
 spaceRoleLookupId spaceIdentifier name = do
   lift $ logDebug $ "Looking up space-role identifier with name: " <> T.pack (show name)
-  maybeDbSpaceRole <- Selda.queryUnique $ roleLookup (Selda.toId $ unIdentifierSpace spaceIdentifier) $ unNameSpaceRole name
+  maybeDbSpaceRole <- Selda.queryUnique $ roleLookup (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier) $ unNameSpaceRole name
   case maybeDbSpaceRole of
     Nothing -> do
       lift $ logWarn $ "Failed to look up space-role. Name doesn't exist: " <> T.pack (show name)
@@ -157,9 +157,9 @@ spaceUserAdd spaceIdentifier userIdentifier roleIdentifier = do
   let dbSpaceUser =
         MkDbSpaceUser
           { dbSpaceUser_id = Selda.def
-          , dbSpaceUser_space = Selda.toId $ unIdentifierSpace spaceIdentifier
-          , dbSpaceUser_user = Selda.toId $ unIdentifierUser userIdentifier
-          , dbSpaceUser_role = Selda.toId $ unIdentifierSpaceRole roleIdentifier
+          , dbSpaceUser_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
+          , dbSpaceUser_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
+          , dbSpaceUser_role = Selda.toId @DbSpaceRole $ unIdentifierSpaceRole roleIdentifier
           }
   _dbSpaceUserId <- Selda.insertWithPK tableSpaceUser [dbSpaceUser]
   lift $ logInfo "Created space-user successfully."
@@ -175,8 +175,8 @@ spaceUserPermissions spaceIdentifier userIdentifier = do
   permissions <-
     Selda.query $
       spaceUserListPermissions
-        (Selda.toId $ unIdentifierSpace spaceIdentifier)
-        (Selda.toId $ unIdentifierSpace spaceIdentifier)
+        (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
+        (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
   lift $ logInfo "Looked up space permissions successfully."
   pure $ S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> permissions
 
