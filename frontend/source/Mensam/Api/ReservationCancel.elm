@@ -23,7 +23,7 @@ type Response
 request : Request -> (Result Http.Error Response -> a) -> Cmd a
 request body handleResult =
     Http.request
-        { method = "POST"
+        { method = "DELETE"
         , headers =
             [ Mensam.Auth.Bearer.authorizationHeader body.jwt
             ]
