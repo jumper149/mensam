@@ -118,9 +118,10 @@ f = do
         Route.Booking.MkRequestReservationCreate
           { Route.Booking.requestReservationCreateDesk = Name $ MkDeskNameWithContext (MkNameDesk "saturn") spacename
           , Route.Booking.requestReservationCreateTimeWindow =
-              MkIntervalUnsafe
-                currentTime
-                (T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime` currentTime)
+              MkIntervalNonDegenerateUnsafe $
+                MkIntervalUnsafe
+                  currentTime
+                  (T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime` currentTime)
           }
   resultReservationCreate <- endpointReservationCreate (DataJWTWithSession nextToken) requestReservationCreate
   liftIO $ print resultReservationCreate

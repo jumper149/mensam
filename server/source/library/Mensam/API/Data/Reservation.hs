@@ -59,3 +59,18 @@ mkInterval intervalStart intervalEnd =
   if intervalStart <= intervalEnd
     then Just MkIntervalUnsafe {intervalStart, intervalEnd}
     else Nothing
+
+intervalIsDegenerate :: Ord a => Interval a -> Bool
+intervalIsDegenerate interval = intervalStart interval == intervalEnd interval
+
+type IntervalNonDegenerate :: Type -> Type
+newtype IntervalNonDegenerate a = MkIntervalNonDegenerateUnsafe {unIntervalNonDegenerate :: Interval a}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+
+instance (A.FromJSON a, Ord a) => A.FromJSON (IntervalNonDegenerate a) where
+  parseJSON value = do
+    interval <- A.parseJSON value
+    if intervalIsDegenerate interval
+      then fail "expected non-degenerate interval, but boundaries are equal"
+      else pure $ MkIntervalNonDegenerateUnsafe interval
+deriving newtype instance A.ToJSON a => A.ToJSON (IntervalNonDegenerate a)

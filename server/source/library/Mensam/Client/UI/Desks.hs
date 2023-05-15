@@ -186,10 +186,11 @@ desksHandleEvent event = do
                                         }
                                   , T.zonedTimeZone = _screenStateDesksTimezone s
                                   }
-                         in MkIntervalUnsafe
-                              { intervalStart = toUTC $ _newReservationInfoTimeBegin newReservationInfo
-                              , intervalEnd = toUTC $ _newReservationInfoTimeEnd newReservationInfo
-                              }
+                         in MkIntervalNonDegenerateUnsafe $
+                              MkIntervalUnsafe
+                                { intervalStart = toUTC $ _newReservationInfoTimeBegin newReservationInfo
+                                , intervalEnd = toUTC $ _newReservationInfoTimeEnd newReservationInfo
+                                }
                     }
             _ -> lift $ zoom (screenStateDesksCreateReservation . _Just) $ handleFormEvent event
     Just newDeskInfo ->

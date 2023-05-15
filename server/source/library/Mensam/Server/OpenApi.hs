@@ -117,6 +117,13 @@ instance ToSchema a => ToSchema (Interval a) where
         pure $
           x
             & schema . description ?~ "An ordered interval: `start <= end`"
+instance ToSchema a => ToSchema (IntervalNonDegenerate a) where
+  declareNamedSchema Proxy =
+    declareNamedSchema (Proxy @(A.CustomJSON (JSONSettings "Mk" "interval") (Interval a)))
+      >>= \x ->
+        pure $
+          x
+            & schema . description ?~ "An ordered and non-degenerate interval: `start < end`"
 
 deriving via A.CustomJSON (JSONSettings "" "") Order instance ToSchema Order
 deriving via A.CustomJSON (JSONSettings "Mk" "orderByCategory") (OrderByCategory a) instance ToSchema a => ToSchema (OrderByCategory a)

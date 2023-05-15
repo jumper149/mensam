@@ -373,15 +373,14 @@ reservationCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierDesk ->
   IdentifierUser ->
-  Interval T.UTCTime ->
+  IntervalNonDegenerate T.UTCTime ->
   SeldaTransactionT m IdentifierReservation
 reservationCreate deskIdentifier userIdentifier timestampInterval = do
   lift $ logDebug "Creating reservation."
-  reservations <-
-    reservationList
-      deskIdentifier
-      (Just $ intervalStart timestampInterval)
-      (Just $ intervalEnd timestampInterval)
+  let
+    start = intervalStart $ unIntervalNonDegenerate timestampInterval
+    end = intervalEnd $ unIntervalNonDegenerate timestampInterval
+  reservations <- reservationList deskIdentifier (Just start) (Just end)
   case filter ((== MkStatusReservationPlanned) . reservationStatus) reservations of
     _ : _ -> do
       lift $ logWarn "Desk is already reserved."
@@ -392,8 +391,8 @@ reservationCreate deskIdentifier userIdentifier timestampInterval = do
           { dbReservation_id = Selda.def
           , dbReservation_desk = Selda.toId @DbDesk $ unIdentifierDesk deskIdentifier
           , dbReservation_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
-          , dbReservation_time_begin = intervalStart timestampInterval
-          , dbReservation_time_end = intervalEnd timestampInterval
+          , dbReservation_time_begin = start
+          , dbReservation_time_end = end
           , dbReservation_status = MkDbReservationStatus_planned
           }
   lift $ logDebug "Inserting reservation into database."

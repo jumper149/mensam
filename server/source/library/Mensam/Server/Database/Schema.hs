@@ -248,7 +248,7 @@ data DbReservationStatus
 
 -- TODO: Some assumptions are currently not checked by the database:
 --   - Start and end are ordered:
---       `CHECK (time_begin > time_end)`
+--       `CHECK (time_begin < time_end)`
 --   - Two active reservations (x and y) cannot overlap at any time.
 tableReservation :: Selda.Table DbReservation
 tableReservation =

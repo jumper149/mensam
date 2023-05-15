@@ -291,7 +291,7 @@ newtype ResponseDeskList = MkResponseDeskList
 type RequestReservationCreate :: Type
 data RequestReservationCreate = MkRequestReservationCreate
   { requestReservationCreateDesk :: NameOrIdentifier DeskNameWithContext IdentifierDesk
-  , requestReservationCreateTimeWindow :: Interval T.UTCTime
+  , requestReservationCreateTimeWindow :: IntervalNonDegenerate T.UTCTime
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
