@@ -581,7 +581,14 @@ update message (MkModel model) =
                                     case screenModel.popup of
                                         Just (Mensam.Screen.Space.PopupCreate { name }) ->
                                             ( MkModel model
-                                            , Platform.Cmd.map MessageSpace <|
+                                            , Platform.Cmd.map
+                                                (\msg ->
+                                                    Messages
+                                                        [ MessageSpace msg
+                                                        , MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks
+                                                        ]
+                                                )
+                                              <|
                                                 Mensam.Screen.Space.deskCreate
                                                     { jwt = jwt
                                                     , space = screenModel.space
