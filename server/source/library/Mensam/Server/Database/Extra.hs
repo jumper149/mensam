@@ -19,7 +19,7 @@ queryUnique q =
     [spaceId] -> pure $ Just spaceId
     [] -> pure Nothing
 
--- | Run 'query', but throw an error unless there is exactly on result.
+-- | Run 'query', but throw an error unless there is exactly one result.
 queryOne :: (MonadSelda m, MonadThrow m, Result a) => Query (Backend m) a -> m (Res a)
 queryOne q =
   queryUnique q >>= \case

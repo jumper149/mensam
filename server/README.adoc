@@ -3,6 +3,7 @@
 The server executable is written in Haskell using wai and servant for the HTTP interface.
 OpenAPI documentation is generated automatically.
 This application uses mtl-style effects.
+An SQLite database is used for persistent storage.
 
 == Configuration
 
@@ -17,6 +18,29 @@ The options are set link:./source/library/Mensam/Server/Environment.hs[here].
 
 The configuration file is written in JSON and is specified in link:./source/library/Mensam/Server/Configuration.hs[here].
 
+== Database
+
+The filepath for the SQLite database can be configured.
+The database will be automatically initialized during the first startup.
+
+=== Migrations
+
+Currently there are no migrations yet.
+
+[NOTE]
+====
+__The basic idea of a migration setup will be like this.__
+
+Migrations will only be supported on major (?) version bumps.
+
+During startup the server application checks the current version of the database.
+If the database is outdated, then apply the migration and set the new version.
+
+The database version can be tracked with a designated table in the database.
+
+I don't know yet, whether it's a good idea to support version jumps (more than one major version).
+====
+
 == Development
 
 [source,bash]
@@ -27,16 +51,6 @@ nix build ..#subflakes.final.packages.x86_64-linux.config
 # Use cabal to develop the application.
 MENSAM_CONFIG_FILE=result cabal run mensam-server -O0
 ----
-
-[CAUTION]
-====
-To set up stateful files like the database you can run `mensam-init`.
-
-[source,bash]
-----
-nix run ..#subflakes.final.packages.x86_64-linux.mensam-init
-----
-====
 
 === Formatting
 
