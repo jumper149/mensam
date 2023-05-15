@@ -3,6 +3,7 @@
   "automatically created by": "elm-review suppress",
   "learn more": "elm-review suppress --help",
   "suppressions": [
-    { "count": 2, "filePath": "source/Mensam/Error.elm" }
+    { "count": 2, "filePath": "source/Mensam/Error.elm" },
+    { "count": 1, "filePath": "source/Mensam/Api/ReservationCancel.elm" }
   ]
 }
