@@ -318,12 +318,14 @@ element model =
                                 ]
                             , Element.el
                                 [ Element.width Element.fill
+                                , Element.height Element.fill
                                 ]
                               <|
                                 case reservation.pickerVisibility of
                                     DatePickerVisible ->
                                         Element.el
                                             [ Element.centerX
+                                            , Element.centerY
                                             ]
                                         <|
                                             Element.map (MessagePure << PickDate) <|
@@ -332,6 +334,7 @@ element model =
                                     TimePickerVisible ->
                                         Element.el
                                             [ Element.centerX
+                                            , Element.centerY
                                             ]
                                         <|
                                             Element.map (MessagePure << PickTime) <|
