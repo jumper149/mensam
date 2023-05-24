@@ -304,7 +304,7 @@ type ModelDay
     = MkModelDay
         { year : Year
         , month : Month
-        , selected : List Day
+        , selected : Maybe Day
         }
 
 
@@ -407,11 +407,16 @@ elementPickDay (MkModelDay model) =
                             [ Element.width Element.fill
                             , Element.height Element.fill
                             , Element.Background.color <|
-                                if List.member day model.selected then
-                                    Element.rgba 1 1 1 0.05
+                                case model.selected of
+                                    Nothing ->
+                                        Element.rgba 1 1 1 0
 
-                                else
-                                    Element.rgba 1 1 1 0
+                                    Just selectedDay ->
+                                        if day == selectedDay then
+                                            Element.rgba 1 1 1 0.05
+
+                                        else
+                                            Element.rgba 1 1 1 0
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , Element.mouseOver
                                 [ Element.Background.color <| Element.rgba 1 1 1 0.1
@@ -448,7 +453,7 @@ type ModelDate
     = MkModelDate
         { year : Year
         , month : Month
-        , selected : List Day
+        , selected : Maybe Day
         }
 
 
@@ -461,44 +466,44 @@ updateDateNextMonth : ModelDate -> ModelDate
 updateDateNextMonth (MkModelDate model) =
     case unMonth model.month of
         Time.Jan ->
-            MkModelDate { model | month = MkMonth Time.Feb, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Feb, selected = Nothing }
 
         Time.Feb ->
-            MkModelDate { model | month = MkMonth Time.Mar, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Mar, selected = Nothing }
 
         Time.Mar ->
-            MkModelDate { model | month = MkMonth Time.Apr, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Apr, selected = Nothing }
 
         Time.Apr ->
-            MkModelDate { model | month = MkMonth Time.May, selected = [] }
+            MkModelDate { model | month = MkMonth Time.May, selected = Nothing }
 
         Time.May ->
-            MkModelDate { model | month = MkMonth Time.Jun, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Jun, selected = Nothing }
 
         Time.Jun ->
-            MkModelDate { model | month = MkMonth Time.Jul, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Jul, selected = Nothing }
 
         Time.Jul ->
-            MkModelDate { model | month = MkMonth Time.Aug, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Aug, selected = Nothing }
 
         Time.Aug ->
-            MkModelDate { model | month = MkMonth Time.Sep, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Sep, selected = Nothing }
 
         Time.Sep ->
-            MkModelDate { model | month = MkMonth Time.Oct, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Oct, selected = Nothing }
 
         Time.Oct ->
-            MkModelDate { model | month = MkMonth Time.Nov, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Nov, selected = Nothing }
 
         Time.Nov ->
-            MkModelDate { model | month = MkMonth Time.Dec, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Dec, selected = Nothing }
 
         Time.Dec ->
             MkModelDate
                 { model
                     | year = MkYear <| unYear model.year + 1
                     , month = MkMonth Time.Jan
-                    , selected = []
+                    , selected = Nothing
                 }
 
 
@@ -510,41 +515,41 @@ updateDatePreviousMonth (MkModelDate model) =
                 { model
                     | year = MkYear <| unYear model.year - 1
                     , month = MkMonth Time.Dec
-                    , selected = []
+                    , selected = Nothing
                 }
 
         Time.Feb ->
-            MkModelDate { model | month = MkMonth Time.Jan, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Jan, selected = Nothing }
 
         Time.Mar ->
-            MkModelDate { model | month = MkMonth Time.Feb, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Feb, selected = Nothing }
 
         Time.Apr ->
-            MkModelDate { model | month = MkMonth Time.Mar, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Mar, selected = Nothing }
 
         Time.May ->
-            MkModelDate { model | month = MkMonth Time.Apr, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Apr, selected = Nothing }
 
         Time.Jun ->
-            MkModelDate { model | month = MkMonth Time.May, selected = [] }
+            MkModelDate { model | month = MkMonth Time.May, selected = Nothing }
 
         Time.Jul ->
-            MkModelDate { model | month = MkMonth Time.Jun, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Jun, selected = Nothing }
 
         Time.Aug ->
-            MkModelDate { model | month = MkMonth Time.Jul, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Jul, selected = Nothing }
 
         Time.Sep ->
-            MkModelDate { model | month = MkMonth Time.Aug, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Aug, selected = Nothing }
 
         Time.Oct ->
-            MkModelDate { model | month = MkMonth Time.Sep, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Sep, selected = Nothing }
 
         Time.Nov ->
-            MkModelDate { model | month = MkMonth Time.Oct, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Oct, selected = Nothing }
 
         Time.Dec ->
-            MkModelDate { model | month = MkMonth Time.Nov, selected = [] }
+            MkModelDate { model | month = MkMonth Time.Nov, selected = Nothing }
 
 
 elementPickDate : ModelDate -> Element.Element MessageDate

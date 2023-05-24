@@ -98,7 +98,7 @@ init args =
         Mensam.Time.MkModelDate
             { year = (Mensam.Time.unDate date).year
             , month = (Mensam.Time.unDate date).month
-            , selected = [ (Mensam.Time.unDate date).day ]
+            , selected = Just (Mensam.Time.unDate date).day
             }
     , dateSelected = (Mensam.Time.unTimestamp <| Mensam.Time.fromPosix args.time.zone args.time.now).date
     , timeSelected =
@@ -586,7 +586,7 @@ updatePure message model =
                     model.modelDate
             in
             { model
-                | modelDate = Mensam.Time.MkModelDate { modelDate | selected = [ day ] }
+                | modelDate = Mensam.Time.MkModelDate { modelDate | selected = Just day }
                 , dateSelected =
                     Mensam.Time.MkDate
                         { year = modelDate.year
