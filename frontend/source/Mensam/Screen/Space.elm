@@ -21,6 +21,7 @@ import Mensam.Error
 import Mensam.Reservation
 import Mensam.Space
 import Mensam.Time
+import Mensam.Widget.Date
 import Set
 import Time
 
@@ -52,8 +53,7 @@ type alias Model =
                     }
             }
     , selected : Maybe Int
-    , modelDate : Mensam.Time.ModelDate
-    , dateSelected : Mensam.Time.Date
+    , modelDate : Mensam.Widget.Date.Model
     , timeSelected : Mensam.Time.Time
     }
 
@@ -95,12 +95,11 @@ init args =
             date =
                 (Mensam.Time.unTimestamp <| Mensam.Time.fromPosix args.time.zone args.time.now).date
         in
-        Mensam.Time.MkModelDate
+        Mensam.Widget.Date.MkModel
             { year = (Mensam.Time.unDate date).year
             , month = (Mensam.Time.unDate date).month
-            , selected = Just (Mensam.Time.unDate date).day
+            , selected = date
             }
-    , dateSelected = (Mensam.Time.unTimestamp <| Mensam.Time.fromPosix args.time.zone args.time.now).date
     , timeSelected =
         Mensam.Time.MkTime
             { hour = Mensam.Time.MkHour 12
@@ -286,7 +285,9 @@ element model =
                                             Element.text <|
                                                 let
                                                     date =
-                                                        Mensam.Time.unDate model.dateSelected
+                                                        case model.modelDate of
+                                                            Mensam.Widget.Date.MkModel { selected } ->
+                                                                Mensam.Time.unDate selected
                                                 in
                                                 String.concat
                                                     [ Mensam.Time.yearToString date.year
@@ -328,8 +329,8 @@ element model =
                                             , Element.centerY
                                             ]
                                         <|
-                                            Element.map (MessagePure << PickDate) <|
-                                                Mensam.Time.elementPickDate model.modelDate
+                                            Element.map (MessagePure << MessageDate) <|
+                                                Mensam.Widget.Date.elementPickDate model.modelDate
 
                                     TimePickerVisible ->
                                         Element.el
@@ -494,7 +495,7 @@ type MessagePure
         )
     | ViewDatePicker
     | ViewTimePicker
-    | PickDate Mensam.Time.MessageDate
+    | MessageDate Mensam.Widget.Date.Message
     | PickTime Mensam.Time.MessageTime
 
 
@@ -574,24 +575,27 @@ updatePure message model =
                             model.popup
             }
 
-        PickDate (Mensam.Time.MessageMonth Mensam.Time.MonthNext) ->
-            { model | modelDate = Mensam.Time.updateDateNextMonth model.modelDate }
+        MessageDate Mensam.Widget.Date.NextMonth ->
+            { model | modelDate = Mensam.Widget.Date.updateDateNextMonth model.modelDate }
 
-        PickDate (Mensam.Time.MessageMonth Mensam.Time.MonthPrevious) ->
-            { model | modelDate = Mensam.Time.updateDatePreviousMonth model.modelDate }
+        MessageDate Mensam.Widget.Date.PreviousMonth ->
+            { model | modelDate = Mensam.Widget.Date.updateDatePreviousMonth model.modelDate }
 
-        PickDate (Mensam.Time.MessageDay (Mensam.Time.ClickDay day)) ->
+        MessageDate (Mensam.Widget.Date.ClickDay day) ->
             let
-                (Mensam.Time.MkModelDate modelDate) =
+                (Mensam.Widget.Date.MkModel modelDate) =
                     model.modelDate
             in
             { model
-                | modelDate = Mensam.Time.MkModelDate { modelDate | selected = Just day }
-                , dateSelected =
-                    Mensam.Time.MkDate
-                        { year = modelDate.year
-                        , month = modelDate.month
-                        , day = day
+                | modelDate =
+                    Mensam.Widget.Date.MkModel
+                        { modelDate
+                            | selected =
+                                Mensam.Time.MkDate
+                                    { year = modelDate.year
+                                    , month = modelDate.month
+                                    , day = day
+                                    }
                         }
             }
 
@@ -728,13 +732,19 @@ reservationCreate jwt model { desk } =
             { start =
                 Mensam.Time.toPosix model.timezone <|
                     Mensam.Time.MkTimestamp
-                        { date = model.dateSelected
+                        { date =
+                            case model.modelDate of
+                                Mensam.Widget.Date.MkModel modelDate ->
+                                    modelDate.selected
                         , time = model.timeSelected
                         }
             , end =
                 Mensam.Time.toPosix model.timezone <|
                     Mensam.Time.MkTimestamp
-                        { date = model.dateSelected
+                        { date =
+                            case model.modelDate of
+                                Mensam.Widget.Date.MkModel modelDate ->
+                                    modelDate.selected
                         , time = model.timeSelected
                         }
             }
