@@ -38,7 +38,7 @@ element screen =
                             [ Element.Background.color Mensam.Element.Color.bright.black
                             , Element.centerX
                             , Element.width <| Element.maximum 500 <| Element.fill
-                            , Element.height <| Element.px 465
+                            , Element.height <| Element.px 550
                             , Element.paddingXY 30 30
                             ]
                         <|

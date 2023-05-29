@@ -54,8 +54,10 @@ type alias Model =
                     }
             }
     , selected : Maybe Int
-    , modelDate : Mensam.Widget.Date.Model
-    , modelTime : Mensam.Time.Time
+    , modelDateBegin : Mensam.Widget.Date.Model
+    , modelTimeBegin : Mensam.Time.Time
+    , modelDateEnd : Mensam.Widget.Date.Model
+    , modelTimeEnd : Mensam.Time.Time
     }
 
 
@@ -75,8 +77,10 @@ type PopupModel
 
 type PickerVisibility
     = PickerInvisible
-    | DatePickerVisible
-    | TimePickerVisible
+    | DateBeginPickerVisible
+    | TimeBeginPickerVisible
+    | DateEndPickerVisible
+    | TimeEndPickerVisible
 
 
 init : { id : Mensam.Space.Identifier, time : { now : Time.Posix, zone : Time.Zone } } -> Model
@@ -91,7 +95,7 @@ init args =
     , popup = Nothing
     , desks = []
     , selected = Nothing
-    , modelDate =
+    , modelDateBegin =
         let
             date =
                 (Mensam.Time.unTimestamp <| Mensam.Time.fromPosix args.time.zone args.time.now).date
@@ -101,9 +105,25 @@ init args =
             , month = (Mensam.Time.unDate date).month
             , selected = date
             }
-    , modelTime =
+    , modelTimeBegin =
         Mensam.Time.MkTime
             { hour = Mensam.Time.MkHour 12
+            , minute = Mensam.Time.MkMinute 0
+            , second = Mensam.Time.MkSecond 0
+            }
+    , modelDateEnd =
+        let
+            date =
+                (Mensam.Time.unTimestamp <| Mensam.Time.fromPosix args.time.zone args.time.now).date
+        in
+        Mensam.Widget.Date.MkModel
+            { year = (Mensam.Time.unDate date).year
+            , month = (Mensam.Time.unDate date).month
+            , selected = date
+            }
+    , modelTimeEnd =
+        Mensam.Time.MkTime
+            { hour = Mensam.Time.MkHour 13
             , minute = Mensam.Time.MkMinute 0
             , second = Mensam.Time.MkSecond 0
             }
@@ -274,7 +294,7 @@ element model =
                                     , Element.width Element.fill
                                     , Element.padding 10
                                     ]
-                                    { onPress = Just <| MessagePure <| ViewDatePicker
+                                    { onPress = Just <| MessagePure <| ViewDateBeginPicker
                                     , label =
                                         Element.el
                                             [ Element.centerX
@@ -286,7 +306,7 @@ element model =
                                             Element.text <|
                                                 let
                                                     date =
-                                                        case model.modelDate of
+                                                        case model.modelDateBegin of
                                                             Mensam.Widget.Date.MkModel { selected } ->
                                                                 Mensam.Time.unDate selected
                                                 in
@@ -305,7 +325,7 @@ element model =
                                     , Element.width Element.fill
                                     , Element.padding 10
                                     ]
-                                    { onPress = Just <| MessagePure <| ViewTimePicker
+                                    { onPress = Just <| MessagePure <| ViewTimeBeginPicker
                                     , label =
                                         Element.el
                                             [ Element.centerX
@@ -315,7 +335,7 @@ element model =
                                             ]
                                         <|
                                             Element.text <|
-                                                Mensam.Time.timeToString model.modelTime
+                                                Mensam.Time.timeToString model.modelTimeBegin
                                     }
                                 ]
                             , Element.el
@@ -324,26 +344,99 @@ element model =
                                 ]
                               <|
                                 case reservation.pickerVisibility of
-                                    DatePickerVisible ->
+                                    DateBeginPickerVisible ->
                                         Element.el
                                             [ Element.centerX
                                             , Element.centerY
                                             ]
                                         <|
-                                            Element.map (MessagePure << MessageDate) <|
-                                                Mensam.Widget.Date.elementPickDate model.modelDate
+                                            Element.map (MessagePure << MessageDateBegin) <|
+                                                Mensam.Widget.Date.elementPickDate model.modelDateBegin
 
-                                    TimePickerVisible ->
+                                    TimeBeginPickerVisible ->
                                         Element.el
                                             [ Element.centerX
                                             , Element.centerY
                                             ]
                                         <|
-                                            Element.map (MessagePure << MessageTime) <|
-                                                Mensam.Widget.Time.elementPickTime model.modelTime
+                                            Element.map (MessagePure << MessageTimeBegin) <|
+                                                Mensam.Widget.Time.elementPickTime model.modelTimeBegin
+
+                                    DateEndPickerVisible ->
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            ]
+                                        <|
+                                            Element.map (MessagePure << MessageDateEnd) <|
+                                                Mensam.Widget.Date.elementPickDate model.modelDateEnd
+
+                                    TimeEndPickerVisible ->
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            ]
+                                        <|
+                                            Element.map (MessagePure << MessageTimeEnd) <|
+                                                Mensam.Widget.Time.elementPickTime model.modelTimeEnd
 
                                     PickerInvisible ->
                                         Element.none
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                ]
+                                [ Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.blue
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessagePure <| ViewDateEndPicker
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text <|
+                                                let
+                                                    date =
+                                                        case model.modelDateEnd of
+                                                            Mensam.Widget.Date.MkModel { selected } ->
+                                                                Mensam.Time.unDate selected
+                                                in
+                                                String.concat
+                                                    [ Mensam.Time.yearToString date.year
+                                                    , ", "
+                                                    , Mensam.Time.monthToString date.month
+                                                    , " "
+                                                    , Mensam.Time.dayToString date.day
+                                                    ]
+                                    }
+                                , Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.blue
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessagePure <| ViewTimeEndPicker
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text <|
+                                                Mensam.Time.timeToString model.modelTimeEnd
+                                    }
+                                ]
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10
@@ -494,10 +587,14 @@ type MessagePure
                 }
             }
         )
-    | ViewDatePicker
-    | ViewTimePicker
-    | MessageDate Mensam.Widget.Date.Message
-    | MessageTime Mensam.Widget.Time.Message
+    | ViewDateBeginPicker
+    | ViewTimeBeginPicker
+    | MessageDateBegin Mensam.Widget.Date.Message
+    | MessageTimeBegin Mensam.Widget.Time.Message
+    | ViewDateEndPicker
+    | ViewTimeEndPicker
+    | MessageDateEnd Mensam.Widget.Date.Message
+    | MessageTimeEnd Mensam.Widget.Time.Message
 
 
 updatePure : MessagePure -> Model -> Model
@@ -546,7 +643,7 @@ updatePure message model =
         ViewDetailed (Just data) ->
             { model | popup = Just <| PopupReservation { desk = data.desk, pickerVisibility = PickerInvisible } }
 
-        ViewDatePicker ->
+        ViewDateBeginPicker ->
             { model
                 | popup =
                     case model.popup of
@@ -554,14 +651,14 @@ updatePure message model =
                             Just <|
                                 PopupReservation
                                     { reservation
-                                        | pickerVisibility = DatePickerVisible
+                                        | pickerVisibility = DateBeginPickerVisible
                                     }
 
                         _ ->
                             model.popup
             }
 
-        ViewTimePicker ->
+        ViewTimeBeginPicker ->
             { model
                 | popup =
                     case model.popup of
@@ -569,26 +666,26 @@ updatePure message model =
                             Just <|
                                 PopupReservation
                                     { reservation
-                                        | pickerVisibility = TimePickerVisible
+                                        | pickerVisibility = TimeBeginPickerVisible
                                     }
 
                         _ ->
                             model.popup
             }
 
-        MessageDate Mensam.Widget.Date.NextMonth ->
-            { model | modelDate = Mensam.Widget.Date.updateDateNextMonth model.modelDate }
+        MessageDateBegin Mensam.Widget.Date.NextMonth ->
+            { model | modelDateBegin = Mensam.Widget.Date.updateDateNextMonth model.modelDateBegin }
 
-        MessageDate Mensam.Widget.Date.PreviousMonth ->
-            { model | modelDate = Mensam.Widget.Date.updateDatePreviousMonth model.modelDate }
+        MessageDateBegin Mensam.Widget.Date.PreviousMonth ->
+            { model | modelDateBegin = Mensam.Widget.Date.updateDatePreviousMonth model.modelDateBegin }
 
-        MessageDate (Mensam.Widget.Date.ClickDay day) ->
+        MessageDateBegin (Mensam.Widget.Date.ClickDay day) ->
             let
                 (Mensam.Widget.Date.MkModel modelDate) =
-                    model.modelDate
+                    model.modelDateBegin
             in
             { model
-                | modelDate =
+                | modelDateBegin =
                     Mensam.Widget.Date.MkModel
                         { modelDate
                             | selected =
@@ -600,22 +697,96 @@ updatePure message model =
                         }
             }
 
-        MessageTime (Mensam.Widget.Time.SetHour hour) ->
+        MessageTimeBegin (Mensam.Widget.Time.SetHour hour) ->
             { model
-                | modelTime =
+                | modelTimeBegin =
                     let
                         (Mensam.Time.MkTime timeSelected) =
-                            model.modelTime
+                            model.modelTimeBegin
                     in
                     Mensam.Time.MkTime { timeSelected | hour = hour }
             }
 
-        MessageTime (Mensam.Widget.Time.SetMinute minute) ->
+        MessageTimeBegin (Mensam.Widget.Time.SetMinute minute) ->
             { model
-                | modelTime =
+                | modelTimeBegin =
                     let
                         (Mensam.Time.MkTime timeSelected) =
-                            model.modelTime
+                            model.modelTimeBegin
+                    in
+                    Mensam.Time.MkTime { timeSelected | minute = minute }
+            }
+
+        ViewDateEndPicker ->
+            { model
+                | popup =
+                    case model.popup of
+                        Just (PopupReservation reservation) ->
+                            Just <|
+                                PopupReservation
+                                    { reservation
+                                        | pickerVisibility = DateEndPickerVisible
+                                    }
+
+                        _ ->
+                            model.popup
+            }
+
+        ViewTimeEndPicker ->
+            { model
+                | popup =
+                    case model.popup of
+                        Just (PopupReservation reservation) ->
+                            Just <|
+                                PopupReservation
+                                    { reservation
+                                        | pickerVisibility = TimeEndPickerVisible
+                                    }
+
+                        _ ->
+                            model.popup
+            }
+
+        MessageDateEnd Mensam.Widget.Date.NextMonth ->
+            { model | modelDateEnd = Mensam.Widget.Date.updateDateNextMonth model.modelDateEnd }
+
+        MessageDateEnd Mensam.Widget.Date.PreviousMonth ->
+            { model | modelDateEnd = Mensam.Widget.Date.updateDatePreviousMonth model.modelDateEnd }
+
+        MessageDateEnd (Mensam.Widget.Date.ClickDay day) ->
+            let
+                (Mensam.Widget.Date.MkModel modelDate) =
+                    model.modelDateEnd
+            in
+            { model
+                | modelDateEnd =
+                    Mensam.Widget.Date.MkModel
+                        { modelDate
+                            | selected =
+                                Mensam.Time.MkDate
+                                    { year = modelDate.year
+                                    , month = modelDate.month
+                                    , day = day
+                                    }
+                        }
+            }
+
+        MessageTimeEnd (Mensam.Widget.Time.SetHour hour) ->
+            { model
+                | modelTimeEnd =
+                    let
+                        (Mensam.Time.MkTime timeSelected) =
+                            model.modelTimeEnd
+                    in
+                    Mensam.Time.MkTime { timeSelected | hour = hour }
+            }
+
+        MessageTimeEnd (Mensam.Widget.Time.SetMinute minute) ->
+            { model
+                | modelTimeEnd =
+                    let
+                        (Mensam.Time.MkTime timeSelected) =
+                            model.modelTimeEnd
                     in
                     Mensam.Time.MkTime { timeSelected | minute = minute }
             }
@@ -734,19 +905,19 @@ reservationCreate jwt model { desk } =
                 Mensam.Time.toPosix model.timezone <|
                     Mensam.Time.MkTimestamp
                         { date =
-                            case model.modelDate of
+                            case model.modelDateBegin of
                                 Mensam.Widget.Date.MkModel modelDate ->
                                     modelDate.selected
-                        , time = model.modelTime
+                        , time = model.modelTimeBegin
                         }
             , end =
                 Mensam.Time.toPosix model.timezone <|
                     Mensam.Time.MkTimestamp
                         { date =
-                            case model.modelDate of
+                            case model.modelDateEnd of
                                 Mensam.Widget.Date.MkModel modelDate ->
                                     modelDate.selected
-                        , time = model.modelTime
+                        , time = model.modelTimeEnd
                         }
             }
         }
