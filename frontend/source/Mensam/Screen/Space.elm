@@ -22,6 +22,7 @@ import Mensam.Reservation
 import Mensam.Space
 import Mensam.Time
 import Mensam.Widget.Date
+import Mensam.Widget.Time
 import Set
 import Time
 
@@ -54,7 +55,7 @@ type alias Model =
             }
     , selected : Maybe Int
     , modelDate : Mensam.Widget.Date.Model
-    , timeSelected : Mensam.Time.Time
+    , modelTime : Mensam.Time.Time
     }
 
 
@@ -100,7 +101,7 @@ init args =
             , month = (Mensam.Time.unDate date).month
             , selected = date
             }
-    , timeSelected =
+    , modelTime =
         Mensam.Time.MkTime
             { hour = Mensam.Time.MkHour 12
             , minute = Mensam.Time.MkMinute 0
@@ -314,7 +315,7 @@ element model =
                                             ]
                                         <|
                                             Element.text <|
-                                                Mensam.Time.timeToString model.timeSelected
+                                                Mensam.Time.timeToString model.modelTime
                                     }
                                 ]
                             , Element.el
@@ -338,8 +339,8 @@ element model =
                                             , Element.centerY
                                             ]
                                         <|
-                                            Element.map (MessagePure << PickTime) <|
-                                                Mensam.Time.elementPickTime model.timeSelected
+                                            Element.map (MessagePure << MessageTime) <|
+                                                Mensam.Widget.Time.elementPickTime model.modelTime
 
                                     PickerInvisible ->
                                         Element.none
@@ -496,7 +497,7 @@ type MessagePure
     | ViewDatePicker
     | ViewTimePicker
     | MessageDate Mensam.Widget.Date.Message
-    | PickTime Mensam.Time.MessageTime
+    | MessageTime Mensam.Widget.Time.Message
 
 
 updatePure : MessagePure -> Model -> Model
@@ -599,22 +600,22 @@ updatePure message model =
                         }
             }
 
-        PickTime (Mensam.Time.SetHour hour) ->
+        MessageTime (Mensam.Widget.Time.SetHour hour) ->
             { model
-                | timeSelected =
+                | modelTime =
                     let
                         (Mensam.Time.MkTime timeSelected) =
-                            model.timeSelected
+                            model.modelTime
                     in
                     Mensam.Time.MkTime { timeSelected | hour = hour }
             }
 
-        PickTime (Mensam.Time.SetMinute minute) ->
+        MessageTime (Mensam.Widget.Time.SetMinute minute) ->
             { model
-                | timeSelected =
+                | modelTime =
                     let
                         (Mensam.Time.MkTime timeSelected) =
-                            model.timeSelected
+                            model.modelTime
                     in
                     Mensam.Time.MkTime { timeSelected | minute = minute }
             }
@@ -736,7 +737,7 @@ reservationCreate jwt model { desk } =
                             case model.modelDate of
                                 Mensam.Widget.Date.MkModel modelDate ->
                                     modelDate.selected
-                        , time = model.timeSelected
+                        , time = model.modelTime
                         }
             , end =
                 Mensam.Time.toPosix model.timezone <|
@@ -745,7 +746,7 @@ reservationCreate jwt model { desk } =
                             case model.modelDate of
                                 Mensam.Widget.Date.MkModel modelDate ->
                                     modelDate.selected
-                        , time = model.timeSelected
+                        , time = model.modelTime
                         }
             }
         }
