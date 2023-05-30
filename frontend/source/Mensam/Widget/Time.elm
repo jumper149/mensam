@@ -7,13 +7,19 @@ import Svg.Attributes
 import Svg.Events
 
 
+type Model
+    = MkModel
+        { selected : Mensam.Time.Time
+        }
+
+
 type Message
     = SetHour Mensam.Time.Hour
     | SetMinute Mensam.Time.Minute
 
 
-elementPickTime : Mensam.Time.Time -> Element.Element Message
-elementPickTime (Mensam.Time.MkTime _) =
+elementPickTime : Model -> Element.Element Message
+elementPickTime (MkModel _) =
     Element.el
         [ Element.width <| Element.px 200 ]
     <|

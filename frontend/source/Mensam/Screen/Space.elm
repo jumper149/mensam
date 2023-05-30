@@ -55,9 +55,9 @@ type alias Model =
             }
     , selected : Maybe Int
     , modelDateBegin : Mensam.Widget.Date.Model
-    , modelTimeBegin : Mensam.Time.Time
+    , modelTimeBegin : Mensam.Widget.Time.Model
     , modelDateEnd : Mensam.Widget.Date.Model
-    , modelTimeEnd : Mensam.Time.Time
+    , modelTimeEnd : Mensam.Widget.Time.Model
     }
 
 
@@ -106,10 +106,13 @@ init args =
             , selected = date
             }
     , modelTimeBegin =
-        Mensam.Time.MkTime
-            { hour = Mensam.Time.MkHour 12
-            , minute = Mensam.Time.MkMinute 0
-            , second = Mensam.Time.MkSecond 0
+        Mensam.Widget.Time.MkModel
+            { selected =
+                Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 12
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
             }
     , modelDateEnd =
         let
@@ -122,10 +125,13 @@ init args =
             , selected = date
             }
     , modelTimeEnd =
-        Mensam.Time.MkTime
-            { hour = Mensam.Time.MkHour 13
-            , minute = Mensam.Time.MkMinute 0
-            , second = Mensam.Time.MkSecond 0
+        Mensam.Widget.Time.MkModel
+            { selected =
+                Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 13
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
             }
     }
 
@@ -335,7 +341,13 @@ element model =
                                             ]
                                         <|
                                             Element.text <|
-                                                Mensam.Time.timeToString model.modelTimeBegin
+                                                let
+                                                    time =
+                                                        case model.modelTimeBegin of
+                                                            Mensam.Widget.Time.MkModel { selected } ->
+                                                                selected
+                                                in
+                                                Mensam.Time.timeToString time
                                     }
                                 ]
                             , Element.el
@@ -434,7 +446,13 @@ element model =
                                             ]
                                         <|
                                             Element.text <|
-                                                Mensam.Time.timeToString model.modelTimeEnd
+                                                let
+                                                    time =
+                                                        case model.modelTimeEnd of
+                                                            Mensam.Widget.Time.MkModel { selected } ->
+                                                                selected
+                                                in
+                                                Mensam.Time.timeToString time
                                     }
                                 ]
                             , Element.row
@@ -698,23 +716,39 @@ updatePure message model =
             }
 
         MessageTimeBegin (Mensam.Widget.Time.SetHour hour) ->
+            let
+                (Mensam.Widget.Time.MkModel modelTime) =
+                    model.modelTimeBegin
+            in
             { model
                 | modelTimeBegin =
-                    let
-                        (Mensam.Time.MkTime timeSelected) =
-                            model.modelTimeBegin
-                    in
-                    Mensam.Time.MkTime { timeSelected | hour = hour }
+                    Mensam.Widget.Time.MkModel
+                        { modelTime
+                            | selected =
+                                Mensam.Time.MkTime
+                                    { hour = hour
+                                    , minute = (Mensam.Time.unTime modelTime.selected).minute
+                                    , second = (Mensam.Time.unTime modelTime.selected).second
+                                    }
+                        }
             }
 
         MessageTimeBegin (Mensam.Widget.Time.SetMinute minute) ->
+            let
+                (Mensam.Widget.Time.MkModel modelTime) =
+                    model.modelTimeBegin
+            in
             { model
                 | modelTimeBegin =
-                    let
-                        (Mensam.Time.MkTime timeSelected) =
-                            model.modelTimeBegin
-                    in
-                    Mensam.Time.MkTime { timeSelected | minute = minute }
+                    Mensam.Widget.Time.MkModel
+                        { modelTime
+                            | selected =
+                                Mensam.Time.MkTime
+                                    { hour = (Mensam.Time.unTime modelTime.selected).hour
+                                    , minute = minute
+                                    , second = (Mensam.Time.unTime modelTime.selected).second
+                                    }
+                        }
             }
 
         ViewDateEndPicker ->
@@ -772,23 +806,39 @@ updatePure message model =
             }
 
         MessageTimeEnd (Mensam.Widget.Time.SetHour hour) ->
+            let
+                (Mensam.Widget.Time.MkModel modelTime) =
+                    model.modelTimeEnd
+            in
             { model
                 | modelTimeEnd =
-                    let
-                        (Mensam.Time.MkTime timeSelected) =
-                            model.modelTimeEnd
-                    in
-                    Mensam.Time.MkTime { timeSelected | hour = hour }
+                    Mensam.Widget.Time.MkModel
+                        { modelTime
+                            | selected =
+                                Mensam.Time.MkTime
+                                    { hour = hour
+                                    , minute = (Mensam.Time.unTime modelTime.selected).minute
+                                    , second = (Mensam.Time.unTime modelTime.selected).second
+                                    }
+                        }
             }
 
         MessageTimeEnd (Mensam.Widget.Time.SetMinute minute) ->
+            let
+                (Mensam.Widget.Time.MkModel modelTime) =
+                    model.modelTimeEnd
+            in
             { model
                 | modelTimeEnd =
-                    let
-                        (Mensam.Time.MkTime timeSelected) =
-                            model.modelTimeEnd
-                    in
-                    Mensam.Time.MkTime { timeSelected | minute = minute }
+                    Mensam.Widget.Time.MkModel
+                        { modelTime
+                            | selected =
+                                Mensam.Time.MkTime
+                                    { hour = (Mensam.Time.unTime modelTime.selected).hour
+                                    , minute = minute
+                                    , second = (Mensam.Time.unTime modelTime.selected).second
+                                    }
+                        }
             }
 
 
@@ -908,7 +958,10 @@ reservationCreate jwt model { desk } =
                             case model.modelDateBegin of
                                 Mensam.Widget.Date.MkModel modelDate ->
                                     modelDate.selected
-                        , time = model.modelTimeBegin
+                        , time =
+                            case model.modelTimeBegin of
+                                Mensam.Widget.Time.MkModel modelTime ->
+                                    modelTime.selected
                         }
             , end =
                 Mensam.Time.toPosix model.timezone <|
@@ -917,7 +970,10 @@ reservationCreate jwt model { desk } =
                             case model.modelDateEnd of
                                 Mensam.Widget.Date.MkModel modelDate ->
                                     modelDate.selected
-                        , time = model.modelTimeEnd
+                        , time =
+                            case model.modelTimeEnd of
+                                Mensam.Widget.Time.MkModel modelTime ->
+                                    modelTime.selected
                         }
             }
         }
