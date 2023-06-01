@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE StrictData #-}
 
 {- HLINT ignore "Use camelCase" -}
 
@@ -17,7 +18,7 @@ import GHC.Generics
 
 type DbJwk :: Type
 data DbJwk = MkDbJwk
-  { dbJwk_id :: Selda.ID DbJwk
+  { dbJwk_id :: ~(Selda.ID DbJwk)
   , dbJwk_jwk :: BS.ByteString
   , dbJwk_created :: Selda.UTCTime
   }
@@ -35,7 +36,7 @@ tableJwk =
 
 type DbUser :: Type
 data DbUser = MkDbUser
-  { dbUser_id :: Selda.ID DbUser
+  { dbUser_id :: ~(Selda.ID DbUser)
   , dbUser_name :: Selda.Text
   , dbUser_password_hash :: Selda.Text
   , dbUser_email :: Selda.Text
@@ -64,7 +65,7 @@ tableUser =
 
 type DbConfirmation :: Type
 data DbConfirmation = MkDbConfirmation
-  { dbConfirmation_id :: Selda.ID DbConfirmation
+  { dbConfirmation_id :: ~(Selda.ID DbConfirmation)
   , dbConfirmation_user :: Selda.ID DbUser
   , dbConfirmation_secret :: Selda.Text
   , dbConfirmation_expired :: Selda.UTCTime
@@ -85,7 +86,7 @@ tableConfirmation =
 
 type DbSession :: Type
 data DbSession = MkDbSession
-  { dbSession_id :: Selda.ID DbSession
+  { dbSession_id :: ~(Selda.ID DbSession)
   , dbSession_user :: Selda.ID DbUser
   , dbSession_time_created :: Selda.UTCTime
   , dbSession_time_expired :: Maybe Selda.UTCTime
@@ -104,7 +105,7 @@ tableSession =
 
 type DbSpace :: Type
 data DbSpace = MkDbSpace
-  { dbSpace_id :: Selda.ID DbSpace
+  { dbSpace_id :: ~(Selda.ID DbSpace)
   , dbSpace_name :: Selda.Text
   , dbSpace_timezone :: Time.TZLabel
   , dbSpace_visibility :: DbSpaceVisibility
@@ -131,7 +132,7 @@ tableSpace =
 
 type DbSpaceRole :: Type
 data DbSpaceRole = MkDbSpaceRole
-  { dbSpaceRole_id :: Selda.ID DbSpaceRole
+  { dbSpaceRole_id :: ~(Selda.ID DbSpaceRole)
   , dbSpaceRole_space :: Selda.ID DbSpace
   , dbSpaceRole_name :: Selda.Text
   , dbSpaceRole_accessibility :: DbSpaceRoleAccessibility
@@ -159,7 +160,7 @@ tableSpaceRole =
 
 type DbSpaceRolePermission :: Type
 data DbSpaceRolePermission = MkDbSpaceRolePermission
-  { dbSpaceRolePermission_id :: Selda.ID DbSpaceRolePermission
+  { dbSpaceRolePermission_id :: ~(Selda.ID DbSpaceRolePermission)
   , dbSpaceRolePermission_role :: Selda.ID DbSpaceRole
   , dbSpaceRolePermission_permission :: DbSpacePermission
   }
@@ -188,7 +189,7 @@ data DbSpacePermission
 
 type DbSpaceUser :: Type
 data DbSpaceUser = MkDbSpaceUser
-  { dbSpaceUser_id :: Selda.ID DbSpaceUser
+  { dbSpaceUser_id :: ~(Selda.ID DbSpaceUser)
   , dbSpaceUser_space :: Selda.ID DbSpace
   , dbSpaceUser_user :: Selda.ID DbUser
   , dbSpaceUser_role :: Selda.ID DbSpaceRole
@@ -209,7 +210,7 @@ tableSpaceUser =
 
 type DbDesk :: Type
 data DbDesk = MkDbDesk
-  { dbDesk_id :: Selda.ID DbDesk
+  { dbDesk_id :: ~(Selda.ID DbDesk)
   , dbDesk_space :: Selda.ID DbSpace
   , dbDesk_name :: Selda.Text
   }
@@ -228,7 +229,7 @@ tableDesk =
 
 type DbReservation :: Type
 data DbReservation = MkDbReservation
-  { dbReservation_id :: Selda.ID DbReservation
+  { dbReservation_id :: ~(Selda.ID DbReservation)
   , dbReservation_desk :: Selda.ID DbDesk
   , dbReservation_user :: Selda.ID DbUser
   , dbReservation_time_begin :: Selda.UTCTime
