@@ -115,7 +115,6 @@ routeToModelUpdate route (MkModel model) =
             update
                 (Messages
                     [ MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshSpace
-                    , MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks
                     ]
                 )
             <|
@@ -296,7 +295,6 @@ update message (MkModel model) =
             update
                 (Messages
                     [ Raw <| \m -> ( m, Browser.Navigation.pushUrl model.navigationKey <| routeToUrl route )
-                    , SetModel route
                     ]
                 )
             <|
