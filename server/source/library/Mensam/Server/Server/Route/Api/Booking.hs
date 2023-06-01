@@ -55,11 +55,11 @@ createSpace auth eitherRequest =
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         lift $ logInfo "Create space."
-        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateTimezone request) (requestSpaceCreateVisibility request) (requestSpaceCreateAccessibility request)
+        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateTimezone request) (requestSpaceCreateVisibility request)
 
         do
           lift $ logInfo "Create admin role and add user."
-          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Admin")
+          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Admin") MkAccessibilitySpaceRoleInaccessible
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditDesk
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
@@ -68,7 +68,7 @@ createSpace auth eitherRequest =
 
         do
           lift $ logInfo "Create member role."
-          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Member")
+          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Member") MkAccessibilitySpaceRoleJoinable
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCancelReservation

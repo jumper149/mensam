@@ -18,7 +18,6 @@ data SpaceView = MkSpaceView
   , spaceViewName :: NameSpace
   , spaceViewTimezone :: T.TZLabel
   , spaceViewVisibility :: VisibilitySpace
-  , spaceViewAccessibility :: AccessibilitySpace
   , spaceViewRoles :: S.Set SpaceRole
   , spaceViewPermissions :: S.Set PermissionSpace
   }
@@ -56,15 +55,6 @@ data VisibilitySpace
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkVisibilitySpace" "") VisibilitySpace
 
-type AccessibilitySpace :: Type
-data AccessibilitySpace
-  = MkAccessibilitySpaceJoinable
-  | MkAccessibilitySpaceInaccessible
-  deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
-  deriving
-    (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "MkAccessibilitySpace" "") AccessibilitySpace
-
 type PermissionSpace :: Type
 data PermissionSpace
   = MkPermissionSpaceViewSpace
@@ -81,6 +71,7 @@ data SpaceRole = MkSpaceRole
   { spaceRoleId :: IdentifierSpaceRole
   , spaceRoleName :: NameSpaceRole
   , spaceRolePermissions :: S.Set PermissionSpace
+  , spaceRoleAccessibility :: AccessibilitySpaceRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -97,6 +88,15 @@ newtype NameSpaceRole = MkNameSpaceRole {unNameSpaceRole :: T.Text}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
   deriving newtype (A.FromJSONKey, A.ToJSONKey)
+
+type AccessibilitySpaceRole :: Type
+data AccessibilitySpaceRole
+  = MkAccessibilitySpaceRoleJoinable
+  | MkAccessibilitySpaceRoleInaccessible
+  deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkAccessibilitySpaceRole" "") AccessibilitySpaceRole
 
 type SpaceOrderCategory :: Type
 data SpaceOrderCategory

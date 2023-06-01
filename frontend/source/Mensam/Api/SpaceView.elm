@@ -104,11 +104,10 @@ decodeBody200 : Decode.Decoder { space : Mensam.Space.SpaceView }
 decodeBody200 =
     Decode.map (\spaceView -> { space = spaceView }) <|
         Decode.field "space" <|
-            Decode.map7
-                (\accessibility id name permissions roles timezone visibility ->
+            Decode.map6
+                (\id name permissions roles timezone visibility ->
                     Mensam.Space.MkSpaceView
-                        { accessibility = accessibility
-                        , id = id
+                        { id = id
                         , name = Mensam.Space.MkName name
                         , permissions = Set.fromList permissions
                         , roles = Dict.fromList roles
@@ -116,21 +115,22 @@ decodeBody200 =
                         , visibility = visibility
                         }
                 )
-                (Decode.field "accessibility" Mensam.Space.accessibilityDecoder)
                 (Decode.field "id" Mensam.Space.identifierDecoder)
                 (Decode.field "name" Decode.string)
                 (Decode.field "permissions" <| Decode.list Decode.string)
                 (Decode.field "roles" <|
                     Decode.list <|
-                        Decode.map3
-                            (\id name permissions ->
+                        Decode.map4
+                            (\accessibility id name permissions ->
                                 ( name
-                                , { id = id
+                                , { accessibility = accessibility
+                                  , id = id
                                   , name = name
                                   , permissions = Set.fromList permissions
                                   }
                                 )
                             )
+                            (Decode.field "accessibility" Mensam.Space.accessibilityDecoder)
                             (Decode.field "id" Decode.int)
                             (Decode.field "name" Decode.string)
                             (Decode.field "permissions" <| Decode.list Decode.string)

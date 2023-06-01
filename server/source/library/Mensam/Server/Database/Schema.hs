@@ -108,7 +108,6 @@ data DbSpace = MkDbSpace
   , dbSpace_name :: Selda.Text
   , dbSpace_timezone :: Time.TZLabel
   , dbSpace_visibility :: DbSpaceVisibility
-  , dbSpace_accessibility :: DbSpaceAccessibility
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
@@ -119,14 +118,6 @@ data DbSpaceVisibility
   | MkDbSpaceVisibility_hidden
   deriving stock (Bounded, Enum, Read, Show)
   deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceVisibility_" DbSpaceVisibility)
-  deriving anyclass (Selda.SqlType)
-
-type DbSpaceAccessibility :: Type
-data DbSpaceAccessibility
-  = MkDbSpaceAccessibility_joinable
-  | MkDbSpaceAccessibility_inaccessible
-  deriving stock (Bounded, Enum, Read, Show)
-  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceAccessibility_" DbSpaceAccessibility)
   deriving anyclass (Selda.SqlType)
 
 tableSpace :: Selda.Table DbSpace
@@ -143,9 +134,18 @@ data DbSpaceRole = MkDbSpaceRole
   { dbSpaceRole_id :: Selda.ID DbSpaceRole
   , dbSpaceRole_space :: Selda.ID DbSpace
   , dbSpaceRole_name :: Selda.Text
+  , dbSpaceRole_accessibility :: DbSpaceRoleAccessibility
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)
+
+type DbSpaceRoleAccessibility :: Type
+data DbSpaceRoleAccessibility
+  = MkDbSpaceRoleAccessibility_joinable
+  | MkDbSpaceRoleAccessibility_inaccessible
+  deriving stock (Bounded, Enum, Read, Show)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceRoleAccessibility_" DbSpaceRoleAccessibility)
+  deriving anyclass (Selda.SqlType)
 
 tableSpaceRole :: Selda.Table DbSpaceRole
 tableSpaceRole =

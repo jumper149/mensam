@@ -9,14 +9,14 @@ import Set
 
 type SpaceView
     = MkSpaceView
-        { accessibility : Accessibility
-        , id : Identifier
+        { id : Identifier
         , name : Name
         , permissions : Set.Set String
         , roles :
             Dict.Dict
                 String
-                { id : Int
+                { accessibility : Accessibility
+                , id : Int
                 , name : String
                 , permissions : Set.Set String
                 }
@@ -64,39 +64,6 @@ nameToString (MkName name) =
 nameEncode : Name -> Encode.Value
 nameEncode =
     Encode.string << nameToString
-
-
-type Accessibility
-    = MkAccessibilityJoinable
-    | MkAccessibilityInaccessible
-
-
-accessibilityEncode : Accessibility -> Encode.Value
-accessibilityEncode accessibility =
-    Encode.string <|
-        case accessibility of
-            MkAccessibilityJoinable ->
-                "joinable"
-
-            MkAccessibilityInaccessible ->
-                "inaccessible"
-
-
-accessibilityDecoder : Decode.Decoder Accessibility
-accessibilityDecoder =
-    Decode.andThen
-        (\string ->
-            case string of
-                "joinable" ->
-                    Decode.succeed MkAccessibilityJoinable
-
-                "inaccessible" ->
-                    Decode.succeed MkAccessibilityInaccessible
-
-                _ ->
-                    Decode.fail <| "Trying to decode accessibility, but this option is not supported: " ++ string
-        )
-        Decode.string
 
 
 type Visibility
@@ -153,3 +120,36 @@ permissionToString permission =
 
         MkPermissionCancelReservation ->
             "cancel-reservation"
+
+
+type Accessibility
+    = MkAccessibilityJoinable
+    | MkAccessibilityInaccessible
+
+
+accessibilityEncode : Accessibility -> Encode.Value
+accessibilityEncode accessibility =
+    Encode.string <|
+        case accessibility of
+            MkAccessibilityJoinable ->
+                "joinable"
+
+            MkAccessibilityInaccessible ->
+                "inaccessible"
+
+
+accessibilityDecoder : Decode.Decoder Accessibility
+accessibilityDecoder =
+    Decode.andThen
+        (\string ->
+            case string of
+                "joinable" ->
+                    Decode.succeed MkAccessibilityJoinable
+
+                "inaccessible" ->
+                    Decode.succeed MkAccessibilityInaccessible
+
+                _ ->
+                    Decode.fail <| "Trying to decode accessibility, but this option is not supported: " ++ string
+        )
+        Decode.string

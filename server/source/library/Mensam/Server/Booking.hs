@@ -68,6 +68,7 @@ spaceView userIdentifier spaceIdentifier = do
                       { spaceRoleId = MkIdentifierSpaceRole $ Selda.fromId $ dbSpaceRole_id dbSpaceRole
                       , spaceRoleName = MkNameSpaceRole $ dbSpaceRole_name dbSpaceRole
                       , spaceRolePermissions = S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> dbSpaceRolePermissions
+                      , spaceRoleAccessibility = spaceRoleAccessibilityDbToApi $ dbSpaceRole_accessibility dbSpaceRole
                       }
                 )
                 dbSpaceRoles
@@ -80,7 +81,6 @@ spaceView userIdentifier spaceIdentifier = do
           , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
           , spaceViewTimezone = dbSpace_timezone dbSpace
           , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
-          , spaceViewAccessibility = spaceAccessibilityDbToApi $ dbSpace_accessibility dbSpace
           , spaceViewPermissions = permissions
           , spaceViewRoles = S.fromList spaceRoles
           }
@@ -130,9 +130,8 @@ spaceCreate ::
   NameSpace ->
   T.TZLabel ->
   VisibilitySpace ->
-  AccessibilitySpace ->
   SeldaTransactionT m IdentifierSpace
-spaceCreate name timezoneLabel visibility accessibility = do
+spaceCreate name timezoneLabel visibility = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
   let dbSpace =
         MkDbSpace
@@ -140,7 +139,6 @@ spaceCreate name timezoneLabel visibility accessibility = do
           , dbSpace_name = unNameSpace name
           , dbSpace_timezone = timezoneLabel
           , dbSpace_visibility = spaceVisibilityApiToDb visibility
-          , dbSpace_accessibility = spaceAccessibilityApiToDb accessibility
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."
@@ -184,14 +182,16 @@ spaceRoleCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   NameSpaceRole ->
+  AccessibilitySpaceRole ->
   SeldaTransactionT m IdentifierSpaceRole
-spaceRoleCreate spaceIdentifier roleName = do
+spaceRoleCreate spaceIdentifier roleName accessibility = do
   lift $ logDebug $ "Creating role: " <> T.pack (show (spaceIdentifier, roleName))
   let dbSpaceRole =
         MkDbSpaceRole
           { dbSpaceRole_id = Selda.def
           , dbSpaceRole_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbSpaceRole_name = unNameSpaceRole roleName
+          , dbSpaceRole_accessibility = spaceRoleAccessibilityApiToDb accessibility
           }
   lift $ logDebug "Inserting space-role into database."
   dbSpaceRoleId <- Selda.insertWithPK tableSpaceRole [dbSpaceRole]
@@ -427,15 +427,15 @@ spaceVisibilityDbToApi = \case
   MkDbSpaceVisibility_visible -> MkVisibilitySpaceVisible
   MkDbSpaceVisibility_hidden -> MkVisibilitySpaceHidden
 
-spaceAccessibilityApiToDb :: AccessibilitySpace -> DbSpaceAccessibility
-spaceAccessibilityApiToDb = \case
-  MkAccessibilitySpaceJoinable -> MkDbSpaceAccessibility_joinable
-  MkAccessibilitySpaceInaccessible -> MkDbSpaceAccessibility_inaccessible
+spaceRoleAccessibilityApiToDb :: AccessibilitySpaceRole -> DbSpaceRoleAccessibility
+spaceRoleAccessibilityApiToDb = \case
+  MkAccessibilitySpaceRoleJoinable -> MkDbSpaceRoleAccessibility_joinable
+  MkAccessibilitySpaceRoleInaccessible -> MkDbSpaceRoleAccessibility_inaccessible
 
-spaceAccessibilityDbToApi :: DbSpaceAccessibility -> AccessibilitySpace
-spaceAccessibilityDbToApi = \case
-  MkDbSpaceAccessibility_joinable -> MkAccessibilitySpaceJoinable
-  MkDbSpaceAccessibility_inaccessible -> MkAccessibilitySpaceInaccessible
+spaceRoleAccessibilityDbToApi :: DbSpaceRoleAccessibility -> AccessibilitySpaceRole
+spaceRoleAccessibilityDbToApi = \case
+  MkDbSpaceRoleAccessibility_joinable -> MkAccessibilitySpaceRoleJoinable
+  MkDbSpaceRoleAccessibility_inaccessible -> MkAccessibilitySpaceRoleInaccessible
 
 spacePermissionApiToDb :: PermissionSpace -> DbSpacePermission
 spacePermissionApiToDb = \case

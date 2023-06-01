@@ -34,7 +34,6 @@ type alias Model =
     , timezone : Time.Zone
     , timezoneIdentifier : Mensam.Time.TimezoneIdentifier
     , visibility : Mensam.Space.Visibility
-    , accessibility : Mensam.Space.Accessibility
     , permissions : Set.Set String
     , popup : Maybe PopupModel
     , desks :
@@ -91,7 +90,6 @@ init args =
     , timezone = Time.utc
     , timezoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
     , visibility = Mensam.Space.MkVisibilityHidden
-    , accessibility = Mensam.Space.MkAccessibilityInaccessible
     , permissions = Set.empty
     , popup = Nothing
     , desks = []
@@ -625,7 +623,6 @@ updatePure message model =
                 , timezone = Mensam.Time.timezone space.timezone
                 , timezoneIdentifier = space.timezone
                 , visibility = space.visibility
-                , accessibility = space.accessibility
                 , permissions = space.permissions
             }
 
