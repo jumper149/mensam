@@ -11,6 +11,7 @@ import Json.Decode as Decode
 import Mensam.Api.DeskCreate
 import Mensam.Api.DeskList
 import Mensam.Api.ReservationCreate
+import Mensam.Api.SpaceJoin
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Desk
@@ -883,6 +884,28 @@ spaceView jwt model =
                                     Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceView.ErrorAuth error) ->
+                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <| ReportError <| Mensam.Error.http error
+
+
+spaceJoin : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
+spaceJoin jwt model =
+    Mensam.Api.SpaceJoin.request { jwt = jwt, role = "", space = model.space } <|
+        \result ->
+            case result of
+                Ok Mensam.Api.SpaceJoin.Success ->
+                    MessageEffect RefreshSpace
+
+                Ok (Mensam.Api.SpaceJoin.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Bad request body" <|
+                                Mensam.Error.message error <|
+                                    Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceJoin.ErrorAuth error) ->
                     MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
 
                 Err error ->
