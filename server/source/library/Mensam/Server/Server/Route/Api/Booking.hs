@@ -121,7 +121,15 @@ joinSpace auth eitherRequest =
                   let msg :: T.Text = "No matching space-role."
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
-        spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
+        spaceRole <- spaceRoleGet spaceRoleIdentifier
+        case spaceRoleAccessibility spaceRole of
+          MkAccessibilitySpaceRoleInaccessible -> do
+            let msg :: T.Text = "Space-role is inaccessible. Cannot join."
+            lift $ logWarn msg
+            throwM $ Selda.SqlError $ show msg
+          MkAccessibilitySpaceRoleJoinable -> do
+            lift $ logDebug "Space-role is joinable. Joining."
+            spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error

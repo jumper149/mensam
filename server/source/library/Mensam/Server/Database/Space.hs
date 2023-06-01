@@ -41,6 +41,14 @@ roleLookup space name = do
   Selda.restrict $ dbSpaceRole Selda.! #dbSpaceRole_name Selda..== Selda.literal name
   pure dbSpaceRole
 
+roleGet ::
+  Selda.ID DbSpaceRole ->
+  Selda.Query backend (Selda.Row backend DbSpaceRole)
+roleGet identifier = do
+  dbSpaceRole <- Selda.select tableSpaceRole
+  Selda.restrict $ dbSpaceRole Selda.! #dbSpaceRole_id Selda..== Selda.literal identifier
+  pure dbSpaceRole
+
 roleListPermissions ::
   Selda.ID DbSpaceRole ->
   Selda.Query backend (Selda.Row backend DbSpaceRolePermission)

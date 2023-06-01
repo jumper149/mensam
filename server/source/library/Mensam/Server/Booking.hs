@@ -125,6 +125,23 @@ spaceRoleLookupId spaceIdentifier name = do
       lift $ logInfo "Looked up space successfully."
       pure $ Just $ MkIdentifierSpaceRole $ Selda.fromId $ dbSpaceRole_id dbSpaceRole
 
+spaceRoleGet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpaceRole ->
+  SeldaTransactionT m SpaceRole
+spaceRoleGet identifier = do
+  lift $ logDebug $ "Get space role info with identifier: " <> T.pack (show identifier)
+  dbSpaceRole <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier
+  dbSpaceRolePermissions <- Selda.query $ roleListPermissions $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier
+  lift $ logInfo "Got space role info successfully."
+  pure
+    MkSpaceRole
+      { spaceRoleId = MkIdentifierSpaceRole $ Selda.fromId $ dbSpaceRole_id dbSpaceRole
+      , spaceRoleName = MkNameSpaceRole $ dbSpaceRole_name dbSpaceRole
+      , spaceRolePermissions = S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> dbSpaceRolePermissions
+      , spaceRoleAccessibility = spaceRoleAccessibilityDbToApi $ dbSpaceRole_accessibility dbSpaceRole
+      }
+
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   NameSpace ->
