@@ -133,10 +133,10 @@ joinSpace auth eitherRequest =
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to create space."
+          logWarn "Failed to join space."
           respond $ WithStatus @500 ()
         SeldaSuccess () -> do
-          logInfo "Created space."
+          logInfo "Joined space."
           respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
 
 viewSpace ::
