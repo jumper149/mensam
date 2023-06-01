@@ -512,12 +512,6 @@ update message (MkModel model) =
                                     { jwt = jwt
                                     , timezone = formData.timezone
                                     , name = formData.name
-                                    , accessibility =
-                                        if formData.joinable then
-                                            Mensam.Space.MkAccessibilityJoinable
-
-                                        else
-                                            Mensam.Space.MkAccessibilityInaccessible
                                     , visibility =
                                         if formData.visible then
                                             Mensam.Space.MkVisibilityVisible

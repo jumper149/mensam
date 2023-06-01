@@ -13,7 +13,6 @@ type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
     , name : Mensam.Space.Name
     , timezone : Mensam.Time.TimezoneIdentifier
-    , accessibility : Mensam.Space.Accessibility
     , visibility : Mensam.Space.Visibility
     }
 
@@ -100,9 +99,6 @@ encodeBody body =
           )
         , ( "timezone"
           , Mensam.Time.timezoneIdentifierEncode body.timezone
-          )
-        , ( "accessibility"
-          , Mensam.Space.accessibilityEncode body.accessibility
           )
         , ( "visibility"
           , Mensam.Space.visibilityEncode body.visibility

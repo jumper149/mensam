@@ -28,7 +28,6 @@ type alias Model =
             { name : Mensam.Space.Name
             , timezone : Mensam.Time.TimezoneIdentifier
             , visible : Bool
-            , joinable : Bool
             }
     }
 
@@ -287,7 +286,6 @@ updatePure message model =
                         { name = Mensam.Space.MkName ""
                         , timezone = model.timezone
                         , visible = True
-                        , joinable = True
                         }
             }
 
@@ -327,7 +325,6 @@ type MessageEffect
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.TimezoneIdentifier
         , visible : Bool
-        , joinable : Bool
         }
 
 
@@ -381,7 +378,6 @@ spaceCreate :
     { jwt : Mensam.Auth.Bearer.Jwt
     , name : Mensam.Space.Name
     , timezone : Mensam.Time.TimezoneIdentifier
-    , accessibility : Mensam.Space.Accessibility
     , visibility : Mensam.Space.Visibility
     }
     -> Cmd Message
