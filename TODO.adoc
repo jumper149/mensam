@@ -17,7 +17,8 @@
   ** [x] Make emails look good instead of sending just plain text.
 
 * Frontend.
-  ** [ ] Allow setting the end time of a reservation.
+  ** [x] Allow setting the end time of a reservation.
+  ** [x] Join space as member with a single click.
   ** [ ] Improve SVG time picker.
   ** [ ] Terms and Conditions check during registration.
   ** [ ] Add loading screen to HTML wrapper for frontend.
