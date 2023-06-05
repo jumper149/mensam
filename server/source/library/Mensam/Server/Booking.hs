@@ -16,6 +16,7 @@ import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
+import Data.Foldable
 import Data.Kind
 import Data.Set qualified as S
 import Data.Text qualified as T
@@ -167,6 +168,16 @@ spaceDelete ::
   SeldaTransactionT m ()
 spaceDelete identifier = do
   lift $ logDebug $ "Deleting space: " <> T.pack (show identifier)
+  dbDeskIdentifiers <- Selda.query $ do
+    dbDesk <- Selda.select tableDesk
+    Selda.restrict $ dbDesk Selda.! #dbDesk_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
+    pure $ dbDesk Selda.! #dbDesk_id
+  lift $ logDebug "Deleting desks."
+  traverse_ (deskDelete . MkIdentifierDesk . Selda.fromId @DbDesk) dbDeskIdentifiers
+  lift $ logDebug $ "Deleted " <> T.pack (show (length dbDeskIdentifiers)) <> " desks."
+  countMembers <- Selda.deleteFrom tableSpaceUser $ \row ->
+    row Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
+  lift $ logDebug $ "Space had " <> T.pack (show countMembers) <> " memberships."
   Selda.deleteOneFrom tableSpace $ \row ->
     row Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
   lift $ logInfo "Deleted space successfully."
@@ -225,6 +236,20 @@ spaceRoleCreate spaceIdentifier roleName accessibility = do
   dbSpaceRoleId <- Selda.insertWithPK tableSpaceRole [dbSpaceRole]
   lift $ logInfo "Created role successfully."
   pure $ MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole dbSpaceRoleId
+
+spaceRoleDelete ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpaceRole ->
+  SeldaTransactionT m ()
+spaceRoleDelete identifier = do
+  lift $ logDebug $ "Deleting space role: " <> T.pack (show identifier)
+  countPermissions <- Selda.deleteFrom tableSpaceRolePermission $ \row ->
+    row Selda.! #dbSpaceRolePermission_role Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier)
+  lift $ logDebug $ "Role had " <> T.pack (show countPermissions) <> " permissions."
+  Selda.deleteOneFrom tableSpaceRole $ \row ->
+    row Selda.! #dbSpaceRole_id Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier)
+  lift $ logInfo "Deleted space role successfully."
+  pure ()
 
 spaceRolePermissionGive ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -328,6 +353,20 @@ deskCreate deskName spaceIdentifier = do
   dbDeskId <- Selda.insertWithPK tableDesk [dbDesk]
   lift $ logInfo "Created desk successfully."
   pure $ MkIdentifierDesk $ Selda.fromId @DbDesk dbDeskId
+
+deskDelete ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierDesk ->
+  SeldaTransactionT m ()
+deskDelete identifier = do
+  lift $ logDebug $ "Deleting desk: " <> T.pack (show identifier)
+  countReservations <- Selda.deleteFrom tableReservation $ \row ->
+    row Selda.! #dbReservation_desk Selda..== Selda.literal (Selda.toId @DbDesk $ unIdentifierDesk identifier)
+  lift $ logDebug $ "Desk had " <> T.pack (show countReservations) <> " reservations."
+  Selda.deleteOneFrom tableDesk $ \row ->
+    row Selda.! #dbDesk_id Selda..== Selda.literal (Selda.toId @DbDesk $ unIdentifierDesk identifier)
+  lift $ logInfo "Deleted desk successfully."
+  pure ()
 
 reservationGet ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
