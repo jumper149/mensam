@@ -28,6 +28,7 @@ handler ::
 handler =
   Routes
     { routeSpaceCreate = createSpace
+    , routeSpaceDelete = deleteSpace
     , routeSpaceJoin = joinSpace
     , routeSpaceList = listSpaces
     , routeSpaceView = viewSpace
@@ -62,6 +63,7 @@ createSpace auth eitherRequest =
           spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Admin") MkAccessibilitySpaceRoleInaccessible
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditDesk
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCancelReservation
           spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
@@ -82,6 +84,43 @@ createSpace auth eitherRequest =
         SeldaSuccess spaceIdentifier -> do
           logInfo "Created space."
           respond $ WithStatus @201 MkResponseSpaceCreate {responseSpaceCreateId = spaceIdentifier}
+
+deleteSpace ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseSpaceDelete) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Insufficient permission.")) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestSpaceDelete ->
+  m (Union responses)
+deleteSpace auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to delete space: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        permissions <- spaceUserPermissions (requestSpaceDeleteId request) (userAuthenticatedId authenticated)
+        if MkPermissionSpaceEditSpace `S.member` permissions
+          then do
+            lift $ logInfo "Delete space."
+            spaceDelete $ requestSpaceDeleteId request
+            pure $ Just ()
+          else pure Nothing
+      case seldaResult of
+        SeldaFailure _err -> do
+          -- TODO: Here we can theoretically return a more accurate error
+          logWarn "Failed to delete space."
+          respond $ WithStatus @500 ()
+        SeldaSuccess Nothing -> do
+          logInfo "Didn't delete space because of insufficient permission."
+          respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
+        SeldaSuccess (Just ()) -> do
+          logInfo "Deleted space."
+          respond $ WithStatus @200 MkResponseSpaceDelete {responseSpaceDeleteUnit = ()}
 
 -- TODO: This currently doesn't check, whether the user is actually allowed to do this.
 joinSpace ::

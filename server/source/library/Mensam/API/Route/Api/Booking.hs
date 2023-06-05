@@ -37,6 +37,26 @@ data Routes route = Routes
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
+  , routeSpaceDelete ::
+      route
+        :- Summary "Delete Space"
+          :> Description
+              "Delete a space.\n\
+              \This also purges data associated with this space including desks and member roles.\n\
+              \All members will be notified with an email.\n"
+          :> "space"
+          :> "delete"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceDelete
+          :> UVerb
+              DELETE
+              '[JSON]
+              [ WithStatus 200 ResponseSpaceDelete
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Insufficient permission.")
+              , WithStatus 500 ()
+              ]
   , routeSpaceJoin ::
       route
         :- Summary "Join Space"
@@ -182,6 +202,24 @@ newtype ResponseSpaceCreate = MkResponseSpaceCreate
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") ResponseSpaceCreate
+
+type RequestSpaceDelete :: Type
+newtype RequestSpaceDelete = MkRequestSpaceDelete
+  { requestSpaceDeleteId :: IdentifierSpace
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceDelete") RequestSpaceDelete
+
+type ResponseSpaceDelete :: Type
+newtype ResponseSpaceDelete = MkResponseSpaceDelete
+  { responseSpaceDeleteUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceDelete") ResponseSpaceDelete
 
 type RequestSpaceJoin :: Type
 data RequestSpaceJoin = MkRequestSpaceJoin

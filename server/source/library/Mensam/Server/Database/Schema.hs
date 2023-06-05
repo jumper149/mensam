@@ -181,6 +181,7 @@ type DbSpacePermission :: Type
 data DbSpacePermission
   = MkDbSpacePermission_view_space
   | MkDbSpacePermission_edit_desk
+  | MkDbSpacePermission_edit_space
   | MkDbSpacePermission_create_reservation
   | MkDbSpacePermission_cancel_reservation
   deriving stock (Bounded, Enum, Read, Show)

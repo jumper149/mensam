@@ -161,6 +161,17 @@ spaceCreate name timezoneLabel visibility = do
   lift $ logInfo "Created space successfully."
   pure $ MkIdentifierSpace $ Selda.fromId @DbSpace dbSpaceId
 
+spaceDelete ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  SeldaTransactionT m ()
+spaceDelete identifier = do
+  lift $ logDebug $ "Deleting space: " <> T.pack (show identifier)
+  Selda.deleteOneFrom tableSpace $ \row ->
+    row Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
+  lift $ logInfo "Deleted space successfully."
+  pure ()
+
 spaceUserAdd ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
@@ -458,6 +469,7 @@ spacePermissionApiToDb :: PermissionSpace -> DbSpacePermission
 spacePermissionApiToDb = \case
   MkPermissionSpaceViewSpace -> MkDbSpacePermission_view_space
   MkPermissionSpaceEditDesk -> MkDbSpacePermission_edit_desk
+  MkPermissionSpaceEditSpace -> MkDbSpacePermission_edit_space
   MkPermissionSpaceCreateReservation -> MkDbSpacePermission_create_reservation
   MkPermissionSpaceCancelReservation -> MkDbSpacePermission_cancel_reservation
 
@@ -465,5 +477,6 @@ spacePermissionDbToApi :: DbSpacePermission -> PermissionSpace
 spacePermissionDbToApi = \case
   MkDbSpacePermission_view_space -> MkPermissionSpaceViewSpace
   MkDbSpacePermission_edit_desk -> MkPermissionSpaceEditDesk
+  MkDbSpacePermission_edit_space -> MkPermissionSpaceEditSpace
   MkDbSpacePermission_create_reservation -> MkPermissionSpaceCreateReservation
   MkDbSpacePermission_cancel_reservation -> MkPermissionSpaceCancelReservation

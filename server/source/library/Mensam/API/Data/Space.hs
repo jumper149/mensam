@@ -59,6 +59,7 @@ type PermissionSpace :: Type
 data PermissionSpace
   = MkPermissionSpaceViewSpace
   | MkPermissionSpaceEditDesk
+  | MkPermissionSpaceEditSpace
   | MkPermissionSpaceCreateReservation
   | MkPermissionSpaceCancelReservation
   deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)

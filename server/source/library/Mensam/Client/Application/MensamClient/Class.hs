@@ -107,6 +107,18 @@ endpointSpaceCreate ::
          , WithStatus 500 ()
          ]
     )
+endpointSpaceDelete ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestSpaceDelete ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceDelete
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 500 ()
+         ]
+    )
 endpointSpaceView ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestSpaceView ->
@@ -190,6 +202,7 @@ Route.Api.Routes
   , Route.Api.routeBooking =
     Route.Api.Booking.Routes
       { Route.Api.Booking.routeSpaceCreate = endpointSpaceCreate
+      , Route.Api.Booking.routeSpaceDelete = endpointSpaceDelete
       , Route.Api.Booking.routeSpaceView = endpointSpaceView
       , Route.Api.Booking.routeSpaceList = endpointSpaceList
       , Route.Api.Booking.routeDeskCreate = endpointDeskCreate

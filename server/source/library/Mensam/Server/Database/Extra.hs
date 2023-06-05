@@ -26,6 +26,13 @@ queryOne q =
     Just spaceId -> pure spaceId
     Nothing -> throwM $ UnsafeError "Expected exactly one result, but the query didn't return any results."
 
+-- | Run 'deleteFrom', but throw an error unless exactly one row has been deleted.
+deleteOneFrom :: (MonadSelda m, MonadThrow m, Relational a) => Table a -> (Row (Backend m) a -> Col (Backend m) Bool) -> m ()
+deleteOneFrom t f = do
+  deleteFrom t f >>= \case
+    1 -> pure ()
+    _ -> throwM $ UnsafeError "Expected to delete exactly one row, but the constraint matches multiple rows."
+
 type SomeCol :: Type -> Type
 data SomeCol t = forall a. SqlType a => MkSomeCol (Col t a)
 
