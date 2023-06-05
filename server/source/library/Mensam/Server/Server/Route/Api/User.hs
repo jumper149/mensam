@@ -130,7 +130,7 @@ logout auth =
             logWarn "Failed to delete session."
             respond $ WithStatus @500 ()
           SeldaSuccess () -> do
-            logInfo "User logout out successfully"
+            logInfo "User logged out successfully."
             respond $
               WithStatus @200
                 MkResponseLogout
