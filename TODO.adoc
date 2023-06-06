@@ -32,3 +32,8 @@
     *** Every mensam release will be associated with a database version.
     *** During startup, check whether the database version is up-to-date.
     *** If not, then automatically run the migration and finally bump the database version.
+
+* Pin timezone libraries.
+  ** [ ] tzdata library for Haskell.
+  ** [ ] justinmimbs/timezone-data for Elm.
+  ** [ ] Matching IANA database versions.
