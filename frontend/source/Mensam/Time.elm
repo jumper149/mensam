@@ -5,7 +5,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Time
 import Time.Extra
-import TimeZone
+import TimeZone.Extra
 
 
 type TimezoneIdentifier
@@ -14,7 +14,7 @@ type TimezoneIdentifier
 
 timezone : TimezoneIdentifier -> Time.Zone
 timezone (MkTimezoneIdentifier name) =
-    case Dict.get name TimeZone.zones of
+    case Dict.get name TimeZone.Extra.zones of
         Nothing ->
             Time.utc
 
@@ -24,7 +24,7 @@ timezone (MkTimezoneIdentifier name) =
 
 mkTimezone : String -> Maybe ( TimezoneIdentifier, Time.Zone )
 mkTimezone name =
-    Maybe.map (\toZone -> ( MkTimezoneIdentifier name, toZone () )) <| Dict.get name TimeZone.zones
+    Maybe.map (\toZone -> ( MkTimezoneIdentifier name, toZone () )) <| Dict.get name TimeZone.Extra.zones
 
 
 unTimezoneIdentifier : TimezoneIdentifier -> String
