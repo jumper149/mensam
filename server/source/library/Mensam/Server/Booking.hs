@@ -178,6 +178,13 @@ spaceDelete identifier = do
   countMembers <- Selda.deleteFrom tableSpaceUser $ \row ->
     row Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
   lift $ logDebug $ "Space had " <> T.pack (show countMembers) <> " memberships."
+  dbSpaceRoleIdentifiers <- Selda.query $ do
+    dbDesk <- Selda.select tableSpaceRole
+    Selda.restrict $ dbDesk Selda.! #dbSpaceRole_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
+    pure $ dbDesk Selda.! #dbSpaceRole_id
+  lift $ logDebug "Deleting space roles."
+  traverse_ (spaceRoleDelete . MkIdentifierSpaceRole . Selda.fromId @DbSpaceRole) dbSpaceRoleIdentifiers
+  lift $ logDebug $ "Space had " <> T.pack (show (length dbSpaceRoleIdentifiers)) <> " space roles."
   Selda.deleteOneFrom tableSpace $ \row ->
     row Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
   lift $ logInfo "Deleted space successfully."
