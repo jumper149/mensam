@@ -41,7 +41,7 @@ data Routes route = Routes
       route
         :- Summary "Delete Space"
           :> Description
-              "Delete a space.\n\
+              "Delete a space irreversibly.\n\
               \This also purges data associated with this space including desks and member roles.\n\
               \All members will be notified with an email.\n"
           :> "space"
