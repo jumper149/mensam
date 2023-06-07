@@ -65,6 +65,10 @@ link:./frontend[Frontend]:: Single page web application
 link:./static[Static]:: Static files served by the server
 link:./final[Final]:: Configuration, wrapper and NixOS module
 
+=== GitHub Codespaces
+
+You can use a GitHub Codespace to quickly spin up a development environment in your browser.
+
 === Binary Cache
 
 GitHub Actions pushes Nix results to Cachix.
