@@ -69,6 +69,10 @@ link:./final[Final]:: Configuration, wrapper and NixOS module
 
 You can use a GitHub Codespace to quickly spin up a development environment in your browser.
 
+A prebuilt devcontainer image is available for the `main` branch.
+This devcontainer includes a cached nix-shell.
+You can use the VSCode direnv extension to reload the nix-shell.
+
 === Binary Cache
 
 GitHub Actions pushes Nix results to Cachix.
