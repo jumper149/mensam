@@ -1,2 +1,2 @@
-{ "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix"
+{ "haskell.formattingProvider": "fourmolu"
 }
