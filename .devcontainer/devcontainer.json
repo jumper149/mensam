@@ -30,7 +30,8 @@
 
   // Add the IDs of extensions you want installed when the container is created.
 , "extensions":
-  [ "elmTooling.elm-ls-vscode"
+  [ "asciidoctor.asciidoctor-vscode"
+  , "elmTooling.elm-ls-vscode"
   , "haskell.haskell"
   , "mkhl.direnv"
   ]
