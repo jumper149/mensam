@@ -3,30 +3,30 @@
 { "name": "devcontainer-project"
 , "dockerFile": "Dockerfile"
 , "context": "${localWorkspaceFolder}"
-, "build": {
-    "args": {
-      "USER_UID": "${localEnv:USER_UID}",
-      "USER_GID": "${localEnv:USER_GID}"
+, "build":
+  { "args":
+    { "USER_UID": "${localEnv:USER_UID}"
+    , "USER_GID": "${localEnv:USER_GID}"
     }
   }
 
-  // run arguments passed to docker
-, "runArgs": [
-    "--security-opt", "label=disable"
+  // Run arguments passed to docker.
+, "runArgs":
+  [ "--security-opt"
+  , "label=disable"
   ]
 
-, "containerEnv": {
-     // extensions to preload before other extensions
-    "PRELOAD_EXTENSIONS": "mkhl.direnv"
+, "containerEnv":
+  { "PRELOAD_EXTENSIONS": "mkhl.direnv"
   }
 
-   // disable command overriding and updating remote user ID
+  // Disable command overriding and updating remote user ID.
 , "overrideCommand": false
 , "userEnvProbe": "loginShell"
 , "updateRemoteUserUID": false
 
-  // build development environment on creation, make sure you already have shell.nix
-, "onCreateCommand": "nix-shell --command 'echo Hello from this development environment!'"
+  // Cache the development environment in the devcontainer image.
+, "onCreateCommand": "nix develop --print-build-logs --command echo 'Hello from the development environment!'"
 
   // Add the IDs of extensions you want installed when the container is created.
 , "extensions":
