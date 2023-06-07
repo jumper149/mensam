@@ -6,6 +6,10 @@
     *** https://github.com/jfmengels/elm-review/issues/157
   ** [ ] Use `nixosConfigurations` to test the `nixosModule`.
 
+* Developer Experience.
+  ** [ ] Support Nix flakes with in GitHub Codespaces.
+    *** [ ] `direnv` from https://github.com/xtruder/nix-devcontainer is outdated.
+
 * [ ] Email backend.
   ** [x] Implement `EmailT` with an instance `MonadEmail`.
   ** [x] Send a mail on registration.
