@@ -10,15 +10,8 @@
   ** [ ] Support Nix flakes with in GitHub Codespaces.
     *** [ ] `direnv` from https://github.com/xtruder/nix-devcontainer is outdated.
 
-* [ ] Email backend.
-  ** [x] Implement `EmailT` with an instance `MonadEmail`.
-  ** [x] Send a mail on registration.
-    *** [x] The registration mail may include a link to confirm the user's email.
-      **** The registration should still be considered complete, even when the confirmation didn't happen yet. User's don't want to look into their mails before booking a desk.
-      **** [x] Database column in user table to track email confirmation.
-      **** [x] New backend route to handle this confirmation.
-      **** [ ] Frontend (URL, screen, API, ...) should be able to handle this confirmation link.
-  ** [x] Make emails look good instead of sending just plain text.
+* Backend.
+  ** [ ] Send email on successful reservations.
 
 * Frontend.
   ** [x] Allow setting the end time of a reservation.
@@ -27,6 +20,7 @@
   ** [ ] Terms and Conditions check during registration.
   ** [ ] Add loading screen to HTML wrapper for frontend.
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
+  ** [ ] Handle confirmation links.
 
 * [ ] Database migrations.
   ** [x] Database initialization is automatically handled during startup.
