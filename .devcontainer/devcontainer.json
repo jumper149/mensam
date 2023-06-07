@@ -26,7 +26,7 @@
 , "updateRemoteUserUID": false
 
   // Cache the development environment in the devcontainer image.
-, "onCreateCommand": "nix develop --print-build-logs --command echo 'Hello from the development environment!'"
+, "onCreateCommand": "nix-shell --command 'echo Hello from the development environment!'"
 
   // Add the IDs of extensions you want installed when the container is created.
 , "extensions":
