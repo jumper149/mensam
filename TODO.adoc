@@ -35,3 +35,7 @@
   ** [ ] tzdata library for Haskell.
   ** [ ] justinmimbs/timezone-data for Elm.
   ** [ ] Matching IANA database versions.
+
+* Simplify names.
+  ** [ ] -> Change `SpaceRole` to `Role`
+  ** [ ] -> Change `SpaceRolePermission` to `Permission`
