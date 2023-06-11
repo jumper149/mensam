@@ -26,13 +26,21 @@ queryOne q =
     Just spaceId -> pure spaceId
     Nothing -> throwM $ UnsafeError "Expected exactly one result, but the query didn't return any results."
 
+-- | Run 'insert', but throw an error unless exactly one row is being inserted.
+insertOne :: (MonadSelda m, MonadThrow m, Relational a) => Table a -> a -> m ()
+insertOne t a =
+  insert t [a] >>= \case
+    1 -> pure ()
+    0 -> throwM $ UnsafeError "Tried to insert exactly one row, but no rows have been inserted at all."
+    n -> throwM $ UnsafeError $ "Tried to insert exactly one row, but multiple rows have been inserted: " <> show n
+
 -- | Run 'deleteFrom', but throw an error when multiple rows have been deleted.
 deleteUniqueFrom :: (MonadSelda m, MonadThrow m, Relational a) => Table a -> (Row (Backend m) a -> Col (Backend m) Bool) -> m Bool
 deleteUniqueFrom t f = do
   deleteFrom t f >>= \case
     1 -> pure True
     0 -> pure False
-    _ -> throwM $ UnsafeError "Expected to delete unique row, but the constraint matches multiple rows."
+    n -> throwM $ UnsafeError $ "Expected to delete unique row, but the constraint matches multiple rows: " <> show n
 
 -- | Run 'deleteFrom', but throw an error unless exactly one row has been deleted.
 deleteOneFrom :: (MonadSelda m, MonadThrow m, Relational a) => Table a -> (Row (Backend m) a -> Col (Backend m) Bool) -> m ()

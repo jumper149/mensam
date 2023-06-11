@@ -7,6 +7,7 @@ import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Configuration
 import Mensam.Server.Configuration.SQLite
 import Mensam.Server.Database
+import Mensam.Server.Database.Migration
 
 import Control.Monad.Catch
 import Control.Monad.IO.Unlift
@@ -109,6 +110,13 @@ runSeldaPoolT tma = do
         lift $ logDebug "SQLite file doesn't exist."
         lift $ logInfo "Creating new SQLite database file."
         createDatabase
+    lift $ logDebug "Updating database by migrating to the expected schema."
+    runSeldaTransactionT migrate >>= \case
+      SeldaFailure err -> do
+        logError $ "Failed database migration: " <> T.pack (show err)
+        error "Outdated database."
+      SeldaSuccess () -> do
+        logInfo "Database migration was successful."
     tma
 
 type SeldaPoolContext :: Type

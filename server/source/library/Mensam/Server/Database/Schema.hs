@@ -16,6 +16,24 @@ import Data.Time.Zones.All.OrphanInstances ()
 import Database.Selda qualified as Selda
 import GHC.Generics
 
+type DbMigration :: Type
+data DbMigration = MkDbMigration
+  { dbMigration_id :: Selda.ID DbMigration
+  , dbMigration_name :: Selda.Text
+  , dbMigration_time_applied :: Selda.UTCTime
+  }
+  deriving stock (Generic, Show)
+  deriving anyclass (Selda.SqlRow)
+
+tableMigration :: Selda.Table DbMigration
+tableMigration =
+  Selda.tableFieldMod
+    "migration"
+    [ #dbMigration_id Selda.:- Selda.primary
+    , #dbMigration_name Selda.:- Selda.unique
+    ]
+    (fromJust . T.stripPrefix "dbMigration_")
+
 type DbJwk :: Type
 data DbJwk = MkDbJwk
   { dbJwk_id :: ~(Selda.ID DbJwk)

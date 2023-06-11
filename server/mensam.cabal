@@ -168,6 +168,7 @@ library
     , Mensam.Server.Configuration.SQLite
     , Mensam.Server.Database
     , Mensam.Server.Database.Extra
+    , Mensam.Server.Database.Migration
     , Mensam.Server.Database.Schema
     , Mensam.Server.Database.Space
     , Mensam.Server.Environment
