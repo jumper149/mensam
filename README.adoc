@@ -28,8 +28,6 @@ ____
 
 == Usage
 
-__This section describes the goal of an MVP.__
-
 === Setup
 
 As the operator you simply visit an instance of Mensam, such as https://mens.am[mens.am].
