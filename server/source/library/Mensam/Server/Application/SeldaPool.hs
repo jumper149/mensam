@@ -6,7 +6,6 @@ import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Configuration
 import Mensam.Server.Configuration.SQLite
-import Mensam.Server.Database
 import Mensam.Server.Database.Migration
 
 import Control.Monad.Catch
