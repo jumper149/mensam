@@ -19,14 +19,30 @@ checkDatabase ::
 checkDatabase = void $ runSeldaTransactionT $ do
   --  -- TODO: The validator internally makes a mistake, thinking that INTEGER means Int32.
   --  -- https://github.com/valderman/selda/blob/ab9619db13b93867d1a244441bb4de03d3e1dadb/selda-sqlite/src/Database/Selda/SQLite.hs#L129
+  --
+  --  lift $ logDebug "Validating table 'migration'."
+  --  Selda.validateTable tableMigration
+  --
+  --  lift $ logDebug "Validating table 'jwk'."
+  --  Selda.validateTable tableJwk
+  --
   --  lift $ logDebug "Validating table 'user'."
   --  Selda.validateTable tableUser
+  --
+  --  lift $ logDebug "Validating table 'confirmation'."
+  --  Selda.validateTable tableConfirmation
   --
   --  lift $ logDebug "Validating table 'session'."
   --  Selda.validateTable tableSession
   --
   --  lift $ logDebug "Validating table 'space'."
   --  Selda.validateTable tableSpace
+  --
+  --  lift $ logDebug "Validating table 'space_role'."
+  --  Selda.validateTable tableSpaceRole
+  --
+  --  lift $ logDebug "Validating table 'space_role_permission'."
+  --  Selda.validateTable tableSpaceRolePermission
   --
   --  lift $ logDebug "Validating table 'space_user'."
   --  Selda.validateTable tableSpaceUser
