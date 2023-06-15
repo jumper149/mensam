@@ -10,26 +10,7 @@ import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Text qualified as T
 import Database.Selda qualified as Selda
-import Database.Selda.Backend.Internal qualified as Selda.Internal
-import Database.Selda.Debug qualified as Selda
-import Database.Selda.SQLite qualified as Selda.SQLite
-
-createDatabaseStatements :: [T.Text]
-createDatabaseStatements =
-  [ Selda.compileCreateTable ppConfig Selda.Fail tableMigration
-  , Selda.compileCreateTable ppConfig Selda.Fail tableJwk
-  , Selda.compileCreateTable ppConfig Selda.Fail tableUser
-  , Selda.compileCreateTable ppConfig Selda.Fail tableConfirmation
-  , Selda.compileCreateTable ppConfig Selda.Fail tableSession
-  , Selda.compileCreateTable ppConfig Selda.Fail tableSpace
-  , Selda.compileCreateTable ppConfig Selda.Fail tableSpaceRole
-  , Selda.compileCreateTable ppConfig Selda.Fail tableSpaceRolePermission
-  , Selda.compileCreateTable ppConfig Selda.Fail tableSpaceUser
-  , Selda.compileCreateTable ppConfig Selda.Fail tableDesk
-  , Selda.compileCreateTable ppConfig Selda.Fail tableReservation
-  ]
- where
-  ppConfig = Selda.Internal.ppConfig $ Selda.SQLite.sqliteBackend undefined
+import Database.Selda.Unsafe qualified as Selda.Unsafe
 
 createDatabase ::
   ( MonadSeldaPool m
@@ -40,37 +21,37 @@ createDatabase = do
   logDebug "Creating database."
   result <- runSeldaTransactionT $ do
     lift $ logDebug "Creating table 'migration'."
-    Selda.createTable tableMigration
+    Selda.Unsafe.rawStm "CREATE TABLE \"migration\"(\"id\" INTEGER  NOT NULL, \"name\" TEXT NOT NULL UNIQUE, \"time_applied\" DATETIME NOT NULL, UNIQUE(\"name\"), PRIMARY KEY(\"id\"))"
 
     lift $ logDebug "Creating table 'jwk'."
-    Selda.createTable tableJwk
+    Selda.Unsafe.rawStm "CREATE TABLE \"jwk\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"jwk\" BLOB NOT NULL UNIQUE, \"created\" DATETIME NOT NULL, UNIQUE(\"jwk\"))"
 
     lift $ logDebug "Creating table 'user'."
-    Selda.createTable tableUser
+    Selda.Unsafe.rawStm "CREATE TABLE \"user\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"name\" TEXT NOT NULL UNIQUE, \"password_hash\" TEXT NOT NULL, \"email\" TEXT NOT NULL, \"email_visibility\" TEXT NOT NULL, \"email_validated\" BOOLEAN NOT NULL, UNIQUE(\"name\"))"
 
     lift $ logDebug "Creating table 'confirmation'."
-    Selda.createTable tableConfirmation
+    Selda.Unsafe.rawStm "CREATE TABLE \"confirmation\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"user\" INTEGER NOT NULL, \"secret\" TEXT NOT NULL, \"expired\" DATETIME NOT NULL, \"effect\" TEXT NOT NULL, UNIQUE(\"secret\", \"user\"), CONSTRAINT \"fk0_user\" FOREIGN KEY (\"user\") REFERENCES \"user\"(\"id\"))"
 
     lift $ logDebug "Creating table 'session'."
-    Selda.createTable tableSession
+    Selda.Unsafe.rawStm "CREATE TABLE \"session\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"user\" INTEGER NOT NULL, \"time_created\" DATETIME NOT NULL, \"time_expired\" DATETIME NULL, CONSTRAINT \"fk0_user\" FOREIGN KEY (\"user\") REFERENCES \"user\"(\"id\"))"
 
     lift $ logDebug "Creating table 'space'."
-    Selda.createTable tableSpace
+    Selda.Unsafe.rawStm "CREATE TABLE \"space\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"name\" TEXT NOT NULL UNIQUE, \"timezone\" TEXT NOT NULL, \"visibility\" TEXT NOT NULL, UNIQUE(\"name\"))"
 
     lift $ logDebug "Creating table 'space_role'."
-    Selda.createTable tableSpaceRole
+    Selda.Unsafe.rawStm "CREATE TABLE \"space_role\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"space\" INTEGER NOT NULL, \"name\" TEXT NOT NULL, \"accessibility\" TEXT NOT NULL, UNIQUE(\"space\", \"name\"), CONSTRAINT \"fk0_space\" FOREIGN KEY (\"space\") REFERENCES \"space\"(\"id\"))"
 
     lift $ logDebug "Creating table 'space_role_permission'."
-    Selda.createTable tableSpaceRolePermission
+    Selda.Unsafe.rawStm "CREATE TABLE \"space_role_permission\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"role\" INTEGER NOT NULL, \"permission\" TEXT NOT NULL, UNIQUE(\"role\", \"permission\"), CONSTRAINT \"fk0_role\" FOREIGN KEY (\"role\") REFERENCES \"space_role\"(\"id\"))"
 
     lift $ logDebug "Creating table 'space_user'."
-    Selda.createTable tableSpaceUser
+    Selda.Unsafe.rawStm "CREATE TABLE \"space_user\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"space\" INTEGER NOT NULL, \"user\" INTEGER NOT NULL, \"role\" INTEGER NOT NULL, UNIQUE(\"space\", \"user\"), CONSTRAINT \"fk0_space\" FOREIGN KEY (\"space\") REFERENCES \"space\"(\"id\"), CONSTRAINT \"fk1_user\" FOREIGN KEY (\"user\") REFERENCES \"user\"(\"id\"))"
 
     lift $ logDebug "Creating table 'desk'."
-    Selda.createTable tableDesk
+    Selda.Unsafe.rawStm "CREATE TABLE \"desk\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"space\" INTEGER NOT NULL, \"name\" TEXT NOT NULL, UNIQUE(\"space\", \"name\"), CONSTRAINT \"fk0_space\" FOREIGN KEY (\"space\") REFERENCES \"space\"(\"id\"))"
 
     lift $ logDebug "Creating table 'reservation'."
-    Selda.createTable tableReservation
+    Selda.Unsafe.rawStm "CREATE TABLE \"reservation\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"desk\" INTEGER NOT NULL, \"user\" INTEGER NOT NULL, \"time_begin\" DATETIME NOT NULL, \"time_end\" DATETIME NOT NULL, \"status\" TEXT NOT NULL, CONSTRAINT \"fk0_desk\" FOREIGN KEY (\"desk\") REFERENCES \"desk\"(\"id\"), CONSTRAINT \"fk1_user\" FOREIGN KEY (\"user\") REFERENCES \"user\"(\"id\"))"
 
     lift $ logInfo "Committing transaction."
 
