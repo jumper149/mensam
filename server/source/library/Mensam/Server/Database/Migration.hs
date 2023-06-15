@@ -145,8 +145,6 @@ createDatabase = do
     lift $ logDebug "Creating table 'reservation'."
     Selda.Unsafe.rawStm "CREATE TABLE \"reservation\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"desk\" INTEGER NOT NULL, \"user\" INTEGER NOT NULL, \"time_begin\" DATETIME NOT NULL, \"time_end\" DATETIME NOT NULL, \"status\" TEXT NOT NULL, CONSTRAINT \"fk0_desk\" FOREIGN KEY (\"desk\") REFERENCES \"desk\"(\"id\"), CONSTRAINT \"fk1_user\" FOREIGN KEY (\"user\") REFERENCES \"user\"(\"id\"))"
 
-    lift $ logInfo "Committing transaction."
-
   case result of
     SeldaSuccess () -> logInfo "Created database."
     SeldaFailure err -> logError $ "Failed to create database: " <> T.pack (show err)
