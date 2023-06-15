@@ -17,13 +17,13 @@ import Data.Time qualified as T
 import Database.Selda qualified as Selda
 import Database.Selda.Unsafe qualified as Selda.Unsafe
 
-migrate ::
+migrateDatabase ::
   ( MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
   ) =>
   SeldaTransactionT m ()
-migrate = do
+migrateDatabase = do
   appliedMigrationKeys <- do
     lift $ logDebug "Looking up migrations that have already been applied."
     dbMigrations <- Selda.query $ do
@@ -33,9 +33,19 @@ migrate = do
     lift $ logInfo $ "These migrations have already been applied: " <> T.pack (show dbMigrations)
     let toKey dbMigration = (dbMigration_id dbMigration, dbMigration_name dbMigration)
     pure $ map toKey dbMigrations
-  let migrationsToApply =
-        M.toAscList $
-          foldr M.delete migrationMap appliedMigrationKeys
+  let
+    migrationMap ::
+      ( MonadIO m
+      , MonadLogger m
+      , MonadSeldaPool m
+      ) =>
+      M.Map (Selda.ID DbMigration, T.Text) (SeldaTransactionT m ())
+    migrationMap =
+      M.fromListWith (error "Multiple migrations have the same identifier and name.") $
+        map (\migration -> ((migrationId migration, migrationName migration), migrationWork migration)) migrations
+    migrationsToApply =
+      M.toAscList $
+        foldr M.delete migrationMap appliedMigrationKeys
   migrationsToApply `for_` \((identifier, name), work) -> do
     lift $ logDebug $ "Applying migration: " <> T.pack (show (identifier, name))
     work
@@ -62,16 +72,6 @@ data Migration = MkMigration
       ) =>
       SeldaTransactionT m ()
   }
-
-migrationMap ::
-  ( MonadIO m
-  , MonadLogger m
-  , MonadSeldaPool m
-  ) =>
-  M.Map (Selda.ID DbMigration, T.Text) (SeldaTransactionT m ())
-migrationMap =
-  M.fromListWith (error "Multiple migrations have the same identifier and name.") $
-    map (\migration -> ((migrationId migration, migrationName migration), migrationWork migration)) migrations
 
 migrations :: [Migration]
 migrations =

@@ -110,7 +110,7 @@ runSeldaPoolT tma = do
         lift $ logInfo "Creating new SQLite database file."
         createDatabase
     lift $ logDebug "Updating database by migrating to the expected schema."
-    runSeldaTransactionT migrate >>= \case
+    runSeldaTransactionT migrateDatabase >>= \case
       SeldaFailure err -> do
         logError $ "Failed database migration: " <> T.pack (show err)
         error "Outdated database."
