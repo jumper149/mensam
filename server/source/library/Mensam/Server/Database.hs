@@ -10,6 +10,26 @@ import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Text qualified as T
 import Database.Selda qualified as Selda
+import Database.Selda.Backend.Internal qualified as Selda.Internal
+import Database.Selda.Debug qualified as Selda
+import Database.Selda.SQLite qualified as Selda.SQLite
+
+createDatabaseStatements :: [T.Text]
+createDatabaseStatements =
+  [ Selda.compileCreateTable ppConfig Selda.Fail tableMigration
+  , Selda.compileCreateTable ppConfig Selda.Fail tableJwk
+  , Selda.compileCreateTable ppConfig Selda.Fail tableUser
+  , Selda.compileCreateTable ppConfig Selda.Fail tableConfirmation
+  , Selda.compileCreateTable ppConfig Selda.Fail tableSession
+  , Selda.compileCreateTable ppConfig Selda.Fail tableSpace
+  , Selda.compileCreateTable ppConfig Selda.Fail tableSpaceRole
+  , Selda.compileCreateTable ppConfig Selda.Fail tableSpaceRolePermission
+  , Selda.compileCreateTable ppConfig Selda.Fail tableSpaceUser
+  , Selda.compileCreateTable ppConfig Selda.Fail tableDesk
+  , Selda.compileCreateTable ppConfig Selda.Fail tableReservation
+  ]
+ where
+  ppConfig = Selda.Internal.ppConfig $ Selda.SQLite.sqliteBackend undefined
 
 createDatabase ::
   ( MonadSeldaPool m
