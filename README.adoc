@@ -4,13 +4,6 @@ __**A desk-booking web application.**__
 
 ****
 Public instance:: https://mens.am[**mens.am**]
-+
-[CAUTION]
-====
-This is currently just a showcase.
-The database may be wiped at any point, so don't expect your data to be persistent at the moment.
-Data will be carefully migrated after the first actual release.
-====
 
 OpenAPI specification::
 https://mens.am/openapi[Rendered] or https://mens.am/api/openapi[JSON]
