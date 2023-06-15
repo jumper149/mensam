@@ -166,7 +166,7 @@ library
     , Mensam.Server.Configuration.BaseUrl
     , Mensam.Server.Configuration.Email
     , Mensam.Server.Configuration.SQLite
-    , Mensam.Server.Database
+    , Mensam.Server.Database.Check
     , Mensam.Server.Database.Extra
     , Mensam.Server.Database.Migration
     , Mensam.Server.Database.Schema

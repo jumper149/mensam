@@ -6,7 +6,7 @@
     , "^Mensam.Client.Application.Event.runAppEventT$"
     , "^Mensam.Client.Application.MensamClient.*$"
     , "^Mensam.Client.Debug.runF$"
-    , "^Mensam.Server.Database.checkDatabase$"
+    , "^Mensam.Server.Database.Check.checkDatabase$"
     , "^Mensam.Server.Database.Space.spaceListDesks$"
     , "^Mensam.Server.User.userProfile$"
     , "^Mensam.Server.User.userSessionGet$"

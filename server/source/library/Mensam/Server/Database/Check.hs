@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedLabels #-}
 
-module Mensam.Server.Database where
+module Mensam.Server.Database.Check where
 
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Schema
