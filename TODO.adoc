@@ -22,15 +22,6 @@
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
   ** [ ] Handle confirmation links.
 
-* [ ] Database migrations.
-  ** [x] Database initialization is automatically handled during startup.
-  ** [ ] Database migration is automatically handled during startup.
-  ** My current idea:
-    *** A new table (maybe in a separate schema) to track the database version.
-    *** Every mensam release will be associated with a database version.
-    *** During startup, check whether the database version is up-to-date.
-    *** If not, then automatically run the migration and finally bump the database version.
-
 * Pin timezone libraries.
   ** [ ] tzdata library for Haskell.
   ** [ ] justinmimbs/timezone-data for Elm.
