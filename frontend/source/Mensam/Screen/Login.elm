@@ -13,6 +13,7 @@ import Mensam.Auth.Bearer
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
+import Mensam.User
 import Time
 
 
@@ -164,7 +165,7 @@ type MessageEffect
     = ReportError Mensam.Error.Error
     | SubmitLogin
     | Register
-    | SetSession { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
+    | SetSession { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix, id : Mensam.User.Identifier }
 
 
 onEnter : msg -> Element.Attribute msg

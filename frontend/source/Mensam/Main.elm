@@ -21,6 +21,7 @@ import Mensam.Screen.Spaces
 import Mensam.Space
 import Mensam.Storage
 import Mensam.Time
+import Mensam.User
 import Platform.Cmd
 import Time
 import Url
@@ -155,13 +156,7 @@ init flagsRaw url navigationKey =
                     Ok (Mensam.Flags.MkFlags flags) ->
                         MkModel
                             { model
-                                | authenticated =
-                                    case flags.storage of
-                                        Just (Mensam.Storage.MkStorage storage) ->
-                                            Mensam.Auth.SignedIn <| Mensam.Auth.MkAuthentication storage
-
-                                        Nothing ->
-                                            Mensam.Auth.SignedOut
+                                | authenticated = Mensam.Auth.init flags.storage
                                 , time = flags.time
                             }
 
@@ -200,7 +195,7 @@ type Message
 
 
 type MessageAuth
-    = SetSession { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
+    = SetSession { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix, id : Mensam.User.Identifier }
     | UnsetSession
     | Logout
     | CheckExpirationExplicit Time.Posix
@@ -328,7 +323,19 @@ update message (MkModel model) =
                     }
 
         Auth (SetSession session) ->
-            ( MkModel { model | authenticated = Mensam.Auth.SignedIn <| Mensam.Auth.MkAuthentication session }
+            ( MkModel
+                { model
+                    | authenticated =
+                        Mensam.Auth.SignedIn <|
+                            Mensam.Auth.MkAuthentication
+                                { jwt = session.jwt
+                                , expiration = session.expiration
+                                , user =
+                                    { id = session.id
+                                    , info = Nothing
+                                    }
+                                }
+                }
             , Mensam.Storage.set <| Mensam.Storage.MkStorage session
             )
 
@@ -672,13 +679,7 @@ headerContent : Model -> Mensam.Element.Header.Content
 headerContent (MkModel model) =
     { errors = model.errors
     , unfoldErrors = model.viewErrors
-    , authenticated =
-        case model.authenticated of
-            Mensam.Auth.SignedOut ->
-                False
-
-            Mensam.Auth.SignedIn _ ->
-                True
+    , authenticated = model.authenticated
     , title =
         case model.screen of
             ScreenLanding _ ->

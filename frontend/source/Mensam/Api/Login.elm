@@ -5,6 +5,7 @@ import Iso8601
 import Json.Decode as Decode
 import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
+import Mensam.User
 import Time
 import Url.Builder
 
@@ -15,7 +16,7 @@ type Request
 
 
 type Response
-    = Success { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
+    = Success { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix, id : Mensam.User.Identifier }
     | ErrorAuth Mensam.Auth.Basic.Error
 
 
@@ -83,8 +84,9 @@ responseResult httpResponse =
                     Err <| Http.BadStatus status
 
 
-decodeBody200 : Decode.Decoder { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix }
+decodeBody200 : Decode.Decoder { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix, id : Mensam.User.Identifier }
 decodeBody200 =
-    Decode.map2 (\jwt expiration -> { jwt = jwt, expiration = expiration })
+    Decode.map3 (\jwt expiration id -> { jwt = jwt, expiration = expiration, id = id })
         (Decode.field "jwt" Mensam.Auth.Bearer.decoder)
         (Decode.maybe <| Decode.field "expiration" Iso8601.decoder)
+        (Decode.field "id" Mensam.User.identifierDecoder)

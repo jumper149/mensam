@@ -5,6 +5,7 @@ import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
+import Mensam.Auth
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
@@ -13,7 +14,7 @@ import Mensam.Error
 type alias Content =
     { errors : List Mensam.Error.Error
     , unfoldErrors : Bool
-    , authenticated : Bool
+    , authenticated : Mensam.Auth.Model
     , title : Maybe String
     }
 
@@ -72,7 +73,7 @@ elementMensam =
             Element.text "Mensam"
 
 
-elementSignInOut : Bool -> Element.Element Message
+elementSignInOut : Mensam.Auth.Model -> Element.Element Message
 elementSignInOut authenticated =
     Element.el
         [ Element.height Element.fill
@@ -82,33 +83,34 @@ elementSignInOut authenticated =
         , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
         ]
     <|
-        if authenticated then
-            Element.el
-                [ Element.height Element.fill
-                , Element.paddingXY 20 0
-                , Element.Events.onClick <| SignOut
-                ]
-            <|
+        case authenticated of
+            Mensam.Auth.SignedIn _ ->
                 Element.el
-                    [ Element.centerX
-                    , Element.centerY
+                    [ Element.height Element.fill
+                    , Element.paddingXY 20 0
+                    , Element.Events.onClick <| SignOut
                     ]
                 <|
-                    Element.text "Sign out"
+                    Element.el
+                        [ Element.centerX
+                        , Element.centerY
+                        ]
+                    <|
+                        Element.text "Sign out"
 
-        else
-            Element.el
-                [ Element.height Element.fill
-                , Element.paddingXY 20 0
-                , Element.Events.onClick <| SignIn
-                ]
-            <|
+            Mensam.Auth.SignedOut ->
                 Element.el
-                    [ Element.centerX
-                    , Element.centerY
+                    [ Element.height Element.fill
+                    , Element.paddingXY 20 0
+                    , Element.Events.onClick <| SignIn
                     ]
                 <|
-                    Element.text "Sign in"
+                    Element.el
+                        [ Element.centerX
+                        , Element.centerY
+                        ]
+                    <|
+                        Element.text "Sign in"
 
 
 elementErrors : List Mensam.Error.Error -> Bool -> Element.Element Message

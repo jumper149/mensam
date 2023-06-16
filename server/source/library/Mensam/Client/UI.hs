@@ -144,7 +144,7 @@ handleEvent chan = \case
       ClientEventSendRequestLogin credentials -> do
         result <- runApplicationT chan $ mensamCall $ endpointLogin $ DataBasicAuth credentials
         case result of
-          Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt _timeout)))) -> do
+          Right (Z (I (WithStatus @200 (Route.User.MkResponseLogin jwt _timeout _)))) -> do
             modify $ \s -> s {_clientStateJwt = Just jwt}
             runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
           err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}

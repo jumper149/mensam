@@ -100,6 +100,7 @@ type ResponseLogin :: Type
 data ResponseLogin = MkResponseLogin
   { responseLoginJwt :: Jwt
   , responseLoginExpiration :: Maybe T.UTCTime
+  , responseLoginId :: IdentifierUser
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

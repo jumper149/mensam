@@ -2,6 +2,7 @@ module Mensam.Auth exposing (..)
 
 import Mensam.Auth.Bearer
 import Mensam.Storage
+import Mensam.User
 import Time
 
 
@@ -17,13 +18,28 @@ init maybeStorage =
             SignedOut
 
         Just (Mensam.Storage.MkStorage storage) ->
-            SignedIn <| MkAuthentication storage
+            SignedIn <|
+                MkAuthentication
+                    { jwt = storage.jwt
+                    , expiration = storage.expiration
+                    , user =
+                        { id = storage.id
+                        , info = Nothing
+                        }
+                    }
 
 
 type Authentication
     = MkAuthentication
         { jwt : Mensam.Auth.Bearer.Jwt
         , expiration : Maybe Time.Posix
+        , user :
+            { id : Mensam.User.Identifier
+            , info :
+                Maybe
+                    { name : Mensam.User.Name
+                    }
+            }
         }
 
 

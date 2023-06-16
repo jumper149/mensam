@@ -100,6 +100,7 @@ login auth =
                     MkResponseLogin
                       { responseLoginJwt = jwt
                       , responseLoginExpiration = maybeTimeout
+                      , responseLoginId = userAuthenticatedId authenticatedWithSession
                       }
 
 logout ::
