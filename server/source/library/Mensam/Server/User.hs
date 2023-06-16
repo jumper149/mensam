@@ -128,24 +128,6 @@ userCreate username password emailAddress emailAddressVisible = do
   lift $ logInfo "Created user successfully."
   pure $ MkIdentifierUser $ Selda.fromId @DbUser dbUserId
 
-userProfile ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  Username ->
-  SeldaTransactionT m (Maybe IdentifierUser)
-userProfile username = do
-  lift $ logDebug $ "Looking up user identifier with name: " <> T.pack (show username)
-  maybeDbId <- Selda.queryUnique $ do
-    dbUser <- Selda.select tableUser
-    Selda.restrict $ dbUser Selda.! #dbUser_name Selda..== Selda.literal (unUsername username)
-    pure $ dbUser Selda.! #dbUser_id
-  case maybeDbId of
-    Nothing -> do
-      lift $ logWarn $ "Failed to look up user. Name doesn't exist: " <> T.pack (show username)
-      pure Nothing
-    Just dbId -> do
-      lift $ logInfo "Looked up user successfully."
-      pure $ Just $ MkIdentifierUser $ Selda.fromId @DbUser dbId
-
 type SessionValidity :: Type
 data SessionValidity
   = SessionValid

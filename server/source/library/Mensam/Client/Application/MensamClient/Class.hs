@@ -2,7 +2,6 @@ module Mensam.Client.Application.MensamClient.Class where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.User
-import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api qualified as Route.Api
 import Mensam.API.Route.Api.Booking qualified as Route.Api.Booking
 import Mensam.API.Route.Api.OpenApi qualified as Route.Api.OpenApi
@@ -87,11 +86,13 @@ endpointConfirm ::
          ]
     )
 endpointProfile ::
-  Username ->
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.User.RequestProfile ->
   ClientM
     ( Union
         '[ WithStatus 200 Route.Api.User.ResponseProfile
-         , WithStatus 400 ()
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
          , WithStatus 404 ()
          , WithStatus 500 ()
          ]

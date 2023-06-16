@@ -252,36 +252,41 @@ profile ::
   , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseProfile) responses
-  , IsMember (WithStatus 400 ()) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 404 ()) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
-  Either T.Text Username ->
+  AuthResult UserAuthenticated ->
+  Either String RequestProfile ->
   m (Union responses)
-profile eitherUsername =
-  case eitherUsername of
-    Left err -> do
-      logInfo $ "Failed to parse username: " <> T.pack (show err)
-      respond $ WithStatus @400 ()
-    Right username -> do
-      logDebug $ "Looking up user profile: " <> T.pack (show username)
-      seldaResultMaybeUser <- runSeldaTransactionT $ do
-        maybeUserIdentifier <- userLookupId username
-        case maybeUserIdentifier of
-          Nothing -> pure Nothing
-          Just userIdentifier -> Just <$> userGet userIdentifier
-      case seldaResultMaybeUser of
-        SeldaFailure _err -> do
-          logError "Failed to look up user profile."
-          respond $ WithStatus @500 ()
-        SeldaSuccess Nothing -> do
-          logWarn "Failed to look up user profile."
-          respond $ WithStatus @400 ()
-        SeldaSuccess (Just user) -> do
-          let response =
+profile auth eitherRequest =
+  handleAuthBearer auth $ \_authenticated ->
+    case eitherRequest of
+      Left err -> do
+        logInfo $ "Failed to parse request: " <> T.pack (show err)
+        respond $ WithStatus @400 $ MkErrorParseBodyJson err
+      Right request@MkRequestProfile {requestProfileUser} -> do
+        logDebug $ "Running confirmation: " <> T.pack (show request)
+        seldaResult <- runSeldaTransactionT $ do
+          maybeUserIdentifier <- case requestProfileUser of
+            Name name -> userLookupId name
+            Identifier identifier -> pure $ Just identifier
+          case maybeUserIdentifier of
+            Nothing -> pure Nothing
+            Just userIdentifier -> Just <$> userGet userIdentifier
+        case seldaResult of
+          SeldaFailure _err -> do
+            logError "Failed to look up user profile."
+            respond $ WithStatus @500 ()
+          SeldaSuccess Nothing -> do
+            logWarn "No such user profile."
+            respond $ WithStatus @404 ()
+          SeldaSuccess (Just user) ->
+            respond $
+              WithStatus @200 $
                 MkResponseProfile
                   { responseProfileId = T.pack $ show $ userId user
                   , responseProfileName = userName user
                   , responseProfileEmail = userEmail user
                   }
-          logInfo "Looked up user profile."
-          respond $ WithStatus @200 response

@@ -137,6 +137,7 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") Route.Use
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRegister") Route.User.ResponseRegister instance ToSchema Route.User.ResponseRegister
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestConfirm") Route.User.RequestConfirm instance ToSchema Route.User.RequestConfirm
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseConfirm") Route.User.ResponseConfirm instance ToSchema Route.User.ResponseConfirm
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestProfile") Route.User.RequestProfile instance ToSchema Route.User.RequestProfile
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseProfile") Route.User.ResponseProfile instance ToSchema Route.User.ResponseProfile
 
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") Route.Booking.RequestSpaceCreate instance ToSchema Route.Booking.RequestSpaceCreate

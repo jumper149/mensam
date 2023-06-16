@@ -46,10 +46,6 @@ f = do
   resultRegister <- endpointRegister requestRegister
   liftIO $ print resultRegister
 
-  liftIO $ putStrLn "Profile."
-  resultProfile <- endpointProfile name
-  liftIO $ print resultProfile
-
   liftIO $ putStrLn "Login with BasicAuth."
   let credentials =
         MkCredentials
@@ -72,6 +68,14 @@ f = do
       Z (I (WithStatus @200 x)) -> pure x
       _ -> undefined
   let nextToken = Route.User.responseLoginJwt nextResponseLogin
+
+  liftIO $ putStrLn "Profile."
+  let requestProfile =
+        Route.User.MkRequestProfile
+          { Route.User.requestProfileUser = Name name
+          }
+  resultProfile <- endpointProfile (DataJWTWithSession nextToken) requestProfile
+  liftIO $ print resultProfile
 
   liftIO $ putStrLn "Create space."
   let requestSpaceCreate =

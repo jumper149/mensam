@@ -80,16 +80,18 @@ data Routes route = Routes
               ]
   , routeProfile ::
       route
-        :- Summary "Request User Profile"
+        :- Summary "View User"
           :> Description
-              "Request information for a user profile.\n"
+              "Request detailed user information.\n"
           :> "profile"
-          :> QueryParam' '[Lenient, Required] "name" Username
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestProfile
           :> UVerb
-              GET
+              POST
               '[JSON]
               [ WithStatus 200 ResponseProfile
-              , WithStatus 400 ()
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
               , WithStatus 404 ()
               , WithStatus 500 ()
               ]
@@ -159,6 +161,15 @@ newtype ResponseConfirm = MkResponseConfirm
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseConfirm") ResponseConfirm
+
+type RequestProfile :: Type
+newtype RequestProfile = MkRequestProfile
+  { requestProfileUser :: NameOrIdentifier Username IdentifierUser
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestProfile") RequestProfile
 
 type ResponseProfile :: Type
 data ResponseProfile = MkResponseProfile
