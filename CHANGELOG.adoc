@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.0.1.0`
+
 * API
   ** Add user `id` to `/login` response.
   ** Improve `/profile` route.
