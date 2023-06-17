@@ -49,6 +49,7 @@ type Model
         , authenticated : Mensam.Auth.Model
         , errors : List Mensam.Error.Error
         , viewErrors : Bool
+        , viewHamburgerMenu : Bool
         , time :
             { now : Time.Posix
             , zone : Time.Zone
@@ -144,6 +145,7 @@ init flagsRaw url navigationKey =
                 , authenticated = Mensam.Auth.SignedOut
                 , errors = []
                 , viewErrors = False
+                , viewHamburgerMenu = False
                 , time =
                     { now = Time.millisToPosix 0
                     , zone = Time.utc
@@ -186,6 +188,8 @@ type Message
     | ClearErrors
     | ViewErrors
     | HideErrors
+    | ViewHamburgerMenu
+    | HideHamburgerMenu
     | SetTimeNow Time.Posix
     | Auth MessageAuth
     | MessageLanding Mensam.Screen.Landing.Message
@@ -313,6 +317,12 @@ update message (MkModel model) =
 
         HideErrors ->
             update ClearErrors <| MkModel { model | viewErrors = False }
+
+        ViewHamburgerMenu ->
+            update EmptyMessage <| MkModel { model | viewHamburgerMenu = True }
+
+        HideHamburgerMenu ->
+            update EmptyMessage <| MkModel { model | viewHamburgerMenu = False }
 
         SetTimeNow timestamp ->
             update EmptyMessage <|
@@ -725,6 +735,9 @@ update message (MkModel model) =
 headerMessage : Model -> Mensam.Element.Header.Message -> Message
 headerMessage (MkModel model) message =
     case message of
+        Mensam.Element.Header.EmptyMessage ->
+            EmptyMessage
+
         Mensam.Element.Header.ClickMensam ->
             case model.authenticated of
                 Mensam.Auth.SignedOut ->
@@ -732,6 +745,13 @@ headerMessage (MkModel model) message =
 
                 Mensam.Auth.SignedIn _ ->
                     SetUrl RouteSpaces
+
+        Mensam.Element.Header.ClickHamburger ->
+            if model.viewHamburgerMenu then
+                HideHamburgerMenu
+
+            else
+                ViewHamburgerMenu
 
         Mensam.Element.Header.SignIn ->
             SetUrl <| RouteLogin Nothing
@@ -751,6 +771,7 @@ headerContent : Model -> Mensam.Element.Header.Content
 headerContent (MkModel model) =
     { errors = model.errors
     , unfoldErrors = model.viewErrors
+    , unfoldHamburgerDropDown = model.viewHamburgerMenu
     , authenticated = model.authenticated
     , title =
         case model.screen of

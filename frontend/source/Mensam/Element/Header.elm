@@ -15,13 +15,16 @@ import Mensam.User
 type alias Content =
     { errors : List Mensam.Error.Error
     , unfoldErrors : Bool
+    , unfoldHamburgerDropDown : Bool
     , authenticated : Mensam.Auth.Model
     , title : Maybe String
     }
 
 
 type Message
-    = ClickMensam
+    = EmptyMessage
+    | ClickMensam
+    | ClickHamburger
     | SignIn
     | SignOut
     | ClickErrors
@@ -46,7 +49,7 @@ element content =
             ]
             [ elementMensam
             , elementErrors content.errors content.unfoldErrors
-            , elementSignInOut content.authenticated
+            , elementSignInOut content.unfoldHamburgerDropDown content.authenticated
             ]
 
 
@@ -74,11 +77,17 @@ elementMensam =
             Element.text "Mensam"
 
 
-elementSignInOut : Mensam.Auth.Model -> Element.Element Message
-elementSignInOut authenticated =
+elementSignInOut : Bool -> Mensam.Auth.Model -> Element.Element Message
+elementSignInOut unfoldDropDownMenu authenticated =
     Element.el
         [ Element.height Element.fill
         , Element.alignRight
+        , Element.Background.color <|
+            if unfoldDropDownMenu then
+                Mensam.Element.Color.bright.black
+
+            else
+                Element.rgba 1 1 1 0
         , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
         , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
@@ -89,21 +98,82 @@ elementSignInOut authenticated =
                 Element.el
                     [ Element.height Element.fill
                     , Element.paddingXY 20 0
-                    , Element.Events.onClick <| SignOut
+                    , Element.Events.onClick <| ClickHamburger
+                    , Element.below <|
+                        if unfoldDropDownMenu then
+                            Element.column
+                                [ Element.width <| Element.px 200
+                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
+                                , Element.htmlAttribute <| Html.Attributes.style "overflow-x" "hidden"
+                                , Element.Events.onClick <| EmptyMessage
+                                , Element.alignRight
+                                , Element.paddingEach
+                                    { top = 19
+                                    , right = 12
+                                    , bottom = 12
+                                    , left = 12
+                                    }
+                                , Element.spacing 10
+                                , Element.Background.color Mensam.Element.Color.bright.black
+                                , Element.Font.color Mensam.Element.Color.bright.white
+                                ]
+                            <|
+                                [ Element.el
+                                    [ Element.paddingXY 15 0
+                                    , Element.centerX
+                                    , Element.centerY
+                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
+                                    ]
+                                  <|
+                                    Element.text <|
+                                        case authentication.user.info of
+                                            Nothing ->
+                                                ""
+
+                                            Just { name } ->
+                                                Mensam.User.nameToString name
+                                , Element.el
+                                    [ Element.paddingXY 10 10
+                                    , Element.centerX
+                                    , Element.centerY
+                                    , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
+                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                    , Element.Events.onClick <| SignOut
+                                    ]
+                                  <|
+                                    Element.text "Sign out"
+                                ]
+
+                        else
+                            Element.none
                     ]
                 <|
-                    Element.el
+                    Element.column
                         [ Element.centerX
                         , Element.centerY
+                        , Element.width <| Element.px 14
+                        , Element.spacing 4
                         ]
-                    <|
-                        Element.text <|
-                            case authentication.user.info of
-                                Nothing ->
-                                    "Sign out"
-
-                                Just info ->
-                                    Mensam.User.nameToString info.name
+                        [ Element.el
+                            [ Element.width Element.fill
+                            , Element.height <| Element.px 1
+                            , Element.Background.color Mensam.Element.Color.bright.white
+                            ]
+                            Element.none
+                        , Element.el
+                            [ Element.width Element.fill
+                            , Element.height <| Element.px 1
+                            , Element.Background.color Mensam.Element.Color.bright.white
+                            ]
+                            Element.none
+                        , Element.el
+                            [ Element.width Element.fill
+                            , Element.height <| Element.px 1
+                            , Element.Background.color Mensam.Element.Color.bright.white
+                            ]
+                            Element.none
+                        ]
 
             Mensam.Auth.SignedOut ->
                 Element.el
