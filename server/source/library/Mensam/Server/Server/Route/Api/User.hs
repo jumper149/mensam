@@ -286,7 +286,7 @@ profile auth eitherRequest =
             respond $
               WithStatus @200 $
                 MkResponseProfile
-                  { responseProfileId = T.pack $ show $ userId user
+                  { responseProfileId = userId user
                   , responseProfileName = userName user
                   , responseProfileEmail = userEmail user
                   }

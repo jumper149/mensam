@@ -5,6 +5,7 @@
   ** Improve `/profile` route.
 * Frontend
   ** Add user `id` to localStorage.
+  ** Display username instead of "Sign out".
 
 == `0.0.0.0`
 

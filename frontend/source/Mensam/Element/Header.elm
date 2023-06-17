@@ -9,6 +9,7 @@ import Mensam.Auth
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
+import Mensam.User
 
 
 type alias Content =
@@ -84,7 +85,7 @@ elementSignInOut authenticated =
         ]
     <|
         case authenticated of
-            Mensam.Auth.SignedIn _ ->
+            Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication authentication) ->
                 Element.el
                     [ Element.height Element.fill
                     , Element.paddingXY 20 0
@@ -96,7 +97,13 @@ elementSignInOut authenticated =
                         , Element.centerY
                         ]
                     <|
-                        Element.text "Sign out"
+                        Element.text <|
+                            case authentication.user.info of
+                                Nothing ->
+                                    "Sign out"
+
+                                Just info ->
+                                    Mensam.User.nameToString info.name
 
             Mensam.Auth.SignedOut ->
                 Element.el

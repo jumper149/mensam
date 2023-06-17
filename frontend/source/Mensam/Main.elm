@@ -5,6 +5,7 @@ import Browser.Navigation
 import Element
 import Json.Encode as Encode
 import Mensam.Api.Logout
+import Mensam.Api.Profile
 import Mensam.Application
 import Mensam.Auth
 import Mensam.Auth.Bearer
@@ -199,6 +200,8 @@ type MessageAuth
     | UnsetSession
     | Logout
     | CheckExpirationExplicit Time.Posix
+    | RefreshUserInfo
+    | SetUserInfo { name : Mensam.User.Name }
 
 
 update : Message -> Model -> ( Model, Platform.Cmd.Cmd Message )
@@ -259,6 +262,7 @@ update message (MkModel model) =
             update
                 (Messages
                     [ Auth <| CheckExpirationExplicit model.time.now
+                    , Auth <| RefreshUserInfo
                     , Raw <|
                         \(MkModel m) ->
                             case Url.Parser.parse urlParser url of
@@ -388,6 +392,73 @@ update message (MkModel model) =
                     else
                         update EmptyMessage <| MkModel model
 
+        Auth RefreshUserInfo ->
+            case model.authenticated of
+                Mensam.Auth.SignedOut ->
+                    update EmptyMessage <| MkModel model
+
+                Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication authentication) ->
+                    ( MkModel model
+                    , Mensam.Api.Profile.request
+                        { jwt = authentication.jwt
+                        , id = authentication.user.id
+                        }
+                      <|
+                        \response ->
+                            case response of
+                                Ok (Mensam.Api.Profile.Success body) ->
+                                    Auth <| SetUserInfo { name = body.name }
+
+                                Ok Mensam.Api.Profile.ErrorUnknownUser ->
+                                    ReportError <| Mensam.Error.message "Unknown user while requesting information" Mensam.Error.undefined
+
+                                Ok (Mensam.Api.Profile.ErrorBody error) ->
+                                    ReportError <|
+                                        Mensam.Error.message "Failed to request profile" <|
+                                            Mensam.Error.message "Bad request body" <|
+                                                Mensam.Error.message error
+                                                    Mensam.Error.undefined
+
+                                Ok (Mensam.Api.Profile.ErrorAuth error) ->
+                                    ReportError <|
+                                        Mensam.Error.message "Failed to request profile" <|
+                                            Mensam.Auth.Bearer.error error
+
+                                Err error ->
+                                    ReportError <|
+                                        Mensam.Error.message "Failed to request profile" <|
+                                            Mensam.Error.http error
+                    )
+
+        Auth (SetUserInfo info) ->
+            case model.authenticated of
+                Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication authentication) ->
+                    update EmptyMessage <|
+                        MkModel <|
+                            { model
+                                | authenticated =
+                                    let
+                                        userNew =
+                                            { id = authentication.user.id
+                                            , info = Just info
+                                            }
+                                    in
+                                    Mensam.Auth.SignedIn <|
+                                        Mensam.Auth.MkAuthentication
+                                            { authentication
+                                                | user = userNew
+                                            }
+                            }
+
+                Mensam.Auth.SignedOut ->
+                    update
+                        (ReportError <|
+                            Mensam.Error.message "Cannot set user information unless signed in"
+                                Mensam.Error.undefined
+                        )
+                    <|
+                        MkModel model
+
         MessageLanding (Mensam.Screen.Landing.MessageEffect m) ->
             case m of
                 Mensam.Screen.Landing.Login ->
@@ -469,6 +540,7 @@ update message (MkModel model) =
                     update
                         (Messages
                             [ Auth <| SetSession session
+                            , Auth <| RefreshUserInfo
                             , SetUrl RouteSpaces
                             ]
                         )

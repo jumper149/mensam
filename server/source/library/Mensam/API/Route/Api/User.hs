@@ -173,7 +173,7 @@ newtype RequestProfile = MkRequestProfile
 
 type ResponseProfile :: Type
 data ResponseProfile = MkResponseProfile
-  { responseProfileId :: T.Text -- TODO: Use better type.
+  { responseProfileId :: IdentifierUser
   , responseProfileName :: Username
   , responseProfileEmail :: EmailAddress
   }
