@@ -76,14 +76,22 @@ spaceView userIdentifier spaceIdentifier = do
                 dbSpaceRolesPermissions
         pure spaceRoles
       lift $ logInfo "Got space roles successfully."
+      lift $ logDebug "Looking up space role for requesting user."
+      spaceRoleIdentifier <-
+        (MkIdentifierSpaceRole . Selda.fromId @DbSpaceRole <$>) $
+          Selda.queryOne $
+            spaceUserGetRole
+              (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
+              (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
+      lift $ logInfo "Got requesting user's space role successfully."
       pure
         MkSpaceView
           { spaceViewId = MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
           , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
           , spaceViewTimezone = dbSpace_timezone dbSpace
           , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
-          , spaceViewPermissions = permissions
           , spaceViewRoles = S.fromList spaceRoles
+          , spaceViewYourRole = spaceRoleIdentifier
           }
 
 spaceListVisible ::

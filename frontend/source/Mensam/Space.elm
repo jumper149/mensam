@@ -11,7 +11,6 @@ type SpaceView
     = MkSpaceView
         { id : Identifier
         , name : Name
-        , permissions : Set.Set String
         , roles :
             Dict.Dict
                 String
@@ -22,6 +21,13 @@ type SpaceView
                 }
         , timezone : Mensam.Time.TimezoneIdentifier
         , visibility : Visibility
+        , yourRole :
+            Maybe
+                { accessibility : Accessibility
+                , id : Int
+                , name : String
+                , permissions : Set.Set String
+                }
         }
 
 

@@ -34,7 +34,13 @@ type alias Model =
     , timezone : Time.Zone
     , timezoneIdentifier : Mensam.Time.TimezoneIdentifier
     , visibility : Mensam.Space.Visibility
-    , permissions : Set.Set String
+    , yourRole :
+        Maybe
+            { accessibility : Mensam.Space.Accessibility
+            , id : Int
+            , name : String
+            , permissions : Set.Set String
+            }
     , popup : Maybe PopupModel
     , desks :
         List
@@ -90,7 +96,7 @@ init args =
     , timezone = Time.utc
     , timezoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
     , visibility = Mensam.Space.MkVisibilityHidden
-    , permissions = Set.empty
+    , yourRole = Nothing
     , popup = Nothing
     , desks = []
     , selected = Nothing
@@ -643,7 +649,7 @@ updatePure message model =
                 , timezone = Mensam.Time.timezone space.timezone
                 , timezoneIdentifier = space.timezone
                 , visibility = space.visibility
-                , permissions = space.permissions
+                , yourRole = space.yourRole
             }
 
         SetDesks desks ->

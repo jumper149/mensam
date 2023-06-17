@@ -105,30 +105,27 @@ decodeBody200 =
     Decode.map (\spaceView -> { space = spaceView }) <|
         Decode.field "space" <|
             Decode.map6
-                (\id name permissions roles timezone visibility ->
+                (\id name roles timezone visibility yourRoleId ->
                     Mensam.Space.MkSpaceView
                         { id = id
                         , name = Mensam.Space.MkName name
-                        , permissions = Set.fromList permissions
-                        , roles = Dict.fromList roles
+                        , roles = Dict.fromList <| List.map (\role -> ( role.name, role )) roles
                         , timezone = timezone
                         , visibility = visibility
+                        , yourRole = Dict.get yourRoleId <| Dict.fromList <| List.map (\role -> ( role.id, role )) roles
                         }
                 )
                 (Decode.field "id" Mensam.Space.identifierDecoder)
                 (Decode.field "name" Decode.string)
-                (Decode.field "permissions" <| Decode.list Decode.string)
                 (Decode.field "roles" <|
                     Decode.list <|
                         Decode.map4
                             (\accessibility id name permissions ->
-                                ( name
-                                , { accessibility = accessibility
-                                  , id = id
-                                  , name = name
-                                  , permissions = Set.fromList permissions
-                                  }
-                                )
+                                { accessibility = accessibility
+                                , id = id
+                                , name = name
+                                , permissions = Set.fromList permissions
+                                }
                             )
                             (Decode.field "accessibility" Mensam.Space.accessibilityDecoder)
                             (Decode.field "id" Decode.int)
@@ -137,6 +134,7 @@ decodeBody200 =
                 )
                 (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
                 (Decode.field "visibility" Mensam.Space.visibilityDecoder)
+                (Decode.field "your-role" Decode.int)
 
 
 decodeBody400 : Decode.Decoder String
