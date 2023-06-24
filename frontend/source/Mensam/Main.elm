@@ -681,7 +681,7 @@ update message (MkModel model) =
                                                         (\msg ->
                                                             Messages
                                                                 [ MessageSpace msg
-                                                                , MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks
+                                                                , MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshSpace
                                                                 ]
                                                         )
                                                       <|

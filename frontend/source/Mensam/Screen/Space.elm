@@ -557,37 +557,31 @@ element model =
                               <|
                                 Element.text "Join Space"
                             , let
-                                selectedRole =
-                                    Maybe.andThen
-                                        (\roleId ->
-                                            Dict.get roleId <|
-                                                Dict.fromList <|
-                                                    List.map (\role -> ( role.id, role )) <|
-                                                        Dict.values model.roles
-                                        )
-                                        join.roleId
-
-                                selectedRoleInfo =
-                                    case selectedRole of
-                                        Nothing ->
-                                            { name = ""
-                                            , permissions = Set.toList Set.empty
-                                            }
-
-                                        Just x ->
-                                            { name = x.name
-                                            , permissions = Set.toList x.permissions
-                                            }
-                              in
-                              Element.text <| selectedRoleInfo.name ++ ": " ++ String.join ", " selectedRoleInfo.permissions
-                            , let
                                 roleElement =
                                     \role ->
                                         Element.el
                                             [ Element.width Element.fill
+                                            , Element.padding 15
+                                            , Element.Background.color <|
+                                                if Just role.id == join.roleId then
+                                                    Element.rgba 0 0 0 0.2
+
+                                                else
+                                                    Element.rgba 0 0 0 0
+                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                                            , Element.mouseOver
+                                                [ Element.Background.color <| Element.rgba 0 0 0 0.3
+                                                ]
+                                            , Element.Events.onClick <| MessagePure <| SetRoleToJoin role.id
                                             ]
                                         <|
-                                            Element.text role.name
+                                            Element.el
+                                                [ Element.centerX
+                                                , Element.centerY
+                                                ]
+                                            <|
+                                                Element.text role.name
                               in
                               Element.column
                                 [ Element.width Element.fill
@@ -735,6 +729,7 @@ type MessagePure
     | SetSelected (Maybe Int)
     | OpenDialogToJoin
     | CloseDialogToJoin
+    | SetRoleToJoin Int
     | OpenDialogToCreate
     | CloseDialogToCreate
     | EnterDeskName Mensam.Desk.Name
@@ -782,6 +777,21 @@ updatePure message model =
 
         CloseDialogToJoin ->
             { model | popup = Nothing }
+
+        SetRoleToJoin roleId ->
+            { model
+                | popup =
+                    case model.popup of
+                        Just (PopupJoin join) ->
+                            Just <|
+                                PopupJoin
+                                    { join
+                                        | roleId = Just roleId
+                                    }
+
+                        _ ->
+                            model.popup
+            }
 
         OpenDialogToCreate ->
             { model | popup = Just <| PopupCreate { name = Mensam.Desk.MkName "" } }
@@ -1051,7 +1061,7 @@ spaceJoin jwt spaceId roleId =
         \result ->
             case result of
                 Ok Mensam.Api.SpaceJoin.Success ->
-                    MessageEffect RefreshSpace
+                    MessagePure CloseDialogToJoin
 
                 Ok (Mensam.Api.SpaceJoin.ErrorBody error) ->
                     MessageEffect <|
