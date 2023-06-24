@@ -104,37 +104,65 @@ decodeBody200 : Decode.Decoder { space : Mensam.Space.SpaceView }
 decodeBody200 =
     Decode.map (\spaceView -> { space = spaceView }) <|
         Decode.field "space" <|
-            Decode.map6
-                (\id name roles timezone visibility yourRoleId ->
-                    Mensam.Space.MkSpaceView
+            Decode.andThen
+                (\record ->
+                    case record.yourRole of
+                        Nothing ->
+                            Decode.fail "`your-role` does not refer to any known role"
+
+                        Just yourRole ->
+                            Decode.succeed <|
+                                Mensam.Space.MkSpaceView
+                                    { id = record.id
+                                    , name = record.name
+                                    , roles = record.roles
+                                    , timezone = record.timezone
+                                    , visibility = record.visibility
+                                    , yourRole = yourRole
+                                    }
+                )
+            <|
+                Decode.map6
+                    (\id name roles timezone visibility maybeYourRoleId ->
                         { id = id
                         , name = Mensam.Space.MkName name
                         , roles = Dict.fromList <| List.map (\role -> ( role.name, role )) roles
                         , timezone = timezone
                         , visibility = visibility
-                        , yourRole = Dict.get yourRoleId <| Dict.fromList <| List.map (\role -> ( role.id, role )) roles
+                        , yourRole =
+                            case maybeYourRoleId of
+                                Nothing ->
+                                    Just Nothing
+
+                                Just yourRoleId ->
+                                    case Dict.get yourRoleId <| Dict.fromList <| List.map (\role -> ( role.id, role )) roles of
+                                        Nothing ->
+                                            Just Nothing
+
+                                        Just role ->
+                                            Just <| Just role
                         }
-                )
-                (Decode.field "id" Mensam.Space.identifierDecoder)
-                (Decode.field "name" Decode.string)
-                (Decode.field "roles" <|
-                    Decode.list <|
-                        Decode.map4
-                            (\accessibility id name permissions ->
-                                { accessibility = accessibility
-                                , id = id
-                                , name = name
-                                , permissions = Set.fromList permissions
-                                }
-                            )
-                            (Decode.field "accessibility" Mensam.Space.accessibilityDecoder)
-                            (Decode.field "id" Decode.int)
-                            (Decode.field "name" Decode.string)
-                            (Decode.field "permissions" <| Decode.list Decode.string)
-                )
-                (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
-                (Decode.field "visibility" Mensam.Space.visibilityDecoder)
-                (Decode.field "your-role" Decode.int)
+                    )
+                    (Decode.field "id" Mensam.Space.identifierDecoder)
+                    (Decode.field "name" Decode.string)
+                    (Decode.field "roles" <|
+                        Decode.list <|
+                            Decode.map4
+                                (\accessibility id name permissions ->
+                                    { accessibility = accessibility
+                                    , id = id
+                                    , name = name
+                                    , permissions = Set.fromList permissions
+                                    }
+                                )
+                                (Decode.field "accessibility" Mensam.Space.accessibilityDecoder)
+                                (Decode.field "id" Decode.int)
+                                (Decode.field "name" Decode.string)
+                                (Decode.field "permissions" <| Decode.list Decode.string)
+                    )
+                    (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
+                    (Decode.field "visibility" Mensam.Space.visibilityDecoder)
+                    (Decode.field "your-role" <| Decode.nullable Decode.int)
 
 
 decodeBody400 : Decode.Decoder String

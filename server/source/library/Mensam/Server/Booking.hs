@@ -55,7 +55,7 @@ spaceView userIdentifier spaceIdentifier = do
         Selda..|| Selda.literal (MkPermissionSpaceViewSpace `S.member` permissions)
     pure dbSpace
   case maybeDbSpace of
-    Nothing -> undefined
+    Nothing -> undefined -- TODO: HTTP 404: Space not found.
     Just dbSpace -> do
       lift $ logInfo "Got space successfully."
       lift $ logDebug "Getting space roles."
@@ -77,12 +77,13 @@ spaceView userIdentifier spaceIdentifier = do
         pure spaceRoles
       lift $ logInfo "Got space roles successfully."
       lift $ logDebug "Looking up space role for requesting user."
-      spaceRoleIdentifier <-
-        (MkIdentifierSpaceRole . Selda.fromId @DbSpaceRole <$>) $
-          Selda.queryOne $
+      maybeSpaceRoleIdentifier <- do
+        dbMaybeSpaceRoleId <-
+          Selda.queryUnique $
             spaceUserGetRole
               (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
               (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
+        pure $ MkIdentifierSpaceRole . Selda.fromId @DbSpaceRole <$> dbMaybeSpaceRoleId
       lift $ logInfo "Got requesting user's space role successfully."
       pure
         MkSpaceView
@@ -91,7 +92,7 @@ spaceView userIdentifier spaceIdentifier = do
           , spaceViewTimezone = dbSpace_timezone dbSpace
           , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
           , spaceViewRoles = S.fromList spaceRoles
-          , spaceViewYourRole = spaceRoleIdentifier
+          , spaceViewYourRole = maybeSpaceRoleIdentifier
           }
 
 spaceListVisible ::

@@ -19,7 +19,7 @@ data SpaceView = MkSpaceView
   , spaceViewTimezone :: T.TZLabel
   , spaceViewVisibility :: VisibilitySpace
   , spaceViewRoles :: S.Set SpaceRole
-  , spaceViewYourRole :: IdentifierSpaceRole
+  , spaceViewYourRole :: Maybe IdentifierSpaceRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
