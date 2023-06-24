@@ -1,7 +1,9 @@
 = Changelog
 
 * API
-  ** Replace `permissions` with `your-role` in `/space/view` route.
+  ** Updated `/space/view` route.
+    *** Replace `permissions` with `your-role`.
+    *** Properly handle insufficient permission.
 
 == `0.0.1.0`
 

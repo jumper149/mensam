@@ -185,6 +185,7 @@ viewSpace ::
   , IsMember (WithStatus 200 ResponseSpaceView) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Insufficient permission.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -201,7 +202,10 @@ viewSpace auth eitherRequest =
           -- TODO: Here we can theoretically return a more accurate error
           logWarn "Failed to view space."
           respond $ WithStatus @500 ()
-        SeldaSuccess space -> do
+        SeldaSuccess Nothing -> do
+          logInfo "User not permitted to view space."
+          respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
+        SeldaSuccess (Just space) -> do
           logInfo "Viewed space."
           respond $ WithStatus @200 MkResponseSpaceView {responseSpaceViewSpace = space}
 

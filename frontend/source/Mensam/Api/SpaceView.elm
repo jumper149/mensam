@@ -19,6 +19,7 @@ type alias Request =
 
 type Response
     = Success { space : Mensam.Space.SpaceView }
+    | ErrorInsufficientPermission
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -73,6 +74,9 @@ responseResult httpResponse =
 
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err
+
+                403 ->
+                    Ok ErrorInsufficientPermission
 
                 status ->
                     Err <| Http.BadStatus status

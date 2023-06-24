@@ -40,11 +40,12 @@ spaceLookupId name = do
       lift $ logInfo "Looked up space successfully."
       pure $ Just $ MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
 
+-- | Already checks permissions.
 spaceView ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   IdentifierSpace ->
-  SeldaTransactionT m SpaceView
+  SeldaTransactionT m (Maybe SpaceView)
 spaceView userIdentifier spaceIdentifier = do
   lift $ logDebug $ "Get space info with identifier: " <> T.pack (show (spaceIdentifier, userIdentifier))
   permissions <- spaceUserPermissions spaceIdentifier userIdentifier
@@ -55,7 +56,7 @@ spaceView userIdentifier spaceIdentifier = do
         Selda..|| Selda.literal (MkPermissionSpaceViewSpace `S.member` permissions)
     pure dbSpace
   case maybeDbSpace of
-    Nothing -> undefined -- TODO: HTTP 404: Space not found.
+    Nothing -> pure Nothing
     Just dbSpace -> do
       lift $ logInfo "Got space successfully."
       lift $ logDebug "Getting space roles."
@@ -85,15 +86,16 @@ spaceView userIdentifier spaceIdentifier = do
               (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
         pure $ MkIdentifierSpaceRole . Selda.fromId @DbSpaceRole <$> dbMaybeSpaceRoleId
       lift $ logInfo "Got requesting user's space role successfully."
-      pure
-        MkSpaceView
-          { spaceViewId = MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
-          , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
-          , spaceViewTimezone = dbSpace_timezone dbSpace
-          , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
-          , spaceViewRoles = S.fromList spaceRoles
-          , spaceViewYourRole = maybeSpaceRoleIdentifier
-          }
+      pure $
+        Just
+          MkSpaceView
+            { spaceViewId = MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
+            , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
+            , spaceViewTimezone = dbSpace_timezone dbSpace
+            , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
+            , spaceViewRoles = S.fromList spaceRoles
+            , spaceViewYourRole = maybeSpaceRoleIdentifier
+            }
 
 spaceListVisible ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

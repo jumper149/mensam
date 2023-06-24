@@ -1025,6 +1025,12 @@ spaceView jwt model =
                 Ok (Mensam.Api.SpaceView.Success value) ->
                     MessagePure <| SetSpaceInfo value.space
 
+                Ok Mensam.Api.SpaceView.ErrorInsufficientPermission ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Insufficient permission to view this space" <|
+                                Mensam.Error.undefined
+
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|

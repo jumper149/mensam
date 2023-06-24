@@ -128,6 +128,7 @@ endpointSpaceView ::
         '[ WithStatus 200 Route.Api.Booking.ResponseSpaceView
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (StaticText "Insufficient permission.")
          , WithStatus 500 ()
          ]
     )

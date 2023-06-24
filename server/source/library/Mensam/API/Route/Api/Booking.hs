@@ -89,6 +89,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceView
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Insufficient permission.")
               , WithStatus 500 ()
               ]
   , routeSpaceList ::
