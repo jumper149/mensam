@@ -613,13 +613,30 @@ element model =
                                             Element.text "Abort"
                                     }
                                 , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessageEffect <| SubmitJoin
+                                    ([ Element.width Element.fill
+                                     , Element.padding 10
+                                     ]
+                                        ++ (case join.roleId of
+                                                Nothing ->
+                                                    [ Element.Background.color Mensam.Element.Color.dark.white
+                                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                                    ]
+
+                                                Just _ ->
+                                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                                    ]
+                                           )
+                                    )
+                                    { onPress =
+                                        case join.roleId of
+                                            -- TODO: Show a help text in this case.
+                                            Nothing ->
+                                                Nothing
+
+                                            Just _ ->
+                                                Just <| MessageEffect <| SubmitJoin
                                     , label =
                                         Element.el
                                             [ Element.centerX
