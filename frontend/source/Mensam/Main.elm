@@ -664,14 +664,32 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
-                Mensam.Screen.Space.JoinSpace ->
+                Mensam.Screen.Space.SubmitJoin ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpace screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.spaceJoin jwt screenModel
-                                    )
+                                    case screenModel.popup of
+                                        Just (Mensam.Screen.Space.PopupJoin { roleId }) ->
+                                            case roleId of
+                                                Nothing ->
+                                                    update (ReportError errorScreen) <| MkModel model
+
+                                                Just justRoleId ->
+                                                    ( MkModel model
+                                                    , Platform.Cmd.map
+                                                        (\msg ->
+                                                            Messages
+                                                                [ MessageSpace msg
+                                                                , MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshDesks
+                                                                ]
+                                                        )
+                                                      <|
+                                                        Mensam.Screen.Space.spaceJoin jwt screenModel.space justRoleId
+                                                    )
+
+                                        _ ->
+                                            update (ReportError errorScreen) <| MkModel model
 
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model

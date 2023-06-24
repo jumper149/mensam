@@ -12,6 +12,7 @@
 
 * Backend.
   ** [ ] Send email on successful reservations.
+  ** [ ] `/space/view` route should return speficific error, when the requesting user is not a member of the space.
 
 * Frontend.
   ** [x] Allow setting the end time of a reservation.

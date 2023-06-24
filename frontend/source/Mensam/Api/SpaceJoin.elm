@@ -4,14 +4,15 @@ import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
+import Mensam.NameOrIdentifier
 import Mensam.Space
 import Url.Builder
 
 
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
-    , role : String
-    , space : Mensam.Space.Identifier
+    , role : Mensam.NameOrIdentifier.NameOrIdentifier String Int
+    , space : Mensam.NameOrIdentifier.NameOrIdentifier Mensam.Space.Name Mensam.Space.Identifier
     }
 
 
@@ -93,24 +94,10 @@ encodeBody : Request -> Encode.Value
 encodeBody body =
     Encode.object
         [ ( "role"
-          , Encode.object
-                [ ( "tag"
-                  , Encode.string "name"
-                  )
-                , ( "value"
-                  , Encode.string body.role
-                  )
-                ]
+          , Mensam.NameOrIdentifier.encode Encode.string Encode.int body.role
           )
         , ( "space"
-          , Encode.object
-                [ ( "tag"
-                  , Encode.string "identifier"
-                  )
-                , ( "value"
-                  , Mensam.Space.identifierEncode body.space
-                  )
-                ]
+          , Mensam.NameOrIdentifier.encode Mensam.Space.nameEncode Mensam.Space.identifierEncode body.space
           )
         ]
 

@@ -1,5 +1,6 @@
 module Mensam.Screen.Space exposing (..)
 
+import Dict
 import Element
 import Element.Background
 import Element.Events
@@ -19,6 +20,7 @@ import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
+import Mensam.NameOrIdentifier
 import Mensam.Reservation
 import Mensam.Space
 import Mensam.Time
@@ -31,6 +33,14 @@ import Time
 type alias Model =
     { space : Mensam.Space.Identifier
     , name : Mensam.Space.Name
+    , roles :
+        Dict.Dict
+            String
+            { accessibility : Mensam.Space.Accessibility
+            , id : Int
+            , name : String
+            , permissions : Set.Set String
+            }
     , timezone : Time.Zone
     , timezoneIdentifier : Mensam.Time.TimezoneIdentifier
     , visibility : Mensam.Space.Visibility
@@ -71,6 +81,9 @@ type PopupModel
     = PopupCreate
         { name : Mensam.Desk.Name
         }
+    | PopupJoin
+        { roleId : Maybe Int
+        }
     | PopupReservation
         { desk :
             { id : Mensam.Desk.Identifier
@@ -93,6 +106,7 @@ init : { id : Mensam.Space.Identifier, time : { now : Time.Posix, zone : Time.Zo
 init args =
     { space = args.id
     , name = Mensam.Space.MkName ""
+    , roles = Dict.empty
     , timezone = Time.utc
     , timezoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
     , visibility = Mensam.Space.MkVisibilityHidden
@@ -155,26 +169,31 @@ element model =
                     , Element.padding 10
                     , Element.spacing 30
                     ]
-                    [ Element.el
-                        [ Element.alignRight
-                        , Element.padding 10
-                        , Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Events.onClick <| MessageEffect <| JoinSpace
-                        ]
-                      <|
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                            , Element.Font.size 17
-                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                            ]
-                        <|
-                            Element.text "Join space"
+                    [ case model.yourRole of
+                        Nothing ->
+                            Element.el
+                                [ Element.alignRight
+                                , Element.padding 10
+                                , Element.Background.color Mensam.Element.Color.bright.yellow
+                                , Element.Font.color Mensam.Element.Color.dark.black
+                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                , Element.Events.onClick <| MessagePure <| OpenDialogToJoin
+                                ]
+                            <|
+                                Element.el
+                                    [ Element.centerX
+                                    , Element.centerY
+                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                    , Element.Font.size 17
+                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                    ]
+                                <|
+                                    Element.text "Join space"
+
+                        Just _ ->
+                            Element.none
                     , Element.el
                         [ Element.alignRight
                         , Element.padding 10
@@ -524,6 +543,102 @@ element model =
                                 ]
                             ]
 
+                Just (PopupJoin join) ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Join Space"
+                            , let
+                                selectedRole =
+                                    Maybe.andThen
+                                        (\roleId ->
+                                            Dict.get roleId <|
+                                                Dict.fromList <|
+                                                    List.map (\role -> ( role.id, role )) <|
+                                                        Dict.values model.roles
+                                        )
+                                        join.roleId
+
+                                selectedRoleInfo =
+                                    case selectedRole of
+                                        Nothing ->
+                                            { name = ""
+                                            , permissions = Set.toList Set.empty
+                                            }
+
+                                        Just x ->
+                                            { name = x.name
+                                            , permissions = Set.toList x.permissions
+                                            }
+                              in
+                              Element.text <| selectedRoleInfo.name ++ ": " ++ String.join ", " selectedRoleInfo.permissions
+                            , let
+                                roleElement =
+                                    \role ->
+                                        Element.el
+                                            [ Element.width Element.fill
+                                            ]
+                                        <|
+                                            Element.text role.name
+                              in
+                              Element.column
+                                [ Element.width Element.fill
+                                ]
+                              <|
+                                List.map roleElement <|
+                                    Dict.values model.roles
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessagePure <| CloseDialogToJoin
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Abort"
+                                    }
+                                , Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessageEffect <| SubmitJoin
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Submit"
+                                    }
+                                ]
+                            ]
+
                 Just (PopupCreate create) ->
                     Just <|
                         Element.column
@@ -618,6 +733,8 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
+    | OpenDialogToJoin
+    | CloseDialogToJoin
     | OpenDialogToCreate
     | CloseDialogToCreate
     | EnterDeskName Mensam.Desk.Name
@@ -645,7 +762,9 @@ updatePure message model =
     case message of
         SetSpaceInfo (Mensam.Space.MkSpaceView space) ->
             { model
-                | name = space.name
+                | space = space.id
+                , name = space.name
+                , roles = space.roles
                 , timezone = Mensam.Time.timezone space.timezone
                 , timezoneIdentifier = space.timezone
                 , visibility = space.visibility
@@ -657,6 +776,12 @@ updatePure message model =
 
         SetSelected selection ->
             { model | selected = selection }
+
+        OpenDialogToJoin ->
+            { model | popup = Just <| PopupJoin { roleId = Nothing } }
+
+        CloseDialogToJoin ->
+            { model | popup = Nothing }
 
         OpenDialogToCreate ->
             { model | popup = Just <| PopupCreate { name = Mensam.Desk.MkName "" } }
@@ -870,7 +995,7 @@ type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshSpace
     | RefreshDesks
-    | JoinSpace
+    | SubmitJoin
     | SubmitCreate
     | SubmitReservation
 
@@ -914,9 +1039,9 @@ spaceView jwt model =
                     MessageEffect <| ReportError <| Mensam.Error.http error
 
 
-spaceJoin : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
-spaceJoin jwt model =
-    Mensam.Api.SpaceJoin.request { jwt = jwt, role = "Member", space = model.space } <|
+spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Int -> Cmd Message
+spaceJoin jwt spaceId roleId =
+    Mensam.Api.SpaceJoin.request { jwt = jwt, role = Mensam.NameOrIdentifier.Identifier roleId, space = Mensam.NameOrIdentifier.Identifier spaceId } <|
         \result ->
             case result of
                 Ok Mensam.Api.SpaceJoin.Success ->
