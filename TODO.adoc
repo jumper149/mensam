@@ -12,11 +12,10 @@
 
 * Backend.
   ** [ ] Send email on successful reservations.
-  ** [ ] `/space/view` route should return speficific error, when the requesting user is not a member of the space.
+  ** [x] `/space/view` route should return speficific error, when the requesting user is not a member of the space.
+  ** [ ] `/space/view` route should return 404 when there is no such space.
 
 * Frontend.
-  ** [x] Allow setting the end time of a reservation.
-  ** [x] Join space as member with a single click.
   ** [ ] Improve SVG time picker.
   ** [ ] Terms and Conditions check during registration.
   ** [ ] Add loading screen to HTML wrapper for frontend.
