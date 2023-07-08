@@ -194,6 +194,7 @@ library
     , Control.Monad.Logger.OrphanInstances
     , Data.Time.Zones.All.OrphanInstances
     , Deriving.Aeson.OrphanInstances
+    , Elm
     , Servant.Auth.OrphanInstances
     , Servant.Auth.JWT.WithSession
     , System.Posix.Signals.Patterns
