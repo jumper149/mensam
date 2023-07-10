@@ -11,8 +11,10 @@ import Mensam.Server.Database.Migration
 import Control.Monad.Catch
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
+import Control.Monad.Logger.OrphanInstances ()
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
+import Control.Monad.Trans.Compose.Transparent
 import Control.Monad.Trans.Control
 import Control.Monad.Trans.Control.Identity
 import Control.Monad.Trans.Reader
@@ -30,10 +32,6 @@ newtype SeldaPoolT m a = SeldaPoolT {unSeldaPoolT :: ReaderT SeldaPoolContext m 
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
   deriving newtype (MonadIO)
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
-  deriving newtype
-    ( -- | TODO: We shouldn't need this instance.
-      MonadLogger
-    )
 
 instance (MonadLogger m, MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaPoolT m) where
   runSeldaTransactionT tma = do
@@ -108,15 +106,23 @@ runSeldaPoolT tma = do
       else do
         lift $ logDebug "SQLite file doesn't exist."
         lift $ logInfo "Creating new SQLite database file."
-        createDatabase
+        runComposableSeldaPoolT createDatabase
     lift $ logDebug "Updating database by migrating to the expected schema."
-    runSeldaTransactionT migrateDatabase >>= \case
-      SeldaFailure err -> do
-        logError $ "Failed database migration: " <> T.pack (show err)
-        error "Outdated database."
-      SeldaSuccess () -> do
-        logInfo "Database migration was successful."
+    runComposableSeldaPoolT $
+      runSeldaTransactionT migrateDatabase >>= \case
+        SeldaFailure err -> do
+          logError $ "Failed database migration: " <> T.pack (show err)
+          error "Outdated database."
+        SeldaSuccess () -> do
+          logInfo "Database migration was successful."
     tma
+ where
+  runComposableSeldaPoolT :: Monad m => ComposeT SeldaPoolT TransparentT m a -> SeldaPoolT m a
+  runComposableSeldaPoolT ctma = liftWithIdentity $ \runT ->
+    runTransparentT . lift . runT . mapSeldaPoolT runTransparentT $ deComposeT ctma
+   where
+    mapSeldaPoolT :: (m a -> n b) -> SeldaPoolT m a -> SeldaPoolT n b
+    mapSeldaPoolT f = SeldaPoolT . mapReaderT f . unSeldaPoolT
 
 type SeldaPoolContext :: Type
 data SeldaPoolContext = MkSeldaPoolContext
