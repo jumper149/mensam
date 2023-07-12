@@ -37,7 +37,7 @@
         pkgs.elmPackages.elm-format
         pkgs.elmPackages.elm-language-server
         pkgs.elmPackages.elm-review
-        pkgs.haskell.packages.ghc926.elm2nix
+        pkgs.haskellPackages.elm2nix
         pkgs.nodePackages.uglify-js
       ];
     };
