@@ -28,8 +28,9 @@ handler segments = do
       H.head $ do
         meta ! charset "UTF-8"
         meta ! name "application-name" ! content "Mensam"
+        meta ! name "color-scheme" ! content "dark"
         meta ! name "mobile-web-app-capable" ! content "yes"
-        meta ! name "theme-color" ! content "black"
+        meta ! name "theme-color" ! content "#f0c674"
         meta ! name "viewport" ! content "width=device-width, height=device-height, initial-scale=1"
         H.title "Mensam"
         link
