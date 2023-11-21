@@ -1,9 +1,15 @@
 = Changelog
 
+== `0.0.2.0`
+
 * API
   ** Updated `/space/view` route.
     *** Replace `permissions` with `your-role`.
     *** Properly handle insufficient permission.
+* Frontend
+  ** "Join Space" button is now hidden after joining.
+  ** Add mobile-web-app capability flag.
+     After adding the website to your phone's home screen the URL bar should now be hidden.
 
 == `0.0.1.0`
 
