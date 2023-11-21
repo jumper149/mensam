@@ -27,8 +27,9 @@ handler segments = do
     docTypeHtml $ do
       H.head $ do
         meta ! charset "UTF-8"
-        meta ! name "mobile-web-app-capable" ! content "yes"
         meta ! name "viewport" ! content "width=device-width, height=device-height, initial-scale=1"
+        meta ! name "mobile-web-app-capable" ! content "yes"
+        meta ! name "theme-color" ! content "black"
         H.title "Mensam"
         link
           ! rel "icon"
