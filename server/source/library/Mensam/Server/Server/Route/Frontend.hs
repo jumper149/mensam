@@ -49,14 +49,16 @@ handler segments = do
           ! sizes "512x512"
           ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
         link
+          ! rel "stylesheet"
+          ! type_ "text/css"
+          ! hrefWithDepth baseUrl depth "static/fonts.css"
+        meta ! name "apple-mobile-web-app-capable" ! content "yes"
+        meta ! name "apple-mobile-web-app-status-bar-style" ! content "black"
+        link
           ! rel "apple-touch-icon"
           ! type_ "image/png"
           ! sizes "512x512"
           ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
-        link
-          ! rel "stylesheet"
-          ! type_ "text/css"
-          ! hrefWithDepth baseUrl depth "static/fonts.css"
         script ! src (withDepth baseUrl depth "static/frontend.js") $ ""
       body $ do
         H.div ! H.A.id "mensam-frontend" $ ""
