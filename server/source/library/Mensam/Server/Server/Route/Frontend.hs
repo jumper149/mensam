@@ -30,7 +30,7 @@ handler segments = do
         meta ! name "application-name" ! content "Mensam"
         meta ! name "color-scheme" ! content "dark"
         meta ! name "mobile-web-app-capable" ! content "yes"
-        meta ! name "theme-color" ! content "#f0c674"
+        meta ! name "theme-color" ! content "#282a2e"
         meta ! name "viewport" ! content "width=device-width, height=device-height, initial-scale=1"
         H.title "Mensam"
         link
