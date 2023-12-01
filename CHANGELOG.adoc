@@ -1,5 +1,9 @@
 = Changelog
 
+== `0.0.2.3`
+
+* Set a dark gray theme color.
+
 == `0.0.2.2`
 
 * Set a yellowish theme color and dark color scheme.
