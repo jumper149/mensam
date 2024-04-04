@@ -148,10 +148,24 @@ userSessionValidate identifier = do
     Nothing -> do
       lift $ logInfo "Session validation failed. Session does not exist."
       pure SessionInvalid
-    Just _dbSession -> do
+    Just dbSession -> do
+      -- TODO: Currently the session expiration is checked twice.
+      --       Once by servant-auth and once in this following piece of code.
+      --       For optimization the following code could be removed.
       lift $ logDebug "Queried session from database for validation. Checking whether session is still valid."
-      lift $ logInfo "Session validation succeeded."
-      pure SessionValid
+      case dbSession_time_expired dbSession of
+        Nothing -> do
+          lift $ logInfo "Session validation succeeded. Session does not expire."
+          pure SessionValid
+        Just expirationTime -> do
+          currentTime <- liftIO T.getCurrentTime
+          if currentTime >= expirationTime
+            then do
+              lift $ logInfo "Session validation failed. Session has expired."
+              pure SessionInvalid
+            else do
+              lift $ logInfo "Session validation succeeded. Session has not yet expired."
+              pure SessionValid
 
 userSessionGet ::
   (MonadLogger m, MonadSeldaPool m) =>
