@@ -229,6 +229,7 @@ element model =
                             cell =
                                 Element.el
                                     [ Element.height <| Element.px 40
+                                    , Element.width Element.fill
                                     , Element.padding 10
                                     ]
                         in
@@ -242,7 +243,7 @@ element model =
                                             []
                                         <|
                                             Element.text "ID"
-                          , width = Element.px 100
+                          , width = Element.px 40
                           , view =
                                 \n x ->
                                     Element.el
@@ -271,6 +272,53 @@ element model =
                                             <|
                                                 Element.text <|
                                                     Mensam.Desk.identifierToString x.desk.id
+                          }
+                        , { header =
+                                Element.el
+                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                    ]
+                                <|
+                                    cell <|
+                                        Element.el
+                                            []
+                                        <|
+                                            Element.text "Reservations"
+                          , width = Element.px 120
+                          , view =
+                                \n x ->
+                                    Element.el
+                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
+                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                        , let
+                                            alpha =
+                                                case model.selected of
+                                                    Nothing ->
+                                                        0.2
+
+                                                    Just m ->
+                                                        if m == n then
+                                                            0.4
+
+                                                        else
+                                                            0.2
+                                          in
+                                          Element.Background.color (Element.rgba 0 0 0 alpha)
+                                        ]
+                                    <|
+                                        cell <|
+                                            Element.el
+                                                [ Element.height Element.fill
+                                                , Element.width <| Element.maximum 100 <| Element.fill
+                                                ]
+                                            <|
+                                                let
+                                                    date =
+                                                        case model.modelDateBegin of
+                                                            Mensam.Widget.Date.MkModel m ->
+                                                                m.selected
+                                                in
+                                                visualizeReservations model.timezone date x.reservations
                           }
                         , { header =
                                 Element.el
@@ -716,6 +764,343 @@ element model =
                                 ]
                             ]
         }
+
+
+visualizeReservations :
+    Time.Zone
+    -> Mensam.Time.Date
+    ->
+        List
+            { desk : Mensam.Desk.Identifier
+            , id : Mensam.Reservation.Identifier
+            , status : String
+            , timeBegin : Time.Posix
+            , timeEnd : Time.Posix
+            , user : Int
+            }
+    -> Element.Element a
+visualizeReservations timezone date reservations =
+    -- TODO: This function is using a conversion to Time.Posix to check for overlapping time. Maybe this is actually fine, but I'm not quite sure at the time of writing.
+    let
+        timePeriods =
+            [ ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 0
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 0
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 1
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 1
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 2
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 2
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 3
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 3
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 4
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 4
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 5
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 5
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 6
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 6
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 7
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 7
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 8
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 8
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 9
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 9
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 10
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 10
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 11
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 11
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 12
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 12
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 13
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 13
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 14
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 14
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 15
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 15
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 16
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 16
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 17
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 17
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 18
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 18
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 19
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 19
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 20
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 20
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 21
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 21
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 22
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 22
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            , ( Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 23
+                    , minute = Mensam.Time.MkMinute 0
+                    , second = Mensam.Time.MkSecond 0
+                    }
+              , Mensam.Time.MkTime
+                    { hour = Mensam.Time.MkHour 23
+                    , minute = Mensam.Time.MkMinute 59
+                    , second = Mensam.Time.MkSecond 59
+                    }
+              )
+            ]
+
+        timeToPosix time =
+            Mensam.Time.toPosix timezone <| Mensam.Time.MkTimestamp { date = date, time = time }
+
+        timeToPosixPeriod =
+            \( t1, t2 ) -> ( timeToPosix t1, timeToPosix t2 )
+
+        posixPeriods =
+            List.map timeToPosixPeriod timePeriods
+
+        -- TODO: Are these checks fine with "strictly smaller/greater" (`<` and `>`)?
+        checkPeriodIsFree =
+            \( t1, t2 ) ->
+                List.all
+                    (\reservation ->
+                        (Time.posixToMillis t1
+                            < Time.posixToMillis reservation.timeEnd
+                            && Time.posixToMillis t2
+                            < Time.posixToMillis reservation.timeBegin
+                        )
+                            || (Time.posixToMillis t1
+                                    > Time.posixToMillis reservation.timeEnd
+                                    && Time.posixToMillis t2
+                                    > Time.posixToMillis reservation.timeBegin
+                               )
+                    )
+                    reservations
+
+        freePeriods =
+            List.map checkPeriodIsFree posixPeriods
+
+        freeToElement =
+            \x ->
+                Element.el
+                    [ Element.height Element.fill
+                    , Element.width Element.fill
+                    , Element.Background.color <|
+                        if x then
+                            Mensam.Element.Color.bright.green
+
+                        else
+                            Mensam.Element.Color.bright.red
+                    ]
+                <|
+                    Element.none
+    in
+    Element.row
+        [ Element.height Element.fill
+        , Element.width Element.fill
+        , Element.paddingXY 0 6
+        ]
+    <|
+        List.map freeToElement freePeriods
 
 
 type Message

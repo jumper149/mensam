@@ -1,5 +1,8 @@
 = Changelog
 
+* Frontend
+  ** Add a primitive indicator to visualize reserved time periods.
+
 == `0.0.2.3`
 
 * Set a dark gray theme color.
