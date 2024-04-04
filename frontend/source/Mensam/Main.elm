@@ -749,6 +749,14 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+        MessageSpace (Mensam.Screen.Space.Messages ms) ->
+            case model.screen of
+                ScreenSpace screenModel ->
+                    update (Messages <| List.map MessageSpace ms) <| MkModel model
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
 
 headerMessage : Model -> Mensam.Element.Header.Message -> Message
 headerMessage (MkModel model) message =

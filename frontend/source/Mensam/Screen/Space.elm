@@ -1106,6 +1106,7 @@ visualizeReservations timezone date reservations =
 type Message
     = MessagePure MessagePure
     | MessageEffect MessageEffect
+    | Messages (List Message) -- TODO: Maybe this recursion should be in a separate data type.
 
 
 type MessagePure
@@ -1571,7 +1572,10 @@ reservationCreate jwt model { desk } =
         \result ->
             case result of
                 Ok (Mensam.Api.ReservationCreate.Success _) ->
-                    MessagePure <| ViewDetailed Nothing
+                    Messages
+                        [ MessagePure <| ViewDetailed Nothing
+                        , MessageEffect RefreshDesks
+                        ]
 
                 Ok Mensam.Api.ReservationCreate.ErrorTimeUnavailable ->
                     MessageEffect <|
