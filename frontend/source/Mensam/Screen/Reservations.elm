@@ -10,7 +10,6 @@ import Json.Decode as Decode
 import Mensam.Api.ReservationList
 import Mensam.Auth.Bearer
 import Mensam.Desk
-import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error

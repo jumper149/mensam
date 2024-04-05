@@ -763,7 +763,7 @@ update message (MkModel model) =
 
         MessageSpace (Mensam.Screen.Space.Messages ms) ->
             case model.screen of
-                ScreenSpace screenModel ->
+                ScreenSpace _ ->
                     update (Messages <| List.map MessageSpace ms) <| MkModel model
 
                 _ ->
