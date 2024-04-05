@@ -27,6 +27,7 @@ type Message
     | ClickHamburger
     | SignIn
     | SignOut
+    | YourReservations
     | ClickErrors
 
 
@@ -119,7 +120,7 @@ elementSignInOut unfoldDropDownMenu authenticated =
                                 ]
                             <|
                                 [ Element.el
-                                    [ Element.paddingXY 15 0
+                                    [ Element.paddingEach { top = 0, bottom = 20, left = 15, right = 15 }
                                     , Element.centerX
                                     , Element.centerY
                                     , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
@@ -132,6 +133,17 @@ elementSignInOut unfoldDropDownMenu authenticated =
 
                                             Just { name } ->
                                                 Mensam.User.nameToString name
+                                , Element.el
+                                    [ Element.paddingXY 10 10
+                                    , Element.centerX
+                                    , Element.centerY
+                                    , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
+                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                    , Element.Events.onClick <| YourReservations
+                                    ]
+                                  <|
+                                    Element.text "Your Reservations"
                                 , Element.el
                                     [ Element.paddingXY 10 10
                                     , Element.centerX

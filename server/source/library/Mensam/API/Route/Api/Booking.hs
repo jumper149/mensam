@@ -181,6 +181,23 @@ data Routes route = Routes
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
+  , routeReservationList ::
+      route
+        :- Summary "List Reservations"
+          :> Description
+              "View all of your desk reservations.\n"
+          :> "reservation"
+          :> "list"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationList
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseReservationList
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 500 ()
+              ]
   }
   deriving stock (Generic)
 
@@ -362,3 +379,33 @@ newtype ResponseReservationCancel = MkResponseReservationCancel
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCancel") ResponseReservationCancel
+
+type RequestReservationList :: Type
+data RequestReservationList = MkRequestReservationList
+  { requestReservationListTimeBegin :: Maybe T.UTCTime
+  , requestReservationListTimeEnd :: Maybe T.UTCTime
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestReservationList") RequestReservationList
+
+type ReservationWithInfo :: Type
+data ReservationWithInfo = MkReservationWithInfo
+  { reservationWithInfoReservation :: Reservation
+  , reservationWithInfoDesk :: Desk
+  , reservationWithInfoSpace :: Space
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "reservationWithInfo") ReservationWithInfo
+
+type ResponseReservationList :: Type
+newtype ResponseReservationList = MkResponseReservationList
+  { responseReservationListReservations :: [ReservationWithInfo]
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseReservationList") ResponseReservationList

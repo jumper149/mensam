@@ -36,6 +36,7 @@ handler =
     , routeDeskList = listDesks
     , routeReservationCreate = createReservation
     , routeReservationCancel = cancelReservation
+    , routeReservationList = listReservations
     }
 
 createSpace ::
@@ -350,7 +351,7 @@ createReservation auth eitherRequest = do
                 Nothing -> undefined
                 Just deskId -> pure deskId
             Identifier deskId -> pure deskId
-        desk <- deskGet deskIdentifier
+        desk <- deskGetFromId deskIdentifier
         permissions <- spaceUserPermissions (deskSpace desk) (userAuthenticatedId authenticated)
         if MkPermissionSpaceCreateReservation `S.member` permissions
           then
@@ -392,7 +393,7 @@ cancelReservation auth eitherRequest = do
       seldaResult <- runSeldaTransactionT $ do
         reservation <- reservationGet reservationIdentifier
         permissions <- do
-          desk <- deskGet $ reservationDesk reservation
+          desk <- deskGetFromId $ reservationDesk reservation
           let spaceIdentifier :: IdentifierSpace = deskSpace desk
           spaceUserPermissions spaceIdentifier $ userAuthenticatedId authenticated
         if MkPermissionSpaceCancelReservation `S.member` permissions
@@ -407,6 +408,42 @@ cancelReservation auth eitherRequest = do
         SeldaSuccess () -> do
           logInfo "Cancelled reservation."
           respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
+
+listReservations ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseReservationList) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestReservationList ->
+  m (Union responses)
+listReservations auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to list a user's reservations: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        reservations <- reservationListUser (userAuthenticatedId authenticated) (requestReservationListTimeBegin request) (requestReservationListTimeEnd request)
+        for reservations $ \reservation -> do
+          desk <- deskGetFromId $ reservationDesk reservation
+          space <- spaceGetFromId $ deskSpace desk
+          pure
+            MkReservationWithInfo
+              { reservationWithInfoReservation = reservation
+              , reservationWithInfoDesk = desk
+              , reservationWithInfoSpace = space
+              }
+      case seldaResult of
+        SeldaFailure _err -> do
+          -- TODO: Here we can theoretically return a more accurate error
+          logWarn "Failed to list a user's reservations."
+          respond $ WithStatus @500 ()
+        SeldaSuccess reservationsWithInfo -> do
+          logInfo "Listed user's reservations."
+          respond $ WithStatus @200 MkResponseReservationList {responseReservationListReservations = reservationsWithInfo}
 
 handleBadRequestBody ::
   ( MonadLogger m

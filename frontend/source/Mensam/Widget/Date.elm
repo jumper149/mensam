@@ -17,6 +17,11 @@ type Model
         }
 
 
+unModel : Model -> { year : Mensam.Time.Year, month : Mensam.Time.Month, selected : Mensam.Time.Date }
+unModel (MkModel value) =
+    value
+
+
 type Message
     = PreviousMonth
     | NextMonth

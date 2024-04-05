@@ -17,6 +17,7 @@ import Mensam.Flags
 import Mensam.Screen.Landing
 import Mensam.Screen.Login
 import Mensam.Screen.Register
+import Mensam.Screen.Reservations
 import Mensam.Screen.Space
 import Mensam.Screen.Spaces
 import Mensam.Space
@@ -64,6 +65,7 @@ type Screen
     | ScreenLogin Mensam.Screen.Login.Model
     | ScreenSpaces Mensam.Screen.Spaces.Model
     | ScreenSpace Mensam.Screen.Space.Model
+    | ScreenReservations Mensam.Screen.Reservations.Model
 
 
 type Route
@@ -72,6 +74,7 @@ type Route
     | RouteRegister
     | RouteSpaces
     | RouteSpace Mensam.Space.Identifier
+    | RouteReservations
 
 
 routeToUrl : Route -> String
@@ -91,6 +94,9 @@ routeToUrl route =
 
         RouteSpace identifier ->
             Url.Builder.absolute [ "space", Mensam.Space.identifierToString identifier ] []
+
+        RouteReservations ->
+            Url.Builder.absolute [ "reservations" ] []
 
 
 routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
@@ -123,6 +129,10 @@ routeToModelUpdate route (MkModel model) =
             <|
                 MkModel { model | screen = ScreenSpace <| Mensam.Screen.Space.init { id = identifier, time = { now = model.time.now, zone = model.time.zone } } }
 
+        RouteReservations ->
+            update (MessageReservations <| Mensam.Screen.Reservations.MessageEffect Mensam.Screen.Reservations.RefreshReservations) <|
+                MkModel { model | screen = ScreenReservations <| Mensam.Screen.Reservations.init { time = { now = model.time.now, zone = model.time.zone } } }
+
 
 urlParser : Url.Parser.Parser (Route -> c) c
 urlParser =
@@ -130,6 +140,7 @@ urlParser =
         [ Url.Parser.map RouteLanding <| Url.Parser.top
         , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
         , Url.Parser.map RouteRegister <| Url.Parser.s "register"
+        , Url.Parser.map RouteReservations <| Url.Parser.s "reservations"
         , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
         , Url.Parser.map RouteSpace <| Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         ]
@@ -197,6 +208,7 @@ type Message
     | MessageLogin Mensam.Screen.Login.Message
     | MessageSpaces Mensam.Screen.Spaces.Message
     | MessageSpace Mensam.Screen.Space.Message
+    | MessageReservations Mensam.Screen.Reservations.Message
 
 
 type MessageAuth
@@ -757,6 +769,34 @@ update message (MkModel model) =
                 _ ->
                     update (ReportError errorScreen) <| MkModel model
 
+        MessageReservations (Mensam.Screen.Reservations.MessagePure m) ->
+            case model.screen of
+                ScreenReservations screenModel ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenReservations <| Mensam.Screen.Reservations.updatePure m screenModel }
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
+        MessageReservations (Mensam.Screen.Reservations.MessageEffect m) ->
+            case m of
+                Mensam.Screen.Reservations.ReportError err ->
+                    update (ReportError err) <| MkModel model
+
+                Mensam.Screen.Reservations.RefreshReservations ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenReservations screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageReservations <| Mensam.Screen.Reservations.reservationList { jwt = jwt, model = screenModel }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
 
 headerMessage : Model -> Mensam.Element.Header.Message -> Message
 headerMessage (MkModel model) message =
@@ -784,6 +824,9 @@ headerMessage (MkModel model) message =
 
         Mensam.Element.Header.SignOut ->
             Auth Logout
+
+        Mensam.Element.Header.YourReservations ->
+            SetUrl RouteReservations
 
         Mensam.Element.Header.ClickErrors ->
             if model.viewErrors then
@@ -815,6 +858,9 @@ headerContent (MkModel model) =
 
             ScreenSpace screenModel ->
                 Just <| Mensam.Space.nameToString screenModel.name
+
+            ScreenReservations _ ->
+                Just "Your Reservations"
     }
 
 
@@ -853,6 +899,9 @@ view (MkModel model) =
 
                     ScreenSpace screenModel ->
                         Mensam.Element.screen MessageSpace <| Mensam.Screen.Space.element screenModel
+
+                    ScreenReservations screenModel ->
+                        Mensam.Element.screen MessageReservations <| Mensam.Screen.Reservations.element screenModel
             , Mensam.Element.Footer.element <| footerContent
             ]
 

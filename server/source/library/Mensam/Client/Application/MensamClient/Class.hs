@@ -188,6 +188,17 @@ endpointReservationCancel ::
          , WithStatus 500 ()
          ]
     )
+endpointReservationList ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestReservationList ->
+  ClientM
+    ( Union
+        [ WithStatus 200 Route.Api.Booking.ResponseReservationList
+        , WithStatus 400 ErrorParseBodyJson
+        , WithStatus 401 ErrorBearerAuth
+        , WithStatus 500 ()
+        ]
+    )
 Route.Api.Routes
   { Route.Api.routeOpenApi =
     Route.Api.OpenApi.Routes
@@ -211,5 +222,6 @@ Route.Api.Routes
       , Route.Api.Booking.routeDeskList = endpointDeskList
       , Route.Api.Booking.routeReservationCreate = endpointReservationCreate
       , Route.Api.Booking.routeReservationCancel = endpointReservationCancel
+      , Route.Api.Booking.routeReservationList = endpointReservationList
       }
   } = client $ Proxy @(NamedRoutes Route.Api.Routes)

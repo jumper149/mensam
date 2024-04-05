@@ -1,6 +1,9 @@
 = Changelog
 
+* API
+  ** Add `/reservation/list` route.
 * Frontend
+  ** Add a new page to view existing reservations
   ** Add a primitive indicator to visualize reserved time periods.
 
 == `0.0.2.3`

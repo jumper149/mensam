@@ -72,6 +72,11 @@ nameEncode =
     Encode.string << nameToString
 
 
+nameDecoder : Decode.Decoder Name
+nameDecoder =
+    Decode.map MkName Decode.string
+
+
 type Visibility
     = MkVisibilityVisible
     | MkVisibilityHidden
