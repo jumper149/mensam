@@ -100,7 +100,7 @@ element model =
                         let
                             cell =
                                 Element.el
-                                    [ Element.height <| Element.px 40
+                                    [ Element.height <| Element.px 50
                                     , Element.padding 10
                                     ]
                         in
@@ -113,8 +113,8 @@ element model =
                                         Element.el
                                             []
                                         <|
-                                            Element.text "Start"
-                          , width = Element.px 100
+                                            Element.text "Time"
+                          , width = Element.px 160
                           , view =
                                 \n entry ->
                                     Element.el
@@ -138,53 +138,35 @@ element model =
                                         ]
                                     <|
                                         cell <|
-                                            Element.el
-                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                            <|
-                                                Element.text <|
-                                                    Mensam.Time.timestampToString <|
-                                                        -- TODO: Use space's timezone!
-                                                        Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeBegin
-                          }
-                        , { header =
-                                Element.el
-                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                    ]
-                                <|
-                                    cell <|
-                                        Element.el
-                                            []
-                                        <|
-                                            Element.text "Space"
-                          , width = Element.fill
-                          , view =
-                                \n entry ->
-                                    Element.el
-                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
-                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                        , let
-                                            alpha =
-                                                case model.selected of
-                                                    Nothing ->
-                                                        0.2
-
-                                                    Just m ->
-                                                        if m == n then
-                                                            0.4
-
-                                                        else
-                                                            0.2
-                                          in
-                                          Element.Background.color (Element.rgba 0 0 0 alpha)
-                                        ]
-                                    <|
-                                        cell <|
-                                            Element.el
-                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                            <|
-                                                Element.text <|
-                                                    Mensam.Space.nameToString entry.space.name
+                                            Element.column
+                                                [ Element.width <| Element.maximum 160 <| Element.fill ]
+                                                [ Element.row [ Element.alignRight, Element.spacing 3 ]
+                                                    [ Element.el
+                                                        [ Element.Font.size 10
+                                                        , Element.alignBottom
+                                                        , Element.padding 1
+                                                        ]
+                                                      <|
+                                                        Element.text "from"
+                                                    , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
+                                                        Element.text <|
+                                                            Mensam.Time.timestampToString <|
+                                                                Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeBegin
+                                                    ]
+                                                , Element.row [ Element.alignRight, Element.spacing 3 ]
+                                                    [ Element.el
+                                                        [ Element.Font.size 10
+                                                        , Element.alignBottom
+                                                        , Element.padding 1
+                                                        ]
+                                                      <|
+                                                        Element.text "to"
+                                                    , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
+                                                        Element.text <|
+                                                            Mensam.Time.timestampToString <|
+                                                                Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeEnd
+                                                    ]
+                                                ]
                           }
                         , { header =
                                 Element.el
@@ -220,11 +202,33 @@ element model =
                                         ]
                                     <|
                                         cell <|
-                                            Element.el
-                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                            <|
-                                                Element.text <|
-                                                    Mensam.Desk.nameToString entry.desk.name
+                                            Element.column
+                                                [ Element.width <| Element.maximum 150 <| Element.fill ]
+                                                [ Element.row [ Element.alignLeft, Element.spacing 3 ]
+                                                    [ Element.el
+                                                        [ Element.Font.size 10
+                                                        , Element.alignBottom
+                                                        , Element.padding 1
+                                                        ]
+                                                      <|
+                                                        Element.text "Space"
+                                                    , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
+                                                        Element.text <|
+                                                            Mensam.Space.nameToString entry.space.name
+                                                    ]
+                                                , Element.row [ Element.alignLeft, Element.spacing 3 ]
+                                                    [ Element.el
+                                                        [ Element.Font.size 10
+                                                        , Element.alignBottom
+                                                        , Element.padding 1
+                                                        ]
+                                                      <|
+                                                        Element.text "Desk"
+                                                    , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
+                                                        Element.text <|
+                                                            Mensam.Desk.nameToString entry.desk.name
+                                                    ]
+                                                ]
                           }
                         ]
                     }
