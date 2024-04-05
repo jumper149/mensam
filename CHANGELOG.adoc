@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.0.3.0`
+
 * API
   ** Add `/reservation/list` route.
   ** Add `timezone` field to spaces when serialized to/from JSON affecting a few routes.
