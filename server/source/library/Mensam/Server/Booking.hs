@@ -52,6 +52,7 @@ spaceGetFromId identifier = do
     MkSpace
       { spaceId = MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
       , spaceName = MkNameSpace $ dbSpace_name dbSpace
+      , spaceTimezone = dbSpace_timezone dbSpace
       }
 
 -- | Already checks permissions.
@@ -132,6 +133,7 @@ spaceListVisible userIdentifier spaceOrder = do
         MkSpace
           { spaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id space
           , spaceName = MkNameSpace $ dbSpace_name space
+          , spaceTimezone = dbSpace_timezone space
           }
   pure $ fromDbSpace <$> dbSpaces
 

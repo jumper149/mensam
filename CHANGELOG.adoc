@@ -2,6 +2,9 @@
 
 * API
   ** Add `/reservation/list` route.
+  ** Add `timezone` field to spaces when serialized to/from JSON affecting a few routes.
+    *** `/space/list`
+    *** `/reservation/list`
 * Frontend
   ** Add a new page to view existing reservations
   ** Add a primitive indicator to visualize reserved time periods.

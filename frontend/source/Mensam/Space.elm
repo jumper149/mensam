@@ -35,6 +35,7 @@ type Space
     = MkSpace
         { id : Identifier
         , name : Name
+        , timezone : Mensam.Time.TimezoneIdentifier
         }
 
 

@@ -5,6 +5,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
+import Mensam.Time
 import Url.Builder
 
 
@@ -109,15 +110,17 @@ decodeBody200 =
     Decode.map (\x -> { spaces = x }) <|
         Decode.field "spaces" <|
             Decode.list <|
-                Decode.map2
-                    (\x y ->
+                Decode.map3
+                    (\id name timezone ->
                         Mensam.Space.MkSpace
-                            { id = Mensam.Space.MkIdentifier x
-                            , name = Mensam.Space.MkName y
+                            { id = id
+                            , name = name
+                            , timezone = timezone
                             }
                     )
-                    (Decode.field "id" Decode.int)
-                    (Decode.field "name" Decode.string)
+                    (Decode.field "id" Mensam.Space.identifierDecoder)
+                    (Decode.field "name" Mensam.Space.nameDecoder)
+                    (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
 
 
 decodeBody400 : Decode.Decoder String

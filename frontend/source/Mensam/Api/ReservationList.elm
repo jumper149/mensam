@@ -8,6 +8,7 @@ import Mensam.Auth.Bearer
 import Mensam.Desk
 import Mensam.Reservation
 import Mensam.Space
+import Mensam.Time
 import Mensam.User
 import Time
 import Url.Builder
@@ -37,6 +38,7 @@ type Response
                 , space :
                     { id : Mensam.Space.Identifier
                     , name : Mensam.Space.Name
+                    , timezone : Mensam.Time.TimezoneIdentifier
                     }
                 , user :
                     { id : Mensam.User.Identifier
@@ -140,6 +142,7 @@ decodeBody200 :
                 , space :
                     { id : Mensam.Space.Identifier
                     , name : Mensam.Space.Name
+                    , timezone : Mensam.Time.TimezoneIdentifier
                     }
                 , user :
                     { id : Mensam.User.Identifier
@@ -165,6 +168,7 @@ decodeBody200 =
                         , space =
                             { id = space.id
                             , name = space.name
+                            , timezone = space.timezone
                             }
                         , user =
                             { id = reservation.user
@@ -187,9 +191,10 @@ decodeBody200 =
                             (Decode.field "user" Mensam.User.identifierDecoder)
                     )
                     (Decode.field "space" <|
-                        Decode.map2 (\id name -> { id = id, name = name })
+                        Decode.map3 (\id name timezone -> { id = id, name = name, timezone = timezone })
                             (Decode.field "id" Mensam.Space.identifierDecoder)
                             (Decode.field "name" Mensam.Space.nameDecoder)
+                            (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
                     )
 
 

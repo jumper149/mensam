@@ -37,6 +37,7 @@ type alias Model =
             , space :
                 { id : Mensam.Space.Identifier
                 , name : Mensam.Space.Name
+                , timezone : Mensam.Time.TimezoneIdentifier
                 }
             , user :
                 { id : Mensam.User.Identifier
@@ -143,7 +144,7 @@ element model =
                                                 Element.text <|
                                                     Mensam.Time.timestampToString <|
                                                         -- TODO: Use space's timezone!
-                                                        Mensam.Time.fromPosix model.timezone entry.reservation.timeBegin
+                                                        Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeBegin
                           }
                         , { header =
                                 Element.el
@@ -253,6 +254,7 @@ type MessagePure
             , space :
                 { id : Mensam.Space.Identifier
                 , name : Mensam.Space.Name
+                , timezone : Mensam.Time.TimezoneIdentifier
                 }
             , user :
                 { id : Mensam.User.Identifier

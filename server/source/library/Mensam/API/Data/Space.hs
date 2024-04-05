@@ -30,6 +30,7 @@ type Space :: Type
 data Space = MkSpace
   { spaceId :: IdentifierSpace
   , spaceName :: NameSpace
+  , spaceTimezone :: T.TZLabel
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
