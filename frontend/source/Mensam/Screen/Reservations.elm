@@ -112,7 +112,7 @@ element model =
                                         Element.el
                                             []
                                         <|
-                                            Element.text "ID"
+                                            Element.text "Start"
                           , width = Element.px 100
                           , view =
                                 \n entry ->
@@ -141,7 +141,9 @@ element model =
                                                 [ Element.width <| Element.maximum 100 <| Element.fill ]
                                             <|
                                                 Element.text <|
-                                                    Mensam.Reservation.identifierToString entry.reservation.id
+                                                    Mensam.Time.timestampToString <|
+                                                        -- TODO: Use space's timezone!
+                                                        Mensam.Time.fromPosix model.timezone entry.reservation.timeBegin
                           }
                         , { header =
                                 Element.el

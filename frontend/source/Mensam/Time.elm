@@ -224,6 +224,48 @@ yearToString =
     String.fromInt << unYear
 
 
+{-| The number of a month in a year indexed starting at `1`.
+-}
+monthToNumber : Month -> Int
+monthToNumber (MkMonth month) =
+    case month of
+        Time.Jan ->
+            1
+
+        Time.Feb ->
+            2
+
+        Time.Mar ->
+            3
+
+        Time.Apr ->
+            4
+
+        Time.May ->
+            5
+
+        Time.Jun ->
+            6
+
+        Time.Jul ->
+            7
+
+        Time.Aug ->
+            8
+
+        Time.Sep ->
+            9
+
+        Time.Oct ->
+            10
+
+        Time.Nov ->
+            11
+
+        Time.Dec ->
+            12
+
+
 monthToString : Month -> String
 monthToString (MkMonth month) =
     case month of
@@ -269,6 +311,24 @@ dayToString (MkDay n) =
     String.fromInt n
 
 
+dateToString : Date -> String
+dateToString (MkDate date) =
+    let
+        addPadding2 =
+            (\x -> "00" ++ x) >> String.reverse >> String.toList >> List.take 2 >> String.fromList >> String.reverse
+
+        addPadding4 =
+            (\x -> "0000" ++ x) >> String.reverse >> String.toList >> List.take 4 >> String.fromList >> String.reverse
+    in
+    String.concat
+        [ addPadding4 <| yearToString date.year
+        , "-"
+        , addPadding2 <| String.fromInt <| monthToNumber date.month
+        , "-"
+        , addPadding2 <| dayToString date.day
+        ]
+
+
 timeToString : Time -> String
 timeToString (MkTime time) =
     let
@@ -282,3 +342,8 @@ timeToString (MkTime time) =
         , ":"
         , addPadding <| String.fromInt <| unSecond time.second
         ]
+
+
+timestampToString : Timestamp -> String
+timestampToString (MkTimestamp timestamp) =
+    dateToString timestamp.date ++ " " ++ timeToString timestamp.time
