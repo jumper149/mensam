@@ -28,6 +28,7 @@ type alias Model =
             { name : Mensam.Space.Name
             , timezone : Mensam.Time.TimezoneIdentifier
             , visible : Bool
+            , password : String
             }
     }
 
@@ -209,6 +210,16 @@ element model =
                                     , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Timezone"
                                     , label = Element.Input.labelAbove [] <| Element.text "Timezone (IANA)"
                                     }
+                                , Element.Input.newPassword
+                                    [ onEnter <| MessageEffect <| SubmitCreate formData
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    ]
+                                    { onChange = MessagePure << EnterSpacePassword
+                                    , text = formData.password
+                                    , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
+                                    , label = Element.Input.labelAbove [] <| Element.text "Password"
+                                    , show = False
+                                    }
                                 , Element.row
                                     [ Element.width Element.fill
                                     , Element.spacing 10
@@ -268,6 +279,7 @@ type MessagePure
     | CloseDialogToCreate
     | EnterSpaceName Mensam.Space.Name
     | EnterSpaceTimezone Mensam.Time.TimezoneIdentifier
+    | EnterSpacePassword String
 
 
 updatePure : MessagePure -> Model -> Model
@@ -286,6 +298,7 @@ updatePure message model =
                         { name = Mensam.Space.MkName ""
                         , timezone = model.timezone
                         , visible = True
+                        , password = ""
                         }
             }
 
@@ -316,6 +329,18 @@ updatePure message model =
                            )
             }
 
+        EnterSpacePassword password ->
+            { model
+                | create =
+                    model.create
+                        |> (Maybe.map <|
+                                \create ->
+                                    { create
+                                        | password = password
+                                    }
+                           )
+            }
+
 
 type MessageEffect
     = ReportError Mensam.Error.Error
@@ -325,6 +350,7 @@ type MessageEffect
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.TimezoneIdentifier
         , visible : Bool
+        , password : String
         }
 
 
@@ -379,6 +405,7 @@ spaceCreate :
     , name : Mensam.Space.Name
     , timezone : Mensam.Time.TimezoneIdentifier
     , visibility : Mensam.Space.Visibility
+    , password : Maybe String
     }
     -> Cmd Message
 spaceCreate req =

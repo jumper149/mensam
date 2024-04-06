@@ -83,6 +83,7 @@ f = do
           { Route.Booking.requestSpaceCreateName = spacename
           , Route.Booking.requestSpaceCreateTimezone = T.Europe__Paris
           , Route.Booking.requestSpaceCreateVisibility = MkVisibilitySpaceVisible
+          , Route.Booking.requestSpaceCreatePassword = Nothing
           }
   resultSpaceCreate <- endpointSpaceCreate (DataJWTWithSession nextToken) requestSpaceCreate
   liftIO $ print resultSpaceCreate

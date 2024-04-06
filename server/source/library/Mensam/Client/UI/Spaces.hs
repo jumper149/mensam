@@ -111,5 +111,6 @@ spacesHandleEvent event = do
                 { Route.Booking.requestSpaceCreateName = MkNameSpace $ newSpaceInfo ^. newSpaceInfoName
                 , Route.Booking.requestSpaceCreateTimezone = newSpaceInfo ^. newSpaceInfoTimezone
                 , Route.Booking.requestSpaceCreateVisibility = newSpaceInfo ^. newSpaceInfoVisibility
+                , Route.Booking.requestSpaceCreatePassword = Nothing
                 }
         _ -> lift $ zoom (screenStateSpacesNewSpaceForm . _Just) $ handleFormEvent event

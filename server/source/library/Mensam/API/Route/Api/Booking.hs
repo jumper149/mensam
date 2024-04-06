@@ -9,6 +9,7 @@ import Mensam.API.Order
 
 import Data.Aeson qualified as A
 import Data.Kind
+import Data.Text qualified as T
 import Data.Time qualified as T
 import Data.Time.Zones.All qualified as T
 import Deriving.Aeson qualified as A
@@ -223,6 +224,7 @@ data RequestSpaceCreate = MkRequestSpaceCreate
   { requestSpaceCreateName :: NameSpace
   , requestSpaceCreateTimezone :: T.TZLabel
   , requestSpaceCreateVisibility :: VisibilitySpace
+  , requestSpaceCreatePassword :: Maybe T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

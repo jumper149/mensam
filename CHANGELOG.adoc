@@ -2,8 +2,10 @@
 
 * API
   ** Add `/space/leave` route.
+  ** Add optional `password` to request body route of `/space/create`.
 * Frontend
   ** Add a new button leave a space when you already are a member.
+  ** Allow optionally setting a password to join a space.
 * Database
   ** Add new column `password_hash` to the `space` table.
 
