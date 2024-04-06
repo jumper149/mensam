@@ -28,6 +28,7 @@ import Mensam.Widget.Date
 import Mensam.Widget.Time
 import Set
 import Time
+import Mensam.Api.SpaceLeave
 
 
 type alias Model =
@@ -84,6 +85,7 @@ type PopupModel
     | PopupJoin
         { roleId : Maybe Int
         }
+    | PopupLeave
     | PopupReservation
         { desk :
             { id : Mensam.Desk.Identifier
@@ -193,7 +195,26 @@ element model =
                                     Element.text "Join space"
 
                         Just _ ->
-                            Element.none
+                            Element.el
+                                [ Element.alignRight
+                                , Element.padding 10
+                                , Element.Background.color Mensam.Element.Color.bright.red
+                                , Element.Font.color Mensam.Element.Color.dark.black
+                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                                , Element.Events.onClick <| MessagePure <| OpenDialogToLeave
+                                ]
+                            <|
+                                Element.el
+                                    [ Element.centerX
+                                    , Element.centerY
+                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                    , Element.Font.size 17
+                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                    ]
+                                <|
+                                    Element.text "Leave space"
                     , Element.el
                         [ Element.alignRight
                         , Element.padding 10
@@ -587,6 +608,63 @@ element model =
                                             ]
                                         <|
                                             Element.text "Submit"
+                                    }
+                                ]
+                            ]
+
+                Just PopupLeave ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Leave Space"
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessagePure <| CloseDialogToLeave
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Abort"
+                                    }
+                                , Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.red
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessageEffect <| SubmitLeave
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Abandon space"
                                     }
                                 ]
                             ]
@@ -1133,6 +1211,8 @@ type MessagePure
     | OpenDialogToJoin
     | CloseDialogToJoin
     | SetRoleToJoin Int
+    | OpenDialogToLeave
+    | CloseDialogToLeave
     | OpenDialogToCreate
     | CloseDialogToCreate
     | EnterDeskName Mensam.Desk.Name
@@ -1179,6 +1259,12 @@ updatePure message model =
             { model | popup = Just <| PopupJoin { roleId = Nothing } }
 
         CloseDialogToJoin ->
+            { model | popup = Nothing }
+
+        OpenDialogToLeave ->
+            { model | popup = Just <| PopupLeave }
+
+        CloseDialogToLeave ->
             { model | popup = Nothing }
 
         SetRoleToJoin roleId ->
@@ -1409,6 +1495,7 @@ type MessageEffect
     | RefreshSpace
     | RefreshDesks
     | SubmitJoin
+    | SubmitLeave
     | SubmitCreate
     | SubmitReservation
 
@@ -1474,6 +1561,28 @@ spaceJoin jwt spaceId roleId =
                                     Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceJoin.ErrorAuth error) ->
+                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <| ReportError <| Mensam.Error.http error
+
+
+spaceLeave : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+spaceLeave jwt spaceId =
+    Mensam.Api.SpaceLeave.request { jwt = jwt, space = Mensam.NameOrIdentifier.Identifier spaceId } <|
+        \result ->
+            case result of
+                Ok Mensam.Api.SpaceLeave.Success ->
+                    MessagePure CloseDialogToLeave
+
+                Ok (Mensam.Api.SpaceLeave.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Bad request body" <|
+                                Mensam.Error.message error <|
+                                    Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceLeave.ErrorAuth error) ->
                     MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
 
                 Err error ->

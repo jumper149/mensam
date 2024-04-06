@@ -709,6 +709,34 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+                Mensam.Screen.Space.SubmitLeave ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpace screenModel ->
+                                    case screenModel.popup of
+                                        Just Mensam.Screen.Space.PopupLeave ->
+                                            ( MkModel model
+                                            , Platform.Cmd.map
+                                                (\msg ->
+                                                    Messages
+                                                        [ MessageSpace msg
+                                                        , MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshSpace
+                                                        ]
+                                                )
+                                              <|
+                                                Mensam.Screen.Space.spaceLeave jwt screenModel.space
+                                            )
+
+                                        _ ->
+                                            update (ReportError errorScreen) <| MkModel model
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
                 Mensam.Screen.Space.SubmitCreate ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->

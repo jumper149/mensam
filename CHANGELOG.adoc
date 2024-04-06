@@ -2,6 +2,8 @@
 
 * API
   ** Add `/space/leave` route.
+* Frontend
+  ** Add a new button leave a space when you already are a member.
 
 == `0.0.3.0`
 
@@ -11,7 +13,7 @@
     *** `/space/list`
     *** `/reservation/list`
 * Frontend
-  ** Add a new page to view existing reservations
+  ** Add a new page to view existing reservations.
   ** Add a primitive indicator to visualize reserved time periods.
 
 == `0.0.2.3`
