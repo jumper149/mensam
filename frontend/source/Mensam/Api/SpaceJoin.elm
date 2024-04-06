@@ -11,6 +11,7 @@ import Url.Builder
 
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
+    , password : String
     , role : Mensam.NameOrIdentifier.NameOrIdentifier String Int
     , space : Mensam.NameOrIdentifier.NameOrIdentifier Mensam.Space.Name Mensam.Space.Identifier
     }
@@ -18,6 +19,7 @@ type alias Request =
 
 type Response
     = Success
+    | ErrorWrongPassword
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -73,6 +75,14 @@ responseResult httpResponse =
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err
 
+                403 ->
+                    case Decode.decodeString decodeBody403 body of
+                        Ok () ->
+                            Ok <| ErrorWrongPassword
+
+                        Err err ->
+                            Err <| Http.BadBody <| Decode.errorToString err
+
                 status ->
                     Err <| Http.BadStatus status
 
@@ -93,7 +103,10 @@ responseResult httpResponse =
 encodeBody : Request -> Encode.Value
 encodeBody body =
     Encode.object
-        [ ( "role"
+        [ ( "password"
+          , Encode.string body.password
+          )
+        , ( "role"
           , Mensam.NameOrIdentifier.encode Encode.string Encode.int body.role
           )
         , ( "space"
@@ -111,3 +124,17 @@ decodeBody200 =
 decodeBody400 : Decode.Decoder String
 decodeBody400 =
     Decode.field "error" Decode.string
+
+
+decodeBody403 : Decode.Decoder ()
+decodeBody403 =
+    Decode.string
+        |> Decode.andThen
+            (\string ->
+                case string of
+                    "Wrong space password." ->
+                        Decode.succeed ()
+
+                    _ ->
+                        Decode.fail <| "Unexpected HTTP 409 message: " ++ string
+            )

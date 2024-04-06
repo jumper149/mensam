@@ -689,7 +689,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenSpace screenModel ->
                                     case screenModel.popup of
-                                        Just (Mensam.Screen.Space.PopupJoin { roleId }) ->
+                                        Just (Mensam.Screen.Space.PopupJoin { roleId, password }) ->
                                             case roleId of
                                                 Nothing ->
                                                     update (ReportError errorScreen) <| MkModel model
@@ -704,7 +704,7 @@ update message (MkModel model) =
                                                                 ]
                                                         )
                                                       <|
-                                                        Mensam.Screen.Space.spaceJoin jwt screenModel.space justRoleId
+                                                        Mensam.Screen.Space.spaceJoin jwt screenModel.space justRoleId password
                                                     )
 
                                         _ ->

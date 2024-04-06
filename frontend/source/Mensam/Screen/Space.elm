@@ -13,6 +13,7 @@ import Mensam.Api.DeskCreate
 import Mensam.Api.DeskList
 import Mensam.Api.ReservationCreate
 import Mensam.Api.SpaceJoin
+import Mensam.Api.SpaceLeave
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Desk
@@ -28,7 +29,6 @@ import Mensam.Widget.Date
 import Mensam.Widget.Time
 import Set
 import Time
-import Mensam.Api.SpaceLeave
 
 
 type alias Model =
@@ -84,6 +84,7 @@ type PopupModel
         }
     | PopupJoin
         { roleId : Maybe Int
+        , password : String
         }
     | PopupLeave
     | PopupReservation
@@ -715,6 +716,16 @@ element model =
                               <|
                                 List.map roleElement <|
                                     Dict.values model.roles
+                            , Element.Input.currentPassword
+                                [ onEnter <| MessageEffect <| SubmitJoin
+                                , Element.Font.color Mensam.Element.Color.dark.black
+                                ]
+                                { onChange = MessagePure << EnterSpacePasswordToJoin
+                                , text = join.password
+                                , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
+                                , label = Element.Input.labelAbove [] <| Element.text "Password"
+                                , show = False
+                                }
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10
@@ -1211,6 +1222,7 @@ type MessagePure
     | OpenDialogToJoin
     | CloseDialogToJoin
     | SetRoleToJoin Int
+    | EnterSpacePasswordToJoin String
     | OpenDialogToLeave
     | CloseDialogToLeave
     | OpenDialogToCreate
@@ -1256,7 +1268,7 @@ updatePure message model =
             { model | selected = selection }
 
         OpenDialogToJoin ->
-            { model | popup = Just <| PopupJoin { roleId = Nothing } }
+            { model | popup = Just <| PopupJoin { roleId = Nothing, password = "" } }
 
         CloseDialogToJoin ->
             { model | popup = Nothing }
@@ -1276,6 +1288,21 @@ updatePure message model =
                                 PopupJoin
                                     { join
                                         | roleId = Just roleId
+                                    }
+
+                        _ ->
+                            model.popup
+            }
+
+        EnterSpacePasswordToJoin password ->
+            { model
+                | popup =
+                    case model.popup of
+                        Just (PopupJoin join) ->
+                            Just <|
+                                PopupJoin
+                                    { join
+                                        | password = password
                                     }
 
                         _ ->
@@ -1545,13 +1572,21 @@ spaceView jwt model =
                     MessageEffect <| ReportError <| Mensam.Error.http error
 
 
-spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Int -> Cmd Message
-spaceJoin jwt spaceId roleId =
-    Mensam.Api.SpaceJoin.request { jwt = jwt, role = Mensam.NameOrIdentifier.Identifier roleId, space = Mensam.NameOrIdentifier.Identifier spaceId } <|
+spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Int -> String -> Cmd Message
+spaceJoin jwt spaceId roleId password =
+    Mensam.Api.SpaceJoin.request { jwt = jwt, role = Mensam.NameOrIdentifier.Identifier roleId, space = Mensam.NameOrIdentifier.Identifier spaceId, password = password } <|
         \result ->
             case result of
                 Ok Mensam.Api.SpaceJoin.Success ->
                     MessagePure CloseDialogToJoin
+
+                Ok Mensam.Api.SpaceJoin.ErrorWrongPassword ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to join" <|
+                                Mensam.Error.message "Bad request" <|
+                                    Mensam.Error.message "Wrong password" <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceJoin.ErrorBody error) ->
                     MessageEffect <|
