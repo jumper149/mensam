@@ -127,7 +127,7 @@ migrations =
             \WHERE space = space.id"
 
           lift $ logDebug "Clean up orphaned spaces without owner."
-          lift $ logWarn "Spaces without members will now be deleted permanently."
+          lift $ logInfo "Spaces without members will now be deleted permanently."
           Selda.Unsafe.rawStm
             "DELETE FROM space_role_permission\n\
             \WHERE id IN\n\
