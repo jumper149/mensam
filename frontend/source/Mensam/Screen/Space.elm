@@ -84,7 +84,7 @@ type PopupModel
         }
     | PopupJoin
         { roleId : Maybe Int
-        , password : String
+        , password : Maybe String
         }
     | PopupLeave
     | PopupReservation
@@ -720,8 +720,17 @@ element model =
                                 [ onEnter <| MessageEffect <| SubmitJoin
                                 , Element.Font.color Mensam.Element.Color.dark.black
                                 ]
-                                { onChange = MessagePure << EnterSpacePasswordToJoin
-                                , text = join.password
+                                { onChange =
+                                    \str ->
+                                        MessagePure <|
+                                            EnterSpacePasswordToJoin <|
+                                                case str of
+                                                    "" ->
+                                                        Nothing
+
+                                                    actualStr ->
+                                                        Just actualStr
+                                , text = Maybe.withDefault "" join.password
                                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
                                 , label = Element.Input.labelAbove [] <| Element.text "Password"
                                 , show = False
@@ -1222,7 +1231,7 @@ type MessagePure
     | OpenDialogToJoin
     | CloseDialogToJoin
     | SetRoleToJoin Int
-    | EnterSpacePasswordToJoin String
+    | EnterSpacePasswordToJoin (Maybe String)
     | OpenDialogToLeave
     | CloseDialogToLeave
     | OpenDialogToCreate
@@ -1268,7 +1277,7 @@ updatePure message model =
             { model | selected = selection }
 
         OpenDialogToJoin ->
-            { model | popup = Just <| PopupJoin { roleId = Nothing, password = "" } }
+            { model | popup = Just <| PopupJoin { roleId = Nothing, password = Nothing } }
 
         CloseDialogToJoin ->
             { model | popup = Nothing }
@@ -1572,7 +1581,7 @@ spaceView jwt model =
                     MessageEffect <| ReportError <| Mensam.Error.http error
 
 
-spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Int -> String -> Cmd Message
+spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Int -> Maybe String -> Cmd Message
 spaceJoin jwt spaceId roleId password =
     Mensam.Api.SpaceJoin.request { jwt = jwt, role = Mensam.NameOrIdentifier.Identifier roleId, space = Mensam.NameOrIdentifier.Identifier spaceId, password = password } <|
         \result ->

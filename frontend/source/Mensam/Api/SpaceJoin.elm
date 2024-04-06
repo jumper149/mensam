@@ -11,7 +11,7 @@ import Url.Builder
 
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
-    , password : String
+    , password : Maybe String
     , role : Mensam.NameOrIdentifier.NameOrIdentifier String Int
     , space : Mensam.NameOrIdentifier.NameOrIdentifier Mensam.Space.Name Mensam.Space.Identifier
     }
@@ -104,7 +104,12 @@ encodeBody : Request -> Encode.Value
 encodeBody body =
     Encode.object
         [ ( "password"
-          , Encode.string body.password
+          , case body.password of
+                Nothing ->
+                    Encode.null
+
+                Just password ->
+                    Encode.string password
           )
         , ( "role"
           , Mensam.NameOrIdentifier.encode Encode.string Encode.int body.role
