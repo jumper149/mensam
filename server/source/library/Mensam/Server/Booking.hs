@@ -322,6 +322,56 @@ spaceRolePermissionGive spaceRoleIdentifier permission = do
   Selda.insert_ tableSpaceRolePermission [dbSpaceRolePermission]
   lift $ logInfo "Gave space-role a permission successfully."
 
+spacePasswordCheck ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  Maybe Password ->
+  SeldaTransactionT m PasswordCheck
+spacePasswordCheck identifier maybePassword = do
+  lift $ logDebug $ "Querying space " <> T.pack (show identifier) <> " from database to check password."
+  dbSpace <- Selda.queryOne $ spaceGet $ Selda.toId @DbSpace $ unIdentifierSpace identifier
+  let maybePasswordHash = PasswordHash <$> dbSpace_password_hash dbSpace
+  case maybePasswordHash of
+    Nothing -> do
+      case maybePassword of
+        Nothing -> do
+          lift $ logInfo "No space password has been set. Nothing to check."
+          pure PasswordCheckSuccess
+        Just _ -> do
+          lift $ logInfo "Tried to enter a password even though no password had been set up."
+          pure PasswordCheckFail -- TODO: Handle this special case differently?
+    Just passwordHash -> do
+      case maybePassword of
+        Nothing -> do
+          lift $ logInfo "Didn't enter a password even though a password is required."
+          pure PasswordCheckFail
+        Just password -> do
+          lift $ logDebug "Comparing password hashes."
+          let passwordCheck = checkPassword password passwordHash
+          case passwordCheck of
+             PasswordCheckSuccess ->
+                 lift $ logInfo "Space password matches. Check successful."
+             PasswordCheckFail ->
+                 lift $ logInfo "Space password does not matches. Check failed."
+          pure passwordCheck
+
+-- | Fails the transaction when the password check fails.
+spacePasswordCheck' ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  Maybe Password ->
+  SeldaTransactionT m ()
+spacePasswordCheck' identifier maybePassword = spacePasswordCheck identifier maybePassword >>= \case
+  PasswordCheckSuccess -> pure ()
+  PasswordCheckFail -> do
+    lift $ logDebug "Abort transaction after failed space password check."
+    throwM MkSqlErrorMensamSpacePasswordCheckFail
+
+type SqlErrorMensamSpacePasswordCheckFail :: Type
+data SqlErrorMensamSpacePasswordCheckFail = MkSqlErrorMensamSpacePasswordCheckFail
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
+
 deskLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->

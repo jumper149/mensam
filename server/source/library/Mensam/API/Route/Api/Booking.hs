@@ -73,6 +73,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceJoin
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Wrong space password.")
               , WithStatus 500 ()
               ]
   , routeSpaceLeave ::
@@ -262,6 +263,7 @@ type RequestSpaceJoin :: Type
 data RequestSpaceJoin = MkRequestSpaceJoin
   { requestSpaceJoinSpace :: NameOrIdentifier NameSpace IdentifierSpace
   , requestSpaceJoinRole :: NameOrIdentifier NameSpaceRole IdentifierSpaceRole
+  , requestSpaceJoinPassword :: Maybe T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

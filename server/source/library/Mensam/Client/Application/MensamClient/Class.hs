@@ -128,6 +128,7 @@ endpointSpaceJoin ::
         '[ WithStatus 200 Route.Api.Booking.ResponseSpaceJoin
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (StaticText "Wrong space password.")
          , WithStatus 500 ()
          ]
     )

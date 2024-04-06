@@ -132,6 +132,7 @@ joinSpace ::
   , IsMember (WithStatus 200 ResponseSpaceJoin) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Wrong space password.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -152,6 +153,7 @@ joinSpace auth eitherRequest =
                   let msg :: T.Text = "No matching space."
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
+        spacePasswordCheck' spaceIdentifier (mkPassword <$> requestSpaceJoinPassword request)
         spaceRoleIdentifier <-
           case requestSpaceJoinRole request of
             Identifier spaceId -> pure spaceId
@@ -172,10 +174,14 @@ joinSpace auth eitherRequest =
             lift $ logDebug "Space-role is joinable. Joining."
             spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
       case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
+        SeldaFailure err -> do
           logWarn "Failed to join space."
-          respond $ WithStatus @500 ()
+          case fromException err of
+            Just MkSqlErrorMensamSpacePasswordCheckFail ->
+              respond $ WithStatus @403 $ MkStaticText @"Wrong space password."
+            Nothing -> do
+              -- TODO: Here we can theoretically return a more accurate error
+              respond $ WithStatus @500 ()
         SeldaSuccess () -> do
           logInfo "Joined space."
           respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
