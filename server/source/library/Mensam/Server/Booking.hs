@@ -184,6 +184,7 @@ spaceCreate name timezoneLabel visibility = do
           , dbSpace_name = unNameSpace name
           , dbSpace_timezone = timezoneLabel
           , dbSpace_visibility = spaceVisibilityApiToDb visibility
+          , dbSpace_password_hash = Nothing -- TODO
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."

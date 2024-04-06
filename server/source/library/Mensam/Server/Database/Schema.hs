@@ -127,6 +127,7 @@ data DbSpace = MkDbSpace
   , dbSpace_name :: Selda.Text
   , dbSpace_timezone :: Time.TZLabel
   , dbSpace_visibility :: DbSpaceVisibility
+  , dbSpace_password_hash :: Maybe Selda.Text
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.SqlRow)

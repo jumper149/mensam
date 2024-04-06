@@ -102,6 +102,14 @@ migrations =
             "ALTER TABLE user\n\
             \DROP COLUMN address"
       }
+  , MkMigration
+      { migrationId = Selda.toId 4
+      , migrationName = "addSpacePassword"
+      , migrationWork =
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space\n\
+            \ADD COLUMN password_hash TEXT"
+      }
   ]
 
 createDatabase ::
