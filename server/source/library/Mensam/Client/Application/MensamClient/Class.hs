@@ -120,6 +120,28 @@ endpointSpaceDelete ::
          , WithStatus 500 ()
          ]
     )
+endpointSpaceJoin ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestSpaceJoin ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceJoin
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 500 ()
+         ]
+    )
+endpointSpaceLeave ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestSpaceLeave ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceLeave
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 500 ()
+         ]
+    )
 endpointSpaceView ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestSpaceView ->
@@ -216,6 +238,8 @@ Route.Api.Routes
     Route.Api.Booking.Routes
       { Route.Api.Booking.routeSpaceCreate = endpointSpaceCreate
       , Route.Api.Booking.routeSpaceDelete = endpointSpaceDelete
+      , Route.Api.Booking.routeSpaceJoin = endpointSpaceJoin
+      , Route.Api.Booking.routeSpaceLeave = endpointSpaceLeave
       , Route.Api.Booking.routeSpaceView = endpointSpaceView
       , Route.Api.Booking.routeSpaceList = endpointSpaceList
       , Route.Api.Booking.routeDeskCreate = endpointDeskCreate

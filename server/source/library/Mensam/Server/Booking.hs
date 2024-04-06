@@ -236,6 +236,22 @@ spaceUserAdd spaceIdentifier userIdentifier roleIdentifier = do
   lift $ logInfo "Created space-user successfully."
   pure ()
 
+spaceUserRemove ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  IdentifierUser ->
+  SeldaTransactionT m ()
+spaceUserRemove spaceIdentifier userIdentifier = do
+  lift $ logDebug $ "Removing user " <> T.pack (show userIdentifier) <> " from space " <> T.pack (show spaceIdentifier) <> "."
+  dbSpaceUser <- Selda.queryOne $ do
+    dbSpaceUser <- Selda.select tableSpaceUser
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
+    pure dbSpaceUser
+  Selda.deleteOneFrom tableSpaceUser $ \row -> row Selda.! #dbSpaceUser_id Selda..== Selda.literal (dbSpaceUser_id dbSpaceUser)
+  lift $ logInfo "Removed space-user successfully."
+  pure ()
+
 spaceUserPermissions ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->

@@ -146,6 +146,8 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceDelete") Route.
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceDelete") Route.Booking.ResponseSpaceDelete instance ToSchema Route.Booking.ResponseSpaceDelete
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceJoin") Route.Booking.RequestSpaceJoin instance ToSchema Route.Booking.RequestSpaceJoin
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceJoin") Route.Booking.ResponseSpaceJoin instance ToSchema Route.Booking.ResponseSpaceJoin
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceLeave") Route.Booking.RequestSpaceLeave instance ToSchema Route.Booking.RequestSpaceLeave
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceLeave") Route.Booking.ResponseSpaceLeave instance ToSchema Route.Booking.ResponseSpaceLeave
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceView") Route.Booking.RequestSpaceView instance ToSchema Route.Booking.RequestSpaceView
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") Route.Booking.ResponseSpaceView instance ToSchema Route.Booking.ResponseSpaceView
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Route.Booking.RequestSpaceList instance ToSchema Route.Booking.RequestSpaceList

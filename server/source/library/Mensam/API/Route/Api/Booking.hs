@@ -74,6 +74,23 @@ data Routes route = Routes
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
+  , routeSpaceLeave ::
+      route
+        :- Summary "Join Space"
+          :> Description
+              "Abandon membership of a space.\n"
+          :> "space"
+          :> "leave"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceLeave
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseSpaceLeave
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 500 ()
+              ]
   , routeSpaceView ::
       route
         :- Summary "View Space"
@@ -257,6 +274,24 @@ newtype ResponseSpaceJoin = MkResponseSpaceJoin
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceJoin") ResponseSpaceJoin
+
+type RequestSpaceLeave :: Type
+newtype RequestSpaceLeave = MkRequestSpaceLeave
+  { requestSpaceLeaveSpace :: NameOrIdentifier NameSpace IdentifierSpace
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceLeave") RequestSpaceLeave
+
+type ResponseSpaceLeave :: Type
+newtype ResponseSpaceLeave = MkResponseSpaceLeave
+  { responseSpaceLeaveUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceLeave") ResponseSpaceLeave
 
 type RequestSpaceView :: Type
 newtype RequestSpaceView = MkRequestSpaceView

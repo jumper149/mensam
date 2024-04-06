@@ -30,6 +30,7 @@ handler =
     { routeSpaceCreate = createSpace
     , routeSpaceDelete = deleteSpace
     , routeSpaceJoin = joinSpace
+    , routeSpaceLeave = leaveSpace
     , routeSpaceList = listSpaces
     , routeSpaceView = viewSpace
     , routeDeskCreate = createDesk
@@ -123,7 +124,6 @@ deleteSpace auth eitherRequest =
           logInfo "Deleted space."
           respond $ WithStatus @200 MkResponseSpaceDelete {responseSpaceDeleteUnit = ()}
 
--- TODO: This currently doesn't check, whether the user is actually allowed to do this.
 joinSpace ::
   ( MonadIO m
   , MonadLogger m
@@ -178,6 +178,43 @@ joinSpace auth eitherRequest =
         SeldaSuccess () -> do
           logInfo "Joined space."
           respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
+
+leaveSpace ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseSpaceLeave) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestSpaceLeave ->
+  m (Union responses)
+leaveSpace auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to leave space: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        spaceIdentifier <-
+          case requestSpaceLeaveSpace request of
+            Identifier spaceId -> pure spaceId
+            Name name ->
+              spaceLookupId name >>= \case
+                Just identifier -> pure identifier
+                Nothing -> do
+                  let msg :: T.Text = "No matching space."
+                  lift $ logWarn msg
+                  throwM $ Selda.SqlError $ show msg
+        spaceUserRemove spaceIdentifier (userAuthenticatedId authenticated)
+      case seldaResult of
+        SeldaFailure _err -> do
+          -- TODO: Here we can theoretically return a more accurate error
+          logWarn "Failed to leave space."
+          respond $ WithStatus @500 ()
+        SeldaSuccess () -> do
+          logInfo "Left space."
+          respond $ WithStatus @200 MkResponseSpaceLeave {responseSpaceLeaveUnit = ()}
 
 viewSpace ::
   ( MonadIO m
