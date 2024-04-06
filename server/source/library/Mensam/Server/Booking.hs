@@ -351,10 +351,10 @@ spacePasswordCheck identifier maybePassword = do
           lift $ logDebug "Comparing password hashes."
           let passwordCheck = checkPassword password passwordHash
           case passwordCheck of
-             PasswordCheckSuccess ->
-                 lift $ logInfo "Space password matches. Check successful."
-             PasswordCheckFail ->
-                 lift $ logInfo "Space password does not matches. Check failed."
+            PasswordCheckSuccess ->
+              lift $ logInfo "Space password matches. Check successful."
+            PasswordCheckFail ->
+              lift $ logInfo "Space password does not matches. Check failed."
           pure passwordCheck
 
 -- | Fails the transaction when the password check fails.
@@ -363,11 +363,12 @@ spacePasswordCheck' ::
   IdentifierSpace ->
   Maybe Password ->
   SeldaTransactionT m ()
-spacePasswordCheck' identifier maybePassword = spacePasswordCheck identifier maybePassword >>= \case
-  PasswordCheckSuccess -> pure ()
-  PasswordCheckFail -> do
-    lift $ logDebug "Abort transaction after failed space password check."
-    throwM MkSqlErrorMensamSpacePasswordCheckFail
+spacePasswordCheck' identifier maybePassword =
+  spacePasswordCheck identifier maybePassword >>= \case
+    PasswordCheckSuccess -> pure ()
+    PasswordCheckFail -> do
+      lift $ logDebug "Abort transaction after failed space password check."
+      throwM MkSqlErrorMensamSpacePasswordCheckFail
 
 type SqlErrorMensamSpacePasswordCheckFail :: Type
 data SqlErrorMensamSpacePasswordCheckFail = MkSqlErrorMensamSpacePasswordCheckFail
