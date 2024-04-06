@@ -174,11 +174,12 @@ spaceRoleGet identifier = do
 spaceCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   NameSpace ->
+  IdentifierUser ->
   T.TZLabel ->
   VisibilitySpace ->
   Maybe Password ->
   SeldaTransactionT m IdentifierSpace
-spaceCreate name timezoneLabel visibility password = do
+spaceCreate name owner timezoneLabel visibility password = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
   maybePasswordHash :: Maybe (PasswordHash Bcrypt) <- traverse hashPassword password
   let dbSpace =
@@ -188,6 +189,7 @@ spaceCreate name timezoneLabel visibility password = do
           , dbSpace_timezone = timezoneLabel
           , dbSpace_visibility = spaceVisibilityApiToDb visibility
           , dbSpace_password_hash = unPasswordHash <$> maybePasswordHash
+          , dbSpace_owner = Selda.toId @DbUser $ unIdentifierUser owner
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."

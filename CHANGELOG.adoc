@@ -8,6 +8,10 @@
   ** Allow optionally setting a password to join a space.
 * Database
   ** Add new column `password_hash` to the `space` table.
+  ** Add new column `owner` to the `space` table.
+    *** This migration has to touch a lot of data.
+        Some spaces that don't have any members will be purged during this migration.
+        All other spaces will have their oldest member as the new owner.
 
 == `0.0.3.0`
 

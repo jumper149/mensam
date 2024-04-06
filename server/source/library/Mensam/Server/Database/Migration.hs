@@ -110,6 +110,142 @@ migrations =
             "ALTER TABLE space\n\
             \ADD COLUMN password_hash TEXT"
       }
+  , MkMigration
+      { migrationId = Selda.toId 5
+      , migrationName = "addSpaceOwner"
+      , migrationWork = do
+          lift $ logDebug "First add a column without the `NOT NULL` constraint."
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space\n\
+            \ADD COLUMN owner REFERENCES \"user\"(\"id\")"
+
+          lift $ logDebug "Set the correct values to the new owner column."
+          Selda.Unsafe.rawStm
+            "UPDATE space\n\
+            \SET owner = user\n\
+            \FROM (SELECT * FROM space_user ORDER BY id)\n\
+            \WHERE space = space.id"
+
+          lift $ logDebug "Clean up orphaned spaces without owner."
+          lift $ logWarn "Spaces without members will now be deleted permanently."
+          Selda.Unsafe.rawStm
+            "DELETE FROM space_role_permission\n\
+            \WHERE id IN\n\
+            \(\n\
+            \    SELECT space_role_permission.id\n\
+            \    FROM space_role_permission\n\
+            \    JOIN space_role ON space_role_permission.role = space_role.id\n\
+            \    JOIN space ON space_role.space = space.id\n\
+            \    WHERE space.owner IS NULL\n\
+            \)"
+          Selda.Unsafe.rawStm
+            "DELETE FROM space_role\n\
+            \WHERE id IN\n\
+            \(\n\
+            \    SELECT space_role.id\n\
+            \    FROM space_role\n\
+            \    JOIN space ON space_role.space = space.id\n\
+            \    WHERE space.owner IS NULL\n\
+            \)"
+          -- There should be no `space_user`s because otherwise the space would have an `owner` now.
+          Selda.Unsafe.rawStm
+            "DELETE FROM space_user\n\
+            \WHERE id IN\n\
+            \(\n\
+            \    SELECT space_user.id\n\
+            \    FROM space_user\n\
+            \    JOIN space ON space_user.space = space.id\n\
+            \    WHERE space.owner IS NULL\n\
+            \)"
+          Selda.Unsafe.rawStm
+            "DELETE FROM reservation\n\
+            \WHERE id IN\n\
+            \(\n\
+            \    SELECT reservation.id\n\
+            \    FROM reservation\n\
+            \    JOIN desk ON reservation.desk = desk.id\n\
+            \    JOIN space ON desk.space = space.id\n\
+            \    WHERE space.owner IS NULL\n\
+            \)"
+          Selda.Unsafe.rawStm
+            "DELETE FROM desk\n\
+            \WHERE id IN\n\
+            \(\n\
+            \    SELECT desk.id\n\
+            \    FROM desk\n\
+            \    JOIN space ON desk.space = space.id\n\
+            \    WHERE space.owner IS NULL\n\
+            \)"
+          Selda.Unsafe.rawStm
+            "DELETE FROM space\n\
+            \WHERE owner IS NULL"
+
+          lift $ logDebug "The complicated logic is done. Now we have to redo most of the schema to get a `FOREIGN KEY` constraint on the owner column."
+
+          lift $ logDebug "Declare a bunch of tables as temporary."
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space\n\
+            \RENAME TO space_temp"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space_user\n\
+            \RENAME TO space_user_temp"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space_role\n\
+            \RENAME TO space_role_temp"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space_role_permission\n\
+            \RENAME TO space_role_permission_temp"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE desk\n\
+            \RENAME TO desk_temp"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE reservation\n\
+            \RENAME TO reservation_temp"
+
+          lift $ logDebug "And now recreate all tables that depend on each other."
+          Selda.Unsafe.rawStm
+            "CREATE TABLE \"space\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"name\" TEXT NOT NULL UNIQUE, \"timezone\" TEXT NOT NULL, \"visibility\" TEXT NOT NULL, \"password_hash\" TEXT, \"owner\" NOT NULL REFERENCES \"user\"(\"id\"), UNIQUE(\"name\"))"
+          Selda.Unsafe.rawStm
+            "CREATE TABLE \"space_user\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"space\" INTEGER NOT NULL, \"user\" INTEGER NOT NULL, \"role\" INTEGER NOT NULL, UNIQUE(\"space\", \"user\"), CONSTRAINT \"fk0_space\" FOREIGN KEY (\"space\") REFERENCES \"space\"(\"id\"), CONSTRAINT \"fk1_user\" FOREIGN KEY (\"user\") REFERENCES \"user\"(\"id\"))"
+          Selda.Unsafe.rawStm
+            "CREATE TABLE \"space_role\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"space\" INTEGER NOT NULL, \"name\" TEXT NOT NULL, \"accessibility\" TEXT NOT NULL, UNIQUE(\"space\", \"name\"), CONSTRAINT \"fk0_space\" FOREIGN KEY (\"space\") REFERENCES \"space\"(\"id\"))"
+          Selda.Unsafe.rawStm
+            "CREATE TABLE \"space_role_permission\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"role\" INTEGER NOT NULL, \"permission\" TEXT NOT NULL, UNIQUE(\"role\", \"permission\"), CONSTRAINT \"fk0_role\" FOREIGN KEY (\"role\") REFERENCES \"space_role\"(\"id\"))"
+          Selda.Unsafe.rawStm
+            "CREATE TABLE \"desk\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"space\" INTEGER NOT NULL, \"name\" TEXT NOT NULL, UNIQUE(\"space\", \"name\"), CONSTRAINT \"fk0_space\" FOREIGN KEY (\"space\") REFERENCES \"space\"(\"id\"))"
+          Selda.Unsafe.rawStm
+            "CREATE TABLE \"reservation\"(\"id\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \"desk\" INTEGER NOT NULL, \"user\" INTEGER NOT NULL, \"time_begin\" DATETIME NOT NULL, \"time_end\" DATETIME NOT NULL, \"status\" TEXT NOT NULL, CONSTRAINT \"fk0_desk\" FOREIGN KEY (\"desk\") REFERENCES \"desk\"(\"id\"), CONSTRAINT \"fk1_user\" FOREIGN KEY (\"user\") REFERENCES \"user\"(\"id\"))"
+
+          lift $ logDebug "Insert all rows from the old tables into the new tables."
+          Selda.Unsafe.rawStm
+            "INSERT INTO space\n\
+            \SELECT * FROM space_temp"
+          Selda.Unsafe.rawStm
+            "INSERT INTO space_user\n\
+            \SELECT * FROM space_user_temp"
+          Selda.Unsafe.rawStm
+            "INSERT INTO space_role\n\
+            \SELECT * FROM space_role_temp"
+          Selda.Unsafe.rawStm
+            "INSERT INTO space_role_permission\n\
+            \SELECT * FROM space_role_permission_temp"
+          Selda.Unsafe.rawStm
+            "INSERT INTO desk\n\
+            \SELECT * FROM desk_temp"
+          Selda.Unsafe.rawStm
+            "INSERT INTO reservation\n\
+            \SELECT * FROM reservation_temp"
+
+          lift $ logDebug "Drop the temporary tables."
+          Selda.Unsafe.rawStm "DROP TABLE reservation_temp"
+          Selda.Unsafe.rawStm "DROP TABLE desk_temp"
+          Selda.Unsafe.rawStm "DROP TABLE space_role_permission_temp"
+          Selda.Unsafe.rawStm "DROP TABLE space_role_temp"
+          Selda.Unsafe.rawStm "DROP TABLE space_user_temp"
+          Selda.Unsafe.rawStm "DROP TABLE space_temp"
+
+          lift $ logDebug "The `owner` column has been successfully added to the `space` table."
+      }
   ]
 
 createDatabase ::
