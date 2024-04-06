@@ -18,6 +18,7 @@ import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Foldable
 import Data.Kind
+import Data.Password.Bcrypt
 import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Time qualified as T
@@ -175,16 +176,18 @@ spaceCreate ::
   NameSpace ->
   T.TZLabel ->
   VisibilitySpace ->
+  Maybe Password ->
   SeldaTransactionT m IdentifierSpace
-spaceCreate name timezoneLabel visibility = do
+spaceCreate name timezoneLabel visibility password = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
+  maybePasswordHash :: Maybe (PasswordHash Bcrypt) <- traverse hashPassword password
   let dbSpace =
         MkDbSpace
           { dbSpace_id = Selda.def
           , dbSpace_name = unNameSpace name
           , dbSpace_timezone = timezoneLabel
           , dbSpace_visibility = spaceVisibilityApiToDb visibility
-          , dbSpace_password_hash = Nothing -- TODO
+          , dbSpace_password_hash = unPasswordHash <$> maybePasswordHash
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."

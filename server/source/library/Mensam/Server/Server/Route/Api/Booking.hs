@@ -14,6 +14,7 @@ import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
+import Data.Password.Bcrypt
 import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Traversable
@@ -58,7 +59,7 @@ createSpace auth eitherRequest =
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         lift $ logInfo "Create space."
-        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateTimezone request) (requestSpaceCreateVisibility request)
+        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (requestSpaceCreateTimezone request) (requestSpaceCreateVisibility request) (mkPassword <$> requestSpaceCreatePassword request)
 
         do
           lift $ logInfo "Create admin role and add user."
