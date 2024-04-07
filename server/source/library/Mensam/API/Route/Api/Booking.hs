@@ -55,6 +55,7 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 (StaticText "Insufficient permission.")
+              , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
   , routeSpaceJoin ::

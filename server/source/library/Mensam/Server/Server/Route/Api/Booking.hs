@@ -96,6 +96,7 @@ deleteSpace ::
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 403 (StaticText "Insufficient permission.")) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -114,10 +115,14 @@ deleteSpace auth eitherRequest =
             pure $ Just ()
           else pure Nothing
       case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
+        SeldaFailure err -> do
           logWarn "Failed to delete space."
-          respond $ WithStatus @500 ()
+          case fromException @SqlErrorMensamSpaceNotFound err of
+            Just _exc ->
+              respond $ WithStatus @404 $ MkStaticText @"Space not found."
+            Nothing ->
+              -- TODO: Here we can theoretically return a more accurate error
+              respond $ WithStatus @500 ()
         SeldaSuccess Nothing -> do
           logInfo "Didn't delete space because of insufficient permission. User needs to the owner."
           respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."

@@ -16,15 +16,29 @@ queryUnique :: (MonadSelda m, MonadThrow m, Result a) => Query (Backend m) a -> 
 queryUnique q =
   query q >>= \case
     _ : _ : _ -> throwM $ UnsafeError "Expected unique result, but the query returned multiple results."
-    [spaceId] -> pure $ Just spaceId
+    [result] -> pure $ Just result
     [] -> pure Nothing
 
+-- | Expected unique result, but the query returned multiple results.
+type SqlErrorMensamNotUniqueQuery :: Type
+data SqlErrorMensamNotUniqueQuery = MkSqlErrorMensamNotUniqueQuery
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
+
 -- | Run 'query', but throw an error unless there is exactly one result.
-queryOne :: (MonadSelda m, MonadThrow m, Result a) => Query (Backend m) a -> m (Res a)
-queryOne q =
-  queryUnique q >>= \case
-    Just spaceId -> pure spaceId
-    Nothing -> throwM $ UnsafeError "Expected exactly one result, but the query didn't return any results."
+queryOne :: (MonadSelda m, MonadCatch m, Result a) => Query (Backend m) a -> m (Res a)
+queryOne q = do
+  queryUniqueResult <- catch (queryUnique q) $ \case
+    MkSqlErrorMensamNotUniqueQuery -> throwM $ MkSqlErrorMensamNotOneQuery $ Just MkSqlErrorMensamNotUniqueQuery
+  case queryUniqueResult of
+    Just result -> pure result
+    Nothing -> throwM $ MkSqlErrorMensamNotOneQuery Nothing
+
+-- | Expected exactly one result, but the query didn't return any results.
+type SqlErrorMensamNotOneQuery :: Type
+newtype SqlErrorMensamNotOneQuery = MkSqlErrorMensamNotOneQuery (Maybe SqlErrorMensamNotUniqueQuery)
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
 
 -- | Run 'insert', but throw an error unless exactly one row is being inserted.
 insertOne :: (MonadSelda m, MonadThrow m, Relational a) => Table a -> a -> m ()

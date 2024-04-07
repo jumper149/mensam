@@ -47,7 +47,8 @@ spaceGetFromId ::
   SeldaTransactionT m Space
 spaceGetFromId identifier = do
   lift $ logDebug $ "Get space info with identifier: " <> T.pack (show identifier)
-  dbSpace <- Selda.queryOne $ spaceGet $ Selda.toId @DbSpace $ unIdentifierSpace identifier
+  dbSpace <- catch (Selda.queryOne $ spaceGet $ Selda.toId @DbSpace $ unIdentifierSpace identifier) $
+    \case exc -> throwM $ MkSqlErrorMensamSpaceNotFound exc
   lift $ logInfo "Got space info successfully."
   pure
     MkSpace
@@ -56,6 +57,11 @@ spaceGetFromId identifier = do
       , spaceTimezone = dbSpace_timezone dbSpace
       , spaceOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
       }
+
+type SqlErrorMensamSpaceNotFound :: Type
+newtype SqlErrorMensamSpaceNotFound = MkSqlErrorMensamSpaceNotFound Selda.SqlErrorMensamNotOneQuery
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
 
 -- | Already checks permissions.
 spaceView ::
@@ -69,7 +75,9 @@ spaceView userIdentifier spaceIdentifier = do
   maybeDbSpace <- Selda.queryUnique $ do
     dbSpace <- spaceGet (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
     Selda.restrict $
-      dbSpace Selda.! #dbSpace_visibility Selda..== Selda.literal MkDbSpaceVisibility_visible
+      dbSpace
+        Selda.! #dbSpace_visibility
+        Selda..== Selda.literal MkDbSpaceVisibility_visible
         Selda..|| Selda.literal (MkPermissionSpaceViewSpace `S.member` permissions)
     pure dbSpace
   case maybeDbSpace of
