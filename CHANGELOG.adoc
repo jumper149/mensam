@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.1.0.0`
+
 * API
   ** Add `/space/leave` route.
   ** Add optional `password` to request body route of `/space/create`.
