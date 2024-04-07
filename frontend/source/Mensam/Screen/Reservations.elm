@@ -40,6 +40,7 @@ type alias Model =
                 { id : Mensam.Space.Identifier
                 , name : Mensam.Space.Name
                 , timezone : Mensam.Time.TimezoneIdentifier
+                , owner : Mensam.User.Identifier
                 }
             , user :
                 { id : Mensam.User.Identifier
@@ -395,6 +396,7 @@ type MessagePure
                 { id : Mensam.Space.Identifier
                 , name : Mensam.Space.Name
                 , timezone : Mensam.Time.TimezoneIdentifier
+                , owner : Mensam.User.Identifier
                 }
             , user :
                 { id : Mensam.User.Identifier

@@ -141,5 +141,5 @@ decodeBody403 =
                         Decode.succeed ()
 
                     _ ->
-                        Decode.fail <| "Unexpected HTTP 409 message: " ++ string
+                        Decode.fail <| "Unexpected HTTP 403 message: " ++ string
             )

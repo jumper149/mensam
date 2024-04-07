@@ -1,6 +1,7 @@
 module Mensam.API.Data.Space where
 
 import Mensam.API.Aeson
+import Mensam.API.Data.User
 
 import Data.Aeson qualified as A
 import Data.Int
@@ -31,6 +32,7 @@ data Space = MkSpace
   { spaceId :: IdentifierSpace
   , spaceName :: NameSpace
   , spaceTimezone :: T.TZLabel
+  , spaceOwner :: IdentifierUser
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

@@ -7,6 +7,7 @@ import Mensam.Auth.Bearer
 import Mensam.Space
 import Mensam.Time
 import Url.Builder
+import Mensam.User
 
 
 type alias Request =
@@ -110,17 +111,19 @@ decodeBody200 =
     Decode.map (\x -> { spaces = x }) <|
         Decode.field "spaces" <|
             Decode.list <|
-                Decode.map3
-                    (\id name timezone ->
+                Decode.map4
+                    (\id name timezone owner ->
                         Mensam.Space.MkSpace
                             { id = id
                             , name = name
                             , timezone = timezone
+                            , owner = owner
                             }
                     )
                     (Decode.field "id" Mensam.Space.identifierDecoder)
                     (Decode.field "name" Mensam.Space.nameDecoder)
                     (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
+                    (Decode.field "owner" Mensam.User.identifierDecoder)
 
 
 decodeBody400 : Decode.Decoder String

@@ -3,6 +3,9 @@
 * API
   ** Add `/space/leave` route.
   ** Add optional `password` to request body route of `/space/create`.
+  ** Add `owner` field to spaces when serialized to/from JSON affecting a few routes.
+    *** `/space/list`
+    *** `/reservation/list`
 * Frontend
   ** Add a new button leave a space when you already are a member.
   ** Allow optionally setting a password to join a space.
@@ -10,7 +13,7 @@
   ** Add new column `password_hash` to the `space` table.
   ** Add new column `owner` to the `space` table.
     *** This migration has to touch a lot of data.
-        Some spaces that don't have any members will be purged during this migration.
+        Spaces that don't have any members will be purged during this migration.
         All other spaces will have their oldest member as the new owner.
 
 == `0.0.3.0`

@@ -17,6 +17,7 @@ type alias Request =
 
 type Response
     = Success
+    | ErrorOwnerCantLeave
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -72,6 +73,14 @@ responseResult httpResponse =
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err
 
+                403 ->
+                    case Decode.decodeString decodeBody403 body of
+                        Ok () ->
+                            Ok <| ErrorOwnerCantLeave
+
+                        Err err ->
+                            Err <| Http.BadBody <| Decode.errorToString err
+
                 status ->
                     Err <| Http.BadStatus status
 
@@ -107,3 +116,17 @@ decodeBody200 =
 decodeBody400 : Decode.Decoder String
 decodeBody400 =
     Decode.field "error" Decode.string
+
+
+decodeBody403 : Decode.Decoder ()
+decodeBody403 =
+    Decode.string
+        |> Decode.andThen
+            (\string ->
+                case string of
+                    "Owner cannot leave space." ->
+                        Decode.succeed ()
+
+                    _ ->
+                        Decode.fail <| "Unexpected HTTP 403 message: " ++ string
+            )

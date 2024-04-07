@@ -51,9 +51,10 @@ spaceGetFromId identifier = do
   lift $ logInfo "Got space info successfully."
   pure
     MkSpace
-      { spaceId = MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
+      { spaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
       , spaceName = MkNameSpace $ dbSpace_name dbSpace
       , spaceTimezone = dbSpace_timezone dbSpace
+      , spaceOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
       }
 
 -- | Already checks permissions.
@@ -135,6 +136,7 @@ spaceListVisible userIdentifier spaceOrder = do
           { spaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id space
           , spaceName = MkNameSpace $ dbSpace_name space
           , spaceTimezone = dbSpace_timezone space
+          , spaceOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner space
           }
   pure $ fromDbSpace <$> dbSpaces
 
@@ -257,6 +259,17 @@ spaceUserRemove spaceIdentifier userIdentifier = do
   Selda.deleteOneFrom tableSpaceUser $ \row -> row Selda.! #dbSpaceUser_id Selda..== Selda.literal (dbSpaceUser_id dbSpaceUser)
   lift $ logInfo "Removed space-user successfully."
   pure ()
+
+spaceUserIsOwner ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  IdentifierUser ->
+  SeldaTransactionT m Bool
+spaceUserIsOwner spaceIdentifier userIdentifier = do
+  lift $ logDebug $ "Looking up if user " <> T.pack (show userIdentifier) <> " is owner of space " <> T.pack (show spaceIdentifier) <> "."
+  space <- spaceGetFromId spaceIdentifier
+  lift $ logInfo "Looked up space ownership successfully."
+  pure $ spaceOwner space == userIdentifier
 
 spaceUserPermissions ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

@@ -39,6 +39,7 @@ type Response
                     { id : Mensam.Space.Identifier
                     , name : Mensam.Space.Name
                     , timezone : Mensam.Time.TimezoneIdentifier
+                    , owner : Mensam.User.Identifier
                     }
                 , user :
                     { id : Mensam.User.Identifier
@@ -143,6 +144,7 @@ decodeBody200 :
                     { id : Mensam.Space.Identifier
                     , name : Mensam.Space.Name
                     , timezone : Mensam.Time.TimezoneIdentifier
+                    , owner : Mensam.User.Identifier
                     }
                 , user :
                     { id : Mensam.User.Identifier
@@ -169,6 +171,7 @@ decodeBody200 =
                             { id = space.id
                             , name = space.name
                             , timezone = space.timezone
+                            , owner = space.owner
                             }
                         , user =
                             { id = reservation.user
@@ -191,10 +194,11 @@ decodeBody200 =
                             (Decode.field "user" Mensam.User.identifierDecoder)
                     )
                     (Decode.field "space" <|
-                        Decode.map3 (\id name timezone -> { id = id, name = name, timezone = timezone })
+                        Decode.map4 (\id name timezone owner -> { id = id, name = name, timezone = timezone, owner = owner })
                             (Decode.field "id" Mensam.Space.identifierDecoder)
                             (Decode.field "name" Mensam.Space.nameDecoder)
                             (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
+                            (Decode.field "owner" Mensam.User.identifierDecoder)
                     )
 
 

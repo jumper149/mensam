@@ -1619,6 +1619,13 @@ spaceLeave jwt spaceId =
                 Ok Mensam.Api.SpaceLeave.Success ->
                     MessagePure CloseDialogToLeave
 
+                Ok Mensam.Api.SpaceLeave.ErrorOwnerCantLeave ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Owners cannot leave their space." <|
+                                Mensam.Error.message "You could try deleting the space." <|
+                                    Mensam.Error.undefined
+
                 Ok (Mensam.Api.SpaceLeave.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|

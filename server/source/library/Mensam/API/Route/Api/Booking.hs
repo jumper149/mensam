@@ -43,8 +43,7 @@ data Routes route = Routes
         :- Summary "Delete Space"
           :> Description
               "Delete a space irreversibly.\n\
-              \This also purges data associated with this space including desks and member roles.\n\
-              \All members will be notified with an email.\n"
+              \This also purges data associated with this space including reservations, desks and member roles.\n"
           :> "space"
           :> "delete"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -78,7 +77,7 @@ data Routes route = Routes
               ]
   , routeSpaceLeave ::
       route
-        :- Summary "Join Space"
+        :- Summary "Leave Space"
           :> Description
               "Abandon membership of a space.\n"
           :> "space"
@@ -91,6 +90,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceLeave
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Owner cannot leave space.")
               , WithStatus 500 ()
               ]
   , routeSpaceView ::

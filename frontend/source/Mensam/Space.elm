@@ -4,6 +4,7 @@ import Dict
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Time
+import Mensam.User
 import Set
 
 
@@ -36,6 +37,7 @@ type Space
         { id : Identifier
         , name : Name
         , timezone : Mensam.Time.TimezoneIdentifier
+        , owner : Mensam.User.Identifier
         }
 
 

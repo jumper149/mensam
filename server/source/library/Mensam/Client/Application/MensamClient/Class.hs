@@ -140,6 +140,7 @@ endpointSpaceLeave ::
         '[ WithStatus 200 Route.Api.Booking.ResponseSpaceLeave
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (StaticText "Owner cannot leave space.")
          , WithStatus 500 ()
          ]
     )

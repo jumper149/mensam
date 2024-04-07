@@ -106,8 +106,8 @@ deleteSpace auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to delete space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        permissions <- spaceUserPermissions (requestSpaceDeleteId request) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditSpace `S.member` permissions
+        isOwner <- spaceUserIsOwner (requestSpaceDeleteId request) (userAuthenticatedId authenticated)
+        if isOwner
           then do
             lift $ logInfo "Delete space."
             spaceDelete $ requestSpaceDeleteId request
@@ -119,7 +119,7 @@ deleteSpace auth eitherRequest =
           logWarn "Failed to delete space."
           respond $ WithStatus @500 ()
         SeldaSuccess Nothing -> do
-          logInfo "Didn't delete space because of insufficient permission."
+          logInfo "Didn't delete space because of insufficient permission. User needs to the owner."
           respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
         SeldaSuccess (Just ()) -> do
           logInfo "Deleted space."
@@ -193,6 +193,7 @@ leaveSpace ::
   , IsMember (WithStatus 200 ResponseSpaceLeave) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Owner cannot leave space.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -213,15 +214,28 @@ leaveSpace auth eitherRequest =
                   let msg :: T.Text = "No matching space."
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
-        spaceUserRemove spaceIdentifier (userAuthenticatedId authenticated)
+        isOwner <- spaceUserIsOwner spaceIdentifier (userAuthenticatedId authenticated)
+        if isOwner
+          then do
+            lift $ logInfo "User is the owner of the space and can therefore not be removed."
+            pure False
+          else do
+            lift $ logInfo "Removing user from space."
+            spaceUserRemove spaceIdentifier (userAuthenticatedId authenticated)
+            pure True
       case seldaResult of
         SeldaFailure _err -> do
           -- TODO: Here we can theoretically return a more accurate error
           logWarn "Failed to leave space."
           respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
-          logInfo "Left space."
-          respond $ WithStatus @200 MkResponseSpaceLeave {responseSpaceLeaveUnit = ()}
+        SeldaSuccess removed ->
+          if removed
+            then do
+              logInfo "Left space."
+              respond $ WithStatus @200 MkResponseSpaceLeave {responseSpaceLeaveUnit = ()}
+            else do
+              logInfo "Failed to leave space as owner."
+              respond $ WithStatus @403 $ MkStaticText @"Owner cannot leave space."
 
 viewSpace ::
   ( MonadIO m
