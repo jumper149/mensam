@@ -18,6 +18,7 @@ import Data.Aeson qualified as A
 import Data.HashMap.Strict.InsOrd qualified as HMIO
 import Data.OpenApi
 import Data.Proxy
+import Data.Text qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
 import Data.Text.Lazy.IO qualified as TL
 import Deriving.Aeson qualified as A
@@ -75,7 +76,9 @@ instance KnownSymbol text => ToParamSchema (StaticText text) where
       & type_ ?~ OpenApiString
       & enum_ ?~ [A.toJSON $ MkStaticText @text]
 instance KnownSymbol text => ToSchema (StaticText text) where
-  declareNamedSchema = pure . NamedSchema (Just "StaticText") . paramSchemaToSchema
+  declareNamedSchema = pure . NamedSchema (Just $ "StaticText: " <> text) . paramSchemaToSchema
+   where
+    text = T.pack $ show $ A.toJSON $ MkStaticText @text
 
 instance ToSchema Route.User.Jwt where
   declareNamedSchema Proxy =
