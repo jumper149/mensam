@@ -118,7 +118,7 @@ routeToModelUpdate route (MkModel model) =
 
         RouteSpaces ->
             update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <|
-                MkModel { model | screen = ScreenSpaces <| Mensam.Screen.Spaces.init model.time.zoneIdentifier }
+                MkModel { model | screen = ScreenSpaces <| Mensam.Screen.Spaces.init }
 
         RouteSpace identifier ->
             update
@@ -572,7 +572,7 @@ update message (MkModel model) =
         MessageSpaces (Mensam.Screen.Spaces.MessagePure m) ->
             case model.screen of
                 ScreenSpaces screenModel ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenSpaces <| Mensam.Screen.Spaces.updatePure m screenModel }
+                    update EmptyMessage <| MkModel { model | screen = ScreenSpaces <| Mensam.Screen.Spaces.updatePure m { timezone = model.time.zoneIdentifier } screenModel }
 
                 _ ->
                     update (ReportError errorScreen) <| MkModel model

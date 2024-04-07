@@ -22,7 +22,6 @@ import Mensam.Time
 type alias Model =
     { spaces : List Mensam.Space.Space
     , selected : Maybe Int
-    , timezone : Mensam.Time.TimezoneIdentifier
     , create :
         Maybe
             { name : Mensam.Space.Name
@@ -32,11 +31,14 @@ type alias Model =
             }
     }
 
+type alias MainModelAccess =
+    { timezone : Mensam.Time.TimezoneIdentifier
+    }
 
-init : Mensam.Time.TimezoneIdentifier -> Model
-init timezone =
+
+init : Model
+init =
     { spaces = []
-    , timezone = timezone
     , selected = Nothing
     , create = Nothing
     }
@@ -282,8 +284,8 @@ type MessagePure
     | EnterSpacePassword String
 
 
-updatePure : MessagePure -> Model -> Model
-updatePure message model =
+updatePure : MessagePure -> MainModelAccess -> Model -> Model
+updatePure message mainModel model =
     case message of
         SetSpaces spaces ->
             { model | spaces = spaces }
@@ -296,7 +298,7 @@ updatePure message model =
                 | create =
                     Just
                         { name = Mensam.Space.MkName ""
-                        , timezone = model.timezone
+                        , timezone = mainModel.timezone
                         , visible = True
                         , password = ""
                         }
