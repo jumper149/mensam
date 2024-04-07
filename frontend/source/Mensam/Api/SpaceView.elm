@@ -7,6 +7,7 @@ import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
 import Mensam.Time
+import Mensam.User
 import Set
 import Url.Builder
 
@@ -122,17 +123,19 @@ decodeBody200 =
                                     , roles = record.roles
                                     , timezone = record.timezone
                                     , visibility = record.visibility
+                                    , owner = record.owner
                                     , yourRole = yourRole
                                     }
                 )
             <|
-                Decode.map6
-                    (\id name roles timezone visibility maybeYourRoleId ->
+                Decode.map7
+                    (\id name roles timezone visibility owner maybeYourRoleId ->
                         { id = id
                         , name = Mensam.Space.MkName name
                         , roles = Dict.fromList <| List.map (\role -> ( role.name, role )) roles
                         , timezone = timezone
                         , visibility = visibility
+                        , owner = owner
                         , yourRole =
                             case maybeYourRoleId of
                                 Nothing ->
@@ -166,6 +169,7 @@ decodeBody200 =
                     )
                     (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
                     (Decode.field "visibility" Mensam.Space.visibilityDecoder)
+                    (Decode.field "owner" Mensam.User.identifierDecoder)
                     (Decode.field "your-role" <| Decode.nullable Decode.int)
 
 

@@ -22,6 +22,7 @@ type SpaceView
                 }
         , timezone : Mensam.Time.TimezoneIdentifier
         , visibility : Visibility
+        , owner : Mensam.User.Identifier
         , yourRole :
             Maybe
                 { accessibility : Accessibility

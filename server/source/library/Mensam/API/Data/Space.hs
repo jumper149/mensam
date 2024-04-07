@@ -19,6 +19,7 @@ data SpaceView = MkSpaceView
   , spaceViewName :: NameSpace
   , spaceViewTimezone :: T.TZLabel
   , spaceViewVisibility :: VisibilitySpace
+  , spaceViewOwner :: IdentifierUser
   , spaceViewRoles :: S.Set SpaceRole
   , spaceViewYourRole :: Maybe IdentifierSpaceRole
   }

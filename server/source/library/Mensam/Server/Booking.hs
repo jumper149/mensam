@@ -106,10 +106,11 @@ spaceView userIdentifier spaceIdentifier = do
       pure $
         Just
           MkSpaceView
-            { spaceViewId = MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
+            { spaceViewId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
             , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
             , spaceViewTimezone = dbSpace_timezone dbSpace
             , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
+            , spaceViewOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
             , spaceViewRoles = S.fromList spaceRoles
             , spaceViewYourRole = maybeSpaceRoleIdentifier
             }

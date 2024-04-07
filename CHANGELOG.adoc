@@ -1,5 +1,8 @@
 = Changelog
 
+* API
+  ** Add owner information to the response of the `/space/view` route.
+
 == `0.1.0.0`
 
 * API
