@@ -25,7 +25,7 @@ handler =
     }
 
 render ::
-  (MonadConfigured m) =>
+  MonadConfigured m =>
   m Blaze.Html
 render = do
   pure $

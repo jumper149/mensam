@@ -12,10 +12,10 @@ import Servant.Auth qualified
 import Servant.Auth.JWT.WithSession
 import Servant.OpenApi
 
-instance (HasOpenApi api) => HasOpenApi (Servant.Auth.Auth '[] a :> api) where
+instance HasOpenApi api => HasOpenApi (Servant.Auth.Auth '[] a :> api) where
   toOpenApi Proxy = toOpenApi $ Proxy @api
 
-instance (HasOpenApi (Servant.Auth.Auth auths a :> api)) => HasOpenApi (Servant.Auth.Auth (Servant.Auth.BasicAuth : auths) a :> api) where
+instance HasOpenApi (Servant.Auth.Auth auths a :> api) => HasOpenApi (Servant.Auth.Auth (Servant.Auth.BasicAuth : auths) a :> api) where
   toOpenApi Proxy = addSecurity $ toOpenApi $ Proxy @(Servant.Auth.Auth auths a :> api)
    where
     addSecurity = addSecurityRequirement identifier . addSecurityScheme identifier securityScheme
@@ -26,7 +26,7 @@ instance (HasOpenApi (Servant.Auth.Auth auths a :> api)) => HasOpenApi (Servant.
         , _securitySchemeDescription = Just "Basic Authentication"
         }
 
-instance (HasOpenApi (Servant.Auth.Auth auths a :> api)) => HasOpenApi (Servant.Auth.Auth (Servant.Auth.JWT : auths) a :> api) where
+instance HasOpenApi (Servant.Auth.Auth auths a :> api) => HasOpenApi (Servant.Auth.Auth (Servant.Auth.JWT : auths) a :> api) where
   toOpenApi Proxy = addSecurity $ toOpenApi $ Proxy @(Servant.Auth.Auth auths a :> api)
    where
     addSecurity = addSecurityRequirement identifier . addSecurityScheme identifier securityScheme
@@ -37,10 +37,10 @@ instance (HasOpenApi (Servant.Auth.Auth auths a :> api)) => HasOpenApi (Servant.
         , _securitySchemeDescription = Just "Bearer Authentication"
         }
 
-instance (HasOpenApi (Servant.Auth.Auth auths a :> api)) => HasOpenApi (Servant.Auth.Auth (JWTWithSession : auths) a :> api) where
+instance HasOpenApi (Servant.Auth.Auth auths a :> api) => HasOpenApi (Servant.Auth.Auth (JWTWithSession : auths) a :> api) where
   toOpenApi Proxy = toOpenApi $ Proxy @(Servant.Auth.Auth (Servant.Auth.JWT : auths) a :> api)
 
-instance (HasOpenApi (Servant.Auth.Auth auths a :> api)) => HasOpenApi (Servant.Auth.Auth (Servant.Auth.Cookie : auths) a :> api) where
+instance HasOpenApi (Servant.Auth.Auth auths a :> api) => HasOpenApi (Servant.Auth.Auth (Servant.Auth.Cookie : auths) a :> api) where
   toOpenApi Proxy = addSecurity $ toOpenApi $ Proxy @(Servant.Auth.Auth auths a :> api)
    where
     addSecurity = addSecurityRequirement identifier . addSecurityScheme identifier securityScheme
