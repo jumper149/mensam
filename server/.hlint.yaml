@@ -1,4 +1,11 @@
 - modules:
   - name: Control.Monad.Logger
-    within: []
     message: Use Control.Monad.Logger.CallStack instead
+  - name:
+      - Control.Password.Argon2
+      - Control.Password.Crypton
+      - Control.Password.Cryptonite
+      - Control.Password.PBKDF2
+      - Control.Password.Scrypt
+      - Control.Password.Validate
+    message: Use Control.Password.Bcrypt instead
