@@ -41,13 +41,13 @@
       };
 
       "justinmimbs/time-extra" = {
-        sha256 = "1qd9cpwpjj944rijdyfflwsl0qp6f492q6hj9pm3xfbwiq8kdjhn";
-        version = "1.1.1";
+        sha256 = "1innw81fv3cfdx40rggzr4b6lvv6r28prar2b9i5a7isy00yagkw";
+        version = "1.2.0";
       };
 
       "justinmimbs/timezone-data" = {
-        sha256 = "169awfn2jzjza68wdhwcbijs3vl2bx46g98lssj25hg9msjw0n6x";
-        version = "10.0.2";
+        sha256 = "0a5q4jz8k1jc3wpy6mx4qhkszg8zr1ixaz9zyaaz21fwl5l92mbx";
+        version = "10.1.1";
       };
 
       "mdgriffith/elm-ui" = {
@@ -96,7 +96,7 @@
       };
 
       "justinmimbs/date" = {
-        sha256 = "0fpci4mvnjdjl3gyjamw39virj3x38s0dsgrm8sy94qwwn2dlds3";
-        version = "4.0.1";
+        sha256 = "11ybasla0nrczpgw1anrmcgqmvl1r0jkrcb9k2v2psng35iwi5ij";
+        version = "4.1.0";
       };
 }
