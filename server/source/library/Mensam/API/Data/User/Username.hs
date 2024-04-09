@@ -36,9 +36,9 @@ mkUsername = P.parseOnly $ do
   let alphanumeric = (P.digit <|> P.letter) P.<?> "unexpected non-alphanumeric character"
   chars <- P.manyTill alphanumeric P.endOfInput
   if
-      | length chars > 32 -> fail "too long"
-      | length chars < 4 -> fail "too short"
-      | otherwise -> pure $ MkUsernameUnsafe $ T.pack chars
+    | length chars > 32 -> fail "too long"
+    | length chars < 4 -> fail "too short"
+    | otherwise -> pure $ MkUsernameUnsafe $ T.pack chars
 
 deriving newtype instance ToHttpApiData Username
 instance FromHttpApiData Username where

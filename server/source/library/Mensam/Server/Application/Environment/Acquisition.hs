@@ -5,7 +5,6 @@ import Mensam.Server.Environment
 import Control.Applicative
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
-import Control.Monad.Logger.OrphanInstances ()
 import Control.Monad.Trans.Elevator
 import Control.Monad.Trans.State
 import Data.List qualified as L

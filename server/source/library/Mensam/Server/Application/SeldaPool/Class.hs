@@ -5,7 +5,6 @@
 module Mensam.Server.Application.SeldaPool.Class where
 
 import Control.Monad.Catch
-import Control.Monad.Catch.OrphanInstances ()
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Compose

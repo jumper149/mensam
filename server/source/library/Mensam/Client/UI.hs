@@ -30,6 +30,7 @@ import Data.Sequence qualified as Seq
 import Data.Text qualified as T
 import Data.Time qualified as T
 import Graphics.Vty
+import Graphics.Vty.Platform.Unix
 import Lens.Micro.Platform
 import Servant
 

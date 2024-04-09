@@ -38,8 +38,8 @@
           pkgs.curl
           pkgs.jq
           pkgs.openapi-generator-cli
-          pkgs.haskell.packages.ghc926.nix-tree
-          pkgs.rnix-lsp
+          pkgs.nix-tree
+          pkgs.nil
         ];
         shells =
           let

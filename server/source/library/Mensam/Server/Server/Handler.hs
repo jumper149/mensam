@@ -10,10 +10,8 @@ import Mensam.Server.Server.Handler.RequestHash
 
 import Control.Monad.Base
 import Control.Monad.Catch
-import Control.Monad.Catch.OrphanInstances ()
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
-import Control.Monad.Logger.OrphanInstances ()
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Compose.Stack
 import Control.Monad.Trans.Control
@@ -44,4 +42,4 @@ runHandlerT randomHash = runStackT runTransformers . unHandlerT
   runTransformers =
     RunNilT
       :..> runRequestHashT randomHash
-      . (logInfo "Starting HTTP request handler." >>)
+        . (logInfo "Starting HTTP request handler." >>)

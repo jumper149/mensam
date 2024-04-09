@@ -10,7 +10,8 @@
 
         cp -r ${packages.x86_64-linux.fonts}/fonts build
 
-        cp ${pkgs.nodePackages.redoc-cli}/lib/node_modules/redoc-cli/node_modules/redoc/bundles/redoc.standalone.js build
+        cp ${pkgs.redocly-cli}/lib/node_modules/@redocly/cli/node_modules/redoc/bundles/redoc.standalone.js build
+
         sed -i 's|https://cdn.redoc.ly/redoc/logo-mini.svg|static/favicon.png|g' build/redoc.standalone.js
 
         cp --target-directory=build --recursive ${self.subflakes.frontend.packages.x86_64-linux.default.outPath}/*

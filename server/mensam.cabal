@@ -97,6 +97,7 @@ common dependencies
     , unix
     , unliftio-core
     , vty
+    , vty-unix
     , wai
     , wai-app-static
     , wai-control
@@ -190,7 +191,6 @@ library
     , Mensam.Server.Server.Route.Static
     , Mensam.Server.User
   other-modules:
-    , Control.Monad.Catch.OrphanInstances
     , Control.Monad.Logger.OrphanInstances
     , Data.Time.Zones.All.OrphanInstances
     , Deriving.Aeson.OrphanInstances

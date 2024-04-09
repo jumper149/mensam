@@ -23,7 +23,7 @@ data DbMigration = MkDbMigration
   , dbMigration_time_applied :: Selda.UTCTime
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 tableMigration :: Selda.Table DbMigration
 tableMigration =
@@ -41,7 +41,7 @@ data DbJwk = MkDbJwk
   , dbJwk_created :: Selda.UTCTime
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 tableJwk :: Selda.Table DbJwk
 tableJwk =
@@ -62,7 +62,7 @@ data DbUser = MkDbUser
   , dbUser_email_validated :: Bool
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 type DbEmailVisibility :: Type
 data DbEmailVisibility
@@ -90,7 +90,7 @@ data DbConfirmation = MkDbConfirmation
   , dbConfirmation_effect :: Selda.Text
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 tableConfirmation :: Selda.Table DbConfirmation
 tableConfirmation =
@@ -110,7 +110,7 @@ data DbSession = MkDbSession
   , dbSession_time_expired :: Maybe Selda.UTCTime
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 tableSession :: Selda.Table DbSession
 tableSession =
@@ -131,7 +131,7 @@ data DbSpace = MkDbSpace
   , dbSpace_owner :: Selda.ID DbUser
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 type DbSpaceVisibility :: Type
 data DbSpaceVisibility
@@ -158,7 +158,7 @@ data DbSpaceRole = MkDbSpaceRole
   , dbSpaceRole_accessibility :: DbSpaceRoleAccessibility
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 type DbSpaceRoleAccessibility :: Type
 data DbSpaceRoleAccessibility
@@ -185,7 +185,7 @@ data DbSpaceRolePermission = MkDbSpaceRolePermission
   , dbSpaceRolePermission_permission :: DbSpacePermission
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 tableSpaceRolePermission :: Selda.Table DbSpaceRolePermission
 tableSpaceRolePermission =
@@ -216,7 +216,7 @@ data DbSpaceUser = MkDbSpaceUser
   , dbSpaceUser_role :: Selda.ID DbSpaceRole
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 tableSpaceUser :: Selda.Table DbSpaceUser
 tableSpaceUser =
@@ -236,7 +236,7 @@ data DbDesk = MkDbDesk
   , dbDesk_name :: Selda.Text
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 tableDesk :: Selda.Table DbDesk
 tableDesk =
@@ -258,7 +258,7 @@ data DbReservation = MkDbReservation
   , dbReservation_status :: DbReservationStatus
   }
   deriving stock (Generic, Show)
-  deriving anyclass (Selda.SqlRow)
+  deriving anyclass (Selda.Relational, Selda.SqlRow)
 
 type DbReservationStatus :: Type
 data DbReservationStatus

@@ -12,9 +12,10 @@ import Mensam.Client.Application.Options.Class
 import Mensam.Client.UI.Brick.Events (ClientEvent)
 
 import Brick.BChan (BChan)
-import Control.Monad.Except
+import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Logger.OrphanInstances ()
+import Control.Monad.Trans.Class
 import Control.Monad.Trans.Compose.Stack
 import Control.Monad.Trans.Control
 import Control.Monad.Trans.Control.Identity

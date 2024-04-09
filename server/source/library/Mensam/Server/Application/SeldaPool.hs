@@ -11,7 +11,6 @@ import Mensam.Server.Database.Migration
 import Control.Monad.Catch
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
-import Control.Monad.Logger.OrphanInstances ()
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Compose.Transparent

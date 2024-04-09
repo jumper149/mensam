@@ -16,11 +16,9 @@ import Mensam.Server.Application.SeldaPool.Class
 
 import Control.Monad.Base
 import Control.Monad.Catch
-import Control.Monad.Catch.OrphanInstances ()
-import Control.Monad.Except
 import Control.Monad.IO.Unlift
 import Control.Monad.Logger.CallStack
-import Control.Monad.Logger.OrphanInstances ()
+import Control.Monad.Trans.Class
 import Control.Monad.Trans.Compose.Stack
 import Control.Monad.Trans.Control
 import Control.Monad.Trans.Control.Identity
@@ -63,7 +61,7 @@ runApplicationT app = do
         RunNilT
           :..> runEnvironmentT env
           :..> runAppTimedLoggingT
-          . (traverse_ logLine preLog >>)
+            . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
           :..> runSeldaPoolT
           :..> runAppSecretT
