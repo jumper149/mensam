@@ -18,6 +18,8 @@ common language
     LexicalNegation
     NumDecimals
     OverloadedStrings
+    RoleAnnotations
+    TypeData
     TypeFamilies
   ghc-options:
     -Weverything
