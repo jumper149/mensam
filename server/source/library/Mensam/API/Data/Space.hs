@@ -97,6 +97,7 @@ newtype NameSpaceRole = MkNameSpaceRole {unNameSpaceRole :: T.Text}
 type AccessibilitySpaceRole :: Type
 data AccessibilitySpaceRole
   = MkAccessibilitySpaceRoleJoinable
+  | MkAccessibilitySpaceRoleJoinableWithPassword
   | MkAccessibilitySpaceRoleInaccessible
   deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
   deriving

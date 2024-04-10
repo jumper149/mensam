@@ -672,11 +672,13 @@ spaceVisibilityDbToApi = \case
 spaceRoleAccessibilityApiToDb :: AccessibilitySpaceRole -> DbSpaceRoleAccessibility
 spaceRoleAccessibilityApiToDb = \case
   MkAccessibilitySpaceRoleJoinable -> MkDbSpaceRoleAccessibility_joinable
+  MkAccessibilitySpaceRoleJoinableWithPassword -> MkDbSpaceRoleAccessibility_joinable_with_password
   MkAccessibilitySpaceRoleInaccessible -> MkDbSpaceRoleAccessibility_inaccessible
 
 spaceRoleAccessibilityDbToApi :: DbSpaceRoleAccessibility -> AccessibilitySpaceRole
 spaceRoleAccessibilityDbToApi = \case
   MkDbSpaceRoleAccessibility_joinable -> MkAccessibilitySpaceRoleJoinable
+  MkDbSpaceRoleAccessibility_joinable_with_password -> MkAccessibilitySpaceRoleJoinableWithPassword
   MkDbSpaceRoleAccessibility_inaccessible -> MkAccessibilitySpaceRoleInaccessible
 
 spacePermissionApiToDb :: PermissionSpace -> DbSpacePermission

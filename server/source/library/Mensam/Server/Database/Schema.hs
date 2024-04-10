@@ -163,6 +163,7 @@ data DbSpaceRole = MkDbSpaceRole
 type DbSpaceRoleAccessibility :: Type
 data DbSpaceRoleAccessibility
   = MkDbSpaceRoleAccessibility_joinable
+  | MkDbSpaceRoleAccessibility_joinable_with_password
   | MkDbSpaceRoleAccessibility_inaccessible
   deriving stock (Bounded, Enum, Read, Show)
   deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceRoleAccessibility_" DbSpaceRoleAccessibility)

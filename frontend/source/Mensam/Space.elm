@@ -139,6 +139,7 @@ permissionToString permission =
 
 type Accessibility
     = MkAccessibilityJoinable
+    | MkAccessibilityJoinableWithPassword
     | MkAccessibilityInaccessible
 
 
@@ -148,6 +149,9 @@ accessibilityEncode accessibility =
         case accessibility of
             MkAccessibilityJoinable ->
                 "joinable"
+
+            MkAccessibilityJoinableWithPassword ->
+                "joinable-with-password"
 
             MkAccessibilityInaccessible ->
                 "inaccessible"
@@ -160,6 +164,9 @@ accessibilityDecoder =
             case string of
                 "joinable" ->
                     Decode.succeed MkAccessibilityJoinable
+
+                "joinable-with-password" ->
+                    Decode.succeed MkAccessibilityJoinableWithPassword
 
                 "inaccessible" ->
                     Decode.succeed MkAccessibilityInaccessible

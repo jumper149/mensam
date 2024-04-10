@@ -158,7 +158,6 @@ joinSpace auth eitherRequest =
                   let msg :: T.Text = "No matching space."
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
-        spacePasswordCheck' spaceIdentifier (mkPassword <$> requestSpaceJoinPassword request)
         spaceRoleIdentifier <-
           case requestSpaceJoinRole request of
             Identifier spaceId -> pure spaceId
@@ -175,9 +174,12 @@ joinSpace auth eitherRequest =
             let msg :: T.Text = "Space-role is inaccessible. Cannot join."
             lift $ logWarn msg
             throwM $ Selda.SqlError $ show msg
+          MkAccessibilitySpaceRoleJoinableWithPassword -> do
+            lift $ logDebug "Space-role is joinable with password. Checking password."
+            spacePasswordCheck' spaceIdentifier (mkPassword <$> requestSpaceJoinPassword request)
           MkAccessibilitySpaceRoleJoinable -> do
             lift $ logDebug "Space-role is joinable. Joining."
-            spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
+        spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
       case seldaResult of
         SeldaFailure err -> do
           logWarn "Failed to join space."

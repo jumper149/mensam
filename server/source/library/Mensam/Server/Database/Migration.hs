@@ -246,6 +246,18 @@ migrations =
 
           lift $ logDebug "The `owner` column has been successfully added to the `space` table."
       }
+  , MkMigration
+      { migrationId = Selda.toId 6
+      , migrationName = "addRoleAccessibilityJoinableWithPassword"
+      , migrationWork =
+          Selda.Unsafe.rawStm
+            "UPDATE space_role\n\
+            \SET accessibility = 'joinable_with_password'\n\
+            \FROM (SELECT id AS space_id, password_hash AS space_password_hash FROM space)\n\
+            \WHERE space_role.space = space_id\n\
+            \AND space_password_hash IS NOT NULL\n\
+            \AND space_role.accessibility = 'joinable'"
+      }
   ]
 
 createDatabase ::
