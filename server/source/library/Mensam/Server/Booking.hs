@@ -18,6 +18,7 @@ import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Foldable
 import Data.Kind
+import Data.Maybe
 import Data.Password.Bcrypt
 import Data.Set qualified as S
 import Data.Text qualified as T
@@ -188,18 +189,15 @@ spaceCreate ::
   IdentifierUser ->
   T.TZLabel ->
   VisibilitySpace ->
-  Maybe Password ->
   SeldaTransactionT m IdentifierSpace
-spaceCreate name owner timezoneLabel visibility password = do
+spaceCreate name owner timezoneLabel visibility = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
-  maybePasswordHash :: Maybe (PasswordHash Bcrypt) <- traverse hashPassword password
   let dbSpace =
         MkDbSpace
           { dbSpace_id = Selda.def
           , dbSpace_name = unNameSpace name
           , dbSpace_timezone = timezoneLabel
           , dbSpace_visibility = spaceVisibilityApiToDb visibility
-          , dbSpace_password_hash = unPasswordHash <$> maybePasswordHash
           , dbSpace_owner = Selda.toId @DbUser $ unIdentifierUser owner
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
@@ -300,20 +298,37 @@ spaceRoleCreate ::
   IdentifierSpace ->
   NameSpaceRole ->
   AccessibilitySpaceRole ->
+  Maybe Password ->
   SeldaTransactionT m IdentifierSpaceRole
-spaceRoleCreate spaceIdentifier roleName accessibility = do
+spaceRoleCreate spaceIdentifier roleName accessibility password = do
   lift $ logDebug $ "Creating role: " <> T.pack (show (spaceIdentifier, roleName))
+  maybePasswordHash :: Maybe (PasswordHash Bcrypt) <- do
+    lift $ logDebug "Confirming that accessibility and password_hash match."
+    let accessibilityMatchesPassword =
+          case accessibility of
+            MkAccessibilitySpaceRoleJoinable -> isNothing password
+            MkAccessibilitySpaceRoleJoinableWithPassword -> isJust password
+            MkAccessibilitySpaceRoleInaccessible -> isNothing password
+    if accessibilityMatchesPassword
+      then lift $ traverse hashPassword password
+      else throwM MkSqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch
   let dbSpaceRole =
         MkDbSpaceRole
           { dbSpaceRole_id = Selda.def
           , dbSpaceRole_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbSpaceRole_name = unNameSpaceRole roleName
           , dbSpaceRole_accessibility = spaceRoleAccessibilityApiToDb accessibility
+          , dbSpaceRole_password_hash = unPasswordHash <$> maybePasswordHash
           }
   lift $ logDebug "Inserting space-role into database."
   dbSpaceRoleId <- Selda.insertWithPK tableSpaceRole [dbSpaceRole]
   lift $ logInfo "Created role successfully."
   pure $ MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole dbSpaceRoleId
+
+type SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch :: Type
+data SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch = MkSqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
 
 spaceRoleDelete ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
@@ -346,24 +361,25 @@ spaceRolePermissionGive spaceRoleIdentifier permission = do
   Selda.insert_ tableSpaceRolePermission [dbSpaceRolePermission]
   lift $ logInfo "Gave space-role a permission successfully."
 
-spacePasswordCheck ::
+-- | Just checks that the password matches.
+-- Does not check the accessibility of the role.
+spaceRolePasswordCheck ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpace ->
+  IdentifierSpaceRole ->
   Maybe Password ->
   SeldaTransactionT m PasswordCheck
-spacePasswordCheck identifier maybePassword = do
-  lift $ logDebug $ "Querying space " <> T.pack (show identifier) <> " from database to check password."
-  dbSpace <- Selda.queryOne $ spaceGet $ Selda.toId @DbSpace $ unIdentifierSpace identifier
-  let maybePasswordHash = PasswordHash <$> dbSpace_password_hash dbSpace
-  case maybePasswordHash of
+spaceRolePasswordCheck identifier maybePassword = do
+  lift $ logDebug $ "Querying space_role " <> T.pack (show identifier) <> " from database to check password."
+  dbSpaceRole <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier
+  case PasswordHash <$> dbSpaceRole_password_hash dbSpaceRole of
     Nothing -> do
       case maybePassword of
         Nothing -> do
-          lift $ logInfo "No space password has been set. Nothing to check."
+          lift $ logInfo "No password has been set. Nothing to check."
           pure PasswordCheckSuccess
         Just _ -> do
-          lift $ logInfo "Tried to enter a password even though no password had been set up."
-          pure PasswordCheckFail -- TODO: Handle this special case differently?
+          lift $ logWarn "Tried to enter a password even though there is no password set up."
+          throwM MkSqlErrorMensamSpaceRoleNoPasswordSetCannotCheck
     Just passwordHash -> do
       case maybePassword of
         Nothing -> do
@@ -374,26 +390,31 @@ spacePasswordCheck identifier maybePassword = do
           let passwordCheck = checkPassword password passwordHash
           case passwordCheck of
             PasswordCheckSuccess ->
-              lift $ logInfo "Space password matches. Check successful."
+              lift $ logInfo "Password matches. Check successful."
             PasswordCheckFail ->
-              lift $ logInfo "Space password does not matches. Check failed."
+              lift $ logInfo "Password does not matches. Check failed."
           pure passwordCheck
 
+type SqlErrorMensamSpaceRoleNoPasswordSetCannotCheck :: Type
+data SqlErrorMensamSpaceRoleNoPasswordSetCannotCheck = MkSqlErrorMensamSpaceRoleNoPasswordSetCannotCheck
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
+
 -- | Fails the transaction when the password check fails.
-spacePasswordCheck' ::
+spaceRolePasswordCheck' ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpace ->
+  IdentifierSpaceRole ->
   Maybe Password ->
   SeldaTransactionT m ()
-spacePasswordCheck' identifier maybePassword =
-  spacePasswordCheck identifier maybePassword >>= \case
+spaceRolePasswordCheck' identifier maybePassword =
+  spaceRolePasswordCheck identifier maybePassword >>= \case
     PasswordCheckSuccess -> pure ()
     PasswordCheckFail -> do
-      lift $ logDebug "Abort transaction after failed space password check."
-      throwM MkSqlErrorMensamSpacePasswordCheckFail
+      lift $ logDebug "Abort transaction after failed space_role password check."
+      throwM MkSqlErrorMensamSpaceRolePasswordCheckFail
 
-type SqlErrorMensamSpacePasswordCheckFail :: Type
-data SqlErrorMensamSpacePasswordCheckFail = MkSqlErrorMensamSpacePasswordCheckFail
+type SqlErrorMensamSpaceRolePasswordCheckFail :: Type
+data SqlErrorMensamSpaceRolePasswordCheckFail = MkSqlErrorMensamSpaceRolePasswordCheckFail
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
 

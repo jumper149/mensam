@@ -127,7 +127,6 @@ data DbSpace = MkDbSpace
   , dbSpace_name :: Selda.Text
   , dbSpace_timezone :: Time.TZLabel
   , dbSpace_visibility :: DbSpaceVisibility
-  , dbSpace_password_hash :: Maybe Selda.Text
   , dbSpace_owner :: Selda.ID DbUser
   }
   deriving stock (Generic, Show)
@@ -150,12 +149,16 @@ tableSpace =
     ]
     (fromJust . T.stripPrefix "dbSpace_")
 
+-- TODO: Some assumptions are currently not checked by the database:
+--   - When `accessibility = 'joinable_with_password'` we also have `password_hash IS NOT NULL`
+--   - When `accessibility != 'joinable_with_password'` we also have `password_hash IS NULL`
 type DbSpaceRole :: Type
 data DbSpaceRole = MkDbSpaceRole
   { dbSpaceRole_id :: ~(Selda.ID DbSpaceRole)
   , dbSpaceRole_space :: Selda.ID DbSpace
   , dbSpaceRole_name :: Selda.Text
   , dbSpaceRole_accessibility :: DbSpaceRoleAccessibility
+  , dbSpaceRole_password_hash :: Maybe Selda.Text
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.Relational, Selda.SqlRow)

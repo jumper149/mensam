@@ -1,5 +1,8 @@
 = Changelog
 
+* Database
+  ** Move column `password_hash` from table `space` to `space_role`.
+
 == `0.2.0.0`
 
 * Update all dependencies.

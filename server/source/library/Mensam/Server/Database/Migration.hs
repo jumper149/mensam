@@ -258,6 +258,28 @@ migrations =
             \AND space_password_hash IS NOT NULL\n\
             \AND space_role.accessibility = 'joinable'"
       }
+  , MkMigration
+      { migrationId = Selda.toId 7
+      , migrationName = "addRolePasswordHash"
+      , migrationWork = do
+          lift $ logDebug "Create new `password_hash` column for `space_role`."
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space_role\n\
+            \ADD COLUMN password_hash TEXT"
+
+          lift $ logDebug "Set the correct values to the new `password_hash` column."
+          Selda.Unsafe.rawStm
+            "UPDATE space_role\n\
+            \SET password_hash = space.password_hash\n\
+            \FROM space\n\
+            \WHERE space_role.space = space.id\n\
+            \AND space_role.accessibility = 'joinable_with_password'"
+
+          lift $ logDebug "Delete old `password_hash` column from `space`."
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space\n\
+            \DROP COLUMN password_hash"
+      }
   ]
 
 createDatabase ::

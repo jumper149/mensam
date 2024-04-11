@@ -59,11 +59,11 @@ createSpace auth eitherRequest =
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         lift $ logInfo "Create space."
-        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (userAuthenticatedId authenticated) (requestSpaceCreateTimezone request) (requestSpaceCreateVisibility request) (mkPassword <$> requestSpaceCreatePassword request)
+        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (userAuthenticatedId authenticated) (requestSpaceCreateTimezone request) (requestSpaceCreateVisibility request)
 
         do
           lift $ logInfo "Create admin role and add user."
-          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Admin") MkAccessibilitySpaceRoleInaccessible
+          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Admin") MkAccessibilitySpaceRoleInaccessible Nothing
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditDesk
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditSpace
@@ -73,7 +73,7 @@ createSpace auth eitherRequest =
 
         do
           lift $ logInfo "Create member role."
-          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Member") MkAccessibilitySpaceRoleJoinable
+          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Member") MkAccessibilitySpaceRoleJoinable Nothing
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCancelReservation
@@ -176,7 +176,7 @@ joinSpace auth eitherRequest =
             throwM $ Selda.SqlError $ show msg
           MkAccessibilitySpaceRoleJoinableWithPassword -> do
             lift $ logDebug "Space-role is joinable with password. Checking password."
-            spacePasswordCheck' spaceIdentifier (mkPassword <$> requestSpaceJoinPassword request)
+            spaceRolePasswordCheck' spaceRoleIdentifier (mkPassword <$> requestSpaceJoinPassword request)
           MkAccessibilitySpaceRoleJoinable -> do
             lift $ logDebug "Space-role is joinable. Joining."
         spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
@@ -184,7 +184,7 @@ joinSpace auth eitherRequest =
         SeldaFailure err -> do
           logWarn "Failed to join space."
           case fromException err of
-            Just MkSqlErrorMensamSpacePasswordCheckFail ->
+            Just MkSqlErrorMensamSpaceRolePasswordCheckFail ->
               respond $ WithStatus @403 $ MkStaticText @"Wrong space password."
             Nothing -> do
               -- TODO: Here we can theoretically return a more accurate error
