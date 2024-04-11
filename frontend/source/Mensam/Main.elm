@@ -617,13 +617,6 @@ update message (MkModel model) =
 
                                         else
                                             Mensam.Space.MkVisibilityHidden
-                                    , password =
-                                        case formData.password of
-                                            "" ->
-                                                Nothing
-
-                                            password ->
-                                                Just password
                                     }
                             )
 

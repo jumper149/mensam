@@ -6,8 +6,8 @@ import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
 import Mensam.Time
-import Url.Builder
 import Mensam.User
+import Url.Builder
 
 
 type alias Request =

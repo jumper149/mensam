@@ -14,7 +14,6 @@ type alias Request =
     , name : Mensam.Space.Name
     , timezone : Mensam.Time.TimezoneIdentifier
     , visibility : Mensam.Space.Visibility
-    , password : Maybe String
     }
 
 
@@ -103,14 +102,6 @@ encodeBody body =
           )
         , ( "visibility"
           , Mensam.Space.visibilityEncode body.visibility
-          )
-        , ( "password"
-          , case body.password of
-                Nothing ->
-                    Encode.null
-
-                Just password ->
-                    Encode.string password
           )
         ]
 

@@ -2,6 +2,8 @@
 
 * Database
   ** Move column `password_hash` from table `space` to `space_role`.
+* API
+  ** Remove `password` field from the request of the `/space/create` route.
 
 == `0.2.0.0`
 

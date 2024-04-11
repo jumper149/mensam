@@ -226,7 +226,6 @@ data RequestSpaceCreate = MkRequestSpaceCreate
   { requestSpaceCreateName :: NameSpace
   , requestSpaceCreateTimezone :: T.TZLabel
   , requestSpaceCreateVisibility :: VisibilitySpace
-  , requestSpaceCreatePassword :: Maybe T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
