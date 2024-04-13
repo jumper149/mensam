@@ -24,6 +24,7 @@ import Mensam.Error
 import Mensam.NameOrIdentifier
 import Mensam.Reservation
 import Mensam.Space
+import Mensam.Space.Role
 import Mensam.Time
 import Mensam.Widget.Date
 import Mensam.Widget.Time
@@ -37,7 +38,7 @@ type alias Model =
     , roles :
         Dict.Dict
             String
-            { accessibility : Mensam.Space.Accessibility
+            { accessibility : Mensam.Space.Role.Accessibility
             , id : Int
             , name : String
             , permissions : Set.Set String
@@ -47,7 +48,7 @@ type alias Model =
     , visibility : Mensam.Space.Visibility
     , yourRole :
         Maybe
-            { accessibility : Mensam.Space.Accessibility
+            { accessibility : Mensam.Space.Role.Accessibility
             , id : Int
             , name : String
             , permissions : Set.Set String

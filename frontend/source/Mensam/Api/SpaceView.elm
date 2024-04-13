@@ -6,6 +6,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
+import Mensam.Space.Role
 import Mensam.Time
 import Mensam.User
 import Set
@@ -162,7 +163,7 @@ decodeBody200 =
                                     , permissions = Set.fromList permissions
                                     }
                                 )
-                                (Decode.field "accessibility" Mensam.Space.accessibilityDecoder)
+                                (Decode.field "accessibility" Mensam.Space.Role.accessibilityDecoder)
                                 (Decode.field "id" Decode.int)
                                 (Decode.field "name" Decode.string)
                                 (Decode.field "permissions" <| Decode.list Decode.string)
