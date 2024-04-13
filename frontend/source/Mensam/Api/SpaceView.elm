@@ -9,7 +9,6 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
 import Mensam.User
-import Set
 import Url.Builder
 
 
@@ -164,13 +163,13 @@ decodeBody200 =
                                     { accessibility = accessibility
                                     , id = id
                                     , name = name
-                                    , permissions = Set.fromList permissions
+                                    , permissions = permissions
                                     }
                                 )
                                 (Decode.field "accessibility" Mensam.Space.Role.accessibilityDecoder)
                                 (Decode.field "id" Mensam.Space.Role.identifierDecoder)
                                 (Decode.field "name" Decode.string)
-                                (Decode.field "permissions" <| Decode.list Decode.string)
+                                (Decode.field "permissions" <| Mensam.Space.Role.permissionsDecoder)
                     )
                     (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
                     (Decode.field "visibility" Mensam.Space.visibilityDecoder)

@@ -28,7 +28,6 @@ import Mensam.Space.Role
 import Mensam.Time
 import Mensam.Widget.Date
 import Mensam.Widget.Time
-import Set
 import Time
 
 
@@ -41,7 +40,7 @@ type alias Model =
             { accessibility : Mensam.Space.Role.Accessibility
             , id : Mensam.Space.Role.Identifier
             , name : String
-            , permissions : Set.Set String
+            , permissions : Mensam.Space.Role.Permissions
             }
     , timezone : Time.Zone
     , timezoneIdentifier : Mensam.Time.TimezoneIdentifier
@@ -51,7 +50,7 @@ type alias Model =
             { accessibility : Mensam.Space.Role.Accessibility
             , id : Mensam.Space.Role.Identifier
             , name : String
-            , permissions : Set.Set String
+            , permissions : Mensam.Space.Role.Permissions
             }
     , popup : Maybe PopupModel
     , desks :

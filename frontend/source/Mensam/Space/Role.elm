@@ -2,6 +2,7 @@ module Mensam.Space.Role exposing (..)
 
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Set
 
 
 type Identifier
@@ -50,6 +51,41 @@ type Permission
     | MkPermissionCancelReservation
 
 
+permissionToInt : Permission -> Int
+permissionToInt permission =
+    case permission of
+        MkPermissionViewSpace ->
+            0
+
+        MkPermissionEditDesk ->
+            1
+
+        MkPermissionCreateReservation ->
+            2
+
+        MkPermissionCancelReservation ->
+            3
+
+
+permissionFromInt : Int -> Maybe Permission
+permissionFromInt int =
+    case int of
+        0 ->
+            Just MkPermissionViewSpace
+
+        1 ->
+            Just MkPermissionEditDesk
+
+        2 ->
+            Just MkPermissionCreateReservation
+
+        3 ->
+            Just MkPermissionCancelReservation
+
+        _ ->
+            Nothing
+
+
 permissionToString : Permission -> String
 permissionToString permission =
     case permission of
@@ -64,6 +100,48 @@ permissionToString permission =
 
         MkPermissionCancelReservation ->
             "cancel-reservation"
+
+
+permissionEncode : Permission -> Encode.Value
+permissionEncode =
+    Encode.string << permissionToString
+
+
+permissionDecoder : Decode.Decoder Permission
+permissionDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\string ->
+                case string of
+                    "view-space" ->
+                        Decode.succeed MkPermissionViewSpace
+
+                    "edit-desk" ->
+                        Decode.succeed MkPermissionEditDesk
+
+                    "create-reservation" ->
+                        Decode.succeed MkPermissionCreateReservation
+
+                    "cancel-reservation" ->
+                        Decode.succeed MkPermissionCancelReservation
+
+                    _ ->
+                        Decode.fail <| "Trying to decode permission, but this permission is not supported: " ++ string
+            )
+
+
+type Permissions
+    = MkPermissions (Set.Set Int)
+
+
+permissionsToList : Permissions -> List Permission
+permissionsToList (MkPermissions permissions) =
+    List.filterMap permissionFromInt <| Set.toList permissions
+
+
+permissionsDecoder : Decode.Decoder Permissions
+permissionsDecoder =
+    Decode.map (MkPermissions << Set.fromList << List.map permissionToInt) <| Decode.list permissionDecoder
 
 
 type Accessibility

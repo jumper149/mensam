@@ -6,7 +6,6 @@ import Json.Encode as Encode
 import Mensam.Space.Role
 import Mensam.Time
 import Mensam.User
-import Set
 
 
 type SpaceView
@@ -19,7 +18,7 @@ type SpaceView
                 { accessibility : Mensam.Space.Role.Accessibility
                 , id : Mensam.Space.Role.Identifier
                 , name : String
-                , permissions : Set.Set String
+                , permissions : Mensam.Space.Role.Permissions
                 }
         , timezone : Mensam.Time.TimezoneIdentifier
         , visibility : Visibility
@@ -29,7 +28,7 @@ type SpaceView
                 { accessibility : Mensam.Space.Role.Accessibility
                 , id : Mensam.Space.Role.Identifier
                 , name : String
-                , permissions : Set.Set String
+                , permissions : Mensam.Space.Role.Permissions
                 }
         }
 
