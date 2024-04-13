@@ -1,6 +1,5 @@
 module Mensam.Screen.Space exposing (..)
 
-import Dict
 import Element
 import Element.Background
 import Element.Events
