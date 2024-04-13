@@ -131,8 +131,8 @@ decodeBody200 =
                 Decode.map7
                     (\id name roles timezone visibility owner maybeYourRoleId ->
                         { id = id
-                        , name = Mensam.Space.MkName name
-                        , roles = Dict.fromList <| List.map (\role -> ( role.name, role )) roles
+                        , name = name
+                        , roles = roles
                         , timezone = timezone
                         , visibility = visibility
                         , owner = owner
@@ -155,7 +155,7 @@ decodeBody200 =
                         }
                     )
                     (Decode.field "id" Mensam.Space.identifierDecoder)
-                    (Decode.field "name" Decode.string)
+                    (Decode.field "name" Mensam.Space.nameDecoder)
                     (Decode.field "roles" <|
                         Decode.list <|
                             Decode.map4
@@ -168,7 +168,7 @@ decodeBody200 =
                                 )
                                 (Decode.field "accessibility" Mensam.Space.Role.accessibilityDecoder)
                                 (Decode.field "id" Mensam.Space.Role.identifierDecoder)
-                                (Decode.field "name" Decode.string)
+                                (Decode.field "name" Mensam.Space.Role.nameDecoder)
                                 (Decode.field "permissions" <| Mensam.Space.Role.permissionsDecoder)
                     )
                     (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)

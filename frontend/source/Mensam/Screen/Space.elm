@@ -35,11 +35,10 @@ type alias Model =
     { space : Mensam.Space.Identifier
     , name : Mensam.Space.Name
     , roles :
-        Dict.Dict
-            String
+        List
             { accessibility : Mensam.Space.Role.Accessibility
             , id : Mensam.Space.Role.Identifier
-            , name : String
+            , name : Mensam.Space.Role.Name
             , permissions : Mensam.Space.Role.Permissions
             }
     , timezone : Time.Zone
@@ -49,7 +48,7 @@ type alias Model =
         Maybe
             { accessibility : Mensam.Space.Role.Accessibility
             , id : Mensam.Space.Role.Identifier
-            , name : String
+            , name : Mensam.Space.Role.Name
             , permissions : Mensam.Space.Role.Permissions
             }
     , popup : Maybe PopupModel
@@ -109,7 +108,7 @@ init : { id : Mensam.Space.Identifier, time : { now : Time.Posix, zone : Time.Zo
 init args =
     { space = args.id
     , name = Mensam.Space.MkName ""
-    , roles = Dict.empty
+    , roles = []
     , timezone = Time.utc
     , timezoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
     , visibility = Mensam.Space.MkVisibilityHidden
@@ -708,14 +707,14 @@ element model =
                                                 , Element.centerY
                                                 ]
                                             <|
-                                                Element.text role.name
+                                                Element.text <|
+                                                    Mensam.Space.Role.nameToString role.name
                               in
                               Element.column
                                 [ Element.width Element.fill
                                 ]
                               <|
-                                List.map roleElement <|
-                                    Dict.values model.roles
+                                List.map roleElement model.roles
                             , Element.Input.currentPassword
                                 [ onEnter <| MessageEffect <| SubmitJoin
                                 , Element.Font.color Mensam.Element.Color.dark.black

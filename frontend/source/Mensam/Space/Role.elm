@@ -47,6 +47,7 @@ nameDecoder =
 type Permission
     = MkPermissionViewSpace
     | MkPermissionEditDesk
+    | MkPermissionEditSpace
     | MkPermissionCreateReservation
     | MkPermissionCancelReservation
 
@@ -60,11 +61,14 @@ permissionToInt permission =
         MkPermissionEditDesk ->
             1
 
-        MkPermissionCreateReservation ->
+        MkPermissionEditSpace ->
             2
 
-        MkPermissionCancelReservation ->
+        MkPermissionCreateReservation ->
             3
+
+        MkPermissionCancelReservation ->
+            4
 
 
 permissionFromInt : Int -> Maybe Permission
@@ -77,9 +81,12 @@ permissionFromInt int =
             Just MkPermissionEditDesk
 
         2 ->
-            Just MkPermissionCreateReservation
+            Just MkPermissionEditSpace
 
         3 ->
+            Just MkPermissionCreateReservation
+
+        4 ->
             Just MkPermissionCancelReservation
 
         _ ->
@@ -94,6 +101,9 @@ permissionToString permission =
 
         MkPermissionEditDesk ->
             "edit-desk"
+
+        MkPermissionEditSpace ->
+            "edit-space"
 
         MkPermissionCreateReservation ->
             "create-reservation"
@@ -118,6 +128,9 @@ permissionDecoder =
 
                     "edit-desk" ->
                         Decode.succeed MkPermissionEditDesk
+
+                    "edit-space" ->
+                        Decode.succeed MkPermissionEditSpace
 
                     "create-reservation" ->
                         Decode.succeed MkPermissionCreateReservation

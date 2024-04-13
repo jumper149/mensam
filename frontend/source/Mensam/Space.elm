@@ -1,6 +1,5 @@
 module Mensam.Space exposing (..)
 
-import Dict
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Space.Role
@@ -13,11 +12,10 @@ type SpaceView
         { id : Identifier
         , name : Name
         , roles :
-            Dict.Dict
-                String
+            List
                 { accessibility : Mensam.Space.Role.Accessibility
                 , id : Mensam.Space.Role.Identifier
-                , name : String
+                , name : Mensam.Space.Role.Name
                 , permissions : Mensam.Space.Role.Permissions
                 }
         , timezone : Mensam.Time.TimezoneIdentifier
@@ -27,7 +25,7 @@ type SpaceView
             Maybe
                 { accessibility : Mensam.Space.Role.Accessibility
                 , id : Mensam.Space.Role.Identifier
-                , name : String
+                , name : Mensam.Space.Role.Name
                 , permissions : Mensam.Space.Role.Permissions
                 }
         }
