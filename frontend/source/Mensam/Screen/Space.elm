@@ -39,7 +39,7 @@ type alias Model =
         Dict.Dict
             String
             { accessibility : Mensam.Space.Role.Accessibility
-            , id : Int
+            , id : Mensam.Space.Role.Identifier
             , name : String
             , permissions : Set.Set String
             }
@@ -49,7 +49,7 @@ type alias Model =
     , yourRole :
         Maybe
             { accessibility : Mensam.Space.Role.Accessibility
-            , id : Int
+            , id : Mensam.Space.Role.Identifier
             , name : String
             , permissions : Set.Set String
             }
@@ -84,7 +84,7 @@ type PopupModel
         { name : Mensam.Desk.Name
         }
     | PopupJoin
-        { roleId : Maybe Int
+        { roleId : Maybe Mensam.Space.Role.Identifier
         , password : Maybe String
         }
     | PopupLeave
@@ -1231,7 +1231,7 @@ type MessagePure
     | SetSelected (Maybe Int)
     | OpenDialogToJoin
     | CloseDialogToJoin
-    | SetRoleToJoin Int
+    | SetRoleToJoin Mensam.Space.Role.Identifier
     | EnterSpacePasswordToJoin (Maybe String)
     | OpenDialogToLeave
     | CloseDialogToLeave
@@ -1582,7 +1582,7 @@ spaceView jwt model =
                     MessageEffect <| ReportError <| Mensam.Error.http error
 
 
-spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Int -> Maybe String -> Cmd Message
+spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.Space.Role.Identifier -> Maybe String -> Cmd Message
 spaceJoin jwt spaceId roleId password =
     Mensam.Api.SpaceJoin.request { jwt = jwt, role = Mensam.NameOrIdentifier.Identifier roleId, space = Mensam.NameOrIdentifier.Identifier spaceId, password = password } <|
         \result ->

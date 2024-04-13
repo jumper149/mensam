@@ -17,7 +17,7 @@ type SpaceView
             Dict.Dict
                 String
                 { accessibility : Mensam.Space.Role.Accessibility
-                , id : Int
+                , id : Mensam.Space.Role.Identifier
                 , name : String
                 , permissions : Set.Set String
                 }
@@ -27,7 +27,7 @@ type SpaceView
         , yourRole :
             Maybe
                 { accessibility : Mensam.Space.Role.Accessibility
-                , id : Int
+                , id : Mensam.Space.Role.Identifier
                 , name : String
                 , permissions : Set.Set String
                 }

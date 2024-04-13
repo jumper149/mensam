@@ -6,13 +6,14 @@ import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.NameOrIdentifier
 import Mensam.Space
+import Mensam.Space.Role
 import Url.Builder
 
 
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
     , password : Maybe String
-    , role : Mensam.NameOrIdentifier.NameOrIdentifier String Int
+    , role : Mensam.NameOrIdentifier.NameOrIdentifier String Mensam.Space.Role.Identifier
     , space : Mensam.NameOrIdentifier.NameOrIdentifier Mensam.Space.Name Mensam.Space.Identifier
     }
 
@@ -112,7 +113,7 @@ encodeBody body =
                     Encode.string password
           )
         , ( "role"
-          , Mensam.NameOrIdentifier.encode Encode.string Encode.int body.role
+          , Mensam.NameOrIdentifier.encode Encode.string Mensam.Space.Role.identifierEncode body.role
           )
         , ( "space"
           , Mensam.NameOrIdentifier.encode Mensam.Space.nameEncode Mensam.Space.identifierEncode body.space

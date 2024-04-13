@@ -143,7 +143,11 @@ decodeBody200 =
                                     Just Nothing
 
                                 Just yourRoleId ->
-                                    case Dict.get yourRoleId <| Dict.fromList <| List.map (\role -> ( role.id, role )) roles of
+                                    let
+                                        unIdentifierRole (Mensam.Space.Role.MkIdentifier roleId) =
+                                            roleId
+                                    in
+                                    case Dict.get (unIdentifierRole yourRoleId) <| Dict.fromList <| List.map (\role -> ( unIdentifierRole role.id, role )) roles of
                                         Nothing ->
                                             Just Nothing
 
@@ -164,14 +168,14 @@ decodeBody200 =
                                     }
                                 )
                                 (Decode.field "accessibility" Mensam.Space.Role.accessibilityDecoder)
-                                (Decode.field "id" Decode.int)
+                                (Decode.field "id" Mensam.Space.Role.identifierDecoder)
                                 (Decode.field "name" Decode.string)
                                 (Decode.field "permissions" <| Decode.list Decode.string)
                     )
                     (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
                     (Decode.field "visibility" Mensam.Space.visibilityDecoder)
                     (Decode.field "owner" Mensam.User.identifierDecoder)
-                    (Decode.field "your-role" <| Decode.nullable Decode.int)
+                    (Decode.field "your-role" <| Decode.nullable Mensam.Space.Role.identifierDecoder)
 
 
 decodeBody400 : Decode.Decoder String

@@ -21,6 +21,7 @@ import Mensam.Screen.Reservations
 import Mensam.Screen.Space
 import Mensam.Screen.Spaces
 import Mensam.Space
+import Mensam.Space.Role
 import Mensam.Storage
 import Mensam.Time
 import Mensam.User
