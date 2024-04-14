@@ -682,18 +682,8 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpace screenModel ->
-                                    let
-                                        wrapMessage =
-                                            \messageSpaceView ->
-                                                Messages
-                                                    [ MessageSpace messageSpaceView
-                                                    , MessageSpace <|
-                                                        Mensam.Screen.Space.MessageEffect
-                                                            Mensam.Screen.Space.RefreshDesks
-                                                    ]
-                                    in
                                     ( MkModel model
-                                    , Platform.Cmd.map wrapMessage <| Mensam.Screen.Space.spaceView jwt screenModel
+                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.spaceView jwt screenModel
                                     )
 
                                 _ ->

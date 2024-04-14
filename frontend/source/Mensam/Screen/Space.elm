@@ -1387,7 +1387,22 @@ spaceView jwt model =
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success value) ->
-                    MessagePure <| SetSpaceInfo value.space
+                    case
+                        let
+                            (Mensam.Space.MkSpaceView spaceview) =
+                                value.space
+                        in
+                        spaceview.yourRole
+                    of
+                        Nothing ->
+                            MessageEffect OpenPageToJoin
+
+                        Just _ ->
+                            Messages
+                                [ MessagePure <| SetSpaceInfo value.space
+                                , MessageEffect
+                                    RefreshDesks
+                                ]
 
                 Ok Mensam.Api.SpaceView.ErrorInsufficientPermission ->
                     MessageEffect <|
