@@ -213,7 +213,6 @@ type Message
 
 type MessagePure
     = SetSpaceInfo Mensam.Space.SpaceView
-    | SetSelected (Maybe Mensam.Space.Role.Identifier)
     | SetRoleToJoin Mensam.Space.Role.Identifier
     | EnterSpacePasswordToJoin (Maybe String)
 
@@ -231,11 +230,8 @@ updatePure message model =
                 , yourRole = space.yourRole
             }
 
-        SetSelected selection ->
-            { model | roleIdSelected = selection }
-
         SetRoleToJoin roleId ->
-            { model | roleIdSelected = Just roleId }
+            { model | roleIdSelected = Just roleId, password = Nothing }
 
         EnterSpacePasswordToJoin password ->
             { model | password = password }
