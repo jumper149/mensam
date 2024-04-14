@@ -31,10 +31,11 @@ type Error
 
 error : Error -> Mensam.Error.Error
 error err =
-    Mensam.Error.message "Bearer authentication failed" <|
-        case err of
-            ErrorIndefinite ->
-                Mensam.Error.undefined
+    Mensam.Error.message "Try signing in again" <|
+        Mensam.Error.message "Bearer authentication failed" <|
+            case err of
+                ErrorIndefinite ->
+                    Mensam.Error.undefined
 
 
 http401BodyDecoder : Decode.Decoder Error

@@ -151,13 +151,7 @@ joinSpace auth eitherRequest =
         spaceIdentifier <-
           case requestSpaceJoinSpace request of
             Identifier spaceId -> pure spaceId
-            Name name ->
-              spaceLookupId name >>= \case
-                Just identifier -> pure identifier
-                Nothing -> do
-                  let msg :: T.Text = "No matching space."
-                  lift $ logWarn msg
-                  throwM $ Selda.SqlError $ show msg
+            Name name -> spaceLookupId name
         spaceRoleIdentifier <-
           case requestSpaceJoinRole request of
             Identifier spaceId -> pure spaceId
@@ -214,13 +208,7 @@ leaveSpace auth eitherRequest =
         spaceIdentifier <-
           case requestSpaceLeaveSpace request of
             Identifier spaceId -> pure spaceId
-            Name name ->
-              spaceLookupId name >>= \case
-                Just identifier -> pure identifier
-                Nothing -> do
-                  let msg :: T.Text = "No matching space."
-                  lift $ logWarn msg
-                  throwM $ Selda.SqlError $ show msg
+            Name name -> spaceLookupId name
         isOwner <- spaceUserIsOwner spaceIdentifier (userAuthenticatedId authenticated)
         if isOwner
           then do
@@ -309,6 +297,8 @@ createDesk ::
   , IsMember (WithStatus 201 ResponseDeskCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Insufficient permission.")) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -322,22 +312,26 @@ createDesk auth eitherRequest =
         spaceIdentifier <-
           case requestDeskCreateSpace request of
             Identifier spaceId -> pure spaceId
-            Name name ->
-              spaceLookupId name >>= \case
-                Just identifier -> pure identifier
-                Nothing -> do
-                  let msg :: T.Text = "No matching space."
-                  lift $ logWarn msg
-                  throwM $ Selda.SqlError $ show msg
+            Name name -> spaceLookupId name
         permissions <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
         if MkPermissionSpaceEditDesk `S.member` permissions
           then deskCreate (requestDeskCreateName request) spaceIdentifier
-          else error "No permission"
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk
       case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to create desk."
-          respond $ WithStatus @500 ()
+        SeldaFailure err -> do
+          case fromException err of
+            Just (MkSqlErrorMensamSpaceNotFound _) -> do
+              logInfo "Failed to create desk. Space not found."
+              respond $ WithStatus @404 $ MkStaticText @"Space not found."
+            Nothing ->
+              case fromException err of
+                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk) -> do
+                  logInfo "Failed to create desk. Space not found."
+                  respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
+                Nothing -> do
+                  -- TODO: Here we can theoretically return a more accurate error
+                  logWarn "Failed to create desk."
+                  respond $ WithStatus @500 ()
         SeldaSuccess deskIdentifier -> do
           logInfo "Created desk."
           respond $ WithStatus @201 MkResponseDeskCreate {responseDeskCreateId = deskIdentifier}
@@ -361,10 +355,7 @@ listDesks auth eitherRequest =
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <-
           case requestDeskListSpace request of
-            Name spaceName ->
-              spaceLookupId spaceName >>= \case
-                Nothing -> undefined
-                Just spaceId -> pure spaceId
+            Name spaceName -> spaceLookupId spaceName
             Identifier spaceId -> pure spaceId
         desks <- deskList spaceIdentifier (userAuthenticatedId authenticated)
         for desks $ \desk -> do
@@ -408,10 +399,7 @@ createReservation auth eitherRequest = do
         deskIdentifier <-
           case requestReservationCreateDesk request of
             Name MkDeskNameWithContext {deskNameWithContextSpace = spaceName, deskNameWithContextDesk = deskName} -> do
-              spaceIdentifier <-
-                spaceLookupId spaceName >>= \case
-                  Nothing -> undefined
-                  Just spaceId -> pure spaceId
+              spaceIdentifier <- spaceLookupId spaceName
               deskLookupId spaceIdentifier deskName >>= \case
                 Nothing -> undefined
                 Just deskId -> pure deskId

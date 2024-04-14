@@ -27,20 +27,21 @@ import Data.Time.Zones.All qualified as T
 import Database.Selda qualified as Selda
 import GHC.Generics
 
+type SqlErrorMensamSpacePermissionNotSatisfied :: PermissionSpace -> Type
+data SqlErrorMensamSpacePermissionNotSatisfied permission = MkSqlErrorMensamSpacePermissionNotSatisfied
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
+
 spaceLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   NameSpace ->
-  SeldaTransactionT m (Maybe IdentifierSpace)
+  SeldaTransactionT m IdentifierSpace
 spaceLookupId name = do
   lift $ logDebug $ "Looking up space identifier with name: " <> T.pack (show name)
-  maybeDbSpace <- Selda.queryUnique $ spaceLookup $ unNameSpace name
-  case maybeDbSpace of
-    Nothing -> do
-      lift $ logWarn $ "Failed to look up space. Name doesn't exist: " <> T.pack (show name)
-      pure Nothing
-    Just dbSpace -> do
-      lift $ logInfo "Looked up space successfully."
-      pure $ Just $ MkIdentifierSpace $ Selda.fromId $ dbSpace_id dbSpace
+  dbSpace <- catch (Selda.queryOne $ spaceLookup $ unNameSpace name) $
+    \case exc -> throwM $ MkSqlErrorMensamSpaceNotFound exc
+  lift $ logInfo "Looked up space successfully."
+  pure $ MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
 
 spaceGetFromId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

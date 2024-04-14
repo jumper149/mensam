@@ -2,6 +2,7 @@
 
 * API
   ** Remove `password` field from the request of the `/space/create` route.
+  ** Add new HTTP error codes to `/desk/create` route.
 * Database
   ** Move column `password_hash` from table `space` to `space_role`.
 * Frontend

@@ -1487,10 +1487,24 @@ deskCreate req =
                 Ok (Mensam.Api.DeskCreate.Success _) ->
                     MessagePure CloseDialogToCreate
 
+                Ok Mensam.Api.DeskCreate.ErrorInsufficientPermission ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Insufficient permission to create a desk" <|
+                                Mensam.Error.undefined
+
+                Ok Mensam.Api.DeskCreate.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Creating desk failed" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message "Space not found" <|
+                                        Mensam.Error.undefined
+
                 Ok (Mensam.Api.DeskCreate.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Creating space failed" <|
+                            Mensam.Error.message "Creating desk failed" <|
                                 Mensam.Error.message "Bad request body" <|
                                     Mensam.Error.message error <|
                                         Mensam.Error.undefined
@@ -1498,13 +1512,13 @@ deskCreate req =
                 Ok (Mensam.Api.DeskCreate.ErrorAuth error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Creating space failed" <|
+                            Mensam.Error.message "Creating desk failed" <|
                                 Mensam.Auth.Bearer.error error
 
                 Err error ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Creating space failed" <|
+                            Mensam.Error.message "Creating desk failed" <|
                                 Mensam.Error.http error
 
 
