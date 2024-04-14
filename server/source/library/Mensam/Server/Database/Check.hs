@@ -53,17 +53,39 @@ checkDatabase = void $ runSeldaTransactionT $ do
   --  lift $ logDebug "Validating table 'reservation'."
   --  Selda.validateTable tableReservation
 
-  lift $ logInfo "Checking for overlapping reservations."
-  reservationsOverlapping <- Selda.query $ do
-    dbReservationX <- Selda.select tableReservation
-    dbReservationY <- Selda.select tableReservation
-    Selda.restrict $ dbReservationX Selda.! #dbReservation_id Selda../= dbReservationY Selda.! #dbReservation_id
-    Selda.restrict $ dbReservationX Selda.! #dbReservation_desk Selda..== dbReservationY Selda.! #dbReservation_desk
-    Selda.restrict $ dbReservationX Selda.! #dbReservation_time_begin Selda..< dbReservationY Selda.! #dbReservation_time_end
-    Selda.restrict $ dbReservationX Selda.! #dbReservation_time_end Selda..> dbReservationY Selda.! #dbReservation_time_begin
-    pure dbReservationX
-  case reservationsOverlapping of
-    [] -> lift $ logInfo "No overlapping reservations found."
-    _ : _ -> lift $ logError $ "There are overlapping reservations: " <> T.pack (show reservationsOverlapping)
+  do
+    lift $ logInfo "Checking for overlapping reservations."
+    reservationsOverlapping <- Selda.query $ do
+      dbReservationX <- Selda.select tableReservation
+      dbReservationY <- Selda.select tableReservation
+      Selda.restrict $ dbReservationX Selda.! #dbReservation_id Selda../= dbReservationY Selda.! #dbReservation_id
+      Selda.restrict $ dbReservationX Selda.! #dbReservation_desk Selda..== dbReservationY Selda.! #dbReservation_desk
+      Selda.restrict $ dbReservationX Selda.! #dbReservation_time_begin Selda..< dbReservationY Selda.! #dbReservation_time_end
+      Selda.restrict $ dbReservationX Selda.! #dbReservation_time_end Selda..> dbReservationY Selda.! #dbReservation_time_begin
+      pure dbReservationX
+    case reservationsOverlapping of
+      [] -> lift $ logInfo "No overlapping reservations found."
+      _ : _ -> lift $ logError $ "There are overlapping reservations: " <> T.pack (show reservationsOverlapping)
+
+  do
+    lift $ logInfo "Checking that setting a password coincides with the `joinable_with_password` accessibility."
+    do
+      dbSpaceRolesJoinableWithPasswordButPasswordNull <- Selda.query $ do
+        dbSpaceRole <- Selda.select tableSpaceRole
+        Selda.restrict $ dbSpaceRole Selda.! #dbSpaceRole_accessibility Selda..== Selda.literal MkDbSpaceRoleAccessibility_joinable_with_password
+        Selda.restrict $ Selda.isNull $ dbSpaceRole Selda.! #dbSpaceRole_password_hash
+        pure dbSpaceRole
+      case dbSpaceRolesJoinableWithPasswordButPasswordNull of
+        [] -> lift $ logInfo "No space roles with missing passwords found."
+        _ : _ -> lift $ logError $ "There are missing passwords in space roles: " <> T.pack (show dbSpaceRolesJoinableWithPasswordButPasswordNull)
+    do
+      dbSpaceRolesNotJoinableWithPasswordButPasswordNotNull <- Selda.query $ do
+        dbSpaceRole <- Selda.select tableSpaceRole
+        Selda.restrict $ dbSpaceRole Selda.! #dbSpaceRole_accessibility Selda../= Selda.literal MkDbSpaceRoleAccessibility_joinable_with_password
+        Selda.restrict $ Selda.not_ $ Selda.isNull $ dbSpaceRole Selda.! #dbSpaceRole_password_hash
+        pure dbSpaceRole
+      case dbSpaceRolesNotJoinableWithPasswordButPasswordNotNull of
+        [] -> lift $ logInfo "No space roles with passwords and unexpected accessibility found."
+        _ : _ -> lift $ logError $ "There are unexpected accessibilities in space roles: " <> T.pack (show dbSpaceRolesNotJoinableWithPasswordButPasswordNotNull)
 
   pure ()
