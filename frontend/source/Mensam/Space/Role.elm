@@ -9,6 +9,16 @@ type Identifier
     = MkIdentifier Int
 
 
+identifierToInt : Identifier -> Int
+identifierToInt (MkIdentifier identifier) =
+    identifier
+
+
+identifierFromInt : Int -> Identifier
+identifierFromInt =
+    MkIdentifier
+
+
 identifierToString : Identifier -> String
 identifierToString (MkIdentifier identifier) =
     String.fromInt identifier
