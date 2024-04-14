@@ -8,6 +8,7 @@ import Element.Input
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
+import List.Extra
 import Mensam.Api.SpaceJoin
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
@@ -116,25 +117,46 @@ element model =
                             ]
                           <|
                             List.map roleElement model.roles
-                        , Element.Input.currentPassword
-                            [ onEnter <| MessageEffect <| SubmitJoin
-                            , Element.Font.color Mensam.Element.Color.dark.black
-                            ]
-                            { onChange =
-                                \str ->
-                                    MessagePure <|
-                                        EnterSpacePasswordToJoin <|
-                                            case str of
-                                                "" ->
-                                                    Nothing
+                        , let
+                            roleSelectedPasswordRequired =
+                                case List.Extra.find (\role -> Just role.id == model.roleIdSelected) model.roles of
+                                    Nothing ->
+                                        False
 
-                                                actualStr ->
-                                                    Just actualStr
-                            , text = Maybe.withDefault "" model.password
-                            , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
-                            , label = Element.Input.labelAbove [] <| Element.text "Password"
-                            , show = False
-                            }
+                                    Just roleSelected ->
+                                        case roleSelected.accessibility of
+                                            Mensam.Space.Role.MkAccessibilityJoinable ->
+                                                False
+
+                                            Mensam.Space.Role.MkAccessibilityJoinableWithPassword ->
+                                                True
+
+                                            Mensam.Space.Role.MkAccessibilityInaccessible ->
+                                                False
+                          in
+                          if roleSelectedPasswordRequired then
+                            Element.Input.currentPassword
+                                [ onEnter <| MessageEffect <| SubmitJoin
+                                , Element.Font.color Mensam.Element.Color.dark.black
+                                ]
+                                { onChange =
+                                    \str ->
+                                        MessagePure <|
+                                            EnterSpacePasswordToJoin <|
+                                                case str of
+                                                    "" ->
+                                                        Nothing
+
+                                                    actualStr ->
+                                                        Just actualStr
+                                , text = Maybe.withDefault "" model.password
+                                , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
+                                , label = Element.Input.labelAbove [] <| Element.text "Password"
+                                , show = False
+                                }
+
+                          else
+                            Element.none
                         , Element.row
                             [ Element.width Element.fill
                             , Element.spacing 10
