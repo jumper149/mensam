@@ -1,7 +1,5 @@
 module List.Extra exposing (..)
 
-import List
-
 
 find : (a -> Bool) -> List a -> Maybe a
 find predicate list =

@@ -860,14 +860,6 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
-        MessageSpaceJoin (Mensam.Screen.Space.Join.Messages ms) ->
-            case model.screen of
-                ScreenSpace _ ->
-                    update (Messages <| List.map MessageSpaceJoin ms) <| MkModel model
-
-                _ ->
-                    update (ReportError errorScreen) <| MkModel model
-
         MessageReservations (Mensam.Screen.Reservations.MessagePure m) ->
             case model.screen of
                 ScreenReservations screenModel ->

@@ -208,7 +208,6 @@ element model =
 type Message
     = MessagePure MessagePure
     | MessageEffect MessageEffect
-    | Messages (List Message) -- TODO: Maybe this recursion should be in a separate data type.
 
 
 type MessagePure

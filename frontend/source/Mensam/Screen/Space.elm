@@ -11,7 +11,6 @@ import Json.Decode as Decode
 import Mensam.Api.DeskCreate
 import Mensam.Api.DeskList
 import Mensam.Api.ReservationCreate
-import Mensam.Api.SpaceJoin
 import Mensam.Api.SpaceLeave
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
