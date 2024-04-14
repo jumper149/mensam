@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.3.0.0`
+
 * API
   ** Remove `password` field from the request of the `/space/create` route.
   ** Add new HTTP error codes to `/desk/create` route.
