@@ -80,10 +80,6 @@ type PopupModel
     = PopupCreate
         { name : Mensam.Desk.Name
         }
-    | PopupJoin
-        { roleId : Maybe Mensam.Space.Role.Identifier
-        , password : Maybe String
-        }
     | PopupLeave
     | PopupReservation
         { desk :
@@ -180,7 +176,7 @@ element model =
                                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                 , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                 , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                , Element.Events.onClick <| MessagePure <| OpenDialogToJoin
+                                , Element.Events.onClick <| MessageEffect <| OpenPageToJoin
                                 ]
                             <|
                                 Element.el
@@ -668,132 +664,6 @@ element model =
                                 ]
                             ]
 
-                Just (PopupJoin join) ->
-                    Just <|
-                        Element.column
-                            [ Element.spacing 20
-                            , Element.width Element.fill
-                            , Element.height Element.fill
-                            ]
-                            [ Element.el
-                                [ Element.Font.size 30
-                                , Element.Font.hairline
-                                ]
-                              <|
-                                Element.text "Join Space"
-                            , let
-                                roleElement =
-                                    \role ->
-                                        Element.el
-                                            [ Element.width Element.fill
-                                            , Element.padding 15
-                                            , Element.Background.color <|
-                                                if Just role.id == join.roleId then
-                                                    Element.rgba 0 0 0 0.2
-
-                                                else
-                                                    Element.rgba 0 0 0 0
-                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                                            , Element.mouseOver
-                                                [ Element.Background.color <| Element.rgba 0 0 0 0.3
-                                                ]
-                                            , Element.Events.onClick <| MessagePure <| SetRoleToJoin role.id
-                                            ]
-                                        <|
-                                            Element.el
-                                                [ Element.centerX
-                                                , Element.centerY
-                                                ]
-                                            <|
-                                                Element.text <|
-                                                    Mensam.Space.Role.nameToString role.name
-                              in
-                              Element.column
-                                [ Element.width Element.fill
-                                ]
-                              <|
-                                List.map roleElement model.roles
-                            , Element.Input.currentPassword
-                                [ onEnter <| MessageEffect <| SubmitJoin
-                                , Element.Font.color Mensam.Element.Color.dark.black
-                                ]
-                                { onChange =
-                                    \str ->
-                                        MessagePure <|
-                                            EnterSpacePasswordToJoin <|
-                                                case str of
-                                                    "" ->
-                                                        Nothing
-
-                                                    actualStr ->
-                                                        Just actualStr
-                                , text = Maybe.withDefault "" join.password
-                                , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
-                                , label = Element.Input.labelAbove [] <| Element.text "Password"
-                                , show = False
-                                }
-                            , Element.row
-                                [ Element.width Element.fill
-                                , Element.spacing 10
-                                , Element.alignBottom
-                                ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToJoin
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , Element.Input.button
-                                    ([ Element.width Element.fill
-                                     , Element.padding 10
-                                     ]
-                                        ++ (case join.roleId of
-                                                Nothing ->
-                                                    [ Element.Background.color Mensam.Element.Color.dark.white
-                                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                                    ]
-
-                                                Just _ ->
-                                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                                    ]
-                                           )
-                                    )
-                                    { onPress =
-                                        case join.roleId of
-                                            -- TODO: Show a help text in this case.
-                                            Nothing ->
-                                                Nothing
-
-                                            Just _ ->
-                                                Just <| MessageEffect <| SubmitJoin
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Submit"
-                                    }
-                                ]
-                            ]
-
                 Just (PopupCreate create) ->
                     Just <|
                         Element.column
@@ -1226,10 +1096,6 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
-    | OpenDialogToJoin
-    | CloseDialogToJoin
-    | SetRoleToJoin Mensam.Space.Role.Identifier
-    | EnterSpacePasswordToJoin (Maybe String)
     | OpenDialogToLeave
     | CloseDialogToLeave
     | OpenDialogToCreate
@@ -1274,47 +1140,11 @@ updatePure message model =
         SetSelected selection ->
             { model | selected = selection }
 
-        OpenDialogToJoin ->
-            { model | popup = Just <| PopupJoin { roleId = Nothing, password = Nothing } }
-
-        CloseDialogToJoin ->
-            { model | popup = Nothing }
-
         OpenDialogToLeave ->
             { model | popup = Just <| PopupLeave }
 
         CloseDialogToLeave ->
             { model | popup = Nothing }
-
-        SetRoleToJoin roleId ->
-            { model
-                | popup =
-                    case model.popup of
-                        Just (PopupJoin join) ->
-                            Just <|
-                                PopupJoin
-                                    { join
-                                        | roleId = Just roleId
-                                    }
-
-                        _ ->
-                            model.popup
-            }
-
-        EnterSpacePasswordToJoin password ->
-            { model
-                | popup =
-                    case model.popup of
-                        Just (PopupJoin join) ->
-                            Just <|
-                                PopupJoin
-                                    { join
-                                        | password = password
-                                    }
-
-                        _ ->
-                            model.popup
-            }
 
         OpenDialogToCreate ->
             { model | popup = Just <| PopupCreate { name = Mensam.Desk.MkName "" } }
@@ -1528,7 +1358,7 @@ type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshSpace
     | RefreshDesks
-    | SubmitJoin
+    | OpenPageToJoin
     | SubmitLeave
     | SubmitCreate
     | SubmitReservation
@@ -1573,36 +1403,6 @@ spaceView jwt model =
                                     Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceView.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
-
-                Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
-
-
-spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.Space.Role.Identifier -> Maybe String -> Cmd Message
-spaceJoin jwt spaceId roleId password =
-    Mensam.Api.SpaceJoin.request { jwt = jwt, role = Mensam.NameOrIdentifier.Identifier roleId, space = Mensam.NameOrIdentifier.Identifier spaceId, password = password } <|
-        \result ->
-            case result of
-                Ok Mensam.Api.SpaceJoin.Success ->
-                    MessagePure CloseDialogToJoin
-
-                Ok Mensam.Api.SpaceJoin.ErrorWrongPassword ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Failed to join" <|
-                                Mensam.Error.message "Bad request" <|
-                                    Mensam.Error.message "Wrong password" <|
-                                        Mensam.Error.undefined
-
-                Ok (Mensam.Api.SpaceJoin.ErrorBody error) ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Bad request body" <|
-                                Mensam.Error.message error <|
-                                    Mensam.Error.undefined
-
-                Ok (Mensam.Api.SpaceJoin.ErrorAuth error) ->
                     MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
 
                 Err error ->

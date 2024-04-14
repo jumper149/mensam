@@ -717,38 +717,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
-                Mensam.Screen.Space.SubmitJoin ->
-                    case model.authenticated of
-                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
-                            case model.screen of
-                                ScreenSpace screenModel ->
-                                    case screenModel.popup of
-                                        Just (Mensam.Screen.Space.PopupJoin { roleId, password }) ->
-                                            case roleId of
-                                                Nothing ->
-                                                    update (ReportError errorScreen) <| MkModel model
+                Mensam.Screen.Space.OpenPageToJoin ->
+                    case model.screen of
+                        ScreenSpace screenModel ->
+                            update (SetUrl <| RouteSpaceJoin { spaceId = screenModel.space, roleId = Nothing, password = Nothing }) <| MkModel model
 
-                                                Just justRoleId ->
-                                                    ( MkModel model
-                                                    , Platform.Cmd.map
-                                                        (\msg ->
-                                                            Messages
-                                                                [ MessageSpace msg
-                                                                , MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshSpace
-                                                                ]
-                                                        )
-                                                      <|
-                                                        Mensam.Screen.Space.spaceJoin jwt screenModel.space justRoleId password
-                                                    )
-
-                                        _ ->
-                                            update (ReportError errorScreen) <| MkModel model
-
-                                _ ->
-                                    update (ReportError errorScreen) <| MkModel model
-
-                        Mensam.Auth.SignedOut ->
-                            update (ReportError errorNoAuth) <| MkModel model
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Space.SubmitLeave ->
                     case model.authenticated of
