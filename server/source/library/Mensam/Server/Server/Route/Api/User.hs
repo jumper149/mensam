@@ -267,7 +267,7 @@ profile auth eitherRequest =
         logInfo $ "Failed to parse request: " <> T.pack (show err)
         respond $ WithStatus @400 $ MkErrorParseBodyJson err
       Right request@MkRequestProfile {requestProfileUser} -> do
-        logDebug $ "Running confirmation: " <> T.pack (show request)
+        logDebug $ "Looking up user profile: " <> T.pack (show request)
         seldaResult <- runSeldaTransactionT $ do
           maybeUserIdentifier <- case requestProfileUser of
             Name name -> userLookupId name
