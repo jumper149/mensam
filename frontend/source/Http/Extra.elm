@@ -13,7 +13,7 @@ status progress =
     case progress of
         Http.Sending { size, sent } ->
             if sent == size then
-                Done
+                Loading
 
             else
                 Loading
