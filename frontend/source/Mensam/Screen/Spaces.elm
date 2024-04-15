@@ -86,6 +86,8 @@ element model =
                     , Element.Font.family [ Mensam.Element.Font.condensed ]
                     , Element.Font.size 16
                     , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                    , Element.clipY
+                    , Element.scrollbarY
                     ]
                     { data = model.spaces
                     , columns =
