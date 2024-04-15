@@ -1,6 +1,7 @@
 module Mensam.Api.ReservationCreate exposing (..)
 
 import Http
+import Http.Extra
 import Iso8601
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -45,7 +46,7 @@ request body handleResult =
         , body = Http.jsonBody <| encodeBody body
         , expect = Http.expectStringResponse handleResult responseResult
         , timeout = Nothing
-        , tracker = Nothing
+        , tracker = Http.Extra.tracker
         }
 
 

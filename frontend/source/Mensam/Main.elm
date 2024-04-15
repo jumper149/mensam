@@ -3,6 +3,8 @@ module Mensam.Main exposing (..)
 import Browser
 import Browser.Navigation
 import Element
+import Http
+import Http.Extra
 import Json.Encode as Encode
 import Mensam.Api.Logout
 import Mensam.Api.Profile
@@ -27,6 +29,7 @@ import Mensam.Storage
 import Mensam.Time
 import Mensam.User
 import Platform.Cmd
+import Platform.Sub
 import Time
 import Url
 import Url.Builder
@@ -59,6 +62,7 @@ type Model
             , zone : Time.Zone
             , zoneIdentifier : Mensam.Time.TimezoneIdentifier
             }
+        , httpStatus : Http.Extra.Status
         }
 
 
@@ -202,6 +206,7 @@ init flagsRaw url navigationKey =
                     , zone = Time.utc
                     , zoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
                     }
+                , httpStatus = Http.Extra.Done
                 }
 
         withFlags =
@@ -243,6 +248,7 @@ type Message
     | HideHamburgerMenu
     | SetTimeNow Time.Posix
     | Auth MessageAuth
+    | SetHttpStatus Http.Extra.Status
     | MessageLanding Mensam.Screen.Landing.Message
     | MessageRegister Mensam.Screen.Register.Message
     | MessageLogin Mensam.Screen.Login.Message
@@ -521,6 +527,9 @@ update message (MkModel model) =
                         )
                     <|
                         MkModel model
+
+        SetHttpStatus status ->
+            update EmptyMessage <| MkModel { model | httpStatus = status }
 
         MessageLanding (Mensam.Screen.Landing.MessageEffect m) ->
             case m of
@@ -976,6 +985,7 @@ headerContent (MkModel model) =
 
             ScreenReservations _ ->
                 Just "Your Reservations"
+    , httpStatus = model.httpStatus
     }
 
 
@@ -1026,7 +1036,10 @@ view (MkModel model) =
 
 subscriptions : Model -> Sub Message
 subscriptions _ =
-    Time.every 100 SetTimeNow
+    Platform.Sub.batch
+        [ Time.every 100 SetTimeNow
+        , Http.track "http" (SetHttpStatus << Http.Extra.status)
+        ]
 
 
 errorScreen : Mensam.Error.Error

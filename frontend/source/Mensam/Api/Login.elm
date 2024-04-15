@@ -1,6 +1,7 @@
 module Mensam.Api.Login exposing (..)
 
 import Http
+import Http.Extra
 import Iso8601
 import Json.Decode as Decode
 import Mensam.Auth.Basic
@@ -41,7 +42,7 @@ request body handleResult =
         , body = Http.emptyBody
         , expect = Http.expectStringResponse handleResult responseResult
         , timeout = Nothing
-        , tracker = Nothing
+        , tracker = Http.Extra.tracker
         }
 
 

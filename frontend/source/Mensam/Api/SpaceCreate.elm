@@ -1,6 +1,7 @@
 module Mensam.Api.SpaceCreate exposing (..)
 
 import Http
+import Http.Extra
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
@@ -40,7 +41,7 @@ request body handleResult =
         , body = Http.jsonBody <| encodeBody body
         , expect = Http.expectStringResponse handleResult responseResult
         , timeout = Nothing
-        , tracker = Nothing
+        , tracker = Http.Extra.tracker
         }
 
 

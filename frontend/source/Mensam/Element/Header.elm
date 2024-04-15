@@ -5,11 +5,14 @@ import Element.Background
 import Element.Events
 import Element.Font
 import Html.Attributes
+import Http.Extra
 import Mensam.Auth
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
 import Mensam.User
+import Svg
+import Svg.Attributes
 
 
 type alias Content =
@@ -18,6 +21,7 @@ type alias Content =
     , unfoldHamburgerDropDown : Bool
     , authenticated : Mensam.Auth.Model
     , title : Maybe String
+    , httpStatus : Http.Extra.Status
     }
 
 
@@ -49,6 +53,7 @@ element content =
             , Element.behindContent <| elementTitle content.title
             ]
             [ elementMensam
+            , elementStatus content.httpStatus
             , elementErrors content.errors content.unfoldErrors
             , elementSignInOut content.unfoldHamburgerDropDown content.authenticated
             ]
@@ -293,3 +298,37 @@ elementTitle maybeTitle =
                     ]
                 <|
                     Element.text text
+
+
+elementStatus : Http.Extra.Status -> Element.Element msg
+elementStatus status =
+    case status of
+        Http.Extra.Done ->
+            Element.none
+
+        Http.Extra.Loading ->
+            Element.el
+                [ Element.width <| Element.px 30
+                , Element.spacingXY 5 0
+                ]
+            <|
+                Element.html <|
+                    Svg.svg
+                        [ Svg.Attributes.viewBox "0 0 30 20"
+                        , Svg.Attributes.width "100%"
+                        ]
+                    <|
+                        [ Svg.circle
+                            [ Svg.Attributes.cy "10"
+                            , Svg.Attributes.r "2"
+                            , Svg.Attributes.fill "rgba(255,255,255,0.4)"
+                            ]
+                            [ Svg.animate
+                                [ Svg.Attributes.attributeName "cx"
+                                , Svg.Attributes.values "10;20;10"
+                                , Svg.Attributes.dur "1s"
+                                , Svg.Attributes.repeatCount "indefinite"
+                                ]
+                                []
+                            ]
+                        ]
