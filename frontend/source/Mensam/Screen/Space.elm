@@ -8,6 +8,7 @@ import Element.Input
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
+import List.Extra
 import Mensam.Api.DeskCreate
 import Mensam.Api.DeskList
 import Mensam.Api.ReservationCreate
@@ -209,26 +210,36 @@ element model =
                                     ]
                                 <|
                                     Element.text "Leave space"
-                    , Element.el
-                        [ Element.alignRight
-                        , Element.padding 10
-                        , Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Events.onClick <| MessagePure OpenDialogToCreate
-                        ]
-                      <|
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                            , Element.Font.size 17
-                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                            ]
-                        <|
-                            Element.text "Create new Desk"
+                    , case model.yourRole of
+                        Nothing ->
+                            Element.none
+
+                        Just yourRole ->
+                            case List.Extra.find (\p -> p == Mensam.Space.Role.MkPermissionEditDesk) <| Mensam.Space.Role.permissionsToList yourRole.permissions of
+                                Nothing ->
+                                    Element.none
+
+                                Just _ ->
+                                    Element.el
+                                        [ Element.alignRight
+                                        , Element.padding 10
+                                        , Element.Background.color Mensam.Element.Color.bright.yellow
+                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                        , Element.Events.onClick <| MessagePure OpenDialogToCreate
+                                        ]
+                                    <|
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.Font.size 17
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Create new Desk"
                     ]
                 , Element.indexedTable
                     [ Element.width Element.fill
