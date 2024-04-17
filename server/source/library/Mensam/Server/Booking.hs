@@ -60,6 +60,34 @@ spaceGetFromId identifier = do
       , spaceOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
       }
 
+spaceInternalGetFromId ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  SeldaTransactionT m SpaceInternal
+spaceInternalGetFromId identifier = do
+  lift $ logDebug $ "Get space info with identifier: " <> T.pack (show identifier)
+  dbSpace <- catch (Selda.queryOne $ spaceGet $ Selda.toId @DbSpace $ unIdentifierSpace identifier) $
+    \case exc -> throwM $ MkSqlErrorMensamSpaceNotFound exc
+  lift $ logInfo "Got space info successfully."
+  pure
+    MkSpaceInternal
+      { spaceInternalId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
+      , spaceInternalName = MkNameSpace $ dbSpace_name dbSpace
+      , spaceInternalTimezone = dbSpace_timezone dbSpace
+      , spaceInternalVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
+      , spaceInternalOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
+      }
+
+type SpaceInternal :: Type
+data SpaceInternal = MkSpaceInternal
+  { spaceInternalId :: IdentifierSpace
+  , spaceInternalName :: NameSpace
+  , spaceInternalTimezone :: T.TZLabel
+  , spaceInternalVisibility :: VisibilitySpace
+  , spaceInternalOwner :: IdentifierUser
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+
 type SqlErrorMensamSpaceNotFound :: Type
 newtype SqlErrorMensamSpaceNotFound = MkSqlErrorMensamSpaceNotFound Selda.SqlErrorMensamNotOneQuery
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -232,6 +260,45 @@ spaceDelete identifier = do
     row Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
   lift $ logInfo "Deleted space successfully."
   pure ()
+
+spaceNameSet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  NameSpace ->
+  SeldaTransactionT m ()
+spaceNameSet identifier name = do
+  lift $ logDebug $ "Setting name " <> T.pack (show name) <> " of space " <> T.pack (show identifier) <> "."
+  Selda.updateOne
+    tableSpace
+    (#dbSpace_id `Selda.is` Selda.toId @DbSpace (unIdentifierSpace identifier))
+    (\rowSpace -> rowSpace `Selda.with` [#dbSpace_name Selda.:= Selda.literal (unNameSpace name)])
+  lift $ logInfo "Set name successfully."
+
+spaceTimezoneSet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  T.TZLabel ->
+  SeldaTransactionT m ()
+spaceTimezoneSet identifier timezone = do
+  lift $ logDebug $ "Setting timezone " <> T.pack (show timezone) <> " of space " <> T.pack (show identifier) <> "."
+  Selda.updateOne
+    tableSpace
+    (#dbSpace_id `Selda.is` Selda.toId @DbSpace (unIdentifierSpace identifier))
+    (\rowSpace -> rowSpace `Selda.with` [#dbSpace_timezone Selda.:= Selda.literal timezone])
+  lift $ logInfo "Set timezone successfully."
+
+spaceVisibilitySet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  VisibilitySpace ->
+  SeldaTransactionT m ()
+spaceVisibilitySet identifier visibility = do
+  lift $ logDebug $ "Setting visibility " <> T.pack (show visibility) <> " of space " <> T.pack (show identifier) <> "."
+  Selda.updateOne
+    tableSpace
+    (#dbSpace_id `Selda.is` Selda.toId @DbSpace (unIdentifierSpace identifier))
+    (\rowSpace -> rowSpace `Selda.with` [#dbSpace_visibility Selda.:= Selda.literal (spaceVisibilityApiToDb visibility)])
+  lift $ logInfo "Set visibility successfully."
 
 spaceUserAdd ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

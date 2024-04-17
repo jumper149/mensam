@@ -126,6 +126,7 @@ library
     , Mensam.API.Route.Frontend
     , Mensam.API.Route.OpenApi
     , Mensam.API.Route.Static
+    , Mensam.API.Update
     , Mensam.Client
     , Mensam.Client.Application
     , Mensam.Client.Application.Event

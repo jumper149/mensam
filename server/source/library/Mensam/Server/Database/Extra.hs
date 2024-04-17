@@ -15,7 +15,7 @@ import GHC.TypeLits
 queryUnique :: (MonadSelda m, MonadThrow m, Result a) => Query (Backend m) a -> m (Maybe (Res a))
 queryUnique q =
   query q >>= \case
-    _ : _ : _ -> throwM $ UnsafeError "Expected unique result, but the query returned multiple results."
+    _ : _ : _ -> throwM MkSqlErrorMensamNotUniqueQuery
     [result] -> pure $ Just result
     [] -> pure Nothing
 
@@ -34,7 +34,7 @@ queryOne q = do
     Just result -> pure result
     Nothing -> throwM $ MkSqlErrorMensamNotOneQuery Nothing
 
--- | Expected exactly one result, but the query didn't return any results.
+-- | Expected exactly one result, but the query didn't return a lone result.
 type SqlErrorMensamNotOneQuery :: Type
 newtype SqlErrorMensamNotOneQuery = MkSqlErrorMensamNotOneQuery (Maybe SqlErrorMensamNotUniqueQuery)
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -62,6 +62,34 @@ deleteOneFrom t f = do
   deleteUniqueFrom t f >>= \case
     True -> pure ()
     False -> throwM $ UnsafeError "Expected to delete exactly one row, but the constraint didn't match any rows."
+
+-- | Run 'update', but throw an error when multiple rows are affected.
+updateUnique :: (MonadSelda m, MonadThrow m, Relational a) => Table a -> (Row (Backend m) a -> Col (Backend m) Bool) -> (Row (Backend m) a -> Row (Backend m) a) -> m ()
+updateUnique t p u =
+  update t p u >>= \case
+    0 -> pure ()
+    1 -> pure ()
+    _ -> throwM MkSqlErrorMensamNotUniqueUpdate
+
+-- | Expected to update a single row, but the update matched multiple rows.
+type SqlErrorMensamNotUniqueUpdate :: Type
+data SqlErrorMensamNotUniqueUpdate = MkSqlErrorMensamNotUniqueUpdate
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
+
+-- | Run 'update', but throw an error unless exactly one row is affected.
+updateOne :: (MonadSelda m, MonadThrow m, Relational a) => Table a -> (Row (Backend m) a -> Col (Backend m) Bool) -> (Row (Backend m) a -> Row (Backend m) a) -> m ()
+updateOne t p u = do
+  update t p u >>= \case
+    0 -> throwM $ MkSqlErrorMensamNotOneUpdate Nothing
+    1 -> pure ()
+    _ -> throwM $ MkSqlErrorMensamNotOneUpdate $ Just MkSqlErrorMensamNotUniqueUpdate
+
+-- | Expected to update exactly one row, but the update did not match exactly one row.
+type SqlErrorMensamNotOneUpdate :: Type
+newtype SqlErrorMensamNotOneUpdate = MkSqlErrorMensamNotOneUpdate (Maybe SqlErrorMensamNotUniqueUpdate)
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
 
 type SomeCol :: Type -> Type
 data SomeCol t = forall a. SqlType a => MkSomeCol (Col t a)

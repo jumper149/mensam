@@ -22,13 +22,14 @@ instance A.FromJSON TZLabel where
 instance A.ToJSON TZLabel where
   toJSON = A.String . T.decodeUtf8 . toTZName
 
+instance ToParamSchema TZLabel where
+  toParamSchema Proxy =
+    mempty
+      & type_ ?~ OpenApiString
+      & description ?~ "IANA time zone database identifier"
+
 instance ToSchema TZLabel where
-  declareNamedSchema Proxy =
-    pure $
-      NamedSchema (Just "TZLabel") $
-        mempty
-          & type_ ?~ OpenApiString
-          & description ?~ "IANA time zone database identifier"
+  declareNamedSchema proxy = pure $ NamedSchema (Just "TZLabel") $ toParamSchema proxy
 
 instance Selda.SqlEnum TZLabel where
   toText = T.decodeUtf8 . toTZName

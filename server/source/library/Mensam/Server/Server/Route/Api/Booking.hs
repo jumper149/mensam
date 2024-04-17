@@ -6,6 +6,7 @@ import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Route.Api.Booking
+import Mensam.API.Update
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Booking
 import Mensam.Server.Server.Auth
@@ -30,6 +31,7 @@ handler =
   Routes
     { routeSpaceCreate = createSpace
     , routeSpaceDelete = deleteSpace
+    , routeSpaceEdit = editSpace
     , routeSpaceJoin = joinSpace
     , routeSpaceLeave = leaveSpace
     , routeSpaceList = listSpaces
@@ -129,6 +131,64 @@ deleteSpace auth eitherRequest =
         SeldaSuccess (Just ()) -> do
           logInfo "Deleted space."
           respond $ WithStatus @200 MkResponseSpaceDelete {responseSpaceDeleteUnit = ()}
+
+editSpace ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseSpaceEdit) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Insufficient permission.")) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestSpaceEdit ->
+  m (Union responses)
+editSpace auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to edit space: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        permissions <- spaceUserPermissions (requestSpaceEditId request) (userAuthenticatedId authenticated)
+        if MkPermissionSpaceEditSpace `S.member` permissions
+          then do
+            case requestSpaceEditName request of
+              Preserve -> pure ()
+              Overwrite name -> spaceNameSet (requestSpaceEditId request) name
+            case requestSpaceEditTimezone request of
+              Preserve -> pure ()
+              Overwrite timezone -> spaceTimezoneSet (requestSpaceEditId request) timezone
+            case requestSpaceEditVisibility request of
+              Preserve -> pure ()
+              Overwrite visibility -> spaceVisibilitySet (requestSpaceEditId request) visibility
+            spaceInternalGetFromId (requestSpaceEditId request)
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace
+      case seldaResult of
+        SeldaFailure err -> do
+          logWarn "Failed to edit space."
+          case fromException err of
+            Just (MkSqlErrorMensamSpaceNotFound _) ->
+              respond $ WithStatus @404 $ MkStaticText @"Space not found."
+            Nothing ->
+              case fromException err of
+                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace) -> do
+                  logInfo "Failed to edit space because of insufficient permission."
+                  respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
+                Nothing -> do
+                  -- TODO: Here we can theoretically return a more accurate error
+                  respond $ WithStatus @500 ()
+        SeldaSuccess spaceInternal -> do
+          logInfo "Edited space."
+          respond $
+            WithStatus @200
+              MkResponseSpaceEdit
+                { responseSpaceEditId = spaceInternalId spaceInternal
+                , responseSpaceEditName = spaceInternalName spaceInternal
+                , responseSpaceEditTimezone = spaceInternalTimezone spaceInternal
+                , responseSpaceEditVisibility = spaceInternalVisibility spaceInternal
+                }
 
 joinSpace ::
   ( MonadIO m

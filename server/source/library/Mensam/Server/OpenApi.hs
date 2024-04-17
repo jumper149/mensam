@@ -12,6 +12,7 @@ import Mensam.API.Order
 import Mensam.API.Route.Api qualified as Route.Api
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.User qualified as Route.User
+import Mensam.API.Update
 
 import Control.Lens
 import Data.Aeson qualified as A
@@ -21,6 +22,7 @@ import Data.Proxy
 import Data.Text qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
 import Data.Text.Lazy.IO qualified as TL
+import Data.Typeable
 import Deriving.Aeson qualified as A
 import Deriving.Aeson.OrphanInstances qualified as A ()
 import GHC.TypeLits
@@ -134,6 +136,21 @@ deriving via A.CustomJSON (JSONSettings "Mk" "orderByCategory") (OrderByCategory
 deriving via A.CustomJSON (JSONSettings "SpaceOrderCategory" "") SpaceOrderCategory instance ToSchema SpaceOrderCategory
 deriving newtype instance ToSchema a => ToSchema (OrderByCategories a)
 
+instance ToSchema a => ToSchema (Updatable a) where
+  declareNamedSchema Proxy = do
+    aSchema <- declareSchemaRef $ Proxy @a
+    pure $
+      NamedSchema (Just $ T.pack ("Updatable_" ++ tyConName (typeRepTyCon (typeRep $ Proxy @a)))) $
+        mempty
+          & type_ ?~ OpenApiObject
+          & required .~ ["update"]
+          & properties
+            .~ HMIO.fromList
+              [ ("update", Inline $ mempty & type_ ?~ OpenApiBoolean)
+              , ("value", aSchema)
+              ]
+          & description ?~ "Whether to overwrite a value with a new one. When \"update\" is `true` the \"value\" field is required. When \"update\" is `false` the value field must be omitted."
+
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseLogin") Route.User.ResponseLogin instance ToSchema Route.User.ResponseLogin
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseLogout") Route.User.ResponseLogout instance ToSchema Route.User.ResponseLogout
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") Route.User.RequestRegister instance ToSchema Route.User.RequestRegister
@@ -147,6 +164,8 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") Route.
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") Route.Booking.ResponseSpaceCreate instance ToSchema Route.Booking.ResponseSpaceCreate
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceDelete") Route.Booking.RequestSpaceDelete instance ToSchema Route.Booking.RequestSpaceDelete
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceDelete") Route.Booking.ResponseSpaceDelete instance ToSchema Route.Booking.ResponseSpaceDelete
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceEdit") Route.Booking.RequestSpaceEdit instance ToSchema Route.Booking.RequestSpaceEdit
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceEdit") Route.Booking.ResponseSpaceEdit instance ToSchema Route.Booking.ResponseSpaceEdit
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceJoin") Route.Booking.RequestSpaceJoin instance ToSchema Route.Booking.RequestSpaceJoin
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceJoin") Route.Booking.ResponseSpaceJoin instance ToSchema Route.Booking.ResponseSpaceJoin
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceLeave") Route.Booking.RequestSpaceLeave instance ToSchema Route.Booking.RequestSpaceLeave

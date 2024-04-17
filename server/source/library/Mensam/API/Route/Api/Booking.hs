@@ -6,6 +6,7 @@ import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Order
+import Mensam.API.Update
 
 import Data.Aeson qualified as A
 import Data.Kind
@@ -52,6 +53,25 @@ data Routes route = Routes
               DELETE
               '[JSON]
               [ WithStatus 200 ResponseSpaceDelete
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Insufficient permission.")
+              , WithStatus 404 (StaticText "Space not found.")
+              , WithStatus 500 ()
+              ]
+  , routeSpaceEdit ::
+      route
+        :- Summary "Edit Space"
+          :> Description
+              "Update the configuration of a space.\n"
+          :> "space"
+          :> "edit"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceEdit
+          :> UVerb
+              PATCH
+              '[JSON]
+              [ WithStatus 200 ResponseSpaceEdit
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 (StaticText "Insufficient permission.")
@@ -260,6 +280,30 @@ newtype ResponseSpaceDelete = MkResponseSpaceDelete
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceDelete") ResponseSpaceDelete
+
+type RequestSpaceEdit :: Type
+data RequestSpaceEdit = MkRequestSpaceEdit
+  { requestSpaceEditId :: IdentifierSpace
+  , requestSpaceEditName :: Updatable NameSpace
+  , requestSpaceEditTimezone :: Updatable T.TZLabel
+  , requestSpaceEditVisibility :: Updatable VisibilitySpace
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceEdit") RequestSpaceEdit
+
+type ResponseSpaceEdit :: Type
+data ResponseSpaceEdit = MkResponseSpaceEdit
+  { responseSpaceEditId :: IdentifierSpace
+  , responseSpaceEditName :: NameSpace
+  , responseSpaceEditTimezone :: T.TZLabel
+  , responseSpaceEditVisibility :: VisibilitySpace
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceEdit") ResponseSpaceEdit
 
 type RequestSpaceJoin :: Type
 data RequestSpaceJoin = MkRequestSpaceJoin
