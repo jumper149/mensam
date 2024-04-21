@@ -1,6 +1,10 @@
 = Changelog
 
+* Database
+  ** Give `space_edit` permission to everyone with `desk_edit` permission.
+
 == `0.4.0.0`
+
 * Database
   ** Make sure that all space owners are admins if possible.
 
