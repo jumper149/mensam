@@ -1,7 +1,11 @@
 = Changelog
 
+== `0.3.1.0`
+
 * API
   ** Add `/space/edit` route.
+* Frontend
+  ** Add a new page to edit space settings.
 
 == `0.3.0.0`
 
