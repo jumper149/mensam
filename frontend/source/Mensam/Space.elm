@@ -84,6 +84,16 @@ type Visibility
     | MkVisibilityHidden
 
 
+visibilityToString : Visibility -> String
+visibilityToString visibility =
+    case visibility of
+        MkVisibilityVisible ->
+            "visible"
+
+        MkVisibilityHidden ->
+            "hidden"
+
+
 visibilityEncode : Visibility -> Encode.Value
 visibilityEncode visibility =
     Encode.string <|

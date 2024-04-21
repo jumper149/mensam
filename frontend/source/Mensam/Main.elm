@@ -22,6 +22,7 @@ import Mensam.Screen.Register
 import Mensam.Screen.Reservations
 import Mensam.Screen.Space
 import Mensam.Screen.Space.Join
+import Mensam.Screen.Space.Settings
 import Mensam.Screen.Spaces
 import Mensam.Space
 import Mensam.Space.Role
@@ -73,6 +74,7 @@ type Screen
     | ScreenSpaces Mensam.Screen.Spaces.Model
     | ScreenSpace Mensam.Screen.Space.Model
     | ScreenSpaceJoin Mensam.Screen.Space.Join.Model
+    | ScreenSpaceSettings Mensam.Screen.Space.Settings.Model
     | ScreenReservations Mensam.Screen.Reservations.Model
 
 
@@ -83,6 +85,7 @@ type Route
     | RouteSpaces
     | RouteSpace Mensam.Space.Identifier
     | RouteSpaceJoin { spaceId : Mensam.Space.Identifier, roleId : Maybe Mensam.Space.Role.Identifier, password : Maybe String }
+    | RouteSpaceSettings Mensam.Space.Identifier
     | RouteReservations
 
 
@@ -115,6 +118,9 @@ routeToUrl route =
                     [ Maybe.map (Url.Builder.int "role" << Mensam.Space.Role.identifierToInt) roleId
                     , Maybe.map (Url.Builder.string "password") password
                     ]
+
+        RouteSpaceSettings identifier ->
+            Url.Builder.absolute [ "settings", "space", Mensam.Space.identifierToString identifier ] []
 
         RouteReservations ->
             Url.Builder.absolute [ "reservations" ] []
@@ -159,6 +165,15 @@ routeToModelUpdate route (MkModel model) =
             <|
                 MkModel { model | screen = ScreenSpaceJoin <| Mensam.Screen.Space.Join.init { spaceId = spaceId, roleIdSelected = roleId, password = password } }
 
+        RouteSpaceSettings identifier ->
+            update
+                (Messages
+                    [ MessageSpaceSettings <| Mensam.Screen.Space.Settings.MessageEffect Mensam.Screen.Space.Settings.RefreshOldSettings
+                    ]
+                )
+            <|
+                MkModel { model | screen = ScreenSpaceSettings <| Mensam.Screen.Space.Settings.init { id = identifier } }
+
         RouteReservations ->
             update (MessageReservations <| Mensam.Screen.Reservations.MessageEffect Mensam.Screen.Reservations.RefreshReservations) <|
                 MkModel { model | screen = ScreenReservations <| Mensam.Screen.Reservations.init { time = { now = model.time.now, zone = model.time.zone } } }
@@ -187,6 +202,7 @@ urlParser =
                 </> Url.Parser.int
                 <?> Url.Parser.Query.int "role"
                 <?> Url.Parser.Query.string "password"
+        , Url.Parser.map RouteSpaceSettings <| Url.Parser.s "settings" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         ]
 
 
@@ -255,6 +271,7 @@ type Message
     | MessageSpaces Mensam.Screen.Spaces.Message
     | MessageSpace Mensam.Screen.Space.Message
     | MessageSpaceJoin Mensam.Screen.Space.Join.Message
+    | MessageSpaceSettings Mensam.Screen.Space.Settings.Message
     | MessageReservations Mensam.Screen.Reservations.Message
 
 
@@ -724,6 +741,14 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
+                Mensam.Screen.Space.OpenPageToSettings ->
+                    case model.screen of
+                        ScreenSpace screenModel ->
+                            update (SetUrl <| RouteSpaceSettings screenModel.space) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
                 Mensam.Screen.Space.SubmitLeave ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
@@ -869,6 +894,79 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
+        MessageSpaceSettings (Mensam.Screen.Space.Settings.MessagePure m) ->
+            case model.screen of
+                ScreenSpaceSettings screenModel ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenSpaceSettings <| Mensam.Screen.Space.Settings.updatePure m screenModel }
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
+        MessageSpaceSettings (Mensam.Screen.Space.Settings.MessageEffect m) ->
+            case m of
+                Mensam.Screen.Space.Settings.ReportError err ->
+                    update (ReportError err) <| MkModel model
+
+                Mensam.Screen.Space.Settings.RefreshOldSettings ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceSettings screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceSettings <|
+                                        Mensam.Screen.Space.Settings.spaceEdit
+                                            { jwt = jwt
+                                            , id = screenModel.id
+                                            , name = Nothing
+                                            , timezone = Nothing
+                                            , visibility = Nothing
+                                            }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Space.Settings.SubmitSettings ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceSettings screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceSettings <|
+                                        Mensam.Screen.Space.Settings.spaceEdit
+                                            { jwt = jwt
+                                            , id = screenModel.id
+                                            , name = screenModel.new.name
+                                            , timezone = screenModel.new.timezone
+                                            , visibility = screenModel.new.visibility
+                                            }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Space.Settings.ReturnToSpace ->
+                    case model.screen of
+                        ScreenSpaceSettings screenModel ->
+                            update (SetUrl <| RouteSpace screenModel.id) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
+        MessageSpaceSettings (Mensam.Screen.Space.Settings.Messages ms) ->
+            case model.screen of
+                ScreenSpaceSettings _ ->
+                    update (Messages <| List.map MessageSpaceSettings ms) <| MkModel model
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
         MessageReservations (Mensam.Screen.Reservations.MessagePure m) ->
             case model.screen of
                 ScreenReservations screenModel ->
@@ -983,6 +1081,9 @@ headerContent (MkModel model) =
             ScreenSpaceJoin screenModel ->
                 Just <| "Join " ++ Mensam.Space.nameToString screenModel.spaceName
 
+            ScreenSpaceSettings screenModel ->
+                Just <| "Settings for " ++ Mensam.Space.nameToString screenModel.old.name
+
             ScreenReservations _ ->
                 Just "Your Reservations"
     , httpStatus = model.httpStatus
@@ -1027,6 +1128,9 @@ view (MkModel model) =
 
                     ScreenSpaceJoin screenModel ->
                         Mensam.Element.screen MessageSpaceJoin <| Mensam.Screen.Space.Join.element screenModel
+
+                    ScreenSpaceSettings screenModel ->
+                        Mensam.Element.screen MessageSpaceSettings <| Mensam.Screen.Space.Settings.element screenModel
 
                     ScreenReservations screenModel ->
                         Mensam.Element.screen MessageReservations <| Mensam.Screen.Reservations.element screenModel
