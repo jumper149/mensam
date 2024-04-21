@@ -280,6 +280,24 @@ migrations =
             "ALTER TABLE space\n\
             \DROP COLUMN password_hash"
       }
+  , MkMigration
+      { migrationId = Selda.toId 8
+      , migrationName = "fixSpaceOwner"
+      , migrationWork = do
+          lift $ logDebug "Fixing the space owner column. One of the previous migrations set regular members as owners. We are setting the owner column to be an admin if possible."
+          Selda.Unsafe.rawStm
+            "UPDATE space\n\
+            \SET owner = user\n\
+            \FROM (\n\
+            \    SELECT space_user.space AS space, space_user.user AS user\n\
+            \    FROM space_user\n\
+            \    JOIN space_role\n\
+            \    WHERE space_user.role = space_role.id\n\
+            \    AND space_role.name = 'Admin'\n\
+            \    ORDER BY space_user.id DESC\n\
+            \)\n\
+            \WHERE space = space.id"
+      }
   ]
 
 createDatabase ::
