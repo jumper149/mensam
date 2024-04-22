@@ -1043,6 +1043,29 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+                Mensam.Screen.Reservations.CancelReservation reservationId ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenReservations _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageReservations <| Mensam.Screen.Reservations.reservationCancel { jwt = jwt, id = reservationId }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+        MessageReservations (Mensam.Screen.Reservations.Messages ms) ->
+            case model.screen of
+                ScreenReservations _ ->
+                    update (Messages <| List.map MessageReservations ms) <| MkModel model
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
 
 headerMessage : Model -> Mensam.Element.Header.Message -> Message
 headerMessage (MkModel model) message =

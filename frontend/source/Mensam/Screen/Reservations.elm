@@ -8,6 +8,7 @@ import Element.Input
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
+import Mensam.Api.ReservationCancel
 import Mensam.Api.ReservationList
 import Mensam.Auth.Bearer
 import Mensam.Desk
@@ -55,8 +56,13 @@ type alias Model =
 
 
 type PopupModel
-    = PopupDateBegin
-    | PopupDateEnd
+    = PopupDate DateBeginEnd
+    | PopupViewReservation Mensam.Reservation.Identifier
+
+
+type DateBeginEnd
+    = DateBegin
+    | DateEnd
 
 
 init : { time : { now : Time.Posix, zone : Time.Zone } } -> Model
@@ -192,24 +198,32 @@ element model =
                           , view =
                                 \n entry ->
                                     Element.el
-                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
-                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                        , let
-                                            alpha =
-                                                case model.selected of
-                                                    Nothing ->
-                                                        0.2
+                                        (case entry.reservation.status of
+                                            Mensam.Reservation.MkStatusPlanned ->
+                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                                , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
+                                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                , let
+                                                    alpha =
+                                                        case model.selected of
+                                                            Nothing ->
+                                                                0.2
 
-                                                    Just m ->
-                                                        if m == n then
-                                                            0.4
+                                                            Just m ->
+                                                                if m == n then
+                                                                    0.4
 
-                                                        else
-                                                            0.2
-                                          in
-                                          Element.Background.color (Element.rgba 0 0 0 alpha)
-                                        ]
+                                                                else
+                                                                    0.2
+                                                  in
+                                                  Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                ]
+
+                                            Mensam.Reservation.MkStatusCancelled ->
+                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                                , Element.Background.color (Element.rgba 1 0 0 0.2)
+                                                ]
+                                        )
                                     <|
                                         cell <|
                                             Element.column
@@ -256,24 +270,32 @@ element model =
                           , view =
                                 \n entry ->
                                     Element.el
-                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
-                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                        , let
-                                            alpha =
-                                                case model.selected of
-                                                    Nothing ->
-                                                        0.2
+                                        (case entry.reservation.status of
+                                            Mensam.Reservation.MkStatusPlanned ->
+                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                                , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
+                                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                , let
+                                                    alpha =
+                                                        case model.selected of
+                                                            Nothing ->
+                                                                0.2
 
-                                                    Just m ->
-                                                        if m == n then
-                                                            0.4
+                                                            Just m ->
+                                                                if m == n then
+                                                                    0.4
 
-                                                        else
-                                                            0.2
-                                          in
-                                          Element.Background.color (Element.rgba 0 0 0 alpha)
-                                        ]
+                                                                else
+                                                                    0.2
+                                                  in
+                                                  Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                ]
+
+                                            Mensam.Reservation.MkStatusCancelled ->
+                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                                , Element.Background.color (Element.rgba 1 0 0 0.2)
+                                                ]
+                                        )
                                     <|
                                         cell <|
                                             Element.column
@@ -312,7 +334,7 @@ element model =
                 Nothing ->
                     Nothing
 
-                Just popup ->
+                Just (PopupDate dateBeginEnd) ->
                     Just <|
                         Element.column
                             [ Element.spacing 20
@@ -325,19 +347,19 @@ element model =
                                 ]
                               <|
                                 Element.text <|
-                                    case popup of
-                                        PopupDateBegin ->
+                                    case dateBeginEnd of
+                                        DateBegin ->
                                             "Earliest Date"
 
-                                        PopupDateEnd ->
+                                        DateEnd ->
                                             "Latest Date"
                             , Element.el
                                 [ Element.width Element.fill
                                 , Element.height Element.fill
                                 ]
                               <|
-                                case popup of
-                                    PopupDateBegin ->
+                                case dateBeginEnd of
+                                    DateBegin ->
                                         Element.el
                                             [ Element.centerX
                                             , Element.centerY
@@ -346,7 +368,7 @@ element model =
                                             Element.map (MessagePure << MessageDateBegin) <|
                                                 Mensam.Widget.Date.elementPickDate model.modelDateBegin
 
-                                    PopupDateEnd ->
+                                    DateEnd ->
                                         Element.el
                                             [ Element.centerX
                                             , Element.centerY
@@ -373,12 +395,70 @@ element model =
                                         Element.text "Set date boundary"
                                 }
                             ]
+
+                Just (PopupViewReservation reservationId) ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Reservation"
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessagePure <| ClosePopup
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Go back"
+                                    }
+                                , Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.red
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessageEffect <| CancelReservation reservationId
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Cancel reservation"
+                                    }
+                                ]
+                            ]
         }
 
 
 type Message
     = MessagePure MessagePure
     | MessageEffect MessageEffect
+    | Messages (List Message)
 
 
 type MessagePure
@@ -424,17 +504,16 @@ updatePure message model =
             { model | selected = selection }
 
         ChooseReservation id ->
-            -- TODO
-            model
+            { model | popup = Just <| PopupViewReservation id }
 
         ClosePopup ->
             { model | popup = Nothing }
 
         ViewDateBeginPicker ->
-            { model | popup = Just PopupDateBegin }
+            { model | popup = Just <| PopupDate DateBegin }
 
         ViewDateEndPicker ->
-            { model | popup = Just PopupDateEnd }
+            { model | popup = Just <| PopupDate DateEnd }
 
         MessageDateBegin Mensam.Widget.Date.NextMonth ->
             { model | modelDateBegin = Mensam.Widget.Date.updateDateNextMonth model.modelDateBegin }
@@ -489,6 +568,7 @@ type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshReservations
     | SetDateRange
+    | CancelReservation Mensam.Reservation.Identifier
 
 
 onEnter : msg -> Element.Attribute msg
@@ -550,6 +630,42 @@ reservationList argument =
                                         Mensam.Error.undefined
 
                 Ok (Mensam.Api.ReservationList.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting reservations failed" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting reservations failed" <|
+                                Mensam.Error.http error
+
+
+reservationCancel : { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
+reservationCancel argument =
+    Mensam.Api.ReservationCancel.request
+        { jwt = argument.jwt
+        , id = argument.id
+        }
+    <|
+        \result ->
+            case result of
+                Ok Mensam.Api.ReservationCancel.Success ->
+                    Messages
+                        [ MessagePure ClosePopup
+                        , MessageEffect RefreshReservations
+                        ]
+
+                Ok (Mensam.Api.ReservationCancel.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Cancelling reservation failed" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.ReservationCancel.ErrorAuth error) ->
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Requesting reservations failed" <|
