@@ -194,6 +194,19 @@ endpointDeskCreate ::
          , WithStatus 500 ()
          ]
     )
+endpointDeskDelete ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestDeskDelete ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.Booking.ResponseDeskDelete
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 404 (StaticText "Desk not found.")
+         , WithStatus 500 ()
+         ]
+    )
 endpointDeskList ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestDeskList ->
@@ -262,6 +275,7 @@ Route.Api.Routes
       , Route.Api.Booking.routeSpaceView = endpointSpaceView
       , Route.Api.Booking.routeSpaceList = endpointSpaceList
       , Route.Api.Booking.routeDeskCreate = endpointDeskCreate
+      , Route.Api.Booking.routeDeskDelete = endpointDeskDelete
       , Route.Api.Booking.routeDeskList = endpointDeskList
       , Route.Api.Booking.routeReservationCreate = endpointReservationCreate
       , Route.Api.Booking.routeReservationCancel = endpointReservationCancel

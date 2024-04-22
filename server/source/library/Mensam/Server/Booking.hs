@@ -512,10 +512,13 @@ deskGetFromId ::
   SeldaTransactionT m Desk
 deskGetFromId identifier = do
   lift $ logDebug $ "Get desk info with identifier: " <> T.pack (show identifier)
-  dbDesk <- Selda.queryOne $ do
-    dbDesk <- Selda.select tableDesk
-    Selda.restrict $ dbDesk Selda.! #dbDesk_id Selda..== Selda.literal (Selda.toId @DbDesk $ unIdentifierDesk identifier)
-    pure dbDesk
+  dbDesk <- catch
+    ( Selda.queryOne $ do
+        dbDesk <- Selda.select tableDesk
+        Selda.restrict $ dbDesk Selda.! #dbDesk_id Selda..== Selda.literal (Selda.toId @DbDesk $ unIdentifierDesk identifier)
+        pure dbDesk
+    )
+    $ \case exc -> throwM $ MkSqlErrorMensamDeskNotFound exc
   lift $ logInfo "Got desk info successfully."
   pure
     MkDesk
@@ -523,6 +526,11 @@ deskGetFromId identifier = do
       , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space dbDesk
       , deskName = MkNameDesk $ dbDesk_name dbDesk
       }
+
+type SqlErrorMensamDeskNotFound :: Type
+newtype SqlErrorMensamDeskNotFound = MkSqlErrorMensamDeskNotFound Selda.SqlErrorMensamNotOneQuery
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
 
 deskList ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

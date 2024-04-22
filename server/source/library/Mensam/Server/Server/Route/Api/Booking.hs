@@ -37,6 +37,7 @@ handler =
     , routeSpaceList = listSpaces
     , routeSpaceView = viewSpace
     , routeDeskCreate = createDesk
+    , routeDeskDelete = deleteDesk
     , routeDeskList = listDesks
     , routeReservationCreate = createReservation
     , routeReservationCancel = cancelReservation
@@ -395,6 +396,48 @@ createDesk auth eitherRequest =
         SeldaSuccess deskIdentifier -> do
           logInfo "Created desk."
           respond $ WithStatus @201 MkResponseDeskCreate {responseDeskCreateId = deskIdentifier}
+
+deleteDesk ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseDeskDelete) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Insufficient permission.")) responses
+  , IsMember (WithStatus 404 (StaticText "Desk not found.")) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestDeskDelete ->
+  m (Union responses)
+deleteDesk auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to delete desk: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        desk <- deskGetFromId $ requestDeskDeleteId request
+        permissions <- spaceUserPermissions (deskSpace desk) (userAuthenticatedId authenticated)
+        if MkPermissionSpaceEditDesk `S.member` permissions
+          then deskDelete $ deskId desk
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace
+      case seldaResult of
+        SeldaFailure err -> do
+          logWarn "Failed to delete desk."
+          case fromException @SqlErrorMensamDeskNotFound err of
+            Just _exc ->
+              respond $ WithStatus @404 $ MkStaticText @"Desk not found."
+            Nothing ->
+              case fromException err of
+                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace) -> do
+                  logInfo "Failed to delete desk because of insufficient permission."
+                  respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
+                Nothing ->
+                  -- TODO: Here we can theoretically return a more accurate error
+                  respond $ WithStatus @500 ()
+        SeldaSuccess () -> do
+          logInfo "Deleted desk."
+          respond $ WithStatus @200 MkResponseDeskDelete {responseDeskDeleteUnit = ()}
 
 listDesks ::
   ( MonadIO m

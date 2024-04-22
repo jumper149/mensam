@@ -1,5 +1,7 @@
 = Changelog
 
+* API
+  ** Add `/desk/delete` route.
 * Database
   ** Give `space_edit` permission to everyone with `desk_edit` permission.
 

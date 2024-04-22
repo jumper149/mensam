@@ -155,7 +155,7 @@ data Routes route = Routes
           :> Description
               "Create a new desk.\n\
               \This desk will belong to the given space.\n\
-              \You have to be an administrator for that space to create desks.\n"
+              \You need the `desk-edit` permission for that space to create desks.\n"
           :> "desk"
           :> "create"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -168,6 +168,26 @@ data Routes route = Routes
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 (StaticText "Insufficient permission.")
               , WithStatus 404 (StaticText "Space not found.")
+              , WithStatus 500 ()
+              ]
+  , routeDeskDelete ::
+      route
+        :- Summary "Delete Desk"
+          :> Description
+              "Delete a desk.\n\
+              \You need the `desk-edit` permission for that space to delete desks.\n"
+          :> "desk"
+          :> "delete"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskDelete
+          :> UVerb
+              DELETE
+              '[JSON]
+              [ WithStatus 200 ResponseDeskDelete
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Insufficient permission.")
+              , WithStatus 404 (StaticText "Desk not found.")
               , WithStatus 500 ()
               ]
   , routeDeskList ::
@@ -397,6 +417,24 @@ newtype ResponseDeskCreate = MkResponseDeskCreate
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") ResponseDeskCreate
+
+type RequestDeskDelete :: Type
+newtype RequestDeskDelete = MkRequestDeskDelete
+  { requestDeskDeleteId :: IdentifierDesk
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestDeskDelete") RequestDeskDelete
+
+type ResponseDeskDelete :: Type
+newtype ResponseDeskDelete = MkResponseDeskDelete
+  { responseDeskDeleteUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseDeskDelete") ResponseDeskDelete
 
 type RequestDeskList :: Type
 data RequestDeskList = MkRequestDeskList
