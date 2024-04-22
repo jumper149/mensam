@@ -266,24 +266,47 @@ element model =
                                                 Element.text "hidden"
                                         }
                                     ]
-                    , Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.blue
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
+                    , Element.row
+                        [ Element.spacing 20
                         , Element.width Element.fill
-                        , Element.padding 10
                         ]
-                        { onPress = Just <| MessageEffect SubmitSettings
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Apply settings"
-                        }
+                        [ Element.Input.button
+                            [ Element.Background.color Mensam.Element.Color.bright.red
+                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                            , Element.Font.color Mensam.Element.Color.dark.black
+                            , Element.width Element.fill
+                            , Element.padding 10
+                            ]
+                            { onPress = Just <| MessageEffect ReturnToSpace
+                            , label =
+                                Element.el
+                                    [ Element.centerX
+                                    , Element.centerY
+                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                    ]
+                                <|
+                                    Element.text "Abort"
+                            }
+                        , Element.Input.button
+                            [ Element.Background.color Mensam.Element.Color.bright.blue
+                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                            , Element.Font.color Mensam.Element.Color.dark.black
+                            , Element.width Element.fill
+                            , Element.padding 10
+                            ]
+                            { onPress = Just <| MessageEffect SubmitSettings
+                            , label =
+                                Element.el
+                                    [ Element.centerX
+                                    , Element.centerY
+                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                    ]
+                                <|
+                                    Element.text "Apply settings"
+                            }
+                        ]
                     ]
                 ]
         , popup = Nothing
