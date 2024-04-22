@@ -236,7 +236,7 @@ data Routes route = Routes
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationCancel
           :> UVerb
-              DELETE
+              POST
               '[JSON]
               [ WithStatus 200 ResponseReservationCancel
               , WithStatus 400 ErrorParseBodyJson
