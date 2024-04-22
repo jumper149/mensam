@@ -32,7 +32,7 @@ type alias Model =
                 }
             , reservation :
                 { id : Mensam.Reservation.Identifier
-                , status : String -- TODO
+                , status : Mensam.Reservation.Status
                 , timeBegin : Time.Posix
                 , timeEnd : Time.Posix
                 }
@@ -390,7 +390,7 @@ type MessagePure
                 }
             , reservation :
                 { id : Mensam.Reservation.Identifier
-                , status : String -- TODO
+                , status : Mensam.Reservation.Status
                 , timeBegin : Time.Posix
                 , timeEnd : Time.Posix
                 }

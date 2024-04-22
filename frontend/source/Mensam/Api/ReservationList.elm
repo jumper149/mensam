@@ -32,7 +32,7 @@ type Response
                     }
                 , reservation :
                     { id : Mensam.Reservation.Identifier
-                    , status : String -- TODO
+                    , status : Mensam.Reservation.Status
                     , timeBegin : Time.Posix
                     , timeEnd : Time.Posix
                     }
@@ -137,7 +137,7 @@ decodeBody200 :
                     }
                 , reservation :
                     { id : Mensam.Reservation.Identifier
-                    , status : String
+                    , status : Mensam.Reservation.Status
                     , timeBegin : Time.Posix
                     , timeEnd : Time.Posix
                     }
@@ -189,7 +189,7 @@ decodeBody200 =
                         Decode.map6 (\id desk status timeBegin timeEnd user -> { id = id, desk = desk, status = status, timeBegin = timeBegin, timeEnd = timeEnd, user = user })
                             (Decode.field "id" Mensam.Reservation.identifierDecoder)
                             (Decode.field "desk" Mensam.Desk.identifierDecoder)
-                            (Decode.field "status" Decode.string)
+                            (Decode.field "status" Mensam.Reservation.statusDecoder)
                             (Decode.field "time-begin" Iso8601.decoder)
                             (Decode.field "time-end" Iso8601.decoder)
                             (Decode.field "user" Mensam.User.identifierDecoder)

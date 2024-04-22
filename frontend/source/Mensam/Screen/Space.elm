@@ -62,7 +62,7 @@ type alias Model =
                 List
                     { desk : Mensam.Desk.Identifier
                     , id : Mensam.Reservation.Identifier
-                    , status : String
+                    , status : Mensam.Reservation.Status
                     , timeBegin : Time.Posix
                     , timeEnd : Time.Posix
                     , user : Int
@@ -781,7 +781,7 @@ visualizeReservations :
         List
             { desk : Mensam.Desk.Identifier
             , id : Mensam.Reservation.Identifier
-            , status : String
+            , status : Mensam.Reservation.Status
             , timeBegin : Time.Posix
             , timeEnd : Time.Posix
             , user : Int
@@ -1130,7 +1130,7 @@ type MessagePure
                 List
                     { desk : Mensam.Desk.Identifier
                     , id : Mensam.Reservation.Identifier
-                    , status : String
+                    , status : Mensam.Reservation.Status
                     , timeBegin : Time.Posix
                     , timeEnd : Time.Posix
                     , user : Int

@@ -32,7 +32,7 @@ type Response
                     List
                         { desk : Mensam.Desk.Identifier
                         , id : Mensam.Reservation.Identifier
-                        , status : String
+                        , status : Mensam.Reservation.Status
                         , timeBegin : Time.Posix
                         , timeEnd : Time.Posix
                         , user : Int
@@ -136,7 +136,7 @@ decodeBody200 :
                     List
                         { desk : Mensam.Desk.Identifier
                         , id : Mensam.Reservation.Identifier
-                        , status : String
+                        , status : Mensam.Reservation.Status
                         , timeBegin : Time.Posix
                         , timeEnd : Time.Posix
                         , user : Int
@@ -157,7 +157,7 @@ decodeBody200 =
                 (\desk id status timeBegin timeEnd user -> { desk = desk, id = id, status = status, timeBegin = timeBegin, timeEnd = timeEnd, user = user })
                 (Decode.field "desk" Mensam.Desk.identifierDecoder)
                 (Decode.field "id" Mensam.Reservation.identifierDecoder)
-                (Decode.field "status" Decode.string)
+                (Decode.field "status" Mensam.Reservation.statusDecoder)
                 (Decode.field "time-begin" Iso8601.decoder)
                 (Decode.field "time-end" Iso8601.decoder)
                 (Decode.field "user" Decode.int)
