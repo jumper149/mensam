@@ -1,9 +1,13 @@
 = Changelog
 
+== `0.5.0.0`
+
 * API
   ** Add `/desk/delete` route.
 * Database
   ** Give `space_edit` permission to everyone with `desk_edit` permission.
+* Frontend
+  ** It's now possible to cancel reservations.
 
 == `0.4.0.0`
 
