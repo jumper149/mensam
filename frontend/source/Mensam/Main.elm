@@ -951,10 +951,37 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+                Mensam.Screen.Space.Settings.SubmitDeleteSpace ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceSettings screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceSettings <|
+                                        Mensam.Screen.Space.Settings.spaceDelete
+                                            { jwt = jwt
+                                            , id = screenModel.id
+                                            }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
                 Mensam.Screen.Space.Settings.ReturnToSpace ->
                     case model.screen of
                         ScreenSpaceSettings screenModel ->
                             update (SetUrl <| RouteSpace screenModel.id) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Space.Settings.ReturnToSpaces ->
+                    case model.screen of
+                        ScreenSpaceSettings _ ->
+                            update (SetUrl RouteSpaces) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model

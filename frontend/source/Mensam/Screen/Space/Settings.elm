@@ -7,6 +7,7 @@ import Element.Input
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
+import Mensam.Api.SpaceDelete
 import Mensam.Api.SpaceEdit
 import Mensam.Auth.Bearer
 import Mensam.Element.Color
@@ -29,7 +30,12 @@ type alias Model =
         , timezone : Maybe Mensam.Time.TimezoneIdentifier
         , visibility : Maybe Mensam.Space.Visibility
         }
+    , popup : Maybe PopupModel
     }
+
+
+type PopupModel
+    = PopupDeleteSpace
 
 
 init : { id : Mensam.Space.Identifier } -> Model
@@ -45,6 +51,7 @@ init args =
         , timezone = Nothing
         , visibility = Nothing
         }
+    , popup = Nothing
     }
 
 
@@ -308,8 +315,87 @@ element model =
                             }
                         ]
                     ]
+                , Element.Input.button
+                    [ Element.Background.color Mensam.Element.Color.bright.red
+                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                    , Element.Font.color Mensam.Element.Color.dark.black
+                    , Element.width Element.fill
+                    , Element.padding 10
+                    , Element.alignBottom
+                    ]
+                    { onPress = Just <| MessagePure OpenDialogToDeleteSpace
+                    , label =
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                            ]
+                        <|
+                            Element.text "Delete space"
+                    }
                 ]
-        , popup = Nothing
+        , popup =
+            case model.popup of
+                Nothing ->
+                    Nothing
+
+                Just PopupDeleteSpace ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Delete Space"
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessagePure <| CloseDialogToDeleteSpace
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Abort"
+                                    }
+                                , Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.red
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessageEffect <| SubmitDeleteSpace
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Delete space permanently"
+                                    }
+                                ]
+                            ]
         }
 
 
@@ -329,6 +415,8 @@ type MessagePure
     | EnterName (Maybe Mensam.Space.Name)
     | SetTimezone (Maybe Mensam.Time.TimezoneIdentifier)
     | SetVisibility (Maybe Mensam.Space.Visibility)
+    | OpenDialogToDeleteSpace
+    | CloseDialogToDeleteSpace
 
 
 updatePure : MessagePure -> Model -> Model
@@ -361,12 +449,20 @@ updatePure message model =
             in
             { model | new = { newSettings | visibility = visibility } }
 
+        OpenDialogToDeleteSpace ->
+            { model | popup = Just PopupDeleteSpace }
+
+        CloseDialogToDeleteSpace ->
+            { model | popup = Nothing }
+
 
 type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshOldSettings
     | SubmitSettings
     | ReturnToSpace
+    | ReturnToSpaces
+    | SubmitDeleteSpace
 
 
 onEnter : msg -> Element.Attribute msg
@@ -425,6 +521,45 @@ spaceEdit requestArgs =
                                     Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceEdit.ErrorAuth error) ->
+                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <| ReportError <| Mensam.Error.http error
+
+
+spaceDelete :
+    { jwt : Mensam.Auth.Bearer.Jwt
+    , id : Mensam.Space.Identifier
+    }
+    -> Cmd Message
+spaceDelete requestArgs =
+    Mensam.Api.SpaceDelete.request requestArgs <|
+        \result ->
+            case result of
+                Ok Mensam.Api.SpaceDelete.Success ->
+                    MessageEffect ReturnToSpaces
+
+                Ok Mensam.Api.SpaceDelete.ErrorInsufficientPermission ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Insufficient permission to delete this space" <|
+                                Mensam.Error.undefined
+
+                Ok Mensam.Api.SpaceDelete.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Try a different space identifier" <|
+                                Mensam.Error.message "Space not found" <|
+                                    Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceDelete.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Bad request body" <|
+                                Mensam.Error.message error <|
+                                    Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceDelete.ErrorAuth error) ->
                     MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
 
                 Err error ->
