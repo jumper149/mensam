@@ -8,6 +8,7 @@ import Element.Input
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
+import List.Extra
 import Mensam.Api.ReservationCancel
 import Mensam.Api.ReservationList
 import Mensam.Auth.Bearer
@@ -397,61 +398,161 @@ element model =
                             ]
 
                 Just (PopupViewReservation reservationId) ->
-                    Just <|
-                        Element.column
-                            [ Element.spacing 20
-                            , Element.width Element.fill
-                            , Element.height Element.fill
-                            ]
-                            [ Element.el
-                                [ Element.Font.size 30
-                                , Element.Font.hairline
-                                ]
-                              <|
-                                Element.text "Reservation"
-                            , Element.row
-                                [ Element.width Element.fill
-                                , Element.spacing 10
-                                , Element.alignBottom
-                                ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
+                    case List.Extra.find (\entry -> entry.reservation.id == reservationId) <| model.reservations of
+                        -- This case should never occur. The user cannot click on a reservation that doesn't exist.
+                        Nothing ->
+                            Nothing
+
+                        Just entry ->
+                            Just <|
+                                Element.column
+                                    [ Element.spacing 20
                                     , Element.width Element.fill
-                                    , Element.padding 10
+                                    , Element.height Element.fill
                                     ]
-                                    { onPress = Just <| MessagePure <| ClosePopup
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                    [ Element.el
+                                        [ Element.Font.size 30
+                                        , Element.Font.hairline
+                                        ]
+                                      <|
+                                        Element.text "Reservation"
+                                    , Element.column
+                                        [ Element.centerX
+                                        , Element.spacing 10
+                                        ]
+                                        [ Element.row [ Element.alignRight, Element.spacing 3 ]
+                                            [ Element.el
+                                                [ Element.Font.size 12
+                                                , Element.alignBottom
+                                                , Element.padding 1
+                                                ]
+                                              <|
+                                                Element.text "from"
+                                            , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400 ] <|
+                                                Element.text <|
+                                                    Mensam.Time.timestampToString <|
+                                                        Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeBegin
                                             ]
-                                        <|
-                                            Element.text "Go back"
-                                    }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.red
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
+                                        , Element.row [ Element.alignRight, Element.spacing 3 ]
+                                            [ Element.el
+                                                [ Element.Font.size 12
+                                                , Element.alignBottom
+                                                , Element.padding 1
+                                                ]
+                                              <|
+                                                Element.text "to"
+                                            , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400 ] <|
+                                                Element.text <|
+                                                    Mensam.Time.timestampToString <|
+                                                        Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeEnd
+                                            ]
+                                        , Element.row [ Element.alignLeft, Element.spacing 3 ]
+                                            [ Element.el
+                                                [ Element.Font.size 12
+                                                , Element.alignBottom
+                                                , Element.padding 1
+                                                ]
+                                              <|
+                                                Element.text "Timezone"
+                                            , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400 ] <|
+                                                Element.text <|
+                                                    Mensam.Time.unTimezoneIdentifier <|
+                                                        entry.space.timezone
+                                            ]
+                                        , Element.row [ Element.alignLeft, Element.spacing 3 ]
+                                            [ Element.el
+                                                [ Element.Font.size 12
+                                                , Element.alignBottom
+                                                , Element.padding 1
+                                                ]
+                                              <|
+                                                Element.text "Status"
+                                            , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400 ] <|
+                                                Element.text <|
+                                                    Mensam.Reservation.statusToString <|
+                                                        entry.reservation.status
+                                            ]
+                                        ]
+                                    , Element.column
+                                        [ Element.centerX
+                                        , Element.spacing 10
+                                        ]
+                                        [ Element.row [ Element.alignLeft, Element.spacing 3 ]
+                                            [ Element.el
+                                                [ Element.Font.size 12
+                                                , Element.alignBottom
+                                                , Element.padding 1
+                                                ]
+                                              <|
+                                                Element.text "Space"
+                                            , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400 ] <|
+                                                Element.text <|
+                                                    Mensam.Space.nameToString entry.space.name
+                                            ]
+                                        , Element.row [ Element.alignLeft, Element.spacing 3 ]
+                                            [ Element.el
+                                                [ Element.Font.size 12
+                                                , Element.alignBottom
+                                                , Element.padding 1
+                                                ]
+                                              <|
+                                                Element.text "Desk"
+                                            , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400 ] <|
+                                                Element.text <|
+                                                    Mensam.Desk.nameToString <|
+                                                        entry.desk.name
+                                            ]
+                                        ]
+                                    , Element.paragraph
+                                        [ Element.alignBottom
+                                        , Element.centerX
+                                        , Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                        ]
+                                        [ Element.text "Do you want to cancel the reservation?"
+                                        ]
+                                    , Element.row
+                                        [ Element.width Element.fill
+                                        , Element.spacing 10
+                                        , Element.alignBottom
+                                        ]
+                                        [ Element.Input.button
+                                            [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                            , Element.Font.color Mensam.Element.Color.dark.black
+                                            , Element.width Element.fill
+                                            , Element.padding 10
+                                            ]
+                                            { onPress = Just <| MessagePure <| ClosePopup
+                                            , label =
+                                                Element.el
+                                                    [ Element.centerX
+                                                    , Element.centerY
+                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                    ]
+                                                <|
+                                                    Element.text "Go back"
+                                            }
+                                        , Element.Input.button
+                                            [ Element.Background.color Mensam.Element.Color.bright.red
+                                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                                            , Element.Font.color Mensam.Element.Color.dark.black
+                                            , Element.width Element.fill
+                                            , Element.padding 10
+                                            ]
+                                            { onPress = Just <| MessageEffect <| CancelReservation reservationId
+                                            , label =
+                                                Element.el
+                                                    [ Element.centerX
+                                                    , Element.centerY
+                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                    ]
+                                                <|
+                                                    Element.text "Cancel reservation"
+                                            }
+                                        ]
                                     ]
-                                    { onPress = Just <| MessageEffect <| CancelReservation reservationId
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Cancel reservation"
-                                    }
-                                ]
-                            ]
         }
 
 

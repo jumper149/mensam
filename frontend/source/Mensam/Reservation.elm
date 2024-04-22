@@ -29,6 +29,16 @@ type Status
     | MkStatusCancelled
 
 
+statusToString : Status -> String
+statusToString status =
+    case status of
+        MkStatusPlanned ->
+            "planned"
+
+        MkStatusCancelled ->
+            "cancelled"
+
+
 statusEncode : Status -> Encode.Value
 statusEncode status =
     case status of
