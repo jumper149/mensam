@@ -174,6 +174,8 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceView") Route.Bo
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") Route.Booking.ResponseSpaceView instance ToSchema Route.Booking.ResponseSpaceView
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Route.Booking.RequestSpaceList instance ToSchema Route.Booking.RequestSpaceList
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") Route.Booking.ResponseSpaceList instance ToSchema Route.Booking.ResponseSpaceList
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRoleCreate") Route.Booking.RequestRoleCreate instance ToSchema Route.Booking.RequestRoleCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRoleCreate") Route.Booking.ResponseRoleCreate instance ToSchema Route.Booking.ResponseRoleCreate
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") Route.Booking.RequestDeskCreate instance ToSchema Route.Booking.RequestDeskCreate
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") Route.Booking.ResponseDeskCreate instance ToSchema Route.Booking.ResponseDeskCreate
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskDelete") Route.Booking.RequestDeskDelete instance ToSchema Route.Booking.RequestDeskDelete

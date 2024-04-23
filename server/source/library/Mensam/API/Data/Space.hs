@@ -63,6 +63,7 @@ type PermissionSpace :: Type
 data PermissionSpace
   = MkPermissionSpaceViewSpace
   | MkPermissionSpaceEditDesk
+  | MkPermissionSpaceEditRole
   | MkPermissionSpaceEditSpace
   | MkPermissionSpaceCreateReservation
   | MkPermissionSpaceCancelReservation

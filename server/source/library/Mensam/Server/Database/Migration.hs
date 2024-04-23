@@ -310,6 +310,18 @@ migrations =
             \WHERE space_role_permission.permission = 'edit_desk'\n\
             \ON CONFLICT DO NOTHING"
       }
+  , MkMigration
+      { migrationId = Selda.toId 10
+      , migrationName = "addRoleEditPermission"
+      , migrationWork = do
+          lift $ logDebug "Space admins should have the 'edit_role' permission."
+          Selda.Unsafe.rawStm
+            "INSERT INTO space_role_permission (role, permission)\n\
+            \SELECT role AS role, 'edit_role' AS permission\n\
+            \FROM space_role_permission\n\
+            \WHERE space_role_permission.permission = 'edit_space'\n\
+            \ON CONFLICT DO NOTHING"
+      }
   ]
 
 createDatabase ::

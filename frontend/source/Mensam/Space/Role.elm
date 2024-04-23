@@ -57,6 +57,7 @@ nameDecoder =
 type Permission
     = MkPermissionViewSpace
     | MkPermissionEditDesk
+    | MkPermissionEditRole
     | MkPermissionEditSpace
     | MkPermissionCreateReservation
     | MkPermissionCancelReservation
@@ -71,14 +72,17 @@ permissionToInt permission =
         MkPermissionEditDesk ->
             1
 
-        MkPermissionEditSpace ->
+        MkPermissionEditRole ->
             2
 
-        MkPermissionCreateReservation ->
+        MkPermissionEditSpace ->
             3
 
-        MkPermissionCancelReservation ->
+        MkPermissionCreateReservation ->
             4
+
+        MkPermissionCancelReservation ->
+            5
 
 
 permissionFromInt : Int -> Maybe Permission
@@ -91,12 +95,15 @@ permissionFromInt int =
             Just MkPermissionEditDesk
 
         2 ->
-            Just MkPermissionEditSpace
+            Just MkPermissionEditRole
 
         3 ->
-            Just MkPermissionCreateReservation
+            Just MkPermissionEditSpace
 
         4 ->
+            Just MkPermissionCreateReservation
+
+        5 ->
             Just MkPermissionCancelReservation
 
         _ ->
@@ -111,6 +118,9 @@ permissionToString permission =
 
         MkPermissionEditDesk ->
             "edit-desk"
+
+        MkPermissionEditRole ->
+            "edit-role"
 
         MkPermissionEditSpace ->
             "edit-space"
@@ -139,6 +149,9 @@ permissionDecoder =
                     "edit-desk" ->
                         Decode.succeed MkPermissionEditDesk
 
+                    "edit-role" ->
+                        Decode.succeed MkPermissionEditRole
+
                     "edit-space" ->
                         Decode.succeed MkPermissionEditSpace
 
@@ -160,6 +173,11 @@ type Permissions
 permissionsToList : Permissions -> List Permission
 permissionsToList (MkPermissions permissions) =
     List.filterMap permissionFromInt <| Set.toList permissions
+
+
+permissionsEncoder : Permissions -> Encode.Value
+permissionsEncoder =
+    Encode.list permissionEncode << permissionsToList
 
 
 permissionsDecoder : Decode.Decoder Permissions

@@ -1,5 +1,11 @@
 = Changelog
 
+* API
+  ** Add `/role/create` route.
+* Database
+  ** Add new permission `role_edit`.
+     Given to everyone who also has the `space_edit` permission.
+
 == `0.5.0.0`
 
 * API

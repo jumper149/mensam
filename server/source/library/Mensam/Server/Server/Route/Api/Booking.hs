@@ -15,6 +15,7 @@ import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
+import Data.Foldable
 import Data.Password.Bcrypt
 import Data.Set qualified as S
 import Data.Text qualified as T
@@ -36,6 +37,7 @@ handler =
     , routeSpaceLeave = leaveSpace
     , routeSpaceList = listSpaces
     , routeSpaceView = viewSpace
+    , routeRoleCreate = createRole
     , routeDeskCreate = createDesk
     , routeDeskDelete = deleteDesk
     , routeDeskList = listDesks
@@ -351,6 +353,61 @@ listSpaces auth eitherRequest =
           logInfo "Listed spaces."
           respond $ WithStatus @200 MkResponseSpaceList {responseSpaceListSpaces = spaces}
 
+createRole ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 201 ResponseRoleCreate) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Insufficient permission.")) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestRoleCreate ->
+  m (Union responses)
+createRole auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to create role: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        permissions <- spaceUserPermissions (requestRoleCreateSpace request) (userAuthenticatedId authenticated)
+        if MkPermissionSpaceEditDesk `S.member` permissions
+          then do
+            spaceRoleId <-
+              spaceRoleCreate
+                (requestRoleCreateSpace request)
+                (requestRoleCreateName request)
+                (requestRoleCreateAccessibility request)
+                (mkPassword <$> requestRoleCreatePassword request)
+            traverse_ (spaceRolePermissionGive spaceRoleId) (requestRoleCreatePermissions request)
+            pure spaceRoleId
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
+      case seldaResult of
+        SeldaFailure err -> do
+          case fromException err of
+            Just (MkSqlErrorMensamSpaceNotFound _) -> do
+              logInfo "Failed to create role. Space not found."
+              respond $ WithStatus @404 $ MkStaticText @"Space not found."
+            Nothing ->
+              case fromException err of
+                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk) -> do
+                  logInfo "Failed to create role. Missing permission to edit roles."
+                  respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
+                Nothing ->
+                  case fromException err of
+                    Just MkSqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch -> do
+                      logInfo "Failed to create role. Accessibility and password don't match."
+                      respond $ WithStatus @500 () -- TODO: This should be: HTTP 400 Bad Request
+                    Nothing -> do
+                      -- TODO: Here we can theoretically return a more accurate error
+                      logWarn "Failed to role desk."
+                      respond $ WithStatus @500 ()
+        SeldaSuccess roleIdentifier -> do
+          logInfo "Created role."
+          respond $ WithStatus @201 MkResponseRoleCreate {responseRoleCreateId = roleIdentifier}
+
 createDesk ::
   ( MonadIO m
   , MonadLogger m
@@ -387,7 +444,7 @@ createDesk auth eitherRequest =
             Nothing ->
               case fromException err of
                 Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk) -> do
-                  logInfo "Failed to create desk. Space not found."
+                  logInfo "Failed to create desk. Missing permission to edit desks."
                   respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
                 Nothing -> do
                   -- TODO: Here we can theoretically return a more accurate error

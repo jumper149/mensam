@@ -10,6 +10,7 @@ import Mensam.API.Update
 
 import Data.Aeson qualified as A
 import Data.Kind
+import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Time qualified as T
 import Data.Time.Zones.All qualified as T
@@ -147,6 +148,27 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceList
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
+              , WithStatus 500 ()
+              ]
+  , routeRoleCreate ::
+      route
+        :- Summary "Create Role"
+          :> Description
+              "Create a new role.\n\
+              \This role will be a way to access the given space.\n\
+              \You need the `role-edit` permission for that space to create roles.\n"
+          :> "role"
+          :> "create"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestRoleCreate
+          :> UVerb
+              PUT
+              '[JSON]
+              [ WithStatus 201 ResponseRoleCreate
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Insufficient permission.")
+              , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
   , routeDeskCreate ::
@@ -398,6 +420,28 @@ newtype ResponseSpaceList = MkResponseSpaceList
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") ResponseSpaceList
+
+type RequestRoleCreate :: Type
+data RequestRoleCreate = MkRequestRoleCreate
+  { requestRoleCreateSpace :: IdentifierSpace
+  , requestRoleCreateName :: NameSpaceRole
+  , requestRoleCreateAccessibility :: AccessibilitySpaceRole
+  , requestRoleCreatePassword :: Maybe T.Text
+  , requestRoleCreatePermissions :: S.Set PermissionSpace
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestRoleCreate") RequestRoleCreate
+
+type ResponseRoleCreate :: Type
+newtype ResponseRoleCreate = MkResponseRoleCreate
+  { responseRoleCreateId :: IdentifierSpaceRole
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseRoleCreate") ResponseRoleCreate
 
 type RequestDeskCreate :: Type
 data RequestDeskCreate = MkRequestDeskCreate
