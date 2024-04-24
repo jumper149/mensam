@@ -6,7 +6,6 @@ import Element.Events
 import Element.Font
 import Element.Input
 import Html.Attributes
-import Html.Events
 import Mensam.Api.RoleCreate
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
@@ -29,7 +28,24 @@ type alias Model =
             , permissions : Mensam.Space.Role.Permissions
             }
     , selected : Maybe Int
+    , popup : Maybe PopupModel
     }
+
+
+type PopupModel
+    = PopupCreateRole
+        { name : Mensam.Space.Role.Name
+        , accessibility : Mensam.Space.Role.Accessibility
+        , password : Maybe String
+        , permissions :
+            { viewSpace : Bool
+            , editDesk : Bool
+            , editRole : Bool
+            , editSpace : Bool
+            , createReservation : Bool
+            , cancelReservation : Bool
+            }
+        }
 
 
 init : { id : Mensam.Space.Identifier } -> Model
@@ -38,6 +54,7 @@ init args =
     , spaceName = Mensam.Space.MkName ""
     , roles = []
     , selected = Nothing
+    , popup = Nothing
     }
 
 
@@ -67,6 +84,26 @@ element model =
                           <|
                             Element.text "Edit Roles"
                         ]
+                    , Element.el
+                        [ Element.alignRight
+                        , Element.padding 10
+                        , Element.Background.color Mensam.Element.Color.bright.yellow
+                        , Element.Font.color Mensam.Element.Color.dark.black
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                        , Element.Events.onClick <| MessagePure OpenDialogToCreateRole
+                        ]
+                      <|
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                            , Element.Font.size 17
+                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                            ]
+                        <|
+                            Element.text "New Role"
                     ]
                 , Element.indexedTable
                     [ Element.width Element.fill
@@ -253,7 +290,232 @@ element model =
                         ]
                     }
                 ]
-        , popup = Nothing
+        , popup =
+            case model.popup of
+                Nothing ->
+                    Nothing
+
+                Just (PopupCreateRole popupModel) ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Create Role"
+                            , Element.Input.text
+                                [ Element.Font.color Mensam.Element.Color.dark.black
+                                ]
+                                { onChange = MessagePure << CreateRoleSetName << Mensam.Space.Role.MkName
+                                , text = Mensam.Space.Role.nameToString popupModel.name
+                                , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
+                                , label = Element.Input.labelHidden "Name"
+                                }
+                            , Element.column
+                                [ Element.spacing 10
+                                , Element.paddingXY 20 0
+                                , Element.width Element.fill
+                                , Element.height <| Element.px 160
+                                , Element.alignRight
+                                ]
+                                [ Element.Input.button
+                                    [ if popupModel.accessibility == Mensam.Space.Role.MkAccessibilityInaccessible then
+                                        Element.Background.color Mensam.Element.Color.bright.green
+
+                                      else
+                                        Element.Background.color Mensam.Element.Color.bright.white
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.magenta ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.paddingXY 10 8
+                                    ]
+                                    { onPress = Just <| MessagePure <| CreateRoleSetAccessibility <| Mensam.Space.Role.MkAccessibilityInaccessible
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            ]
+                                        <|
+                                            Element.text "Inaccessible"
+                                    }
+                                , Element.Input.button
+                                    [ if popupModel.accessibility == Mensam.Space.Role.MkAccessibilityJoinableWithPassword then
+                                        Element.Background.color Mensam.Element.Color.bright.green
+
+                                      else
+                                        Element.Background.color Mensam.Element.Color.bright.white
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.magenta ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.paddingXY 10 8
+                                    ]
+                                    { onPress =
+                                        Just <|
+                                            Messages
+                                                [ MessagePure <| CreateRoleSetAccessibility <| Mensam.Space.Role.MkAccessibilityJoinableWithPassword
+                                                , MessagePure <| CreateRoleSetPassword <| Just ""
+                                                ]
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            ]
+                                        <|
+                                            Element.text "Requires Password"
+                                    }
+                                , Element.Input.button
+                                    [ if popupModel.accessibility == Mensam.Space.Role.MkAccessibilityJoinable then
+                                        Element.Background.color Mensam.Element.Color.bright.green
+
+                                      else
+                                        Element.Background.color Mensam.Element.Color.bright.white
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.magenta ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.paddingXY 10 8
+                                    ]
+                                    { onPress = Just <| MessagePure <| CreateRoleSetAccessibility <| Mensam.Space.Role.MkAccessibilityJoinable
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            ]
+                                        <|
+                                            Element.text "Joinable"
+                                    }
+                                , case popupModel.accessibility of
+                                    Mensam.Space.Role.MkAccessibilityJoinableWithPassword ->
+                                        Element.Input.text
+                                            [ Element.Font.color Mensam.Element.Color.dark.black
+                                            ]
+                                            { onChange = MessagePure << CreateRoleSetPassword << Just
+                                            , text = Maybe.withDefault "" popupModel.password
+                                            , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Password"
+                                            , label = Element.Input.labelHidden "Password"
+                                            }
+
+                                    _ ->
+                                        Element.none
+                                ]
+                            , Element.column
+                                [ Element.spacing 10
+                                , Element.paddingXY 20 0
+                                , Element.width Element.fill
+                                , Element.height <| Element.px 120
+                                , Element.alignLeft
+                                ]
+                                [ Element.row
+                                    [ Element.spacing 10 ]
+                                    [ Element.Input.checkbox []
+                                        { onChange = MessagePure << CreateRoleSetPermission Mensam.Space.Role.MkPermissionViewSpace
+                                        , icon = Element.Input.defaultCheckbox
+                                        , checked = popupModel.permissions.viewSpace
+                                        , label = Element.Input.labelHidden "Permission: view-space"
+                                        }
+                                    , Element.text "View Space"
+                                    ]
+                                , Element.row
+                                    [ Element.spacing 10 ]
+                                    [ Element.Input.checkbox []
+                                        { onChange = MessagePure << CreateRoleSetPermission Mensam.Space.Role.MkPermissionEditDesk
+                                        , icon = Element.Input.defaultCheckbox
+                                        , checked = popupModel.permissions.editDesk
+                                        , label = Element.Input.labelHidden "Permission: edit-desk"
+                                        }
+                                    , Element.text "Edit Desks"
+                                    ]
+                                , Element.row
+                                    [ Element.spacing 10 ]
+                                    [ Element.Input.checkbox []
+                                        { onChange = MessagePure << CreateRoleSetPermission Mensam.Space.Role.MkPermissionEditRole
+                                        , icon = Element.Input.defaultCheckbox
+                                        , checked = popupModel.permissions.editRole
+                                        , label = Element.Input.labelHidden "Permission: edit-role"
+                                        }
+                                    , Element.text "Edit Roles"
+                                    ]
+                                , Element.row
+                                    [ Element.spacing 10 ]
+                                    [ Element.Input.checkbox []
+                                        { onChange = MessagePure << CreateRoleSetPermission Mensam.Space.Role.MkPermissionEditSpace
+                                        , icon = Element.Input.defaultCheckbox
+                                        , checked = popupModel.permissions.editSpace
+                                        , label = Element.Input.labelHidden "Permission: edit-space"
+                                        }
+                                    , Element.text "Edit Space"
+                                    ]
+                                , Element.row
+                                    [ Element.spacing 10 ]
+                                    [ Element.Input.checkbox []
+                                        { onChange = MessagePure << CreateRoleSetPermission Mensam.Space.Role.MkPermissionCreateReservation
+                                        , icon = Element.Input.defaultCheckbox
+                                        , checked = popupModel.permissions.createReservation
+                                        , label = Element.Input.labelHidden "Permission: create-reservation"
+                                        }
+                                    , Element.text "Create Reservations"
+                                    ]
+                                , Element.row
+                                    [ Element.spacing 10 ]
+                                    [ Element.Input.checkbox []
+                                        { onChange = MessagePure << CreateRoleSetPermission Mensam.Space.Role.MkPermissionCancelReservation
+                                        , icon = Element.Input.defaultCheckbox
+                                        , checked = popupModel.permissions.cancelReservation
+                                        , label = Element.Input.labelHidden "Permission: cancel-reservation"
+                                        }
+                                    , Element.text "Cancel Reservations"
+                                    ]
+                                ]
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessagePure <| CloseDialogToCreateRole
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Abort"
+                                    }
+                                , Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessageEffect <| SubmitCreateRole popupModel
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Create role"
+                                    }
+                                ]
+                            ]
         }
 
 
@@ -275,6 +537,12 @@ type MessagePure
         )
     | SetSelected (Maybe Int)
     | ChooseRole Mensam.Space.Role.Identifier
+    | OpenDialogToCreateRole
+    | CloseDialogToCreateRole
+    | CreateRoleSetName Mensam.Space.Role.Name
+    | CreateRoleSetAccessibility Mensam.Space.Role.Accessibility
+    | CreateRoleSetPassword (Maybe String)
+    | CreateRoleSetPermission Mensam.Space.Role.Permission Bool
 
 
 updatePure : MessagePure -> Model -> Model
@@ -293,10 +561,106 @@ updatePure message model =
         ChooseRole _ ->
             model
 
+        OpenDialogToCreateRole ->
+            { model
+                | popup =
+                    Just <|
+                        PopupCreateRole
+                            { name = Mensam.Space.Role.MkName ""
+                            , accessibility = Mensam.Space.Role.MkAccessibilityInaccessible
+                            , password = Nothing
+                            , permissions =
+                                { viewSpace = False
+                                , editDesk = False
+                                , editRole = False
+                                , editSpace = False
+                                , createReservation = False
+                                , cancelReservation = False
+                                }
+                            }
+            }
+
+        CloseDialogToCreateRole ->
+            { model | popup = Nothing }
+
+        CreateRoleSetName name ->
+            case model.popup of
+                Just (PopupCreateRole popupModel) ->
+                    { model | popup = Just <| PopupCreateRole { popupModel | name = name } }
+
+                Nothing ->
+                    model
+
+        CreateRoleSetAccessibility accessibility ->
+            case model.popup of
+                Just (PopupCreateRole popupModel) ->
+                    { model | popup = Just <| PopupCreateRole { popupModel | accessibility = accessibility } }
+
+                Nothing ->
+                    model
+
+        CreateRoleSetPassword password ->
+            case model.popup of
+                Just (PopupCreateRole popupModel) ->
+                    { model | popup = Just <| PopupCreateRole { popupModel | password = password } }
+
+                Nothing ->
+                    model
+
+        CreateRoleSetPermission permission bool ->
+            case model.popup of
+                Just (PopupCreateRole popupModel) ->
+                    let
+                        oldPermissions =
+                            popupModel.permissions
+                    in
+                    { model
+                        | popup =
+                            Just <|
+                                PopupCreateRole
+                                    { popupModel
+                                        | permissions =
+                                            case permission of
+                                                Mensam.Space.Role.MkPermissionViewSpace ->
+                                                    { oldPermissions | viewSpace = bool }
+
+                                                Mensam.Space.Role.MkPermissionEditDesk ->
+                                                    { oldPermissions | editDesk = bool }
+
+                                                Mensam.Space.Role.MkPermissionEditRole ->
+                                                    { oldPermissions | editRole = bool }
+
+                                                Mensam.Space.Role.MkPermissionEditSpace ->
+                                                    { oldPermissions | editSpace = bool }
+
+                                                Mensam.Space.Role.MkPermissionCreateReservation ->
+                                                    { oldPermissions | createReservation = bool }
+
+                                                Mensam.Space.Role.MkPermissionCancelReservation ->
+                                                    { oldPermissions | cancelReservation = bool }
+                                    }
+                    }
+
+                Nothing ->
+                    model
+
 
 type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshRoles
+    | SubmitCreateRole
+        { name : Mensam.Space.Role.Name
+        , accessibility : Mensam.Space.Role.Accessibility
+        , password : Maybe String
+        , permissions :
+            { viewSpace : Bool
+            , editDesk : Bool
+            , editRole : Bool
+            , editSpace : Bool
+            , createReservation : Bool
+            , cancelReservation : Bool
+            }
+        }
 
 
 spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
@@ -340,15 +704,71 @@ roleCreate :
     , name : Mensam.Space.Role.Name
     , accessibility : Mensam.Space.Role.Accessibility
     , password : Maybe String
-    , permissions : Mensam.Space.Role.Permissions
+    , permissions :
+        { viewSpace : Bool
+        , editDesk : Bool
+        , editRole : Bool
+        , editSpace : Bool
+        , createReservation : Bool
+        , cancelReservation : Bool
+        }
     }
     -> Cmd Message
-roleCreate requestArgs =
-    Mensam.Api.RoleCreate.request requestArgs <|
+roleCreate args =
+    Mensam.Api.RoleCreate.request
+        { jwt = args.jwt
+        , space = args.space
+        , name = args.name
+        , accessibility = args.accessibility
+        , password = args.password
+        , permissions =
+            Mensam.Space.Role.permissionsFromList <|
+                List.filterMap (\p -> p) <|
+                    [ if args.permissions.viewSpace then
+                        Just Mensam.Space.Role.MkPermissionViewSpace
+
+                      else
+                        Nothing
+                    , if args.permissions.editSpace then
+                        Just Mensam.Space.Role.MkPermissionEditSpace
+
+                      else
+                        Nothing
+                    , if args.permissions.editDesk then
+                        Just Mensam.Space.Role.MkPermissionEditDesk
+
+                      else
+                        Nothing
+                    , if args.permissions.editRole then
+                        Just Mensam.Space.Role.MkPermissionEditRole
+
+                      else
+                        Nothing
+                    , if args.permissions.editSpace then
+                        Just Mensam.Space.Role.MkPermissionEditSpace
+
+                      else
+                        Nothing
+                    , if args.permissions.createReservation then
+                        Just Mensam.Space.Role.MkPermissionCreateReservation
+
+                      else
+                        Nothing
+                    , if args.permissions.cancelReservation then
+                        Just Mensam.Space.Role.MkPermissionCancelReservation
+
+                      else
+                        Nothing
+                    ]
+        }
+    <|
         \result ->
             case result of
                 Ok (Mensam.Api.RoleCreate.Success _) ->
-                    MessageEffect RefreshRoles
+                    Messages
+                        [ MessagePure CloseDialogToCreateRole
+                        , MessageEffect RefreshRoles
+                        ]
 
                 Ok Mensam.Api.RoleCreate.ErrorInsufficientPermission ->
                     MessageEffect <|

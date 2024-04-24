@@ -175,6 +175,11 @@ permissionsToList (MkPermissions permissions) =
     List.filterMap permissionFromInt <| Set.toList permissions
 
 
+permissionsFromList : List Permission -> Permissions
+permissionsFromList =
+    MkPermissions << Set.fromList << List.map permissionToInt
+
+
 permissionsEncoder : Permissions -> Encode.Value
 permissionsEncoder =
     Encode.list permissionEncode << permissionsToList

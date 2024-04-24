@@ -930,9 +930,31 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenSpaceRoles screenModel ->
                                     ( MkModel model
-                                      -- TODO
                                     , Platform.Cmd.map MessageSpaceRoles <|
                                         Mensam.Screen.Space.Roles.spaceView jwt screenModel.spaceId
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Space.Roles.SubmitCreateRole args ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceRoles screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceRoles <|
+                                        Mensam.Screen.Space.Roles.roleCreate
+                                            { jwt = jwt
+                                            , space = screenModel.spaceId
+                                            , name = args.name
+                                            , accessibility = args.accessibility
+                                            , password = args.password
+                                            , permissions = args.permissions
+                                            }
                                     )
 
                                 _ ->
