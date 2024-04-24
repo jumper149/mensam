@@ -1063,6 +1063,14 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
+                Mensam.Screen.Space.Settings.OpenPageToRoles ->
+                    case model.screen of
+                        ScreenSpaceSettings screenModel ->
+                            update (SetUrl <| RouteSpaceRoles screenModel.id) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
         MessageSpaceSettings (Mensam.Screen.Space.Settings.Messages ms) ->
             case model.screen of
                 ScreenSpaceSettings _ ->

@@ -2,6 +2,7 @@ module Mensam.Screen.Space.Settings exposing (..)
 
 import Element
 import Element.Background
+import Element.Events
 import Element.Font
 import Element.Input
 import Html.Attributes
@@ -81,6 +82,26 @@ element model =
                           <|
                             Element.text "Edit Settings"
                         ]
+                    , Element.el
+                        [ Element.alignRight
+                        , Element.padding 10
+                        , Element.Background.color Mensam.Element.Color.bright.yellow
+                        , Element.Font.color Mensam.Element.Color.dark.black
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                        , Element.Events.onClick <| MessageEffect OpenPageToRoles
+                        ]
+                      <|
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                            , Element.Font.size 17
+                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                            ]
+                        <|
+                            Element.text "Roles"
                     ]
                 , Element.column
                     [ Element.spacing 20
@@ -463,6 +484,7 @@ type MessageEffect
     | ReturnToSpace
     | ReturnToSpaces
     | SubmitDeleteSpace
+    | OpenPageToRoles
 
 
 onEnter : msg -> Element.Attribute msg
