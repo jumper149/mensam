@@ -191,6 +191,19 @@ type Accessibility
     | MkAccessibilityInaccessible
 
 
+accessibilityToString : Accessibility -> String
+accessibilityToString accessibility =
+    case accessibility of
+        MkAccessibilityJoinable ->
+            "Joinable"
+
+        MkAccessibilityJoinableWithPassword ->
+            "Requires Password"
+
+        MkAccessibilityInaccessible ->
+            "Inaccessible"
+
+
 accessibilityEncode : Accessibility -> Encode.Value
 accessibilityEncode accessibility =
     Encode.string <|

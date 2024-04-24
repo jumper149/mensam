@@ -85,7 +85,6 @@ element model =
                     , Element.Background.color (Element.rgba 0 0 0 0.1)
                     , Element.Font.family [ Mensam.Element.Font.condensed ]
                     , Element.Font.size 16
-                    , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                     , Element.clipY
                     , Element.scrollbarY
                     ]
@@ -113,6 +112,7 @@ element model =
                                 \n (Mensam.Space.MkSpace space) ->
                                     Element.el
                                         [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
@@ -153,6 +153,7 @@ element model =
                                 \n (Mensam.Space.MkSpace space) ->
                                     Element.el
                                         [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let

@@ -277,7 +277,6 @@ element model =
                     , Element.Background.color (Element.rgba 0 0 0 0.1)
                     , Element.Font.family [ Mensam.Element.Font.condensed ]
                     , Element.Font.size 16
-                    , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                     , Element.clipY
                     , Element.scrollbarY
                     ]
@@ -306,6 +305,7 @@ element model =
                                 \n x ->
                                     Element.el
                                         [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
@@ -346,6 +346,7 @@ element model =
                                 \n x ->
                                     Element.el
                                         [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
@@ -393,6 +394,7 @@ element model =
                                 \n x ->
                                     Element.el
                                         [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
