@@ -171,6 +171,26 @@ data Routes route = Routes
               , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
+  , routeRoleDelete ::
+      route
+        :- Summary "Delete Role"
+          :> Description
+              "Delete a role.\n\
+              \You have to provide a fallback role to reassign members to that fallback role.\n\
+              \You need the `role-edit` permission for the space to delete roles.\n"
+          :> "role"
+          :> "delete"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestRoleDelete
+          :> UVerb
+              DELETE
+              '[JSON]
+              [ WithStatus 200 ResponseRoleDelete
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Insufficient permission.")
+              , WithStatus 500 ()
+              ]
   , routeDeskCreate ::
       route
         :- Summary "Create Desk"
@@ -442,6 +462,25 @@ newtype ResponseRoleCreate = MkResponseRoleCreate
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseRoleCreate") ResponseRoleCreate
+
+type RequestRoleDelete :: Type
+data RequestRoleDelete = MkRequestRoleDelete
+  { requestRoleDeleteId :: IdentifierSpaceRole
+  , requestRoleDeleteFallbackId :: IdentifierSpaceRole
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestRoleDelete") RequestRoleDelete
+
+type ResponseRoleDelete :: Type
+newtype ResponseRoleDelete = MkResponseRoleDelete
+  { responseRoleDeleteUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseRoleDelete") ResponseRoleDelete
 
 type RequestDeskCreate :: Type
 data RequestDeskCreate = MkRequestDeskCreate

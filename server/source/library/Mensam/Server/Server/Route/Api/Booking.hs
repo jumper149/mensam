@@ -38,6 +38,7 @@ handler =
     , routeSpaceList = listSpaces
     , routeSpaceView = viewSpace
     , routeRoleCreate = createRole
+    , routeRoleDelete = deleteRole
     , routeDeskCreate = createDesk
     , routeDeskDelete = deleteDesk
     , routeDeskList = listDesks
@@ -373,7 +374,7 @@ createRole auth eitherRequest =
       logDebug $ "Received request to create role: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         permissions <- spaceUserPermissions (requestRoleCreateSpace request) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditDesk `S.member` permissions
+        if MkPermissionSpaceEditRole `S.member` permissions
           then do
             spaceRoleId <-
               spaceRoleCreate
@@ -407,6 +408,43 @@ createRole auth eitherRequest =
         SeldaSuccess roleIdentifier -> do
           logInfo "Created role."
           respond $ WithStatus @201 MkResponseRoleCreate {responseRoleCreateId = roleIdentifier}
+
+deleteRole ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseRoleDelete) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Insufficient permission.")) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestRoleDelete ->
+  m (Union responses)
+deleteRole auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to delete role: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        spaceIdentifier <- spaceRoleSpace <$> spaceRoleGet (requestRoleDeleteId request)
+        permissions <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
+        if MkPermissionSpaceEditRole `S.member` permissions
+          then spaceRoleDeleteWithFallback (requestRoleDeleteId request) (requestRoleDeleteFallbackId request)
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
+      case seldaResult of
+        SeldaFailure err -> do
+          logWarn "Failed to delete role."
+          case fromException err of
+            Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole) -> do
+              logInfo "Failed to delete role because of insufficient permission."
+              respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
+            Nothing ->
+              -- TODO: Here we can theoretically return a more accurate error
+              respond $ WithStatus @500 ()
+        SeldaSuccess () -> do
+          logInfo "Deleted desk."
+          respond $ WithStatus @200 MkResponseRoleDelete {responseRoleDeleteUnit = ()}
 
 createDesk ::
   ( MonadIO m

@@ -75,6 +75,7 @@ data PermissionSpace
 type SpaceRole :: Type
 data SpaceRole = MkSpaceRole
   { spaceRoleId :: IdentifierSpaceRole
+  , spaceRoleSpace :: IdentifierSpace
   , spaceRoleName :: NameSpaceRole
   , spaceRolePermissions :: S.Set PermissionSpace
   , spaceRoleAccessibility :: AccessibilitySpaceRole

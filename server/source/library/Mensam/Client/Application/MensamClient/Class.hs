@@ -181,6 +181,31 @@ endpointSpaceList ::
          , WithStatus 500 ()
          ]
     )
+endpointRoleCreate ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestRoleCreate ->
+  ClientM
+    ( Union
+        '[ WithStatus 201 Route.Api.Booking.ResponseRoleCreate
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 404 (StaticText "Space not found.")
+         , WithStatus 500 ()
+         ]
+    )
+endpointRoleDelete ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestRoleDelete ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.Booking.ResponseRoleDelete
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 500 ()
+         ]
+    )
 endpointDeskCreate ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestDeskCreate ->
@@ -274,6 +299,8 @@ Route.Api.Routes
       , Route.Api.Booking.routeSpaceLeave = endpointSpaceLeave
       , Route.Api.Booking.routeSpaceView = endpointSpaceView
       , Route.Api.Booking.routeSpaceList = endpointSpaceList
+      , Route.Api.Booking.routeRoleCreate = endpointRoleCreate
+      , Route.Api.Booking.routeRoleDelete = endpointRoleDelete
       , Route.Api.Booking.routeDeskCreate = endpointDeskCreate
       , Route.Api.Booking.routeDeskDelete = endpointDeskDelete
       , Route.Api.Booking.routeDeskList = endpointDeskList

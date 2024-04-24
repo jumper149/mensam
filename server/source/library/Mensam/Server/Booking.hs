@@ -122,7 +122,8 @@ spaceView userIdentifier spaceIdentifier = do
               zipWith
                 ( \dbSpaceRole dbSpaceRolePermissions ->
                     MkSpaceRole
-                      { spaceRoleId = MkIdentifierSpaceRole $ Selda.fromId $ dbSpaceRole_id dbSpaceRole
+                      { spaceRoleId = MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole $ dbSpaceRole_id dbSpaceRole
+                      , spaceRoleSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpaceRole_space dbSpaceRole
                       , spaceRoleName = MkNameSpaceRole $ dbSpaceRole_name dbSpaceRole
                       , spaceRolePermissions = S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> dbSpaceRolePermissions
                       , spaceRoleAccessibility = spaceRoleAccessibilityDbToApi $ dbSpaceRole_accessibility dbSpaceRole
@@ -206,7 +207,8 @@ spaceRoleGet identifier = do
   lift $ logInfo "Got space role info successfully."
   pure
     MkSpaceRole
-      { spaceRoleId = MkIdentifierSpaceRole $ Selda.fromId $ dbSpaceRole_id dbSpaceRole
+      { spaceRoleId = MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole $ dbSpaceRole_id dbSpaceRole
+      , spaceRoleSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpaceRole_space dbSpaceRole
       , spaceRoleName = MkNameSpaceRole $ dbSpaceRole_name dbSpaceRole
       , spaceRolePermissions = S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> dbSpaceRolePermissions
       , spaceRoleAccessibility = spaceRoleAccessibilityDbToApi $ dbSpaceRole_accessibility dbSpaceRole
@@ -254,7 +256,7 @@ spaceDelete identifier = do
     Selda.restrict $ dbDesk Selda.! #dbSpaceRole_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
     pure $ dbDesk Selda.! #dbSpaceRole_id
   lift $ logDebug "Deleting space roles."
-  traverse_ (spaceRoleDelete . MkIdentifierSpaceRole . Selda.fromId @DbSpaceRole) dbSpaceRoleIdentifiers
+  traverse_ (spaceRoleDeleteUnsafe . MkIdentifierSpaceRole . Selda.fromId @DbSpaceRole) dbSpaceRoleIdentifiers
   lift $ logDebug $ "Space had " <> T.pack (show (length dbSpaceRoleIdentifiers)) <> " space roles."
   Selda.deleteOneFrom tableSpace $ \row ->
     row Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
@@ -398,11 +400,11 @@ data SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch = MkSqlErrorMensam
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
 
-spaceRoleDelete ::
+spaceRoleDeleteUnsafe ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpaceRole ->
   SeldaTransactionT m ()
-spaceRoleDelete identifier = do
+spaceRoleDeleteUnsafe identifier = do
   lift $ logDebug $ "Deleting space role: " <> T.pack (show identifier)
   countPermissions <- Selda.deleteFrom tableSpaceRolePermission $ \row ->
     row Selda.! #dbSpaceRolePermission_role Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier)
@@ -410,6 +412,30 @@ spaceRoleDelete identifier = do
   Selda.deleteOneFrom tableSpaceRole $ \row ->
     row Selda.! #dbSpaceRole_id Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier)
   lift $ logInfo "Deleted space role successfully."
+  pure ()
+
+spaceRoleDeleteWithFallback ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  -- | to be deleted
+  IdentifierSpaceRole ->
+  -- | fallback
+  IdentifierSpaceRole ->
+  SeldaTransactionT m ()
+spaceRoleDeleteWithFallback identifierToDelete identifierFallback = do
+  lift $ logDebug $ "Deleting space role " <> T.pack (show identifierToDelete) <> " with fallback " <> T.pack (show identifierFallback) <> "."
+  lift $ logInfo "Making sure that the fallback role is of the same space."
+  dbSpaceRoleToDelete <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierToDelete
+  dbSpaceRoleFallback <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierFallback
+  if dbSpaceRole_space dbSpaceRoleToDelete == dbSpaceRole_space dbSpaceRoleFallback
+    then lift $ logInfo "The fallback role is of the same space."
+    else error "Fallback role is not of the same space"
+  countFallbackSpaceUsers <-
+    Selda.update
+      tableSpaceUser
+      (\dbSpaceUser -> dbSpaceUser Selda.! #dbSpaceUser_role Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierToDelete))
+      (\dbSpaceUser -> dbSpaceUser `Selda.with` [#dbSpaceUser_role Selda.:= Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierFallback)])
+  lift $ logDebug $ "The amount of users that now use the fallback role: " <> T.pack (show countFallbackSpaceUsers)
+  spaceRoleDeleteUnsafe identifierToDelete
   pure ()
 
 spaceRolePermissionGive ::
