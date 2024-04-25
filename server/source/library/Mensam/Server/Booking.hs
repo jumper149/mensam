@@ -18,6 +18,7 @@ import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Foldable
 import Data.Kind
+import Data.List qualified as L
 import Data.Maybe
 import Data.Password.Bcrypt
 import Data.Set qualified as S
@@ -511,6 +512,61 @@ type SqlErrorMensamSpaceRolePasswordCheckFail :: Type
 data SqlErrorMensamSpaceRolePasswordCheckFail = MkSqlErrorMensamSpaceRolePasswordCheckFail
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
+
+spaceRoleNameSet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpaceRole ->
+  NameSpaceRole ->
+  SeldaTransactionT m ()
+spaceRoleNameSet identifier name = do
+  lift $ logDebug $ "Setting name " <> T.pack (show name) <> " of role " <> T.pack (show identifier) <> "."
+  Selda.updateOne
+    tableSpaceRole
+    (#dbSpaceRole_id `Selda.is` Selda.toId @DbSpaceRole (unIdentifierSpaceRole identifier))
+    (\rowSpaceRole -> rowSpaceRole `Selda.with` [#dbSpaceRole_name Selda.:= Selda.literal (unNameSpaceRole name)])
+  lift $ logInfo "Set new role name successfully."
+
+spaceRoleAccessibilityAndPasswordSet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpaceRole ->
+  AccessibilitySpaceRole ->
+  Maybe Password ->
+  SeldaTransactionT m ()
+spaceRoleAccessibilityAndPasswordSet identifier accessibility password = do
+  lift $ logDebug $ "Setting accessibility " <> T.pack (show accessibility) <> " of role " <> T.pack (show identifier) <> "."
+  maybePasswordHash :: Maybe (PasswordHash Bcrypt) <- do
+    lift $ logDebug "Confirming that accessibility and password_hash match."
+    let accessibilityMatchesPassword =
+          case accessibility of
+            MkAccessibilitySpaceRoleJoinable -> isNothing password
+            MkAccessibilitySpaceRoleJoinableWithPassword -> isJust password
+            MkAccessibilitySpaceRoleInaccessible -> isNothing password
+    if accessibilityMatchesPassword
+      then lift $ traverse hashPassword password
+      else throwM MkSqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch
+  Selda.updateOne
+    tableSpaceRole
+    (#dbSpaceRole_id `Selda.is` Selda.toId @DbSpaceRole (unIdentifierSpaceRole identifier))
+    (\rowSpaceRole -> rowSpaceRole `Selda.with` [#dbSpaceRole_accessibility Selda.:= Selda.literal (spaceRoleAccessibilityApiToDb accessibility)])
+  Selda.updateOne
+    tableSpaceRole
+    (#dbSpaceRole_id `Selda.is` Selda.toId @DbSpaceRole (unIdentifierSpaceRole identifier))
+    (\rowSpaceRole -> rowSpaceRole `Selda.with` [#dbSpaceRole_password_hash Selda.:= Selda.literal (unPasswordHash <$> maybePasswordHash)])
+  lift $ logInfo "Set new role accessibility successfully."
+
+spaceRolePermissionsSet ::
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpaceRole ->
+  S.Set PermissionSpace ->
+  SeldaTransactionT m ()
+spaceRolePermissionsSet identifier permissions = do
+  lift $ logDebug $ "Setting permissions " <> T.pack (show permissions) <> " of role " <> T.pack (show identifier) <> "."
+  countPermissionsDeleted <- Selda.deleteFrom tableSpaceRolePermission $ \row ->
+    row Selda.! #dbSpaceRolePermission_role Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier)
+  lift $ logDebug $ "Deleted old permissions: " <> T.pack (show countPermissionsDeleted)
+  countPermissionsGiven <- L.length <$> traverse (spaceRolePermissionGive identifier) (S.toList permissions)
+  lift $ logDebug $ "Gave new permissions: " <> T.pack (show countPermissionsGiven)
+  lift $ logInfo "Set new role permissions successfully."
 
 deskLookupId ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

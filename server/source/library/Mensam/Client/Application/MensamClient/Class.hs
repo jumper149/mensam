@@ -194,6 +194,18 @@ endpointRoleCreate ::
          , WithStatus 500 ()
          ]
     )
+endpointRoleEdit ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestRoleEdit ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.Booking.ResponseRoleEdit
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 500 ()
+         ]
+    )
 endpointRoleDelete ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestRoleDelete ->
@@ -300,6 +312,7 @@ Route.Api.Routes
       , Route.Api.Booking.routeSpaceView = endpointSpaceView
       , Route.Api.Booking.routeSpaceList = endpointSpaceList
       , Route.Api.Booking.routeRoleCreate = endpointRoleCreate
+      , Route.Api.Booking.routeRoleEdit = endpointRoleEdit
       , Route.Api.Booking.routeRoleDelete = endpointRoleDelete
       , Route.Api.Booking.routeDeskCreate = endpointDeskCreate
       , Route.Api.Booking.routeDeskDelete = endpointDeskDelete

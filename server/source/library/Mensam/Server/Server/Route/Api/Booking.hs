@@ -38,6 +38,7 @@ handler =
     , routeSpaceList = listSpaces
     , routeSpaceView = viewSpace
     , routeRoleCreate = createRole
+    , routeRoleEdit = editRole
     , routeRoleDelete = deleteRole
     , routeDeskCreate = createDesk
     , routeDeskDelete = deleteDesk
@@ -403,11 +404,61 @@ createRole auth eitherRequest =
                       respond $ WithStatus @500 () -- TODO: This should be: HTTP 400 Bad Request
                     Nothing -> do
                       -- TODO: Here we can theoretically return a more accurate error
-                      logWarn "Failed to role desk."
+                      logWarn "Failed to create role."
                       respond $ WithStatus @500 ()
         SeldaSuccess roleIdentifier -> do
           logInfo "Created role."
           respond $ WithStatus @201 MkResponseRoleCreate {responseRoleCreateId = roleIdentifier}
+
+editRole ::
+  ( MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseRoleEdit) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (StaticText "Insufficient permission.")) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestRoleEdit ->
+  m (Union responses)
+editRole auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to delete role: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        spaceIdentifier <- spaceRoleSpace <$> spaceRoleGet (requestRoleEditId request)
+        permissionsRequestingUser <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
+        if MkPermissionSpaceEditRole `S.member` permissionsRequestingUser
+          then do
+            case requestRoleEditName request of
+              Preserve -> pure ()
+              Overwrite name -> spaceRoleNameSet (requestRoleEditId request) name
+            case requestRoleEditAccessibilityAndPassword request of
+              Preserve -> pure ()
+              Overwrite accessibilityAndPassword ->
+                spaceRoleAccessibilityAndPasswordSet
+                  (requestRoleEditId request)
+                  (roleEditAccessibilityAndPasswordAccessibility accessibilityAndPassword)
+                  (mkPassword <$> roleEditAccessibilityAndPasswordPassword accessibilityAndPassword)
+            case requestRoleEditPermissions request of
+              Preserve -> pure ()
+              Overwrite permissions -> spaceRolePermissionsSet (requestRoleEditId request) permissions
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
+      case seldaResult of
+        SeldaFailure err -> do
+          logWarn "Failed to delete role."
+          case fromException err of
+            Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole) -> do
+              logInfo "Failed to delete role because of insufficient permission."
+              respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
+            Nothing ->
+              -- TODO: Here we can theoretically return a more accurate error
+              respond $ WithStatus @500 ()
+        SeldaSuccess () -> do
+          logInfo "Editeded role."
+          respond $ WithStatus @200 MkResponseRoleEdit {responseRoleEditUnit = ()}
 
 deleteRole ::
   ( MonadIO m
@@ -443,7 +494,7 @@ deleteRole auth eitherRequest =
               -- TODO: Here we can theoretically return a more accurate error
               respond $ WithStatus @500 ()
         SeldaSuccess () -> do
-          logInfo "Deleted desk."
+          logInfo "Deleted role."
           respond $ WithStatus @200 MkResponseRoleDelete {responseRoleDeleteUnit = ()}
 
 createDesk ::

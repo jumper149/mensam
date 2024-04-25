@@ -5,6 +5,7 @@
 * API
   ** Add `/role/create` route.
   ** Add `/role/delete` route.
+  ** Add `/role/edit` route.
   ** The `/space/view` response now redundantly includes the `space` id for each role.
 * Database
   ** Add new permission `role_edit`.

@@ -171,6 +171,25 @@ data Routes route = Routes
               , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
+  , routeRoleEdit ::
+      route
+        :- Summary "Edit Role"
+          :> Description
+              "Update settings of a role.\n\
+              \You need the `role-edit` permission for the space to edit roles.\n"
+          :> "role"
+          :> "edit"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestRoleEdit
+          :> UVerb
+              PATCH
+              '[JSON]
+              [ WithStatus 200 ResponseRoleEdit
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Insufficient permission.")
+              , WithStatus 500 ()
+              ]
   , routeRoleDelete ::
       route
         :- Summary "Delete Role"
@@ -462,6 +481,37 @@ newtype ResponseRoleCreate = MkResponseRoleCreate
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseRoleCreate") ResponseRoleCreate
+
+type RequestRoleEdit :: Type
+data RequestRoleEdit = MkRequestRoleEdit
+  { requestRoleEditId :: IdentifierSpaceRole
+  , requestRoleEditName :: Updatable NameSpaceRole
+  , requestRoleEditAccessibilityAndPassword :: Updatable RoleEditAccessibilityAndPassword
+  , requestRoleEditPermissions :: Updatable (S.Set PermissionSpace)
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestRoleEdit") RequestRoleEdit
+
+type RoleEditAccessibilityAndPassword :: Type
+data RoleEditAccessibilityAndPassword = MkRoleEditAccessibilityAndPassword
+  { roleEditAccessibilityAndPasswordAccessibility :: AccessibilitySpaceRole
+  , roleEditAccessibilityAndPasswordPassword :: Maybe T.Text
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "RoleEdit" "roleEditAccessibilityAndPassword") RoleEditAccessibilityAndPassword
+
+type ResponseRoleEdit :: Type
+newtype ResponseRoleEdit = MkResponseRoleEdit
+  { responseRoleEditUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseRoleEdit") ResponseRoleEdit
 
 type RequestRoleDelete :: Type
 data RequestRoleDelete = MkRequestRoleDelete
