@@ -425,6 +425,9 @@ spaceRoleDeleteWithFallback ::
 spaceRoleDeleteWithFallback identifierToDelete identifierFallback = do
   lift $ logDebug $ "Deleting space role " <> T.pack (show identifierToDelete) <> " with fallback " <> T.pack (show identifierFallback) <> "."
   lift $ logInfo "Making sure that the fallback role is of the same space."
+  if identifierToDelete /= identifierFallback
+     then lift $ logInfo "The fallback role is different from the role that will be deleted."
+     else error "Fallback is the same."
   dbSpaceRoleToDelete <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierToDelete
   dbSpaceRoleFallback <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierFallback
   if dbSpaceRole_space dbSpaceRoleToDelete == dbSpaceRole_space dbSpaceRoleFallback
