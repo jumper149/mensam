@@ -73,6 +73,7 @@ createSpace auth eitherRequest =
           spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Admin") MkAccessibilitySpaceRoleInaccessible Nothing
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditDesk
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditRole
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCancelReservation
