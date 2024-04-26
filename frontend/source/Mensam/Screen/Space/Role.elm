@@ -489,7 +489,7 @@ element model =
                                 ]
                             , Element.paragraph
                                 []
-                                [ Element.text "To delete this role you have select a fallback role that any remaining members of this role will be assigned to."
+                                [ Element.text "To delete this role you have to select a fallback role that any remaining members of this role will be assigned to."
                                 ]
                             , Element.indexedTable
                                 [ Element.width Element.fill
