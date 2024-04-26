@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.6.0.0`
+
 * Frontend
   ** Add new page to view and add roles.
   ** Add new page to edit specific roles.
