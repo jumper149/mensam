@@ -22,6 +22,7 @@ import Mensam.Screen.Register
 import Mensam.Screen.Reservations
 import Mensam.Screen.Space
 import Mensam.Screen.Space.Join
+import Mensam.Screen.Space.Role
 import Mensam.Screen.Space.Roles
 import Mensam.Screen.Space.Settings
 import Mensam.Screen.Spaces
@@ -76,6 +77,7 @@ type Screen
     | ScreenSpace Mensam.Screen.Space.Model
     | ScreenSpaceJoin Mensam.Screen.Space.Join.Model
     | ScreenSpaceRoles Mensam.Screen.Space.Roles.Model
+    | ScreenSpaceRole Mensam.Screen.Space.Role.Model
     | ScreenSpaceSettings Mensam.Screen.Space.Settings.Model
     | ScreenReservations Mensam.Screen.Reservations.Model
 
@@ -88,6 +90,7 @@ type Route
     | RouteSpace Mensam.Space.Identifier
     | RouteSpaceJoin { spaceId : Mensam.Space.Identifier, roleId : Maybe Mensam.Space.Role.Identifier, password : Maybe String }
     | RouteSpaceRoles Mensam.Space.Identifier
+    | RouteSpaceRole { spaceId : Mensam.Space.Identifier, roleId : Mensam.Space.Role.Identifier }
     | RouteSpaceSettings Mensam.Space.Identifier
     | RouteReservations
 
@@ -124,6 +127,9 @@ routeToUrl route =
 
         RouteSpaceRoles identifier ->
             Url.Builder.absolute [ "roles", "space", Mensam.Space.identifierToString identifier ] []
+
+        RouteSpaceRole { spaceId, roleId } ->
+            Url.Builder.absolute [ "role", Mensam.Space.Role.identifierToString roleId, "space", Mensam.Space.identifierToString spaceId ] []
 
         RouteSpaceSettings identifier ->
             Url.Builder.absolute [ "settings", "space", Mensam.Space.identifierToString identifier ] []
@@ -180,6 +186,15 @@ routeToModelUpdate route (MkModel model) =
             <|
                 MkModel { model | screen = ScreenSpaceRoles <| Mensam.Screen.Space.Roles.init { id = spaceId } }
 
+        RouteSpaceRole { spaceId, roleId } ->
+            update
+                (Messages
+                    [ MessageSpaceRole <| Mensam.Screen.Space.Role.MessageEffect Mensam.Screen.Space.Role.RefreshRole
+                    ]
+                )
+            <|
+                MkModel { model | screen = ScreenSpaceRole <| Mensam.Screen.Space.Role.init { spaceId = spaceId, roleId = roleId } }
+
         RouteSpaceSettings identifier ->
             update
                 (Messages
@@ -218,6 +233,18 @@ urlParser =
                 <?> Url.Parser.Query.int "role"
                 <?> Url.Parser.Query.string "password"
         , Url.Parser.map RouteSpaceRoles <| Url.Parser.s "roles" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
+        , Url.Parser.map
+            (\roleId spaceId ->
+                RouteSpaceRole
+                    { spaceId = spaceId
+                    , roleId = roleId
+                    }
+            )
+          <|
+            Url.Parser.s "role"
+                </> Url.Parser.map Mensam.Space.Role.MkIdentifier Url.Parser.int
+                </> Url.Parser.s "space"
+                </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         , Url.Parser.map RouteSpaceSettings <| Url.Parser.s "settings" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         ]
 
@@ -288,6 +315,7 @@ type Message
     | MessageSpace Mensam.Screen.Space.Message
     | MessageSpaceJoin Mensam.Screen.Space.Join.Message
     | MessageSpaceRoles Mensam.Screen.Space.Roles.Message
+    | MessageSpaceRole Mensam.Screen.Space.Role.Message
     | MessageSpaceSettings Mensam.Screen.Space.Settings.Message
     | MessageReservations Mensam.Screen.Reservations.Message
 
@@ -940,6 +968,14 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+                Mensam.Screen.Space.Roles.ChooseRole roleId ->
+                    case model.screen of
+                        ScreenSpaceRoles screenModel ->
+                            update (SetUrl <| RouteSpaceRole { spaceId = screenModel.spaceId, roleId = roleId }) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
                 Mensam.Screen.Space.Roles.SubmitCreateRole args ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
@@ -967,6 +1003,93 @@ update message (MkModel model) =
             case model.screen of
                 ScreenSpaceRoles _ ->
                     update (Messages <| List.map MessageSpaceRoles ms) <| MkModel model
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
+        MessageSpaceRole (Mensam.Screen.Space.Role.MessagePure m) ->
+            case model.screen of
+                ScreenSpaceRole screenModel ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenSpaceRole <| Mensam.Screen.Space.Role.updatePure m screenModel }
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
+        MessageSpaceRole (Mensam.Screen.Space.Role.MessageEffect m) ->
+            case m of
+                Mensam.Screen.Space.Role.ReportError err ->
+                    update (ReportError err) <| MkModel model
+
+                Mensam.Screen.Space.Role.RefreshRole ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceRole screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceRole <|
+                                        Mensam.Screen.Space.Role.spaceView jwt screenModel.space.id
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Space.Role.SubmitEditRole ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceRole screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceRole <|
+                                        Mensam.Screen.Space.Role.roleEdit
+                                            { jwt = jwt
+                                            , id = screenModel.role.id
+                                            , name = screenModel.new.name
+                                            , accessibilityAndPassword = screenModel.new.accessibilityAndPassword
+                                            , permissions = screenModel.new.permissions
+                                            }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Space.Role.SubmitDeleteRole ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceRole screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceRole <|
+                                        Mensam.Screen.Space.Role.roleDelete
+                                            { jwt = jwt
+                                            , id = screenModel.role.id
+                                            , fallbackId = screenModel.role.id
+                                            }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Space.Role.ReturnToRoles ->
+                    case model.screen of
+                        ScreenSpaceRole screenModel ->
+                            update (SetUrl <| RouteSpaceRoles screenModel.space.id) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
+        MessageSpaceRole (Mensam.Screen.Space.Role.Messages ms) ->
+            case model.screen of
+                ScreenSpaceRole _ ->
+                    update (Messages <| List.map MessageSpaceRole ms) <| MkModel model
 
                 _ ->
                     update (ReportError errorScreen) <| MkModel model
@@ -1219,6 +1342,9 @@ headerContent (MkModel model) =
             ScreenSpaceRoles screenModel ->
                 Just <| "Roles for " ++ Mensam.Space.nameToString screenModel.spaceName
 
+            ScreenSpaceRole screenModel ->
+                Just <| "Role: " ++ Mensam.Space.Role.nameToString screenModel.role.name
+
             ScreenSpaceSettings screenModel ->
                 Just <| "Settings for " ++ Mensam.Space.nameToString screenModel.old.name
 
@@ -1269,6 +1395,9 @@ view (MkModel model) =
 
                     ScreenSpaceRoles screenModel ->
                         Mensam.Element.screen MessageSpaceRoles <| Mensam.Screen.Space.Roles.element screenModel
+
+                    ScreenSpaceRole screenModel ->
+                        Mensam.Element.screen MessageSpaceRole <| Mensam.Screen.Space.Role.element screenModel
 
                     ScreenSpaceSettings screenModel ->
                         Mensam.Element.screen MessageSpaceSettings <| Mensam.Screen.Space.Settings.element screenModel

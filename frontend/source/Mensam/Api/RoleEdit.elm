@@ -25,7 +25,6 @@ type alias Request =
 type Response
     = Success
     | ErrorInsufficientPermission
-    | ErrorSpaceNotFound
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 

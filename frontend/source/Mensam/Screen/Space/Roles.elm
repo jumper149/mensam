@@ -139,7 +139,7 @@ element model =
                                     Element.el
                                         [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseRole role.id
+                                        , Element.Events.onClick <| MessageEffect <| ChooseRole role.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -180,7 +180,7 @@ element model =
                                     Element.el
                                         [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseRole role.id
+                                        , Element.Events.onClick <| MessageEffect <| ChooseRole role.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -221,7 +221,7 @@ element model =
                                     Element.el
                                         [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseRole role.id
+                                        , Element.Events.onClick <| MessageEffect <| ChooseRole role.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -262,7 +262,7 @@ element model =
                                     Element.el
                                         [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseRole role.id
+                                        , Element.Events.onClick <| MessageEffect <| ChooseRole role.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -536,7 +536,6 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
-    | ChooseRole Mensam.Space.Role.Identifier
     | OpenDialogToCreateRole
     | CloseDialogToCreateRole
     | CreateRoleSetName Mensam.Space.Role.Name
@@ -556,10 +555,6 @@ updatePure message model =
 
         SetSelected n ->
             { model | selected = n }
-
-        -- TODO
-        ChooseRole _ ->
-            model
 
         OpenDialogToCreateRole ->
             { model
@@ -648,6 +643,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshRoles
+    | ChooseRole Mensam.Space.Role.Identifier
     | SubmitCreateRole
         { name : Mensam.Space.Role.Name
         , accessibility : Mensam.Space.Role.Accessibility

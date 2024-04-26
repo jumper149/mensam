@@ -1,7 +1,8 @@
 = Changelog
 
 * Frontend
-  ** Add new page to edit roles.
+  ** Add new page to view and add roles.
+  ** Add new page to edit specific roles.
 * API
   ** Add `/role/create` route.
   ** Add `/role/delete` route.
