@@ -395,7 +395,7 @@ createRole auth eitherRequest =
               respond $ WithStatus @404 $ MkStaticText @"Space not found."
             Nothing ->
               case fromException err of
-                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk) -> do
+                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole) -> do
                   logInfo "Failed to create role. Missing permission to edit roles."
                   respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
                 Nothing ->
