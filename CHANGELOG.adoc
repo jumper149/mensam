@@ -1,5 +1,9 @@
 = Changelog
 
+== `0.6.0.1`
+
+* Fixed a bug where newly created spaces didn't get the `role_edit` permission for the default admin role.
+
 == `0.6.0.0`
 
 * Frontend
