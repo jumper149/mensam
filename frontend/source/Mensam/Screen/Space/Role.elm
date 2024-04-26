@@ -2,6 +2,7 @@ module Mensam.Screen.Space.Role exposing (..)
 
 import Element
 import Element.Background
+import Element.Events
 import Element.Font
 import Element.Input
 import Html.Attributes
@@ -26,6 +27,13 @@ type alias Model =
     { space :
         { id : Mensam.Space.Identifier
         }
+    , roles :
+        List
+            { id : Mensam.Space.Role.Identifier
+            , name : Mensam.Space.Role.Name
+            , accessibility : Mensam.Space.Role.Accessibility
+            , permissions : Mensam.Space.Role.Permissions
+            }
     , role :
         { id : Mensam.Space.Role.Identifier
         , name : Mensam.Space.Role.Name
@@ -54,7 +62,7 @@ type alias Model =
 
 
 type PopupModel
-    = PopupDeleteRole
+    = PopupDeleteRole { selectedN : Maybe Int, chosenFallback : Maybe Mensam.Space.Role.Identifier }
 
 
 init : { spaceId : Mensam.Space.Identifier, roleId : Mensam.Space.Role.Identifier } -> Model
@@ -62,6 +70,7 @@ init args =
     { space =
         { id = args.spaceId
         }
+    , roles = []
     , role =
         { id = args.roleId
         , name = Mensam.Space.Role.MkName ""
@@ -461,7 +470,7 @@ element model =
                 Nothing ->
                     Nothing
 
-                Just PopupDeleteRole ->
+                Just (PopupDeleteRole popupModel) ->
                     Just <|
                         Element.column
                             [ Element.spacing 20
@@ -474,6 +483,79 @@ element model =
                                 ]
                               <|
                                 Element.text "Delete Role"
+                            , Element.paragraph
+                                []
+                                [ Element.text "Do you want to delete this role permanently?"
+                                ]
+                            , Element.paragraph
+                                []
+                                [ Element.text "To delete this role you have select a fallback role that any remaining members of this role will be assigned to."
+                                ]
+                            , Element.indexedTable
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                , Element.Background.color (Element.rgba 0 0 0 0.1)
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                , Element.Font.size 16
+                                , Element.clipY
+                                , Element.scrollbarY
+                                ]
+                                { data = model.roles
+                                , columns =
+                                    let
+                                        cell =
+                                            Element.el
+                                                [ Element.height <| Element.px 40
+                                                , Element.padding 10
+                                                ]
+                                    in
+                                    [ { header =
+                                            Element.el
+                                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                                ]
+                                            <|
+                                                cell <|
+                                                    Element.el
+                                                        []
+                                                    <|
+                                                        Element.text "Fallback Role"
+                                      , width = Element.fill
+                                      , view =
+                                            \n role ->
+                                                Element.el
+                                                    [ Element.Events.onMouseLeave <| MessagePure <| DeleteRoleSetSelected Nothing
+                                                    , Element.Events.onMouseEnter <| MessagePure <| DeleteRoleSetSelected <| Just n
+                                                    , Element.Events.onClick <| MessagePure <| DeleteRoleChooseRole <| Just role.id
+                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                    , let
+                                                        alpha =
+                                                            case popupModel.selectedN of
+                                                                Nothing ->
+                                                                    0.2
+
+                                                                Just m ->
+                                                                    if m == n then
+                                                                        0.4
+
+                                                                    else
+                                                                        0.2
+                                                      in
+                                                      if Just role.id == popupModel.chosenFallback then
+                                                        Element.Background.color (Element.rgba 0 0.3 0 alpha)
+
+                                                      else
+                                                        Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                    ]
+                                                <|
+                                                    cell <|
+                                                        Element.el
+                                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                        <|
+                                                            Element.text <|
+                                                                Mensam.Space.Role.nameToString role.name
+                                      }
+                                    ]
+                                }
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10
@@ -497,24 +579,45 @@ element model =
                                         <|
                                             Element.text "Abort"
                                     }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.red
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessageEffect <| SubmitDeleteRole
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                , case popupModel.chosenFallback of
+                                    Nothing ->
+                                        Element.Input.button
+                                            [ Element.Background.color Mensam.Element.Color.bright.black
+                                            , Element.Font.color Mensam.Element.Color.dark.black
+                                            , Element.width Element.fill
+                                            , Element.padding 10
                                             ]
-                                        <|
-                                            Element.text "Delete role permanently"
-                                    }
+                                            { onPress = Nothing
+                                            , label =
+                                                Element.el
+                                                    [ Element.centerX
+                                                    , Element.centerY
+                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                    ]
+                                                <|
+                                                    Element.text "Delete role permanently"
+                                            }
+
+                                    Just fallback ->
+                                        Element.Input.button
+                                            [ Element.Background.color Mensam.Element.Color.bright.red
+                                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                                            , Element.Font.color Mensam.Element.Color.dark.black
+                                            , Element.width Element.fill
+                                            , Element.padding 10
+                                            ]
+                                            { onPress = Just <| MessageEffect <| SubmitDeleteRole { fallback = fallback }
+                                            , label =
+                                                Element.el
+                                                    [ Element.centerX
+                                                    , Element.centerY
+                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                                    ]
+                                                <|
+                                                    Element.text "Delete role permanently"
+                                            }
                                 ]
                             ]
         }
@@ -537,6 +640,8 @@ type MessagePure
     | ResetNewRole
     | OpenDialogToDeleteRole
     | CloseDialogToDeleteRole
+    | DeleteRoleSetSelected (Maybe Int)
+    | DeleteRoleChooseRole (Maybe Mensam.Space.Role.Identifier)
 
 
 updatePure : MessagePure -> Model -> Model
@@ -548,7 +653,7 @@ updatePure message model =
                     model
 
                 Just role ->
-                    { model | role = role }
+                    { model | role = role, roles = view.roles }
 
         EnterName name ->
             { model
@@ -688,17 +793,33 @@ updatePure message model =
             }
 
         OpenDialogToDeleteRole ->
-            { model | popup = Just PopupDeleteRole }
+            { model | popup = Just <| PopupDeleteRole { selectedN = Nothing, chosenFallback = Nothing } }
 
         CloseDialogToDeleteRole ->
             { model | popup = Nothing }
+
+        DeleteRoleSetSelected maybeN ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupDeleteRole popupModel) ->
+                    { model | popup = Just <| PopupDeleteRole { popupModel | selectedN = maybeN } }
+
+        DeleteRoleChooseRole maybeRoleId ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupDeleteRole popupModel) ->
+                    { model | popup = Just <| PopupDeleteRole { popupModel | chosenFallback = maybeRoleId } }
 
 
 type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshRole
     | SubmitEditRole
-    | SubmitDeleteRole
+    | SubmitDeleteRole { fallback : Mensam.Space.Role.Identifier }
     | ReturnToRoles
 
 

@@ -1058,7 +1058,7 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
-                Mensam.Screen.Space.Role.SubmitDeleteRole ->
+                Mensam.Screen.Space.Role.SubmitDeleteRole { fallback } ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
@@ -1068,7 +1068,7 @@ update message (MkModel model) =
                                         Mensam.Screen.Space.Role.roleDelete
                                             { jwt = jwt
                                             , id = screenModel.role.id
-                                            , fallbackId = screenModel.role.id
+                                            , fallbackId = fallback
                                             }
                                     )
 
