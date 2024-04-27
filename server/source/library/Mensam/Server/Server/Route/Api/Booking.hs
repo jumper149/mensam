@@ -369,7 +369,7 @@ createRole auth eitherRequest =
             $ \seldaResultAfter403 ->
               handleSeldaException
                 (Proxy @SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch)
-                (WithStatus @500 ())
+                (WithStatus @400 $ MkErrorParseBodyJson { errorParseBodyJsonError = "accessibility and password don't match" })
                 seldaResultAfter403
                 $ \seldaResultAfter500 ->
                   handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter500 $ \roleIdentifier -> do
