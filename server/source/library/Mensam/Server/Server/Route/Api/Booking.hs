@@ -21,6 +21,7 @@ import Data.Password.Bcrypt
 import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Traversable
+import Data.Typeable
 import Database.Selda qualified as Selda
 import Servant hiding (BasicAuthResult (..))
 import Servant.Auth.Server
@@ -166,9 +167,8 @@ editSpace auth eitherRequest =
         (WithStatus @404 $ MkStaticText @"Space not found.")
         seldaResult
         $ \seldaResultAfter404 ->
-          handleSeldaException
-            (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditSpace))
-            (WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionSpaceEditSpace)
+          handleSeldaException403InsufficientPermission
+            (Proxy @MkPermissionSpaceEditSpace)
             seldaResultAfter404
             $ \seldaResultAfter403 ->
               handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \spaceInternal -> do
@@ -356,9 +356,8 @@ createRole auth eitherRequest =
         (WithStatus @404 $ MkStaticText @"Space not found.")
         seldaResult
         $ \seldaResultAfter404 ->
-          handleSeldaException
-            (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditRole))
-            (WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionSpaceEditRole)
+          handleSeldaException403InsufficientPermission
+            (Proxy @MkPermissionSpaceEditRole)
             seldaResultAfter404
             $ \seldaResultAfter403 ->
               handleSeldaException
@@ -406,9 +405,8 @@ editRole auth eitherRequest =
               Preserve -> pure ()
               Overwrite permissions -> spaceRolePermissionsSet (requestRoleEditId request) permissions
           else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
-      handleSeldaException
-        (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditRole))
-        (WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionSpaceEditRole)
+      handleSeldaException403InsufficientPermission
+        (Proxy @MkPermissionSpaceEditRole)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
@@ -437,9 +435,8 @@ deleteRole auth eitherRequest =
         if MkPermissionSpaceEditRole `S.member` permissions
           then spaceRoleDeleteWithFallback (requestRoleDeleteId request) (requestRoleDeleteFallbackId request)
           else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
-      handleSeldaException
-        (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditRole))
-        (WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionSpaceEditRole)
+      handleSeldaException403InsufficientPermission
+        (Proxy @MkPermissionSpaceEditRole)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
@@ -477,9 +474,8 @@ createDesk auth eitherRequest =
         (WithStatus @404 $ MkStaticText @"Space not found.")
         seldaResult
         $ \seldaResultAfter404 ->
-          handleSeldaException
-            (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditDesk))
-            (WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionSpaceEditDesk)
+          handleSeldaException403InsufficientPermission
+            (Proxy @MkPermissionSpaceEditDesk)
             seldaResultAfter404
             $ \seldaResultAfter403 ->
               handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \deskIdentifier -> do
@@ -509,9 +505,8 @@ deleteDesk auth eitherRequest =
         if MkPermissionSpaceEditDesk `S.member` permissions
           then deskDelete $ deskId desk
           else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk
-      handleSeldaException
-        (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditDesk))
-        (WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionSpaceEditDesk)
+      handleSeldaException403InsufficientPermission
+        (Proxy @MkPermissionSpaceEditDesk)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaException
@@ -674,3 +669,18 @@ handleBadRequestBody parsedRequestBody handler' =
   case parsedRequestBody of
     Right a -> handler' a
     Left err -> respond $ WithStatus @400 $ MkErrorParseBodyJson err
+
+handleSeldaException403InsufficientPermission ::
+  forall (p :: PermissionSpace) m responses a.
+  ( Typeable p
+  , Applicative m
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission p)) responses
+  ) =>
+  Proxy p ->
+  SeldaResult a ->
+  (SeldaResult a -> m (Union responses)) ->
+  m (Union responses)
+handleSeldaException403InsufficientPermission Proxy =
+  handleSeldaException
+    (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied p))
+    (WithStatus @403 $ MkErrorInsufficientPermission @p)
