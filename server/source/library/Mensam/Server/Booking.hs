@@ -34,7 +34,7 @@ data SqlErrorMensamSpacePermissionNotSatisfied permission = MkSqlErrorMensamSpac
   deriving anyclass (Exception)
 
 spaceLookupId ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   NameSpace ->
   SeldaTransactionT m IdentifierSpace
 spaceLookupId name = do
@@ -45,7 +45,7 @@ spaceLookupId name = do
   pure $ MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
 
 spaceGetFromId ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   SeldaTransactionT m Space
 spaceGetFromId identifier = do
@@ -62,7 +62,7 @@ spaceGetFromId identifier = do
       }
 
 spaceInternalGetFromId ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   SeldaTransactionT m SpaceInternal
 spaceInternalGetFromId identifier = do
@@ -96,7 +96,7 @@ newtype SqlErrorMensamSpaceNotFound = MkSqlErrorMensamSpaceNotFound Selda.SqlErr
 
 -- | Already checks permissions.
 spaceView ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   IdentifierSpace ->
   SeldaTransactionT m (Maybe SpaceView)
@@ -156,7 +156,7 @@ spaceView userIdentifier spaceIdentifier = do
             }
 
 spaceListVisible ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   OrderByCategories SpaceOrderCategory ->
   SeldaTransactionT m [Space]
@@ -182,7 +182,7 @@ spaceListVisible userIdentifier spaceOrder = do
   pure $ fromDbSpace <$> dbSpaces
 
 spaceRoleLookupId ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   NameSpaceRole ->
   SeldaTransactionT m (Maybe IdentifierSpaceRole)
@@ -198,7 +198,7 @@ spaceRoleLookupId spaceIdentifier name = do
       pure $ Just $ MkIdentifierSpaceRole $ Selda.fromId $ dbSpaceRole_id dbSpaceRole
 
 spaceRoleGet ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpaceRole ->
   SeldaTransactionT m SpaceRole
 spaceRoleGet identifier = do
@@ -216,7 +216,7 @@ spaceRoleGet identifier = do
       }
 
 spaceCreate ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   NameSpace ->
   IdentifierUser ->
   T.TZLabel ->
@@ -237,7 +237,7 @@ spaceCreate name owner timezoneLabel visibility = do
   pure $ MkIdentifierSpace $ Selda.fromId @DbSpace dbSpaceId
 
 spaceDelete ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   SeldaTransactionT m ()
 spaceDelete identifier = do
@@ -265,7 +265,7 @@ spaceDelete identifier = do
   pure ()
 
 spaceNameSet ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   NameSpace ->
   SeldaTransactionT m ()
@@ -278,7 +278,7 @@ spaceNameSet identifier name = do
   lift $ logInfo "Set name successfully."
 
 spaceTimezoneSet ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   T.TZLabel ->
   SeldaTransactionT m ()
@@ -291,7 +291,7 @@ spaceTimezoneSet identifier timezone = do
   lift $ logInfo "Set timezone successfully."
 
 spaceVisibilitySet ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   VisibilitySpace ->
   SeldaTransactionT m ()
@@ -304,7 +304,7 @@ spaceVisibilitySet identifier visibility = do
   lift $ logInfo "Set visibility successfully."
 
 spaceUserAdd ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
   IdentifierSpaceRole ->
@@ -323,7 +323,7 @@ spaceUserAdd spaceIdentifier userIdentifier roleIdentifier = do
   pure ()
 
 spaceUserRemove ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
   SeldaTransactionT m ()
@@ -339,7 +339,7 @@ spaceUserRemove spaceIdentifier userIdentifier = do
   pure ()
 
 spaceUserIsOwner ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
   SeldaTransactionT m Bool
@@ -350,7 +350,7 @@ spaceUserIsOwner spaceIdentifier userIdentifier = do
   pure $ spaceOwner space == userIdentifier
 
 spaceUserPermissions ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
   SeldaTransactionT m (S.Set PermissionSpace)
@@ -402,7 +402,7 @@ data SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch = MkSqlErrorMensam
   deriving anyclass (Exception)
 
 spaceRoleDeleteUnsafe ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpaceRole ->
   SeldaTransactionT m ()
 spaceRoleDeleteUnsafe identifier = do
@@ -416,7 +416,7 @@ spaceRoleDeleteUnsafe identifier = do
   pure ()
 
 spaceRoleDeleteWithFallback ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   -- | to be deleted
   IdentifierSpaceRole ->
   -- | fallback
@@ -443,7 +443,7 @@ spaceRoleDeleteWithFallback identifierToDelete identifierFallback = do
   pure ()
 
 spaceRolePermissionGive ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpaceRole ->
   PermissionSpace ->
   SeldaTransactionT m ()
@@ -462,7 +462,7 @@ spaceRolePermissionGive spaceRoleIdentifier permission = do
 -- | Just checks that the password matches.
 -- Does not check the accessibility of the role.
 spaceRolePasswordCheck ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpaceRole ->
   Maybe Password ->
   SeldaTransactionT m PasswordCheck
@@ -500,7 +500,7 @@ data SqlErrorMensamSpaceRoleNoPasswordSetCannotCheck = MkSqlErrorMensamSpaceRole
 
 -- | Fails the transaction when the password check fails.
 spaceRolePasswordCheck' ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpaceRole ->
   Maybe Password ->
   SeldaTransactionT m ()
@@ -517,7 +517,7 @@ data SqlErrorMensamSpaceRolePasswordCheckFail = MkSqlErrorMensamSpaceRolePasswor
   deriving anyclass (Exception)
 
 spaceRoleNameSet ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpaceRole ->
   NameSpaceRole ->
   SeldaTransactionT m ()
@@ -558,7 +558,7 @@ spaceRoleAccessibilityAndPasswordSet identifier accessibility password = do
   lift $ logInfo "Set new role accessibility successfully."
 
 spaceRolePermissionsSet ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpaceRole ->
   S.Set PermissionSpace ->
   SeldaTransactionT m ()
@@ -572,7 +572,7 @@ spaceRolePermissionsSet identifier permissions = do
   lift $ logInfo "Set new role permissions successfully."
 
 deskLookupId ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   NameDesk ->
   SeldaTransactionT m (Maybe IdentifierDesk)
@@ -592,7 +592,7 @@ deskLookupId spaceIdentifier deskName = do
       pure $ Just $ MkIdentifierDesk $ Selda.fromId @DbDesk dbId
 
 deskGetFromId ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierDesk ->
   SeldaTransactionT m Desk
 deskGetFromId identifier = do
@@ -618,7 +618,7 @@ newtype SqlErrorMensamDeskNotFound = MkSqlErrorMensamDeskNotFound Selda.SqlError
   deriving anyclass (Exception)
 
 deskList ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
   SeldaTransactionT m [Desk]
@@ -648,7 +648,7 @@ deskList spaceIdentifier userIdentifier = do
   pure $ fromDbDesk <$> dbDesks
 
 deskCreate ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   NameDesk ->
   IdentifierSpace ->
   SeldaTransactionT m IdentifierDesk
@@ -666,7 +666,7 @@ deskCreate deskName spaceIdentifier = do
   pure $ MkIdentifierDesk $ Selda.fromId @DbDesk dbDeskId
 
 deskDelete ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierDesk ->
   SeldaTransactionT m ()
 deskDelete identifier = do
@@ -680,7 +680,7 @@ deskDelete identifier = do
   pure ()
 
 reservationGet ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierReservation ->
   SeldaTransactionT m Reservation
 reservationGet identifier = do
@@ -704,7 +704,7 @@ reservationGet identifier = do
 
 -- | List all reservations of a desk, that overlap with the given time window.
 reservationList ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierDesk ->
   -- | minimum timestamp begin
   Maybe T.UTCTime ->
@@ -749,7 +749,7 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd = do
 
 -- | List all reservations of a user, that overlap with the given time window.
 reservationListUser ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   -- | minimum timestamp begin
   Maybe T.UTCTime ->
@@ -794,7 +794,7 @@ reservationListUser userIdentifier maybeTimestampBegin maybeTimestampEnd = do
   pure $ toReservation <$> dbReservations
 
 reservationCreate ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierDesk ->
   IdentifierUser ->
   IntervalNonDegenerate T.UTCTime ->
@@ -830,7 +830,7 @@ data SqlErrorMensamDeskAlreadyReserved = MkSqlErrorMensamDeskAlreadyReserved
   deriving anyclass (Exception)
 
 reservationCancel ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierReservation ->
   SeldaTransactionT m ()
 reservationCancel reservationIdentifier = do

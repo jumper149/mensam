@@ -92,8 +92,7 @@ createSpace auth eitherRequest =
         respond $ WithStatus @201 MkResponseSpaceCreate {responseSpaceCreateId = spaceIdentifier}
 
 deleteSpace ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceDelete) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -131,8 +130,7 @@ deleteSpace auth eitherRequest =
               respond $ WithStatus @200 MkResponseSpaceDelete {responseSpaceDeleteUnit = ()}
 
 editSpace ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceEdit) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -185,8 +183,7 @@ editSpace auth eitherRequest =
                       }
 
 joinSpace ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceJoin) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -238,8 +235,7 @@ joinSpace auth eitherRequest =
             respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
 
 leaveSpace ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceLeave) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -278,8 +274,7 @@ leaveSpace auth eitherRequest =
             respond $ WithStatus @403 $ MkStaticText @"Owner cannot leave space."
 
 viewSpace ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceView) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -305,8 +300,7 @@ viewSpace auth eitherRequest =
           respond $ WithStatus @200 MkResponseSpaceView {responseSpaceViewSpace = space}
 
 listSpaces ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseSpaceList) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -369,7 +363,7 @@ createRole auth eitherRequest =
             $ \seldaResultAfter403 ->
               handleSeldaException
                 (Proxy @SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch)
-                (WithStatus @400 $ MkErrorParseBodyJson { errorParseBodyJsonError = "accessibility and password don't match" })
+                (WithStatus @400 $ MkErrorParseBodyJson {errorParseBodyJsonError = "accessibility and password don't match"})
                 seldaResultAfter403
                 $ \seldaResultAfter500 ->
                   handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter500 $ \roleIdentifier -> do
@@ -422,8 +416,7 @@ editRole auth eitherRequest =
             respond $ WithStatus @200 MkResponseRoleEdit {responseRoleEditUnit = ()}
 
 deleteRole ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseRoleDelete) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -454,8 +447,7 @@ deleteRole auth eitherRequest =
             respond $ WithStatus @200 MkResponseRoleDelete {responseRoleDeleteUnit = ()}
 
 createDesk ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseDeskCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -495,8 +487,7 @@ createDesk auth eitherRequest =
                 respond $ WithStatus @201 MkResponseDeskCreate {responseDeskCreateId = deskIdentifier}
 
 deleteDesk ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseDeskDelete) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -532,8 +523,7 @@ deleteDesk auth eitherRequest =
                 respond $ WithStatus @200 MkResponseDeskDelete {responseDeskDeleteUnit = ()}
 
 listDesks ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseDeskList) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -569,8 +559,7 @@ listDesks auth eitherRequest =
         respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
 
 createReservation ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseReservationCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -613,8 +602,7 @@ createReservation auth eitherRequest = do
             respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
 
 cancelReservation ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseReservationCancel) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -645,8 +633,7 @@ cancelReservation auth eitherRequest = do
         respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
 
 listReservations ::
-  ( MonadIO m
-  , MonadLogger m
+  ( MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseReservationList) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses

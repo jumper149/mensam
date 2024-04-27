@@ -311,7 +311,7 @@ userConfirmationConfirm identifier secret = do
               error $ T.unpack message
 
 userConfirmationCreate ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   ConfirmationEffect ->
   T.UTCTime ->
