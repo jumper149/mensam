@@ -8,6 +8,7 @@ import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Email.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
+import Mensam.Server.Application.SeldaPool.Servant
 import Mensam.Server.Configuration
 import Mensam.Server.Configuration.BaseUrl
 import Mensam.Server.Secrets
@@ -68,40 +69,35 @@ login auth =
     seldaResult <-
       runSeldaTransactionT $
         userSessionCreate (userAuthenticatedId authenticatedWithoutSession) timeCurrent maybeTimeout
-    case seldaResult of
-      SeldaFailure _ -> do
-        -- TODO: Here we can theoretically return a more accurate error
-        logWarn "Failed to create new session."
-        respond $ WithStatus @500 ()
-      SeldaSuccess sessionIdentifier -> do
-        logInfo "Created session successfully."
-        let authenticatedWithSession = authenticatedWithoutSession {userAuthenticatedSession = Just sessionIdentifier}
-        logDebug $ "Creating JWT for user: " <> T.pack (show authenticatedWithSession)
-        logDebug $ "JWT timeout has been set: " <> T.pack (show maybeTimeout)
-        eitherJwt <- do
-          jwk <- secretsJwk <$> secrets
-          let jwtSettings = mkJwtSettings jwk
-          liftIO $ makeJWT authenticatedWithSession jwtSettings maybeTimeout
-        case eitherJwt of
-          Left err -> do
-            logError $ "Failed to create JWT: " <> T.pack (show err)
-            respond $ WithStatus @500 ()
-          Right jwtByteString ->
-            case T.decodeUtf8' $ B.toStrict jwtByteString of
-              Left err -> do
-                logError $ "Failed to decode JWT as UTF-8: " <> T.pack (show err)
-                respond $ WithStatus @500 ()
-              Right jwtText -> do
-                let jwt = MkJwt jwtText
-                logInfo "Created JWT successfully."
-                logInfo "User login successful."
-                respond $
-                  WithStatus @200
-                    MkResponseLogin
-                      { responseLoginJwt = jwt
-                      , responseLoginExpiration = maybeTimeout
-                      , responseLoginId = userAuthenticatedId authenticatedWithSession
-                      }
+    handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \sessionIdentifier -> do
+      logInfo "Created session successfully."
+      let authenticatedWithSession = authenticatedWithoutSession {userAuthenticatedSession = Just sessionIdentifier}
+      logDebug $ "Creating JWT for user: " <> T.pack (show authenticatedWithSession)
+      logDebug $ "JWT timeout has been set: " <> T.pack (show maybeTimeout)
+      eitherJwt <- do
+        jwk <- secretsJwk <$> secrets
+        let jwtSettings = mkJwtSettings jwk
+        liftIO $ makeJWT authenticatedWithSession jwtSettings maybeTimeout
+      case eitherJwt of
+        Left err -> do
+          logError $ "Failed to create JWT: " <> T.pack (show err)
+          respond $ WithStatus @500 ()
+        Right jwtByteString ->
+          case T.decodeUtf8' $ B.toStrict jwtByteString of
+            Left err -> do
+              logError $ "Failed to decode JWT as UTF-8: " <> T.pack (show err)
+              respond $ WithStatus @500 ()
+            Right jwtText -> do
+              let jwt = MkJwt jwtText
+              logInfo "Created JWT successfully."
+              logInfo "User login successful."
+              respond $
+                WithStatus @200
+                  MkResponseLogin
+                    { responseLoginJwt = jwt
+                    , responseLoginExpiration = maybeTimeout
+                    , responseLoginId = userAuthenticatedId authenticatedWithSession
+                    }
 
 logout ::
   ( MonadConfigured m
@@ -125,18 +121,13 @@ logout auth =
         seldaResult <-
           runSeldaTransactionT $
             userSessionDelete sessionIdentifier
-        case seldaResult of
-          SeldaFailure _ -> do
-            -- TODO: Here we can theoretically return a more accurate error
-            logWarn "Failed to delete session."
-            respond $ WithStatus @500 ()
-          SeldaSuccess () -> do
-            logInfo "User logged out successfully."
-            respond $
-              WithStatus @200
-                MkResponseLogout
-                  { responseLogoutUnit = ()
-                  }
+        handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
+          logInfo "User logged out successfully."
+          respond $
+            WithStatus @200
+              MkResponseLogout
+                { responseLogoutUnit = ()
+                }
 
 register ::
   ( MonadConfigured m
@@ -168,39 +159,34 @@ register eitherRequest =
           let effect = MkConfirmationEffectEmailValidation requestRegisterEmail
           expirationTime <- lift . liftIO $ (T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime`) <$> T.getCurrentTime
           userConfirmationCreate userIdentifier effect expirationTime
-      case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to register new user."
-          respond $ WithStatus @500 ()
-        SeldaSuccess confirmationSecret -> do
-          logInfo "Registered new user."
-          logDebug "Sending confirmation email."
-          config <- configuration
-          sendEmailResult <-
-            sendEmail
-              MkEmail
-                { emailRecipient = requestRegisterEmail
-                , emailTitle = "Account Verification: " <> unUsername requestRegisterName
-                , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
-                    H.head $ do
-                      H.title $ H.text $ "Account Verification: " <> unUsername requestRegisterName
-                    H.body $ do
-                      H.p $ H.text $ "Welcome " <> unUsername requestRegisterName <> "!"
-                      H.p $ H.text "You have been registered successfully. Click the link to confirm your email address."
-                      let confirmLink :: T.Text = displayBaseUrl (configBaseUrl config) <> "register/confirm/" <> unConfirmationSecret confirmationSecret
-                      H.p $ H.a H.! H.A.href (H.textValue confirmLink) $ H.text confirmLink
-                      H.div $ H.small $ H.text "If you did not register this account, feel free to ignore this message."
-                }
-          let emailSent =
-                case sendEmailResult of
-                  EmailSent -> True
-                  EmailFailedToSend -> False
-          respond $
-            WithStatus @201
-              MkResponseRegister
-                { responseRegisterEmailSent = emailSent
-                }
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \confirmationSecret -> do
+        logInfo "Registered new user."
+        logDebug "Sending confirmation email."
+        config <- configuration
+        sendEmailResult <-
+          sendEmail
+            MkEmail
+              { emailRecipient = requestRegisterEmail
+              , emailTitle = "Account Verification: " <> unUsername requestRegisterName
+              , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
+                  H.head $ do
+                    H.title $ H.text $ "Account Verification: " <> unUsername requestRegisterName
+                  H.body $ do
+                    H.p $ H.text $ "Welcome " <> unUsername requestRegisterName <> "!"
+                    H.p $ H.text "You have been registered successfully. Click the link to confirm your email address."
+                    let confirmLink :: T.Text = displayBaseUrl (configBaseUrl config) <> "register/confirm/" <> unConfirmationSecret confirmationSecret
+                    H.p $ H.a H.! H.A.href (H.textValue confirmLink) $ H.text confirmLink
+                    H.div $ H.small $ H.text "If you did not register this account, feel free to ignore this message."
+              }
+        let emailSent =
+              case sendEmailResult of
+                EmailSent -> True
+                EmailFailedToSend -> False
+        respond $
+          WithStatus @201
+            MkResponseRegister
+              { responseRegisterEmailSent = emailSent
+              }
 
 confirm ::
   ( MonadEmail m
@@ -227,19 +213,15 @@ confirm auth eitherRequest =
         seldaResult <-
           runSeldaTransactionT $
             userConfirmationConfirm (userAuthenticatedId authenticated) requestConfirmSecret
-        case seldaResult of
-          SeldaFailure _err -> do
-            -- TODO: Here we can theoretically return a more accurate error
-            logWarn "Failed to confirm due to database error."
-            respond $ WithStatus @500 ()
-          SeldaSuccess (Left err) -> do
+        handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \case
+          Left err -> do
             logInfo "Failed to confirm."
             case err of
               MkConfirmationErrorExpired ->
                 respond $ WithStatus @410 ()
               MkConfirmationErrorEffectInvalid ->
                 respond $ WithStatus @500 ()
-          SeldaSuccess (Right ()) -> do
+          Right () -> do
             logInfo "Ran confirmation."
             respond $
               WithStatus @200
@@ -275,14 +257,11 @@ profile auth eitherRequest =
           case maybeUserIdentifier of
             Nothing -> pure Nothing
             Just userIdentifier -> Just <$> userGet userIdentifier
-        case seldaResult of
-          SeldaFailure _err -> do
-            logError "Failed to look up user profile."
-            respond $ WithStatus @500 ()
-          SeldaSuccess Nothing -> do
+        handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \case
+          Nothing -> do
             logWarn "No such user profile."
             respond $ WithStatus @404 ()
-          SeldaSuccess (Just user) ->
+          Just user ->
             respond $
               WithStatus @200 $
                 MkResponseProfile

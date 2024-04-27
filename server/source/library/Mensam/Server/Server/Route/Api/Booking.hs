@@ -8,6 +8,7 @@ import Mensam.API.Data.User
 import Mensam.API.Route.Api.Booking
 import Mensam.API.Update
 import Mensam.Server.Application.SeldaPool.Class
+import Mensam.Server.Application.SeldaPool.Servant
 import Mensam.Server.Booking
 import Mensam.Server.Server.Auth
 
@@ -87,14 +88,8 @@ createSpace auth eitherRequest =
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCancelReservation
 
         pure spaceIdentifier
-      case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to create space."
-          respond $ WithStatus @500 ()
-        SeldaSuccess spaceIdentifier -> do
-          logInfo "Created space."
-          respond $ WithStatus @201 MkResponseSpaceCreate {responseSpaceCreateId = spaceIdentifier}
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \spaceIdentifier ->
+        respond $ WithStatus @201 MkResponseSpaceCreate {responseSpaceCreateId = spaceIdentifier}
 
 deleteSpace ::
   ( MonadIO m
@@ -122,21 +117,18 @@ deleteSpace auth eitherRequest =
             spaceDelete $ requestSpaceDeleteId request
             pure $ Just ()
           else pure Nothing
-      case seldaResult of
-        SeldaFailure err -> do
-          logWarn "Failed to delete space."
-          case fromException @SqlErrorMensamSpaceNotFound err of
-            Just _exc ->
-              respond $ WithStatus @404 $ MkStaticText @"Space not found."
-            Nothing ->
-              -- TODO: Here we can theoretically return a more accurate error
-              respond $ WithStatus @500 ()
-        SeldaSuccess Nothing -> do
-          logInfo "Didn't delete space because of insufficient permission. User needs to the owner."
-          respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
-        SeldaSuccess (Just ()) -> do
-          logInfo "Deleted space."
-          respond $ WithStatus @200 MkResponseSpaceDelete {responseSpaceDeleteUnit = ()}
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
+        seldaResult
+        $ \seldaResultAfter404 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter404 $ \case
+            Nothing -> do
+              logInfo "Didn't delete space because of insufficient permission. User needs to the owner."
+              respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
+            Just () -> do
+              logInfo "Deleted space."
+              respond $ WithStatus @200 MkResponseSpaceDelete {responseSpaceDeleteUnit = ()}
 
 editSpace ::
   ( MonadIO m
@@ -171,30 +163,26 @@ editSpace auth eitherRequest =
               Overwrite visibility -> spaceVisibilitySet (requestSpaceEditId request) visibility
             spaceInternalGetFromId (requestSpaceEditId request)
           else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace
-      case seldaResult of
-        SeldaFailure err -> do
-          logWarn "Failed to edit space."
-          case fromException err of
-            Just (MkSqlErrorMensamSpaceNotFound _) ->
-              respond $ WithStatus @404 $ MkStaticText @"Space not found."
-            Nothing ->
-              case fromException err of
-                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace) -> do
-                  logInfo "Failed to edit space because of insufficient permission."
-                  respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
-                Nothing -> do
-                  -- TODO: Here we can theoretically return a more accurate error
-                  respond $ WithStatus @500 ()
-        SeldaSuccess spaceInternal -> do
-          logInfo "Edited space."
-          respond $
-            WithStatus @200
-              MkResponseSpaceEdit
-                { responseSpaceEditId = spaceInternalId spaceInternal
-                , responseSpaceEditName = spaceInternalName spaceInternal
-                , responseSpaceEditTimezone = spaceInternalTimezone spaceInternal
-                , responseSpaceEditVisibility = spaceInternalVisibility spaceInternal
-                }
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
+        seldaResult
+        $ \seldaResultAfter404 ->
+          handleSeldaException
+            (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditSpace))
+            (WithStatus @403 $ MkStaticText @"Insufficient permission.")
+            seldaResultAfter404
+            $ \seldaResultAfter403 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \spaceInternal -> do
+                logInfo "Edited space."
+                respond $
+                  WithStatus @200
+                    MkResponseSpaceEdit
+                      { responseSpaceEditId = spaceInternalId spaceInternal
+                      , responseSpaceEditName = spaceInternalName spaceInternal
+                      , responseSpaceEditTimezone = spaceInternalTimezone spaceInternal
+                      , responseSpaceEditVisibility = spaceInternalVisibility spaceInternal
+                      }
 
 joinSpace ::
   ( MonadIO m
@@ -240,18 +228,14 @@ joinSpace auth eitherRequest =
           MkAccessibilitySpaceRoleJoinable -> do
             lift $ logDebug "Space-role is joinable. Joining."
         spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
-      case seldaResult of
-        SeldaFailure err -> do
-          logWarn "Failed to join space."
-          case fromException err of
-            Just MkSqlErrorMensamSpaceRolePasswordCheckFail ->
-              respond $ WithStatus @403 $ MkStaticText @"Wrong space password."
-            Nothing -> do
-              -- TODO: Here we can theoretically return a more accurate error
-              respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
-          logInfo "Joined space."
-          respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceRolePasswordCheckFail)
+        (WithStatus @403 $ MkStaticText @"Wrong space password.")
+        seldaResult
+        $ \seldaResultAfter403 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+            logInfo "Joined space."
+            respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
 
 leaveSpace ::
   ( MonadIO m
@@ -284,19 +268,14 @@ leaveSpace auth eitherRequest =
             lift $ logInfo "Removing user from space."
             spaceUserRemove spaceIdentifier (userAuthenticatedId authenticated)
             pure True
-      case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to leave space."
-          respond $ WithStatus @500 ()
-        SeldaSuccess removed ->
-          if removed
-            then do
-              logInfo "Left space."
-              respond $ WithStatus @200 MkResponseSpaceLeave {responseSpaceLeaveUnit = ()}
-            else do
-              logInfo "Failed to leave space as owner."
-              respond $ WithStatus @403 $ MkStaticText @"Owner cannot leave space."
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \removed ->
+        if removed
+          then do
+            logInfo "Left space."
+            respond $ WithStatus @200 MkResponseSpaceLeave {responseSpaceLeaveUnit = ()}
+          else do
+            logInfo "Failed to leave space as owner."
+            respond $ WithStatus @403 $ MkStaticText @"Owner cannot leave space."
 
 viewSpace ::
   ( MonadIO m
@@ -317,15 +296,11 @@ viewSpace auth eitherRequest =
       logDebug $ "Received request to view space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         spaceView (userAuthenticatedId authenticated) (requestSpaceViewId request)
-      case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to view space."
-          respond $ WithStatus @500 ()
-        SeldaSuccess Nothing -> do
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \case
+        Nothing -> do
           logInfo "User not permitted to view space."
           respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
-        SeldaSuccess (Just space) -> do
+        Just space -> do
           logInfo "Viewed space."
           respond $ WithStatus @200 MkResponseSpaceView {responseSpaceViewSpace = space}
 
@@ -347,14 +322,9 @@ listSpaces auth eitherRequest =
       logDebug $ "Received request to list spaces: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         spaceListVisible (userAuthenticatedId authenticated) (requestSpaceListOrder request)
-      case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to list spaces."
-          respond $ WithStatus @500 ()
-        SeldaSuccess spaces -> do
-          logInfo "Listed spaces."
-          respond $ WithStatus @200 MkResponseSpaceList {responseSpaceListSpaces = spaces}
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \spaces -> do
+        logInfo "Listed spaces."
+        respond $ WithStatus @200 MkResponseSpaceList {responseSpaceListSpaces = spaces}
 
 createRole ::
   ( MonadIO m
@@ -387,29 +357,24 @@ createRole auth eitherRequest =
             traverse_ (spaceRolePermissionGive spaceRoleId) (requestRoleCreatePermissions request)
             pure spaceRoleId
           else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
-      case seldaResult of
-        SeldaFailure err -> do
-          case fromException err of
-            Just (MkSqlErrorMensamSpaceNotFound _) -> do
-              logInfo "Failed to create role. Space not found."
-              respond $ WithStatus @404 $ MkStaticText @"Space not found."
-            Nothing ->
-              case fromException err of
-                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole) -> do
-                  logInfo "Failed to create role. Missing permission to edit roles."
-                  respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
-                Nothing ->
-                  case fromException err of
-                    Just MkSqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch -> do
-                      logInfo "Failed to create role. Accessibility and password don't match."
-                      respond $ WithStatus @500 () -- TODO: This should be: HTTP 400 Bad Request
-                    Nothing -> do
-                      -- TODO: Here we can theoretically return a more accurate error
-                      logWarn "Failed to create role."
-                      respond $ WithStatus @500 ()
-        SeldaSuccess roleIdentifier -> do
-          logInfo "Created role."
-          respond $ WithStatus @201 MkResponseRoleCreate {responseRoleCreateId = roleIdentifier}
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
+        seldaResult
+        $ \seldaResultAfter404 ->
+          handleSeldaException
+            (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditRole))
+            (WithStatus @403 $ MkStaticText @"Insufficient permission.")
+            seldaResultAfter404
+            $ \seldaResultAfter403 ->
+              handleSeldaException
+                (Proxy @SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch)
+                (WithStatus @500 ())
+                seldaResultAfter403
+                $ \seldaResultAfter500 ->
+                  handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter500 $ \roleIdentifier -> do
+                    logInfo "Created role."
+                    respond $ WithStatus @201 MkResponseRoleCreate {responseRoleCreateId = roleIdentifier}
 
 editRole ::
   ( MonadIO m
@@ -447,19 +412,14 @@ editRole auth eitherRequest =
               Preserve -> pure ()
               Overwrite permissions -> spaceRolePermissionsSet (requestRoleEditId request) permissions
           else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
-      case seldaResult of
-        SeldaFailure err -> do
-          logWarn "Failed to delete role."
-          case fromException err of
-            Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole) -> do
-              logInfo "Failed to delete role because of insufficient permission."
-              respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
-            Nothing ->
-              -- TODO: Here we can theoretically return a more accurate error
-              respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
-          logInfo "Editeded role."
-          respond $ WithStatus @200 MkResponseRoleEdit {responseRoleEditUnit = ()}
+      handleSeldaException
+        (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditRole))
+        (WithStatus @403 $ MkStaticText @"Insufficient permission.")
+        seldaResult
+        $ \seldaResultAfter403 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+            logInfo "Editeded role."
+            respond $ WithStatus @200 MkResponseRoleEdit {responseRoleEditUnit = ()}
 
 deleteRole ::
   ( MonadIO m
@@ -484,19 +444,14 @@ deleteRole auth eitherRequest =
         if MkPermissionSpaceEditRole `S.member` permissions
           then spaceRoleDeleteWithFallback (requestRoleDeleteId request) (requestRoleDeleteFallbackId request)
           else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
-      case seldaResult of
-        SeldaFailure err -> do
-          logWarn "Failed to delete role."
-          case fromException err of
-            Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole) -> do
-              logInfo "Failed to delete role because of insufficient permission."
-              respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
-            Nothing ->
-              -- TODO: Here we can theoretically return a more accurate error
-              respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
-          logInfo "Deleted role."
-          respond $ WithStatus @200 MkResponseRoleDelete {responseRoleDeleteUnit = ()}
+      handleSeldaException
+        (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditRole))
+        (WithStatus @403 $ MkStaticText @"Insufficient permission.")
+        seldaResult
+        $ \seldaResultAfter403 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+            logInfo "Deleted role."
+            respond $ WithStatus @200 MkResponseRoleDelete {responseRoleDeleteUnit = ()}
 
 createDesk ::
   ( MonadIO m
@@ -525,24 +480,19 @@ createDesk auth eitherRequest =
         if MkPermissionSpaceEditDesk `S.member` permissions
           then deskCreate (requestDeskCreateName request) spaceIdentifier
           else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk
-      case seldaResult of
-        SeldaFailure err -> do
-          case fromException err of
-            Just (MkSqlErrorMensamSpaceNotFound _) -> do
-              logInfo "Failed to create desk. Space not found."
-              respond $ WithStatus @404 $ MkStaticText @"Space not found."
-            Nothing ->
-              case fromException err of
-                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk) -> do
-                  logInfo "Failed to create desk. Missing permission to edit desks."
-                  respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
-                Nothing -> do
-                  -- TODO: Here we can theoretically return a more accurate error
-                  logWarn "Failed to create desk."
-                  respond $ WithStatus @500 ()
-        SeldaSuccess deskIdentifier -> do
-          logInfo "Created desk."
-          respond $ WithStatus @201 MkResponseDeskCreate {responseDeskCreateId = deskIdentifier}
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
+        seldaResult
+        $ \seldaResultAfter404 ->
+          handleSeldaException
+            (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditDesk))
+            (WithStatus @403 $ MkStaticText @"Insufficient permission.")
+            seldaResultAfter404
+            $ \seldaResultAfter403 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \deskIdentifier -> do
+                logInfo "Created desk."
+                respond $ WithStatus @201 MkResponseDeskCreate {responseDeskCreateId = deskIdentifier}
 
 deleteDesk ::
   ( MonadIO m
@@ -568,23 +518,18 @@ deleteDesk auth eitherRequest =
         if MkPermissionSpaceEditDesk `S.member` permissions
           then deskDelete $ deskId desk
           else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace
-      case seldaResult of
-        SeldaFailure err -> do
-          logWarn "Failed to delete desk."
-          case fromException @SqlErrorMensamDeskNotFound err of
-            Just _exc ->
-              respond $ WithStatus @404 $ MkStaticText @"Desk not found."
-            Nothing ->
-              case fromException err of
-                Just (MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace) -> do
-                  logInfo "Failed to delete desk because of insufficient permission."
-                  respond $ WithStatus @403 $ MkStaticText @"Insufficient permission."
-                Nothing ->
-                  -- TODO: Here we can theoretically return a more accurate error
-                  respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
-          logInfo "Deleted desk."
-          respond $ WithStatus @200 MkResponseDeskDelete {responseDeskDeleteUnit = ()}
+      handleSeldaException
+        (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied MkPermissionSpaceEditSpace))
+        (WithStatus @403 $ MkStaticText @"Insufficient permission.")
+        seldaResult
+        $ \seldaResultAfter403 ->
+          handleSeldaException
+            (Proxy @SqlErrorMensamDeskNotFound)
+            (WithStatus @404 $ MkStaticText @"Desk not found.")
+            seldaResultAfter403
+            $ \seldaResultAfter404 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter404 $ \() ->
+                respond $ WithStatus @200 MkResponseDeskDelete {responseDeskDeleteUnit = ()}
 
 listDesks ::
   ( MonadIO m
@@ -619,14 +564,9 @@ listDesks auth eitherRequest =
               { deskWithInfoDesk = desk
               , deskWithInfoReservations = reservations
               }
-      case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to list desks."
-          respond $ WithStatus @500 ()
-        SeldaSuccess desksWithInfo -> do
-          logInfo "Listed desks."
-          respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \desksWithInfo -> do
+        logInfo "Listed desks."
+        respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
 
 createReservation ::
   ( MonadIO m
@@ -663,18 +603,14 @@ createReservation auth eitherRequest = do
               (userAuthenticatedId authenticated)
               (requestReservationCreateTimeWindow request)
           else error "No permission"
-      case seldaResult of
-        SeldaFailure err -> do
-          logWarn "Failed to create reservation."
-          case fromException err of
-            Just MkSqlErrorMensamDeskAlreadyReserved ->
-              respond $ WithStatus @409 $ MkStaticText @"Desk is not available within the given time window."
-            Nothing -> do
-              -- TODO: Here we can theoretically return a more accurate error
-              respond $ WithStatus @500 ()
-        SeldaSuccess reservationIdentifier -> do
-          logInfo "Created reservation."
-          respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
+      handleSeldaException
+        (Proxy @SqlErrorMensamDeskAlreadyReserved)
+        (WithStatus @409 $ MkStaticText @"Desk is not available within the given time window.")
+        seldaResult
+        $ \seldaResultAfter409 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter409 $ \reservationIdentifier -> do
+            logInfo "Created reservation."
+            respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
 
 cancelReservation ::
   ( MonadIO m
@@ -704,13 +640,9 @@ cancelReservation auth eitherRequest = do
             MkStatusReservationCancelled -> error "Already cancelled."
             MkStatusReservationPlanned -> reservationCancel reservationIdentifier
           else error "No permission."
-      case seldaResult of
-        SeldaFailure _err -> do
-          logWarn "Failed to cancel reservation."
-          respond $ WithStatus @500 ()
-        SeldaSuccess () -> do
-          logInfo "Cancelled reservation."
-          respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
+        logInfo "Cancelled reservation."
+        respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
 
 listReservations ::
   ( MonadIO m
@@ -739,14 +671,9 @@ listReservations auth eitherRequest =
               , reservationWithInfoDesk = desk
               , reservationWithInfoSpace = space
               }
-      case seldaResult of
-        SeldaFailure _err -> do
-          -- TODO: Here we can theoretically return a more accurate error
-          logWarn "Failed to list a user's reservations."
-          respond $ WithStatus @500 ()
-        SeldaSuccess reservationsWithInfo -> do
-          logInfo "Listed user's reservations."
-          respond $ WithStatus @200 MkResponseReservationList {responseReservationListReservations = reservationsWithInfo}
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \reservationsWithInfo -> do
+        logInfo "Listed user's reservations."
+        respond $ WithStatus @200 MkResponseReservationList {responseReservationListReservations = reservationsWithInfo}
 
 handleBadRequestBody ::
   ( MonadLogger m
