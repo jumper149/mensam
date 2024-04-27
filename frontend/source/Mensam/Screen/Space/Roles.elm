@@ -674,11 +674,8 @@ spaceView jwt id =
                         , MessagePure <| SetSpaceName view.name
                         ]
 
-                Ok Mensam.Api.SpaceView.ErrorInsufficientPermission ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Insufficient permission to view this space" <|
-                                Mensam.Error.undefined
+                Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
@@ -766,11 +763,8 @@ roleCreate args =
                         , MessageEffect RefreshRoles
                         ]
 
-                Ok Mensam.Api.RoleCreate.ErrorInsufficientPermission ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Insufficient permission to delete this space" <|
-                                Mensam.Error.undefined
+                Ok (Mensam.Api.RoleCreate.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok Mensam.Api.RoleCreate.ErrorSpaceNotFound ->
                     MessageEffect <|

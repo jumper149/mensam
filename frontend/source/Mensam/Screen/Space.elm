@@ -1449,11 +1449,8 @@ spaceView jwt model =
                                     RefreshDesks
                                 ]
 
-                Ok Mensam.Api.SpaceView.ErrorInsufficientPermission ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Insufficient permission to view this space" <|
-                                Mensam.Error.undefined
+                Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
@@ -1533,11 +1530,8 @@ deskCreate req =
                 Ok (Mensam.Api.DeskCreate.Success _) ->
                     MessagePure CloseDialogToCreate
 
-                Ok Mensam.Api.DeskCreate.ErrorInsufficientPermission ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Insufficient permission to create a desk" <|
-                                Mensam.Error.undefined
+                Ok (Mensam.Api.DeskCreate.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok Mensam.Api.DeskCreate.ErrorSpaceNotFound ->
                     MessageEffect <|

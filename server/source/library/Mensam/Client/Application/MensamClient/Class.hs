@@ -1,6 +1,7 @@
 module Mensam.Client.Application.MensamClient.Class where
 
 import Mensam.API.Aeson
+import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Route.Api qualified as Route.Api
 import Mensam.API.Route.Api.Booking qualified as Route.Api.Booking
@@ -116,7 +117,7 @@ endpointSpaceDelete ::
         '[ WithStatus 200 Route.Api.Booking.ResponseSpaceDelete
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -129,7 +130,7 @@ endpointSpaceEdit ::
         '[ WithStatus 200 Route.Api.Booking.ResponseSpaceEdit
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -166,7 +167,7 @@ endpointSpaceView ::
         '[ WithStatus 200 Route.Api.Booking.ResponseSpaceView
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)
          , WithStatus 500 ()
          ]
     )
@@ -189,7 +190,7 @@ endpointRoleCreate ::
         '[ WithStatus 201 Route.Api.Booking.ResponseRoleCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -202,7 +203,7 @@ endpointRoleEdit ::
         '[ WithStatus 200 Route.Api.Booking.ResponseRoleEdit
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
          , WithStatus 500 ()
          ]
     )
@@ -214,7 +215,7 @@ endpointRoleDelete ::
         '[ WithStatus 200 Route.Api.Booking.ResponseRoleDelete
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
          , WithStatus 500 ()
          ]
     )
@@ -226,7 +227,7 @@ endpointDeskCreate ::
         '[ WithStatus 201 Route.Api.Booking.ResponseDeskCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -239,7 +240,7 @@ endpointDeskDelete ::
         '[ WithStatus 200 Route.Api.Booking.ResponseDeskDelete
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (StaticText "Insufficient permission.")
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
          , WithStatus 404 (StaticText "Desk not found.")
          , WithStatus 500 ()
          ]

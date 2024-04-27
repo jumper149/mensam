@@ -6,6 +6,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
+import Mensam.Space.Role
 import Url.Builder
 
 
@@ -18,7 +19,7 @@ type alias Request =
 type Response
     = Success
     | ErrorSpaceNotFound
-    | ErrorInsufficientPermission
+    | ErrorInsufficientPermission Mensam.Space.Role.Permission
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -75,9 +76,9 @@ responseResult httpResponse =
                             Err <| Http.BadBody <| Decode.errorToString err
 
                 403 ->
-                    case Decode.decodeString decodeBody403 body of
-                        Ok () ->
-                            Ok <| ErrorInsufficientPermission
+                    case Decode.decodeString Mensam.Space.Role.http403BodyDecoder body of
+                        Ok permission ->
+                            Ok <| ErrorInsufficientPermission permission
 
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err
@@ -126,20 +127,6 @@ decodeBody200 =
 decodeBody400 : Decode.Decoder String
 decodeBody400 =
     Decode.field "error" Decode.string
-
-
-decodeBody403 : Decode.Decoder ()
-decodeBody403 =
-    Decode.string
-        |> Decode.andThen
-            (\string ->
-                case string of
-                    "Insufficient permission." ->
-                        Decode.succeed ()
-
-                    _ ->
-                        Decode.fail <| "Unexpected HTTP 403 message: " ++ string
-            )
 
 
 decodeBody404 : Decode.Decoder ()

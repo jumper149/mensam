@@ -16,6 +16,7 @@ import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
+import Mensam.Space.Role
 import Mensam.Time
 
 
@@ -522,11 +523,8 @@ spaceEdit requestArgs =
                         , MessagePure ResetNewSettings
                         ]
 
-                Ok Mensam.Api.SpaceEdit.ErrorInsufficientPermission ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Insufficient permission to edit this space" <|
-                                Mensam.Error.undefined
+                Ok (Mensam.Api.SpaceEdit.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok Mensam.Api.SpaceEdit.ErrorSpaceNotFound ->
                     MessageEffect <|
@@ -561,11 +559,8 @@ spaceDelete requestArgs =
                 Ok Mensam.Api.SpaceDelete.Success ->
                     MessageEffect ReturnToSpaces
 
-                Ok Mensam.Api.SpaceDelete.ErrorInsufficientPermission ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Insufficient permission to delete this space" <|
-                                Mensam.Error.undefined
+                Ok (Mensam.Api.SpaceDelete.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok Mensam.Api.SpaceDelete.ErrorSpaceNotFound ->
                     MessageEffect <|

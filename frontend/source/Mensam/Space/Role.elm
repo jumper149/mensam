@@ -2,6 +2,7 @@ module Mensam.Space.Role exposing (..)
 
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Mensam.Error
 import Set
 
 
@@ -188,6 +189,57 @@ permissionsEncoder =
 permissionsDecoder : Decode.Decoder Permissions
 permissionsDecoder =
     Decode.map (MkPermissions << Set.fromList << List.map permissionToInt) <| Decode.list permissionDecoder
+
+
+http403BodyDecoder : Decode.Decoder Permission
+http403BodyDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\string ->
+                let
+                    stripPrefix : String -> String -> Maybe String
+                    stripPrefix prefix str =
+                        if String.startsWith prefix str then
+                            Just <| String.dropLeft (String.length prefix) str
+
+                        else
+                            Nothing
+                in
+                case stripPrefix "Insufficient permission: " string of
+                    Nothing ->
+                        Decode.fail <| "Trying to decode permission error, but the prefix is not \"Insufficient permission: \""
+
+                    Just suffix ->
+                        case suffix of
+                            "'MkPermissionSpaceViewSpace" ->
+                                Decode.succeed MkPermissionViewSpace
+
+                            "'MkPermissionSpaceEditDesk" ->
+                                Decode.succeed MkPermissionEditDesk
+
+                            "'MkPermissionSpaceEditRole" ->
+                                Decode.succeed MkPermissionEditRole
+
+                            "'MkPermissionSpaceEditSpace" ->
+                                Decode.succeed MkPermissionEditSpace
+
+                            "'MkPermissionSpaceCreateReservation" ->
+                                Decode.succeed MkPermissionCreateReservation
+
+                            "'MkPermissionSpaceCancelReservation" ->
+                                Decode.succeed MkPermissionCancelReservation
+
+                            unknownSuffix ->
+                                Decode.fail <| "Trying to decode permission error, but this option is not supported: " ++ unknownSuffix
+            )
+
+
+errorInsufficientPermission : Permission -> Mensam.Error.Error
+errorInsufficientPermission err =
+    Mensam.Error.message "Request this permission from the administrator of your space" <|
+        Mensam.Error.message (permissionToString err) <|
+            Mensam.Error.message "Insufficient permission" <|
+                Mensam.Error.undefined
 
 
 type Accessibility

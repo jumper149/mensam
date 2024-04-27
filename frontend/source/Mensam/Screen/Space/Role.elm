@@ -854,11 +854,8 @@ spaceView jwt id =
                         [ MessagePure <| ApplySpaceView view
                         ]
 
-                Ok Mensam.Api.SpaceView.ErrorInsufficientPermission ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Insufficient permission to view this space" <|
-                                Mensam.Error.undefined
+                Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
@@ -955,11 +952,8 @@ roleEdit args =
                         , MessagePure ResetNewRole
                         ]
 
-                Ok Mensam.Api.RoleEdit.ErrorInsufficientPermission ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Insufficient permission to edit this space" <|
-                                Mensam.Error.undefined
+                Ok (Mensam.Api.RoleEdit.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok (Mensam.Api.RoleEdit.ErrorBody error) ->
                     MessageEffect <|
@@ -988,11 +982,8 @@ roleDelete requestArgs =
                 Ok Mensam.Api.RoleDelete.Success ->
                     MessageEffect ReturnToRoles
 
-                Ok Mensam.Api.RoleDelete.ErrorInsufficientPermission ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Insufficient permission to delete this space" <|
-                                Mensam.Error.undefined
+                Ok (Mensam.Api.RoleDelete.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok (Mensam.Api.RoleDelete.ErrorBody error) ->
                     MessageEffect <|
