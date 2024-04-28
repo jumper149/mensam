@@ -6,8 +6,8 @@ import Mensam.API.Aeson
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
-import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.Reservation qualified as Route.Reservation
+import Mensam.API.Route.Api.Space qualified as Route.Space
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
 import Mensam.Client.UI.Brick.Draw
@@ -30,7 +30,7 @@ import Data.Time.Format.ISO8601 qualified as T
 import Graphics.Vty.Input.Events
 import Lens.Micro.Platform
 
-desksListInitial :: GenericList ClientName Seq.Seq Route.Booking.DeskWithInfo
+desksListInitial :: GenericList ClientName Seq.Seq Route.Space.DeskWithInfo
 desksListInitial =
   list
     ClientNameSpacesList
@@ -98,7 +98,7 @@ newReservationFormInitial desk =
 type ScreenDesksState :: Type
 data ScreenDesksState = MkScreenDesksState
   { _screenStateDesksSpace :: Space
-  , _screenStateDesksList :: GenericList ClientName Seq.Seq Route.Booking.DeskWithInfo
+  , _screenStateDesksList :: GenericList ClientName Seq.Seq Route.Space.DeskWithInfo
   , _screenStateDesksShowHelp :: Bool
   , _screenStateDesksCreateReservation :: Maybe (Form NewReservationInfo ClientEvent ClientName)
   , _screenStateDesksPreviewDay :: T.Day
@@ -141,12 +141,12 @@ desksDraw = \case
                 vBox
                   [ padBottom Max $
                       padRight Max $
-                        renderList (\_focus (Route.Booking.MkDeskWithInfo {Route.Booking.deskWithInfoDesk, Route.Booking.deskWithInfoReservations}) -> padRight Max $ txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> unNameDesk (deskName deskWithInfoDesk) <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
+                        renderList (\_focus (Route.Space.MkDeskWithInfo {Route.Space.deskWithInfoDesk, Route.Space.deskWithInfoReservations}) -> padRight Max $ txt $ T.pack ("#" <> show (unIdentifierDesk $ deskId deskWithInfoDesk) <> " ") <> unNameDesk (deskName deskWithInfoDesk) <> ": " <> T.pack (show deskWithInfoReservations)) True desksWithInfo
                   , hBorder
                   , let reservations =
                           case listSelectedElement desksWithInfo of
                             Nothing -> []
-                            Just (_index, desk) -> Route.Booking.deskWithInfoReservations desk
+                            Just (_index, desk) -> Route.Space.deskWithInfoReservations desk
                      in vLimit 3 $ hCenter $ viewport ClientNameDesksReservationsViewport Horizontal $ visible $ txt $ prettyReservations tz day reservations
                   ]
           , padLeft Max $ txt footerMenuHelp
@@ -164,7 +164,7 @@ desksHandleEvent event = do
             VtyEvent (EvKey (KChar '?') []) -> lift $ put s {_screenStateDesksShowHelp = not $ _screenStateDesksShowHelp s}
             VtyEvent (EvKey (KChar 'r') []) -> sendEvent . ClientEventSwitchToScreenDesks . _screenStateDesksSpace =<< lift get
             VtyEvent (EvKey (KChar 'c') []) -> lift $ screenStateDesksNewDeskForm %= const (Just newDeskFormInitial)
-            VtyEvent (EvKey KEnter []) -> lift $ put $ s {_screenStateDesksCreateReservation = newReservationFormInitial . Route.Booking.deskWithInfoDesk . snd <$> listSelectedElement (_screenStateDesksList s)}
+            VtyEvent (EvKey KEnter []) -> lift $ put $ s {_screenStateDesksCreateReservation = newReservationFormInitial . Route.Space.deskWithInfoDesk . snd <$> listSelectedElement (_screenStateDesksList s)}
             VtyEvent e -> lift $ zoom screenStateDesksList $ handleListEvent e
             _ -> pure ()
         Just newReservationInfo ->
@@ -199,9 +199,9 @@ desksHandleEvent event = do
           sendEvent $
             ClientEventSendRequestCreateDesk
               (_screenStateDesksSpace s)
-              Route.Booking.MkRequestDeskCreate
-                { Route.Booking.requestDeskCreateName = MkNameDesk $ newDeskInfo ^. newDeskInfoName
-                , Route.Booking.requestDeskCreateSpace = Identifier $ spaceId $ _screenStateDesksSpace s
+              Route.Space.MkRequestDeskCreate
+                { Route.Space.requestDeskCreateName = MkNameDesk $ newDeskInfo ^. newDeskInfoName
+                , Route.Space.requestDeskCreateSpace = Identifier $ spaceId $ _screenStateDesksSpace s
                 }
         _ -> lift $ zoom (screenStateDesksNewDeskForm . _Just) $ handleFormEvent event
 

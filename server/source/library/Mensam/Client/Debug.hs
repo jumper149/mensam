@@ -5,8 +5,8 @@ import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
-import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.Reservation qualified as Route.Reservation
+import Mensam.API.Route.Api.Space qualified as Route.Space
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application
 import Mensam.Client.Application.MensamClient.Class
@@ -80,38 +80,38 @@ f = do
 
   liftIO $ putStrLn "Create space."
   let requestSpaceCreate =
-        Route.Booking.MkRequestSpaceCreate
-          { Route.Booking.requestSpaceCreateName = spacename
-          , Route.Booking.requestSpaceCreateTimezone = T.Europe__Paris
-          , Route.Booking.requestSpaceCreateVisibility = MkVisibilitySpaceVisible
+        Route.Space.MkRequestSpaceCreate
+          { Route.Space.requestSpaceCreateName = spacename
+          , Route.Space.requestSpaceCreateTimezone = T.Europe__Paris
+          , Route.Space.requestSpaceCreateVisibility = MkVisibilitySpaceVisible
           }
   resultSpaceCreate <- endpointSpaceCreate (DataJWTWithSession nextToken) requestSpaceCreate
   liftIO $ print resultSpaceCreate
 
   liftIO $ putStrLn "Create desk."
   let requestDeskCreate =
-        Route.Booking.MkRequestDeskCreate
-          { Route.Booking.requestDeskCreateName = MkNameDesk "neptune"
-          , Route.Booking.requestDeskCreateSpace = Name spacename
+        Route.Space.MkRequestDeskCreate
+          { Route.Space.requestDeskCreateName = MkNameDesk "neptune"
+          , Route.Space.requestDeskCreateSpace = Name spacename
           }
   resultDeskCreate <- endpointDeskCreate (DataJWTWithSession nextToken) requestDeskCreate
   liftIO $ print resultDeskCreate
 
   liftIO $ putStrLn "Create desk."
   let requestDeskCreate2 =
-        Route.Booking.MkRequestDeskCreate
-          { Route.Booking.requestDeskCreateName = MkNameDesk "saturn"
-          , Route.Booking.requestDeskCreateSpace = Name spacename
+        Route.Space.MkRequestDeskCreate
+          { Route.Space.requestDeskCreateName = MkNameDesk "saturn"
+          , Route.Space.requestDeskCreateSpace = Name spacename
           }
   resultDeskCreate2 <- endpointDeskCreate (DataJWTWithSession nextToken) requestDeskCreate2
   liftIO $ print resultDeskCreate2
 
   liftIO $ putStrLn "List desks."
   let requestDeskList =
-        Route.Booking.MkRequestDeskList
-          { Route.Booking.requestDeskListSpace = Name spacename
-          , Route.Booking.requestDeskListTimeBegin = Nothing
-          , Route.Booking.requestDeskListTimeEnd = Nothing
+        Route.Space.MkRequestDeskList
+          { Route.Space.requestDeskListSpace = Name spacename
+          , Route.Space.requestDeskListTimeBegin = Nothing
+          , Route.Space.requestDeskListTimeEnd = Nothing
           }
   resultDeskList <- endpointDeskList (DataJWTWithSession nextToken) requestDeskList
   liftIO $ print resultDeskList

@@ -4,9 +4,9 @@ import Mensam.API.Aeson
 import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Route.Api qualified as Route.Api
-import Mensam.API.Route.Api.Booking qualified as Route.Api.Booking
 import Mensam.API.Route.Api.OpenApi qualified as Route.Api.OpenApi
 import Mensam.API.Route.Api.Reservation qualified as Route.Api.Reservation
+import Mensam.API.Route.Api.Space qualified as Route.Api.Space
 import Mensam.API.Route.Api.User qualified as Route.Api.User
 import Mensam.Client.OrphanInstances
 
@@ -101,10 +101,10 @@ endpointProfile ::
     )
 endpointSpaceCreate ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestSpaceCreate ->
+  Route.Api.Space.RequestSpaceCreate ->
   ClientM
     ( Union
-        '[ WithStatus 201 Route.Api.Booking.ResponseSpaceCreate
+        '[ WithStatus 201 Route.Api.Space.ResponseSpaceCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
@@ -112,10 +112,10 @@ endpointSpaceCreate ::
     )
 endpointSpaceDelete ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestSpaceDelete ->
+  Route.Api.Space.RequestSpaceDelete ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceDelete
+        '[ WithStatus 200 Route.Api.Space.ResponseSpaceDelete
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
@@ -125,10 +125,10 @@ endpointSpaceDelete ::
     )
 endpointSpaceEdit ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestSpaceEdit ->
+  Route.Api.Space.RequestSpaceEdit ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceEdit
+        '[ WithStatus 200 Route.Api.Space.ResponseSpaceEdit
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
@@ -138,10 +138,10 @@ endpointSpaceEdit ::
     )
 endpointSpaceJoin ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestSpaceJoin ->
+  Route.Api.Space.RequestSpaceJoin ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceJoin
+        '[ WithStatus 200 Route.Api.Space.ResponseSpaceJoin
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (StaticText "Wrong space password.")
@@ -150,10 +150,10 @@ endpointSpaceJoin ::
     )
 endpointSpaceLeave ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestSpaceLeave ->
+  Route.Api.Space.RequestSpaceLeave ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceLeave
+        '[ WithStatus 200 Route.Api.Space.ResponseSpaceLeave
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (StaticText "Owner cannot leave space.")
@@ -162,10 +162,10 @@ endpointSpaceLeave ::
     )
 endpointSpaceKick ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestSpaceKick ->
+  Route.Api.Space.RequestSpaceKick ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceKick
+        '[ WithStatus 200 Route.Api.Space.ResponseSpaceKick
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
@@ -174,10 +174,10 @@ endpointSpaceKick ::
     )
 endpointSpaceView ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestSpaceView ->
+  Route.Api.Space.RequestSpaceView ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceView
+        '[ WithStatus 200 Route.Api.Space.ResponseSpaceView
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)
@@ -186,10 +186,10 @@ endpointSpaceView ::
     )
 endpointSpaceList ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestSpaceList ->
+  Route.Api.Space.RequestSpaceList ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceList
+        '[ WithStatus 200 Route.Api.Space.ResponseSpaceList
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
@@ -197,10 +197,10 @@ endpointSpaceList ::
     )
 endpointRoleCreate ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestRoleCreate ->
+  Route.Api.Space.RequestRoleCreate ->
   ClientM
     ( Union
-        '[ WithStatus 201 Route.Api.Booking.ResponseRoleCreate
+        '[ WithStatus 201 Route.Api.Space.ResponseRoleCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
@@ -210,10 +210,10 @@ endpointRoleCreate ::
     )
 endpointRoleEdit ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestRoleEdit ->
+  Route.Api.Space.RequestRoleEdit ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseRoleEdit
+        '[ WithStatus 200 Route.Api.Space.ResponseRoleEdit
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
@@ -222,10 +222,10 @@ endpointRoleEdit ::
     )
 endpointRoleDelete ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestRoleDelete ->
+  Route.Api.Space.RequestRoleDelete ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseRoleDelete
+        '[ WithStatus 200 Route.Api.Space.ResponseRoleDelete
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
@@ -234,10 +234,10 @@ endpointRoleDelete ::
     )
 endpointDeskCreate ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestDeskCreate ->
+  Route.Api.Space.RequestDeskCreate ->
   ClientM
     ( Union
-        '[ WithStatus 201 Route.Api.Booking.ResponseDeskCreate
+        '[ WithStatus 201 Route.Api.Space.ResponseDeskCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
@@ -247,10 +247,10 @@ endpointDeskCreate ::
     )
 endpointDeskDelete ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestDeskDelete ->
+  Route.Api.Space.RequestDeskDelete ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseDeskDelete
+        '[ WithStatus 200 Route.Api.Space.ResponseDeskDelete
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
@@ -260,10 +260,10 @@ endpointDeskDelete ::
     )
 endpointDeskList ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestDeskList ->
+  Route.Api.Space.RequestDeskList ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseDeskList
+        '[ WithStatus 200 Route.Api.Space.ResponseDeskList
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
@@ -316,22 +316,22 @@ Route.Api.Routes
       , Route.Api.User.routeConfirm = endpointConfirm
       , Route.Api.User.routeProfile = endpointProfile
       }
-  , Route.Api.routeBooking =
-    Route.Api.Booking.Routes
-      { Route.Api.Booking.routeSpaceCreate = endpointSpaceCreate
-      , Route.Api.Booking.routeSpaceDelete = endpointSpaceDelete
-      , Route.Api.Booking.routeSpaceEdit = endpointSpaceEdit
-      , Route.Api.Booking.routeSpaceJoin = endpointSpaceJoin
-      , Route.Api.Booking.routeSpaceLeave = endpointSpaceLeave
-      , Route.Api.Booking.routeSpaceKick = endpointSpaceKick
-      , Route.Api.Booking.routeSpaceView = endpointSpaceView
-      , Route.Api.Booking.routeSpaceList = endpointSpaceList
-      , Route.Api.Booking.routeRoleCreate = endpointRoleCreate
-      , Route.Api.Booking.routeRoleEdit = endpointRoleEdit
-      , Route.Api.Booking.routeRoleDelete = endpointRoleDelete
-      , Route.Api.Booking.routeDeskCreate = endpointDeskCreate
-      , Route.Api.Booking.routeDeskDelete = endpointDeskDelete
-      , Route.Api.Booking.routeDeskList = endpointDeskList
+  , Route.Api.routeSpace =
+    Route.Api.Space.Routes
+      { Route.Api.Space.routeSpaceCreate = endpointSpaceCreate
+      , Route.Api.Space.routeSpaceDelete = endpointSpaceDelete
+      , Route.Api.Space.routeSpaceEdit = endpointSpaceEdit
+      , Route.Api.Space.routeSpaceJoin = endpointSpaceJoin
+      , Route.Api.Space.routeSpaceLeave = endpointSpaceLeave
+      , Route.Api.Space.routeSpaceKick = endpointSpaceKick
+      , Route.Api.Space.routeSpaceView = endpointSpaceView
+      , Route.Api.Space.routeSpaceList = endpointSpaceList
+      , Route.Api.Space.routeRoleCreate = endpointRoleCreate
+      , Route.Api.Space.routeRoleEdit = endpointRoleEdit
+      , Route.Api.Space.routeRoleDelete = endpointRoleDelete
+      , Route.Api.Space.routeDeskCreate = endpointDeskCreate
+      , Route.Api.Space.routeDeskDelete = endpointDeskDelete
+      , Route.Api.Space.routeDeskList = endpointDeskList
       }
   , Route.Api.routeReservation =
     Route.Api.Reservation.Routes

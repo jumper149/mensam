@@ -3,8 +3,8 @@ module Mensam.Client.UI where
 import Mensam.API.Aeson
 import Mensam.API.Data.Space
 import Mensam.API.Order
-import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.Reservation qualified as Route.Reservation
+import Mensam.API.Route.Api.Space qualified as Route.Space
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
@@ -112,9 +112,9 @@ handleEvent chan = \case
                 mensamCall $
                   endpointSpaceList
                     (DataJWTWithSession jwt)
-                    (Route.Booking.MkRequestSpaceList $ MkOrderByCategories [])
+                    (Route.Space.MkRequestSpaceList $ MkOrderByCategories [])
             case result of
-              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseSpaceList xs)))) -> do
+              Right (Z (I (WithStatus @200 (Route.Space.MkResponseSpaceList xs)))) -> do
                 let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
                 modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l False Nothing)}
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
@@ -128,14 +128,14 @@ handleEvent chan = \case
                 mensamCall $
                   endpointDeskList
                     (DataJWTWithSession jwt)
-                    ( Route.Booking.MkRequestDeskList
-                        { Route.Booking.requestDeskListSpace = Identifier $ spaceId space
-                        , Route.Booking.requestDeskListTimeBegin = Nothing
-                        , Route.Booking.requestDeskListTimeEnd = Nothing
+                    ( Route.Space.MkRequestDeskList
+                        { Route.Space.requestDeskListSpace = Identifier $ spaceId space
+                        , Route.Space.requestDeskListTimeBegin = Nothing
+                        , Route.Space.requestDeskListTimeEnd = Nothing
                         }
                     )
             case result of
-              Right (Z (I (WithStatus @200 (Route.Booking.MkResponseDeskList desks)))) -> do
+              Right (Z (I (WithStatus @200 (Route.Space.MkResponseDeskList desks)))) -> do
                 let l = listReplace (Seq.fromList desks) (Just 0) desksListInitial
                 currentDay <- T.utctDay <$> liftIO T.getCurrentTime
                 modify $ \s -> s {_clientStateScreenState = ClientScreenStateDesks (MkScreenDesksState space l False Nothing currentDay (_clientStateTimezone s) Nothing)}
@@ -171,7 +171,7 @@ handleEvent chan = \case
           Just jwt -> do
             result <- runApplicationT chan $ mensamCall $ endpointSpaceCreate (DataJWTWithSession jwt) request
             case result of
-              Right (Z (I (WithStatus @201 (Route.Booking.MkResponseSpaceCreate _)))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
+              Right (Z (I (WithStatus @201 (Route.Space.MkResponseSpaceCreate _)))) -> runApplicationT chan $ sendEvent ClientEventSwitchToScreenSpaces
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
       ClientEventSendRequestCreateDesk space request -> do
@@ -180,7 +180,7 @@ handleEvent chan = \case
           Just jwt -> do
             result <- runApplicationT chan $ mensamCall $ endpointDeskCreate (DataJWTWithSession jwt) request
             case result of
-              Right (Z (I (WithStatus @201 (Route.Booking.MkResponseDeskCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
+              Right (Z (I (WithStatus @201 (Route.Space.MkResponseDeskCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
       ClientEventSendRequestCreateReservation space request -> do

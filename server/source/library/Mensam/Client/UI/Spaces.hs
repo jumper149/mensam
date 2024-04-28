@@ -3,7 +3,7 @@
 module Mensam.Client.UI.Spaces where
 
 import Mensam.API.Data.Space
-import Mensam.API.Route.Api.Booking qualified as Route.Booking
+import Mensam.API.Route.Api.Space qualified as Route.Space
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
 import Mensam.Client.UI.Brick.Draw
@@ -107,9 +107,9 @@ spacesHandleEvent event = do
         VtyEvent (EvKey KEnter []) ->
           sendEvent $
             ClientEventSendRequestCreateSpace
-              Route.Booking.MkRequestSpaceCreate
-                { Route.Booking.requestSpaceCreateName = MkNameSpace $ newSpaceInfo ^. newSpaceInfoName
-                , Route.Booking.requestSpaceCreateTimezone = newSpaceInfo ^. newSpaceInfoTimezone
-                , Route.Booking.requestSpaceCreateVisibility = newSpaceInfo ^. newSpaceInfoVisibility
+              Route.Space.MkRequestSpaceCreate
+                { Route.Space.requestSpaceCreateName = MkNameSpace $ newSpaceInfo ^. newSpaceInfoName
+                , Route.Space.requestSpaceCreateTimezone = newSpaceInfo ^. newSpaceInfoTimezone
+                , Route.Space.requestSpaceCreateVisibility = newSpaceInfo ^. newSpaceInfoVisibility
                 }
         _ -> lift $ zoom (screenStateSpacesNewSpaceForm . _Just) $ handleFormEvent event

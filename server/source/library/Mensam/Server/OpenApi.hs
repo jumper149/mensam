@@ -10,8 +10,8 @@ import Mensam.API.Data.User
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
 import Mensam.API.Route.Api qualified as Route.Api
-import Mensam.API.Route.Api.Booking qualified as Route.Booking
 import Mensam.API.Route.Api.Reservation qualified as Route.Reservation
+import Mensam.API.Route.Api.Space qualified as Route.Space
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.API.Update
 
@@ -171,36 +171,36 @@ deriving via A.CustomJSON (JSONSettings "MkResponse" "responseConfirm") Route.Us
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestProfile") Route.User.RequestProfile instance ToSchema Route.User.RequestProfile
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseProfile") Route.User.ResponseProfile instance ToSchema Route.User.ResponseProfile
 
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") Route.Booking.RequestSpaceCreate instance ToSchema Route.Booking.RequestSpaceCreate
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") Route.Booking.ResponseSpaceCreate instance ToSchema Route.Booking.ResponseSpaceCreate
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceDelete") Route.Booking.RequestSpaceDelete instance ToSchema Route.Booking.RequestSpaceDelete
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceDelete") Route.Booking.ResponseSpaceDelete instance ToSchema Route.Booking.ResponseSpaceDelete
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceEdit") Route.Booking.RequestSpaceEdit instance ToSchema Route.Booking.RequestSpaceEdit
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceEdit") Route.Booking.ResponseSpaceEdit instance ToSchema Route.Booking.ResponseSpaceEdit
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceJoin") Route.Booking.RequestSpaceJoin instance ToSchema Route.Booking.RequestSpaceJoin
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceJoin") Route.Booking.ResponseSpaceJoin instance ToSchema Route.Booking.ResponseSpaceJoin
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceLeave") Route.Booking.RequestSpaceLeave instance ToSchema Route.Booking.RequestSpaceLeave
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceLeave") Route.Booking.ResponseSpaceLeave instance ToSchema Route.Booking.ResponseSpaceLeave
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceKick") Route.Booking.RequestSpaceKick instance ToSchema Route.Booking.RequestSpaceKick
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceKick") Route.Booking.ResponseSpaceKick instance ToSchema Route.Booking.ResponseSpaceKick
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceView") Route.Booking.RequestSpaceView instance ToSchema Route.Booking.RequestSpaceView
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") Route.Booking.ResponseSpaceView instance ToSchema Route.Booking.ResponseSpaceView
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Route.Booking.RequestSpaceList instance ToSchema Route.Booking.RequestSpaceList
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") Route.Booking.ResponseSpaceList instance ToSchema Route.Booking.ResponseSpaceList
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRoleCreate") Route.Booking.RequestRoleCreate instance ToSchema Route.Booking.RequestRoleCreate
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRoleCreate") Route.Booking.ResponseRoleCreate instance ToSchema Route.Booking.ResponseRoleCreate
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRoleEdit") Route.Booking.RequestRoleEdit instance ToSchema Route.Booking.RequestRoleEdit
-deriving via A.CustomJSON (JSONSettings "RoleEdit" "roleEditAccessibilityAndPassword") Route.Booking.RoleEditAccessibilityAndPassword instance ToSchema Route.Booking.RoleEditAccessibilityAndPassword
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRoleEdit") Route.Booking.ResponseRoleEdit instance ToSchema Route.Booking.ResponseRoleEdit
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRoleDelete") Route.Booking.RequestRoleDelete instance ToSchema Route.Booking.RequestRoleDelete
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRoleDelete") Route.Booking.ResponseRoleDelete instance ToSchema Route.Booking.ResponseRoleDelete
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") Route.Booking.RequestDeskCreate instance ToSchema Route.Booking.RequestDeskCreate
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") Route.Booking.ResponseDeskCreate instance ToSchema Route.Booking.ResponseDeskCreate
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskDelete") Route.Booking.RequestDeskDelete instance ToSchema Route.Booking.RequestDeskDelete
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskDelete") Route.Booking.ResponseDeskDelete instance ToSchema Route.Booking.ResponseDeskDelete
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") Route.Booking.RequestDeskList instance ToSchema Route.Booking.RequestDeskList
-deriving via A.CustomJSON (JSONSettings "Mk" "deskWithInfo") Route.Booking.DeskWithInfo instance ToSchema Route.Booking.DeskWithInfo
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Route.Booking.ResponseDeskList instance ToSchema Route.Booking.ResponseDeskList
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceCreate") Route.Space.RequestSpaceCreate instance ToSchema Route.Space.RequestSpaceCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceCreate") Route.Space.ResponseSpaceCreate instance ToSchema Route.Space.ResponseSpaceCreate
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceDelete") Route.Space.RequestSpaceDelete instance ToSchema Route.Space.RequestSpaceDelete
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceDelete") Route.Space.ResponseSpaceDelete instance ToSchema Route.Space.ResponseSpaceDelete
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceEdit") Route.Space.RequestSpaceEdit instance ToSchema Route.Space.RequestSpaceEdit
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceEdit") Route.Space.ResponseSpaceEdit instance ToSchema Route.Space.ResponseSpaceEdit
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceJoin") Route.Space.RequestSpaceJoin instance ToSchema Route.Space.RequestSpaceJoin
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceJoin") Route.Space.ResponseSpaceJoin instance ToSchema Route.Space.ResponseSpaceJoin
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceLeave") Route.Space.RequestSpaceLeave instance ToSchema Route.Space.RequestSpaceLeave
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceLeave") Route.Space.ResponseSpaceLeave instance ToSchema Route.Space.ResponseSpaceLeave
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceKick") Route.Space.RequestSpaceKick instance ToSchema Route.Space.RequestSpaceKick
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceKick") Route.Space.ResponseSpaceKick instance ToSchema Route.Space.ResponseSpaceKick
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceView") Route.Space.RequestSpaceView instance ToSchema Route.Space.RequestSpaceView
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") Route.Space.ResponseSpaceView instance ToSchema Route.Space.ResponseSpaceView
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Route.Space.RequestSpaceList instance ToSchema Route.Space.RequestSpaceList
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") Route.Space.ResponseSpaceList instance ToSchema Route.Space.ResponseSpaceList
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRoleCreate") Route.Space.RequestRoleCreate instance ToSchema Route.Space.RequestRoleCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRoleCreate") Route.Space.ResponseRoleCreate instance ToSchema Route.Space.ResponseRoleCreate
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRoleEdit") Route.Space.RequestRoleEdit instance ToSchema Route.Space.RequestRoleEdit
+deriving via A.CustomJSON (JSONSettings "RoleEdit" "roleEditAccessibilityAndPassword") Route.Space.RoleEditAccessibilityAndPassword instance ToSchema Route.Space.RoleEditAccessibilityAndPassword
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRoleEdit") Route.Space.ResponseRoleEdit instance ToSchema Route.Space.ResponseRoleEdit
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRoleDelete") Route.Space.RequestRoleDelete instance ToSchema Route.Space.RequestRoleDelete
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRoleDelete") Route.Space.ResponseRoleDelete instance ToSchema Route.Space.ResponseRoleDelete
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") Route.Space.RequestDeskCreate instance ToSchema Route.Space.RequestDeskCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") Route.Space.ResponseDeskCreate instance ToSchema Route.Space.ResponseDeskCreate
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskDelete") Route.Space.RequestDeskDelete instance ToSchema Route.Space.RequestDeskDelete
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskDelete") Route.Space.ResponseDeskDelete instance ToSchema Route.Space.ResponseDeskDelete
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") Route.Space.RequestDeskList instance ToSchema Route.Space.RequestDeskList
+deriving via A.CustomJSON (JSONSettings "Mk" "deskWithInfo") Route.Space.DeskWithInfo instance ToSchema Route.Space.DeskWithInfo
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Route.Space.ResponseDeskList instance ToSchema Route.Space.ResponseDeskList
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") Route.Reservation.RequestReservationCreate instance ToSchema Route.Reservation.RequestReservationCreate
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCreate") Route.Reservation.ResponseReservationCreate instance ToSchema Route.Reservation.ResponseReservationCreate
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCancel") Route.Reservation.RequestReservationCancel instance ToSchema Route.Reservation.RequestReservationCancel
