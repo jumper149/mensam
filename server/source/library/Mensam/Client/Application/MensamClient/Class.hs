@@ -160,6 +160,18 @@ endpointSpaceLeave ::
          , WithStatus 500 ()
          ]
     )
+endpointSpaceKick ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Booking.RequestSpaceKick ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.Booking.ResponseSpaceKick
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+         , WithStatus 500 ()
+         ]
+    )
 endpointSpaceView ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Booking.RequestSpaceView ->
@@ -311,6 +323,7 @@ Route.Api.Routes
       , Route.Api.Booking.routeSpaceEdit = endpointSpaceEdit
       , Route.Api.Booking.routeSpaceJoin = endpointSpaceJoin
       , Route.Api.Booking.routeSpaceLeave = endpointSpaceLeave
+      , Route.Api.Booking.routeSpaceKick = endpointSpaceKick
       , Route.Api.Booking.routeSpaceView = endpointSpaceView
       , Route.Api.Booking.routeSpaceList = endpointSpaceList
       , Route.Api.Booking.routeRoleCreate = endpointRoleCreate

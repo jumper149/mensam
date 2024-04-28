@@ -6,6 +6,7 @@
   ** HTTP 403 responses now contain the missing permission.
   ** Add space users to `/space/view/` response.
   ** Only show email address when allowed in `/profile` response.
+  ** Add `/space/kick` route.
 
 == `0.6.0.1`
 

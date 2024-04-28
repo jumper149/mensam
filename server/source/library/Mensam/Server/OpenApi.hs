@@ -181,6 +181,8 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceJoin") Route.Bo
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceJoin") Route.Booking.ResponseSpaceJoin instance ToSchema Route.Booking.ResponseSpaceJoin
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceLeave") Route.Booking.RequestSpaceLeave instance ToSchema Route.Booking.RequestSpaceLeave
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceLeave") Route.Booking.ResponseSpaceLeave instance ToSchema Route.Booking.ResponseSpaceLeave
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceKick") Route.Booking.RequestSpaceKick instance ToSchema Route.Booking.RequestSpaceKick
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceKick") Route.Booking.ResponseSpaceKick instance ToSchema Route.Booking.ResponseSpaceKick
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceView") Route.Booking.RequestSpaceView instance ToSchema Route.Booking.RequestSpaceView
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") Route.Booking.ResponseSpaceView instance ToSchema Route.Booking.ResponseSpaceView
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Route.Booking.RequestSpaceList instance ToSchema Route.Booking.RequestSpaceList

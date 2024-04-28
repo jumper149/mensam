@@ -115,6 +115,25 @@ data Routes route = Routes
               , WithStatus 403 (StaticText "Owner cannot leave space.")
               , WithStatus 500 ()
               ]
+  , routeSpaceKick ::
+      route
+        :- Summary "Kick User from Space"
+          :> Description
+              "Kick a user out of a space.\n\
+              \You need the `space-edit` permission for that space to remove users.\n"
+          :> "space"
+          :> "kick"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceKick
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseSpaceKick
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 500 ()
+              ]
   , routeSpaceView ::
       route
         :- Summary "View Space"
@@ -370,6 +389,25 @@ newtype ResponseSpaceLeave = MkResponseSpaceLeave
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceLeave") ResponseSpaceLeave
+
+type RequestSpaceKick :: Type
+data RequestSpaceKick = MkRequestSpaceKick
+  { requestSpaceKickSpace :: IdentifierSpace
+  , requestSpaceKickUser :: IdentifierUser
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceKick") RequestSpaceKick
+
+type ResponseSpaceKick :: Type
+newtype ResponseSpaceKick = MkResponseSpaceKick
+  { responseSpaceKickUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceKick") ResponseSpaceKick
 
 type RequestSpaceView :: Type
 newtype RequestSpaceView = MkRequestSpaceView

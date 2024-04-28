@@ -36,6 +36,7 @@ handler =
     , routeSpaceEdit = editSpace
     , routeSpaceJoin = joinSpace
     , routeSpaceLeave = leaveSpace
+    , routeSpaceKick = kickUser
     , routeSpaceList = listSpaces
     , routeSpaceView = viewSpace
     , routeRoleCreate = createRole
@@ -268,6 +269,49 @@ leaveSpace auth eitherRequest =
           else do
             logInfo "Failed to leave space as owner."
             respond $ WithStatus @403 $ MkStaticText @"Owner cannot leave space."
+
+kickUser ::
+  ( MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseSpaceKick) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestSpaceKick ->
+  m (Union responses)
+kickUser auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to kick user from space: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        permissions <- spaceUserPermissions (requestSpaceKickSpace request) (userAuthenticatedId authenticated)
+        if MkPermissionSpaceEditSpace `S.member` permissions
+          then do
+            isOwner <- spaceUserIsOwner (requestSpaceKickSpace request) (requestSpaceKickUser request)
+            if isOwner
+              then do
+                lift $ logInfo "User is the owner of the space and can therefore not be kicked."
+                pure False
+              else do
+                lift $ logInfo "Removing user from space."
+                spaceUserRemove (requestSpaceKickSpace request) (requestSpaceKickUser request)
+                pure True
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace
+      handleSeldaException403InsufficientPermission
+        (Proxy @MkPermissionSpaceEditSpace)
+        seldaResult
+        $ \seldaResultAfter403 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \removed ->
+            if removed
+              then do
+                logInfo "Left space."
+                respond $ WithStatus @200 MkResponseSpaceKick {responseSpaceKickUnit = ()}
+              else do
+                logInfo "Failed to kick owner from space."
+                respond $ WithStatus @500 () -- TODO: Use HTTP 403
 
 viewSpace ::
   ( MonadLogger m
