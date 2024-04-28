@@ -133,6 +133,15 @@ spaceView userIdentifier spaceIdentifier = do
                 dbSpaceRoles
                 dbSpaceRolesPermissions
         pure spaceRoles
+      dbSpaceUsers <- Selda.query $ spaceListUsers $ dbSpace_id dbSpace
+      let spaceUsers =
+            ( \dbSpaceUser ->
+                MkSpaceUser
+                  { spaceUserUser = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpaceUser_user dbSpaceUser
+                  , spaceUserRole = MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole $ dbSpaceUser_role dbSpaceUser
+                  }
+            )
+              <$> dbSpaceUsers
       lift $ logInfo "Got space roles successfully."
       lift $ logDebug "Looking up space role for requesting user."
       maybeSpaceRoleIdentifier <- do
@@ -152,6 +161,7 @@ spaceView userIdentifier spaceIdentifier = do
             , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
             , spaceViewOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
             , spaceViewRoles = S.fromList spaceRoles
+            , spaceViewUsers = S.fromList spaceUsers
             , spaceViewYourRole = maybeSpaceRoleIdentifier
             }
 

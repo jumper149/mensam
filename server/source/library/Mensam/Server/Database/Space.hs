@@ -78,6 +78,14 @@ spaceUserListPermissions space user = do
   Selda.restrict $ dbSpaceRolePermission Selda.! #dbSpaceRolePermission_role Selda..== dbRoleId
   pure dbSpaceRolePermission
 
+spaceListUsers ::
+  Selda.ID DbSpace ->
+  Selda.Query backend (Selda.Row backend DbSpaceUser)
+spaceListUsers space = do
+  dbSpaceUser <- Selda.select tableSpaceUser
+  Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal space
+  pure dbSpaceUser
+
 spaceListDesks ::
   Selda.ID DbSpace ->
   Selda.Query backend (Selda.Row backend DbDesk)

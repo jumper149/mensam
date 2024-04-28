@@ -2,6 +2,7 @@
 
 * API
   ** HTTP 403 responses now contain the missing permission.
+  ** Add space users to `/space/view/` response.
 
 == `0.6.0.1`
 

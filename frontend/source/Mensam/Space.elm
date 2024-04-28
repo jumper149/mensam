@@ -18,6 +18,11 @@ type SpaceView
                 , name : Mensam.Space.Role.Name
                 , permissions : Mensam.Space.Role.Permissions
                 }
+        , users :
+            List
+                { user : Mensam.User.Identifier
+                , role : Mensam.Space.Role.Identifier
+                }
         , timezone : Mensam.Time.TimezoneIdentifier
         , visibility : Visibility
         , owner : Mensam.User.Identifier

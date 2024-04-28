@@ -127,6 +127,7 @@ decodeBody200 =
                                     { id = record.id
                                     , name = record.name
                                     , roles = record.roles
+                                    , users = record.users
                                     , timezone = record.timezone
                                     , visibility = record.visibility
                                     , owner = record.owner
@@ -134,11 +135,12 @@ decodeBody200 =
                                     }
                 )
             <|
-                Decode.map7
-                    (\id name roles timezone visibility owner maybeYourRoleId ->
+                Decode.map8
+                    (\id name roles users timezone visibility owner maybeYourRoleId ->
                         { id = id
                         , name = name
                         , roles = roles
+                        , users = users
                         , timezone = timezone
                         , visibility = visibility
                         , owner = owner
@@ -176,6 +178,17 @@ decodeBody200 =
                                 (Decode.field "id" Mensam.Space.Role.identifierDecoder)
                                 (Decode.field "name" Mensam.Space.Role.nameDecoder)
                                 (Decode.field "permissions" <| Mensam.Space.Role.permissionsDecoder)
+                    )
+                    (Decode.field "users" <|
+                        Decode.list <|
+                            Decode.map2
+                                (\user role ->
+                                    { user = user
+                                    , role = role
+                                    }
+                                )
+                                (Decode.field "user" Mensam.User.identifierDecoder)
+                                (Decode.field "role" Mensam.Space.Role.identifierDecoder)
                     )
                     (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
                     (Decode.field "visibility" Mensam.Space.visibilityDecoder)

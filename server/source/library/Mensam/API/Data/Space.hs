@@ -22,6 +22,7 @@ data SpaceView = MkSpaceView
   , spaceViewVisibility :: VisibilitySpace
   , spaceViewOwner :: IdentifierUser
   , spaceViewRoles :: S.Set SpaceRole
+  , spaceViewUsers :: S.Set SpaceUser
   , spaceViewYourRole :: Maybe IdentifierSpaceRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -138,3 +139,13 @@ data SpaceOrderCategory
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "SpaceOrderCategory" "") SpaceOrderCategory
+
+type SpaceUser :: Type
+data SpaceUser = MkSpaceUser
+  { spaceUserUser :: IdentifierUser
+  , spaceUserRole :: IdentifierSpaceRole
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "spaceUser") SpaceUser
