@@ -1256,6 +1256,22 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+                Mensam.Screen.Space.Users.GetProfile userId ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceUsers _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceUsers <|
+                                        Mensam.Screen.Space.Users.profile jwt userId
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
         MessageSpaceUsers (Mensam.Screen.Space.Users.Messages ms) ->
             case model.screen of
                 ScreenSpaceUsers _ ->

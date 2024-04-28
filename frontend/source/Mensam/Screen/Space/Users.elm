@@ -7,6 +7,7 @@ import Element.Font
 import Element.Input
 import Html.Attributes
 import List.Extra
+import Mensam.Api.Profile
 import Mensam.Api.RoleCreate
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
@@ -33,6 +34,10 @@ type alias Model =
         List
             { user : Mensam.User.Identifier
             , role : Mensam.Space.Role.Identifier
+            , info :
+                Maybe
+                    { name : Mensam.User.Name
+                    }
             }
     , selected : Maybe Int
     , popup : Maybe PopupModel
@@ -109,7 +114,7 @@ element model =
                                             []
                                         <|
                                             Element.text "ID"
-                          , width = Element.fill
+                          , width = Element.px 40
                           , view =
                                 \n user ->
                                     Element.el
@@ -149,8 +154,54 @@ element model =
                                         Element.el
                                             []
                                         <|
-                                            Element.text "Role"
+                                            Element.text "Name"
                           , width = Element.fill
+                          , view =
+                                \n user ->
+                                    Element.el
+                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onClick <| MessageEffect <| ReportError Mensam.Error.undefined -- TODO
+                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                        , let
+                                            alpha =
+                                                case model.selected of
+                                                    Nothing ->
+                                                        0.2
+
+                                                    Just m ->
+                                                        if m == n then
+                                                            0.4
+
+                                                        else
+                                                            0.2
+                                          in
+                                          Element.Background.color (Element.rgba 0 0 0 alpha)
+                                        ]
+                                    <|
+                                        cell <|
+                                            Element.el
+                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                            <|
+                                                case user.info of
+                                                    Nothing ->
+                                                        Element.text ""
+
+                                                    Just info ->
+                                                        Element.text <|
+                                                            Mensam.User.nameToString info.name
+                          }
+                        , { header =
+                                Element.el
+                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                    ]
+                                <|
+                                    cell <|
+                                        Element.el
+                                            []
+                                        <|
+                                            Element.text "Role"
+                          , width = Element.px 80
                           , view =
                                 \n user ->
                                     Element.el
@@ -214,6 +265,12 @@ type MessagePure
             , role : Mensam.Space.Role.Identifier
             }
         )
+    | SetUserInfo
+        { id : Mensam.User.Identifier
+        , info :
+            { name : Mensam.User.Name
+            }
+        }
     | SetRoles
         (List
             { id : Mensam.Space.Role.Identifier
@@ -232,7 +289,21 @@ updatePure message model =
             { model | spaceName = name }
 
         SetUserIds users ->
-            { model | users = users }
+            { model | users = List.map (\user -> { user = user.user, role = user.role, info = Nothing }) users }
+
+        SetUserInfo userWithInfo ->
+            { model
+                | users =
+                    List.filterMap
+                        (\user ->
+                            if user.user == userWithInfo.id then
+                                Just { user | info = Just userWithInfo.info }
+
+                            else
+                                Just user
+                        )
+                        model.users
+            }
 
         SetRoles roles ->
             { model | roles = roles }
@@ -244,6 +315,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Refresh
+    | GetProfile Mensam.User.Identifier
 
 
 spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
@@ -256,11 +328,12 @@ spaceView jwt id =
                         (Mensam.Space.MkSpaceView view) =
                             value.space
                     in
-                    Messages
+                    Messages <|
                         [ MessagePure <| SetUserIds view.users
                         , MessagePure <| SetRoles view.roles
                         , MessagePure <| SetSpaceName view.name
                         ]
+                            ++ List.map (\user -> MessageEffect <| GetProfile user.user) view.users
 
                 Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
@@ -277,3 +350,42 @@ spaceView jwt id =
 
                 Err error ->
                     MessageEffect <| ReportError <| Mensam.Error.http error
+
+
+profile : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+profile jwt userId =
+    Mensam.Api.Profile.request
+        { jwt = jwt
+        , id = userId
+        }
+    <|
+        \response ->
+            case response of
+                Ok (Mensam.Api.Profile.Success body) ->
+                    MessagePure <| SetUserInfo { id = userId, info = { name = body.name } }
+
+                Ok Mensam.Api.Profile.ErrorUnknownUser ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Unknown user while requesting information" <|
+                                Mensam.Error.undefined
+
+                Ok (Mensam.Api.Profile.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to request profile" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.Profile.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to request profile" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to request profile" <|
+                                Mensam.Error.http error
