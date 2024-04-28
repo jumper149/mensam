@@ -2,7 +2,6 @@ module Mensam.Server.Server.Route.Api.Booking where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.Desk
-import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Route.Api.Booking
