@@ -267,5 +267,8 @@ profile auth eitherRequest =
                 MkResponseProfile
                   { responseProfileId = userId user
                   , responseProfileName = userName user
-                  , responseProfileEmail = userEmail user
+                  , responseProfileEmail =
+                      if userEmailVisible user
+                        then Just $ userEmail user
+                        else Nothing
                   }

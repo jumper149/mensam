@@ -175,7 +175,7 @@ type ResponseProfile :: Type
 data ResponseProfile = MkResponseProfile
   { responseProfileId :: IdentifierUser
   , responseProfileName :: Username
-  , responseProfileEmail :: EmailAddress
+  , responseProfileEmail :: Maybe EmailAddress
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

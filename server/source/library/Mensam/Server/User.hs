@@ -97,8 +97,25 @@ userGet identifier = do
     MkUser
       { userId = MkIdentifierUser $ Selda.fromId $ dbUser_id dbUser
       , userName = MkUsernameUnsafe $ dbUser_name dbUser
+      , userPasswordHash = PasswordHash $ dbUser_password_hash dbUser
       , userEmail = fromTextUnsafe $ dbUser_email dbUser
+      , userEmailVisible =
+          case dbUser_email_visibility dbUser of
+            MkDbEmailVisibility_hidden -> False
+            MkDbEmailVisibility_visible -> True
+      , userEmailValidated = dbUser_email_validated dbUser
       }
+
+type User :: Type
+data User = MkUser
+  { userId :: IdentifierUser
+  , userName :: Username
+  , userPasswordHash :: PasswordHash Bcrypt
+  , userEmail :: EmailAddress
+  , userEmailVisible :: Bool
+  , userEmailValidated :: Bool
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
 
 userCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>

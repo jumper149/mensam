@@ -17,7 +17,7 @@ type alias Request =
 
 type Response
     = Success
-        { email : String
+        { email : Maybe String
         , id : Mensam.User.Identifier
         , name : Mensam.User.Name
         }
@@ -117,11 +117,11 @@ encodeBody body =
         ]
 
 
-decodeBody200 : Decode.Decoder { email : String, id : Mensam.User.Identifier, name : Mensam.User.Name }
+decodeBody200 : Decode.Decoder { email : Maybe String, id : Mensam.User.Identifier, name : Mensam.User.Name }
 decodeBody200 =
     Decode.map3
         (\email id name -> { email = email, id = id, name = name })
-        (Decode.field "email" Decode.string)
+        (Decode.field "email" <| Decode.maybe Decode.string)
         (Decode.field "id" Mensam.User.identifierDecoder)
         (Decode.field "name" Mensam.User.nameDecoder)
 
