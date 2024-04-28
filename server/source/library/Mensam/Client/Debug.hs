@@ -6,6 +6,7 @@ import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
+import Mensam.API.Route.Api.Reservation qualified as Route.Reservation
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application
 import Mensam.Client.Application.MensamClient.Class
@@ -118,9 +119,9 @@ f = do
   liftIO $ putStrLn "Create reservation."
   currentTime <- liftIO T.getCurrentTime
   let requestReservationCreate =
-        Route.Booking.MkRequestReservationCreate
-          { Route.Booking.requestReservationCreateDesk = Name $ MkDeskNameWithContext (MkNameDesk "saturn") spacename
-          , Route.Booking.requestReservationCreateTimeWindow =
+        Route.Reservation.MkRequestReservationCreate
+          { Route.Reservation.requestReservationCreateDesk = Name $ MkDeskNameWithContext (MkNameDesk "saturn") spacename
+          , Route.Reservation.requestReservationCreateTimeWindow =
               MkIntervalNonDegenerateUnsafe $
                 MkIntervalUnsafe
                   currentTime

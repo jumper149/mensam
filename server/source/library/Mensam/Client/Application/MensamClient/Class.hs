@@ -6,6 +6,7 @@ import Mensam.API.Data.User
 import Mensam.API.Route.Api qualified as Route.Api
 import Mensam.API.Route.Api.Booking qualified as Route.Api.Booking
 import Mensam.API.Route.Api.OpenApi qualified as Route.Api.OpenApi
+import Mensam.API.Route.Api.Reservation qualified as Route.Api.Reservation
 import Mensam.API.Route.Api.User qualified as Route.Api.User
 import Mensam.Client.OrphanInstances
 
@@ -258,10 +259,10 @@ endpointDeskList ::
     )
 endpointReservationCreate ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestReservationCreate ->
+  Route.Api.Reservation.RequestReservationCreate ->
   ClientM
     ( Union
-        '[ WithStatus 201 Route.Api.Booking.ResponseReservationCreate
+        '[ WithStatus 201 Route.Api.Reservation.ResponseReservationCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 409 (StaticText "Desk is not available within the given time window.")
@@ -270,10 +271,10 @@ endpointReservationCreate ::
     )
 endpointReservationCancel ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestReservationCancel ->
+  Route.Api.Reservation.RequestReservationCancel ->
   ClientM
     ( Union
-        '[ WithStatus 200 Route.Api.Booking.ResponseReservationCancel
+        '[ WithStatus 200 Route.Api.Reservation.ResponseReservationCancel
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
@@ -281,10 +282,10 @@ endpointReservationCancel ::
     )
 endpointReservationList ::
   AuthData '[Servant.Auth.JWTWithSession] ->
-  Route.Api.Booking.RequestReservationList ->
+  Route.Api.Reservation.RequestReservationList ->
   ClientM
     ( Union
-        [ WithStatus 200 Route.Api.Booking.ResponseReservationList
+        [ WithStatus 200 Route.Api.Reservation.ResponseReservationList
         , WithStatus 400 ErrorParseBodyJson
         , WithStatus 401 ErrorBearerAuth
         , WithStatus 500 ()
@@ -318,8 +319,11 @@ Route.Api.Routes
       , Route.Api.Booking.routeDeskCreate = endpointDeskCreate
       , Route.Api.Booking.routeDeskDelete = endpointDeskDelete
       , Route.Api.Booking.routeDeskList = endpointDeskList
-      , Route.Api.Booking.routeReservationCreate = endpointReservationCreate
-      , Route.Api.Booking.routeReservationCancel = endpointReservationCancel
-      , Route.Api.Booking.routeReservationList = endpointReservationList
+      }
+  , Route.Api.routeReservation =
+    Route.Api.Reservation.Routes
+      { Route.Api.Reservation.routeReservationCreate = endpointReservationCreate
+      , Route.Api.Reservation.routeReservationCancel = endpointReservationCancel
+      , Route.Api.Reservation.routeReservationList = endpointReservationList
       }
   } = client $ Proxy @(NamedRoutes Route.Api.Routes)

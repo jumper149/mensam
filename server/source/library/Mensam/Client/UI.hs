@@ -4,6 +4,7 @@ import Mensam.API.Aeson
 import Mensam.API.Data.Space
 import Mensam.API.Order
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
+import Mensam.API.Route.Api.Reservation qualified as Route.Reservation
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application
 import Mensam.Client.Application.Event.Class
@@ -188,7 +189,7 @@ handleEvent chan = \case
           Just jwt -> do
             result <- runApplicationT chan $ mensamCall $ endpointReservationCreate (DataJWTWithSession jwt) request
             case result of
-              Right (Z (I (WithStatus @201 (Route.Booking.MkResponseReservationCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
+              Right (Z (I (WithStatus @201 (Route.Reservation.MkResponseReservationCreate _)))) -> runApplicationT chan $ sendEvent (ClientEventSwitchToScreenDesks space)
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}
           Nothing -> modify $ \s -> s {_clientStatePopup = Just "Error: Not logged in."}
   VtyEvent (EvKey KEsc []) -> do

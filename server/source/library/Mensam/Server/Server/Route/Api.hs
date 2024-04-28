@@ -7,6 +7,7 @@ import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Server.Route.Api.Booking qualified
 import Mensam.Server.Server.Route.Api.OpenApi qualified
+import Mensam.Server.Server.Route.Api.Reservation qualified
 import Mensam.Server.Server.Route.Api.User qualified
 
 import Control.Monad.IO.Unlift
@@ -21,4 +22,5 @@ handler =
     { routeOpenApi = Mensam.Server.Server.Route.Api.OpenApi.handler
     , routeUser = Mensam.Server.Server.Route.Api.User.handler
     , routeBooking = Mensam.Server.Server.Route.Api.Booking.handler
+    , routeReservation = Mensam.Server.Server.Route.Api.Reservation.handler
     }

@@ -45,9 +45,6 @@ handler =
     , routeDeskCreate = createDesk
     , routeDeskDelete = deleteDesk
     , routeDeskList = listDesks
-    , routeReservationCreate = createReservation
-    , routeReservationCancel = cancelReservation
-    , routeReservationList = listReservations
     }
 
 createSpace ::
@@ -552,110 +549,6 @@ listDesks auth eitherRequest =
       handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \desksWithInfo -> do
         logInfo "Listed desks."
         respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
-
-createReservation ::
-  ( MonadLogger m
-  , MonadSeldaPool m
-  , IsMember (WithStatus 201 ResponseReservationCreate) responses
-  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 409 (StaticText "Desk is not available within the given time window.")) responses
-  , IsMember (WithStatus 500 ()) responses
-  ) =>
-  AuthResult UserAuthenticated ->
-  Either String RequestReservationCreate ->
-  m (Union responses)
-createReservation auth eitherRequest = do
-  handleAuthBearer auth $ \authenticated ->
-    handleBadRequestBody eitherRequest $ \request -> do
-      logDebug $ "Received request to create reservation: " <> T.pack (show request)
-      seldaResult <- runSeldaTransactionT $ do
-        deskIdentifier <-
-          case requestReservationCreateDesk request of
-            Name MkDeskNameWithContext {deskNameWithContextSpace = spaceName, deskNameWithContextDesk = deskName} -> do
-              spaceIdentifier <- spaceLookupId spaceName
-              deskLookupId spaceIdentifier deskName >>= \case
-                Nothing -> undefined
-                Just deskId -> pure deskId
-            Identifier deskId -> pure deskId
-        desk <- deskGetFromId deskIdentifier
-        permissions <- spaceUserPermissions (deskSpace desk) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceCreateReservation `S.member` permissions
-          then
-            reservationCreate
-              deskIdentifier
-              (userAuthenticatedId authenticated)
-              (requestReservationCreateTimeWindow request)
-          else error "No permission"
-      handleSeldaException
-        (Proxy @SqlErrorMensamDeskAlreadyReserved)
-        (WithStatus @409 $ MkStaticText @"Desk is not available within the given time window.")
-        seldaResult
-        $ \seldaResultAfter409 ->
-          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter409 $ \reservationIdentifier -> do
-            logInfo "Created reservation."
-            respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
-
-cancelReservation ::
-  ( MonadLogger m
-  , MonadSeldaPool m
-  , IsMember (WithStatus 200 ResponseReservationCancel) responses
-  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 500 ()) responses
-  ) =>
-  AuthResult UserAuthenticated ->
-  Either String RequestReservationCancel ->
-  m (Union responses)
-cancelReservation auth eitherRequest = do
-  handleAuthBearer auth $ \authenticated ->
-    handleBadRequestBody eitherRequest $ \request -> do
-      logDebug $ "Received request to cancel reservation: " <> T.pack (show request)
-      let reservationIdentifier = requestReservationCancelId request
-      seldaResult <- runSeldaTransactionT $ do
-        reservation <- reservationGet reservationIdentifier
-        permissions <- do
-          desk <- deskGetFromId $ reservationDesk reservation
-          let spaceIdentifier :: IdentifierSpace = deskSpace desk
-          spaceUserPermissions spaceIdentifier $ userAuthenticatedId authenticated
-        if MkPermissionSpaceCancelReservation `S.member` permissions
-          then case reservationStatus reservation of
-            MkStatusReservationCancelled -> error "Already cancelled."
-            MkStatusReservationPlanned -> reservationCancel reservationIdentifier
-          else error "No permission."
-      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
-        logInfo "Cancelled reservation."
-        respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
-
-listReservations ::
-  ( MonadLogger m
-  , MonadSeldaPool m
-  , IsMember (WithStatus 200 ResponseReservationList) responses
-  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
-  , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 500 ()) responses
-  ) =>
-  AuthResult UserAuthenticated ->
-  Either String RequestReservationList ->
-  m (Union responses)
-listReservations auth eitherRequest =
-  handleAuthBearer auth $ \authenticated ->
-    handleBadRequestBody eitherRequest $ \request -> do
-      logDebug $ "Received request to list a user's reservations: " <> T.pack (show request)
-      seldaResult <- runSeldaTransactionT $ do
-        reservations <- reservationListUser (userAuthenticatedId authenticated) (requestReservationListTimeBegin request) (requestReservationListTimeEnd request)
-        for reservations $ \reservation -> do
-          desk <- deskGetFromId $ reservationDesk reservation
-          space <- spaceGetFromId $ deskSpace desk
-          pure
-            MkReservationWithInfo
-              { reservationWithInfoReservation = reservation
-              , reservationWithInfoDesk = desk
-              , reservationWithInfoSpace = space
-              }
-      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \reservationsWithInfo -> do
-        logInfo "Listed user's reservations."
-        respond $ WithStatus @200 MkResponseReservationList {responseReservationListReservations = reservationsWithInfo}
 
 handleBadRequestBody ::
   ( MonadLogger m

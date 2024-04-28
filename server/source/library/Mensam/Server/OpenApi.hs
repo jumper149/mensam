@@ -11,6 +11,7 @@ import Mensam.API.Data.User.Username
 import Mensam.API.Order
 import Mensam.API.Route.Api qualified as Route.Api
 import Mensam.API.Route.Api.Booking qualified as Route.Booking
+import Mensam.API.Route.Api.Reservation qualified as Route.Reservation
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.API.Update
 
@@ -199,13 +200,13 @@ deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskDelete") Route
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") Route.Booking.RequestDeskList instance ToSchema Route.Booking.RequestDeskList
 deriving via A.CustomJSON (JSONSettings "Mk" "deskWithInfo") Route.Booking.DeskWithInfo instance ToSchema Route.Booking.DeskWithInfo
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Route.Booking.ResponseDeskList instance ToSchema Route.Booking.ResponseDeskList
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") Route.Booking.RequestReservationCreate instance ToSchema Route.Booking.RequestReservationCreate
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCreate") Route.Booking.ResponseReservationCreate instance ToSchema Route.Booking.ResponseReservationCreate
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCancel") Route.Booking.RequestReservationCancel instance ToSchema Route.Booking.RequestReservationCancel
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCancel") Route.Booking.ResponseReservationCancel instance ToSchema Route.Booking.ResponseReservationCancel
-deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationList") Route.Booking.RequestReservationList instance ToSchema Route.Booking.RequestReservationList
-deriving via A.CustomJSON (JSONSettings "Mk" "reservationWithInfo") Route.Booking.ReservationWithInfo instance ToSchema Route.Booking.ReservationWithInfo
-deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationList") Route.Booking.ResponseReservationList instance ToSchema Route.Booking.ResponseReservationList
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") Route.Reservation.RequestReservationCreate instance ToSchema Route.Reservation.RequestReservationCreate
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCreate") Route.Reservation.ResponseReservationCreate instance ToSchema Route.Reservation.ResponseReservationCreate
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCancel") Route.Reservation.RequestReservationCancel instance ToSchema Route.Reservation.RequestReservationCancel
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCancel") Route.Reservation.ResponseReservationCancel instance ToSchema Route.Reservation.ResponseReservationCancel
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestReservationList") Route.Reservation.RequestReservationList instance ToSchema Route.Reservation.RequestReservationList
+deriving via A.CustomJSON (JSONSettings "Mk" "reservationWithInfo") Route.Reservation.ReservationWithInfo instance ToSchema Route.Reservation.ReservationWithInfo
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationList") Route.Reservation.ResponseReservationList instance ToSchema Route.Reservation.ResponseReservationList
 
 openapiJsonStdout :: IO ()
 openapiJsonStdout = TL.putStrLn $ TL.decodeUtf8 $ A.encode Mensam.Server.OpenApi.openapi
