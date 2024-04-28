@@ -240,6 +240,26 @@ element model =
                                             ]
                                         <|
                                             Element.text "Settings"
+                    , Element.el
+                        [ Element.alignRight
+                        , Element.padding 10
+                        , Element.Background.color Mensam.Element.Color.bright.yellow
+                        , Element.Font.color Mensam.Element.Color.dark.black
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                        , Element.Events.onClick <| MessageEffect OpenPageToUsers
+                        ]
+                      <|
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                            , Element.Font.size 17
+                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                            ]
+                        <|
+                            Element.text "Users"
                     , case model.yourRole of
                         Nothing ->
                             Element.none
@@ -1403,6 +1423,7 @@ type MessageEffect
     | RefreshSpace
     | RefreshDesks
     | OpenPageToJoin
+    | OpenPageToUsers
     | OpenPageToSettings
     | SubmitLeave
     | SubmitCreate
