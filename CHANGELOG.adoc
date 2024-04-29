@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.6.1.0`
+
 * Frontend
   ** Add new page to view space users, adjust their roles and kick them out.
 * API
