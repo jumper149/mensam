@@ -1,7 +1,7 @@
 = Changelog
 
 * Frontend
-  ** Add new page to view space users.
+  ** Add new page to view space users and adjust their roles.
 * API
   ** HTTP 403 responses now contain the missing permission.
   ** Add space users to `/space/view/` response.

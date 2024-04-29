@@ -8,7 +8,7 @@ import Element.Input
 import Html.Attributes
 import List.Extra
 import Mensam.Api.Profile
-import Mensam.Api.RoleCreate
+import Mensam.Api.SpaceUserRole
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Element.Color
@@ -45,7 +45,11 @@ type alias Model =
 
 
 type PopupModel
-    = PopupEditUser Mensam.User.Identifier
+    = PopupEditUser
+        { user : Mensam.User.Identifier
+        , role : Maybe Mensam.Space.Role.Identifier
+        , selected : Maybe Int
+        }
 
 
 init : { id : Mensam.Space.Identifier } -> Model
@@ -120,7 +124,7 @@ element model =
                                     Element.el
                                         [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessageEffect <| ReportError Mensam.Error.undefined -- TODO
+                                        , Element.Events.onClick <| MessagePure <| ChooseUser user.user
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -161,7 +165,7 @@ element model =
                                     Element.el
                                         [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessageEffect <| ReportError Mensam.Error.undefined -- TODO
+                                        , Element.Events.onClick <| MessagePure <| ChooseUser user.user
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -207,7 +211,7 @@ element model =
                                     Element.el
                                         [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessageEffect <| ReportError Mensam.Error.undefined -- TODO
+                                        , Element.Events.onClick <| MessagePure <| ChooseUser user.user
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -247,7 +251,202 @@ element model =
                     Nothing
 
                 Just (PopupEditUser popupModel) ->
-                    Nothing
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Change Role"
+                            , Element.row
+                                [ Element.spacing 20
+                                , Element.width Element.fill
+                                , Element.height <| Element.px 25
+                                ]
+                                [ Element.el [] <| Element.text "User:"
+                                , Element.el [] <|
+                                    Element.text <|
+                                        case List.Extra.find (\user -> user.user == popupModel.user) model.users of
+                                            Nothing ->
+                                                ""
+
+                                            Just user ->
+                                                case user.info of
+                                                    Nothing ->
+                                                        ""
+
+                                                    Just info ->
+                                                        Mensam.User.nameToString info.name
+                                ]
+                            , Element.paragraph
+                                []
+                                [ Element.text "Choose a new role for this user."
+                                ]
+                            , Element.indexedTable
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                , Element.Background.color (Element.rgba 0 0 0 0.1)
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                , Element.Font.size 16
+                                , Element.clipY
+                                , Element.scrollbarY
+                                ]
+                                { data = model.roles
+                                , columns =
+                                    let
+                                        cell =
+                                            Element.el
+                                                [ Element.height <| Element.px 40
+                                                , Element.padding 10
+                                                ]
+                                    in
+                                    [ { header =
+                                            Element.el
+                                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                                ]
+                                            <|
+                                                cell <|
+                                                    Element.el
+                                                        []
+                                                    <|
+                                                        Element.text "ID"
+                                      , width = Element.px 40
+                                      , view =
+                                            \n role ->
+                                                Element.el
+                                                    [ Element.Events.onMouseLeave <| MessagePure <| SetSelectedRole Nothing
+                                                    , Element.Events.onMouseEnter <| MessagePure <| SetSelectedRole <| Just n
+                                                    , Element.Events.onClick <| MessagePure <| ChooseNewRole role.id
+                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                    , let
+                                                        alpha =
+                                                            case popupModel.selected of
+                                                                Nothing ->
+                                                                    0.2
+
+                                                                Just m ->
+                                                                    if m == n then
+                                                                        0.4
+
+                                                                    else
+                                                                        0.2
+                                                      in
+                                                      if popupModel.role == Just role.id then
+                                                        Element.Background.color (Element.rgba 0 0.2 0 alpha)
+
+                                                      else
+                                                        Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                    ]
+                                                <|
+                                                    cell <|
+                                                        Element.el
+                                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                        <|
+                                                            Element.text <|
+                                                                Mensam.Space.Role.identifierToString role.id
+                                      }
+                                    , { header =
+                                            Element.el
+                                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                                ]
+                                            <|
+                                                cell <|
+                                                    Element.el
+                                                        []
+                                                    <|
+                                                        Element.text "Name"
+                                      , width = Element.fill
+                                      , view =
+                                            \n role ->
+                                                Element.el
+                                                    [ Element.Events.onMouseLeave <| MessagePure <| SetSelectedRole Nothing
+                                                    , Element.Events.onMouseEnter <| MessagePure <| SetSelectedRole <| Just n
+                                                    , Element.Events.onClick <| MessagePure <| ChooseNewRole role.id
+                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                    , let
+                                                        alpha =
+                                                            case popupModel.selected of
+                                                                Nothing ->
+                                                                    0.2
+
+                                                                Just m ->
+                                                                    if m == n then
+                                                                        0.4
+
+                                                                    else
+                                                                        0.2
+                                                      in
+                                                      if popupModel.role == Just role.id then
+                                                        Element.Background.color (Element.rgba 0 0.2 0 alpha)
+
+                                                      else
+                                                        Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                    ]
+                                                <|
+                                                    cell <|
+                                                        Element.el
+                                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                        <|
+                                                            Element.text <|
+                                                                Mensam.Space.Role.nameToString role.name
+                                      }
+                                    ]
+                                }
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                -- TODO: Kick
+                                [ Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessagePure <| CloseDialogToEditUser
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Abort"
+                                    }
+                                , Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress =
+                                        case popupModel.role of
+                                            Nothing ->
+                                                Nothing
+
+                                            Just role ->
+                                                Just <| MessageEffect <| SubmitEditUser { user = popupModel.user, role = role }
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Change role"
+                                    }
+                                ]
+                            ]
         }
 
 
@@ -280,6 +479,10 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
+    | ChooseUser Mensam.User.Identifier
+    | SetSelectedRole (Maybe Int)
+    | ChooseNewRole Mensam.Space.Role.Identifier
+    | CloseDialogToEditUser
 
 
 updatePure : MessagePure -> Model -> Model
@@ -311,11 +514,34 @@ updatePure message model =
         SetSelected n ->
             { model | selected = n }
 
+        ChooseUser userId ->
+            { model | popup = Just <| PopupEditUser { user = userId, role = Nothing, selected = Nothing } }
+
+        SetSelectedRole maybeN ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupEditUser popupModel) ->
+                    { model | popup = Just <| PopupEditUser { popupModel | selected = maybeN } }
+
+        ChooseNewRole roleId ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupEditUser popupModel) ->
+                    { model | popup = Just <| PopupEditUser { popupModel | role = Just roleId } }
+
+        CloseDialogToEditUser ->
+            { model | popup = Nothing }
+
 
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Refresh
     | GetProfile Mensam.User.Identifier
+    | SubmitEditUser { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }
 
 
 spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
@@ -379,6 +605,47 @@ profile jwt userId =
                                         Mensam.Error.undefined
 
                 Ok (Mensam.Api.Profile.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to request profile" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to request profile" <|
+                                Mensam.Error.http error
+
+
+editUserRole : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Mensam.Space.Role.Identifier -> Cmd Message
+editUserRole jwt spaceId userId roleId =
+    Mensam.Api.SpaceUserRole.request
+        { jwt = jwt
+        , space = spaceId
+        , user = userId
+        , role = roleId
+        }
+    <|
+        \response ->
+            case response of
+                Ok Mensam.Api.SpaceUserRole.Success ->
+                    Messages
+                        [ MessagePure CloseDialogToEditUser
+                        , MessageEffect Refresh
+                        ]
+
+                Ok (Mensam.Api.SpaceUserRole.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+
+                Ok (Mensam.Api.SpaceUserRole.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to request profile" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceUserRole.ErrorAuth error) ->
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to request profile" <|
