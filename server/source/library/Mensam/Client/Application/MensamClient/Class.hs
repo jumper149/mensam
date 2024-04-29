@@ -289,6 +289,7 @@ endpointReservationCreate ::
         '[ WithStatus 201 Route.Api.Reservation.ResponseReservationCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCreateReservation)
          , WithStatus 409 (StaticText "Desk is not available within the given time window.")
          , WithStatus 500 ()
          ]
@@ -301,6 +302,7 @@ endpointReservationCancel ::
         '[ WithStatus 200 Route.Api.Reservation.ResponseReservationCancel
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCancelReservation)
          , WithStatus 500 ()
          ]
     )

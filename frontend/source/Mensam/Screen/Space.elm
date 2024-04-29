@@ -1624,6 +1624,9 @@ reservationCreate jwt model { desk } =
                         , MessageEffect RefreshDesks
                         ]
 
+                Ok (Mensam.Api.ReservationCreate.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+
                 Ok Mensam.Api.ReservationCreate.ErrorTimeUnavailable ->
                     MessageEffect <|
                         ReportError <|

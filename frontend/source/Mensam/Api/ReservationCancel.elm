@@ -6,6 +6,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Reservation
+import Mensam.Space.Role
 import Url.Builder
 
 
@@ -17,6 +18,7 @@ type alias Request =
 
 type Response
     = Success
+    | ErrorInsufficientPermission Mensam.Space.Role.Permission
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -68,6 +70,14 @@ responseResult httpResponse =
                     case Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
                         Ok error ->
                             Ok <| ErrorAuth error
+
+                        Err err ->
+                            Err <| Http.BadBody <| Decode.errorToString err
+
+                403 ->
+                    case Decode.decodeString Mensam.Space.Role.http403BodyDecoder body of
+                        Ok permission ->
+                            Ok <| ErrorInsufficientPermission permission
 
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err

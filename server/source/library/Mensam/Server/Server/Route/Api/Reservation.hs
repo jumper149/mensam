@@ -11,6 +11,7 @@ import Mensam.Server.Application.SeldaPool.Servant
 import Mensam.Server.Booking
 import Mensam.Server.Server.Auth
 
+import Control.Monad.Catch
 import Control.Monad.Logger.CallStack
 import Data.Set qualified as S
 import Data.Text qualified as T
@@ -36,6 +37,7 @@ createReservation ::
   , IsMember (WithStatus 201 ResponseReservationCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCreateReservation)) responses
   , IsMember (WithStatus 409 (StaticText "Desk is not available within the given time window.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -63,15 +65,19 @@ createReservation auth eitherRequest = do
               deskIdentifier
               (userAuthenticatedId authenticated)
               (requestReservationCreateTimeWindow request)
-          else error "No permission"
-      handleSeldaException
-        (Proxy @SqlErrorMensamDeskAlreadyReserved)
-        (WithStatus @409 $ MkStaticText @"Desk is not available within the given time window.")
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceCreateReservation
+      handleSeldaException403InsufficientPermission
+        (Proxy @MkPermissionSpaceCreateReservation)
         seldaResult
-        $ \seldaResultAfter409 ->
-          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter409 $ \reservationIdentifier -> do
-            logInfo "Created reservation."
-            respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
+        $ \seldaResultAfter403 ->
+          handleSeldaException
+            (Proxy @SqlErrorMensamDeskAlreadyReserved)
+            (WithStatus @409 $ MkStaticText @"Desk is not available within the given time window.")
+            seldaResultAfter403
+            $ \seldaResultAfter409 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter409 $ \reservationIdentifier -> do
+                logInfo "Created reservation."
+                respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
 
 cancelReservation ::
   ( MonadLogger m
@@ -79,6 +85,7 @@ cancelReservation ::
   , IsMember (WithStatus 200 ResponseReservationCancel) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCancelReservation)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -99,10 +106,14 @@ cancelReservation auth eitherRequest = do
           then case reservationStatus reservation of
             MkStatusReservationCancelled -> error "Already cancelled."
             MkStatusReservationPlanned -> reservationCancel reservationIdentifier
-          else error "No permission."
-      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
-        logInfo "Cancelled reservation."
-        respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceCancelReservation
+      handleSeldaException403InsufficientPermission
+        (Proxy @MkPermissionSpaceCancelReservation)
+        seldaResult
+        $ \seldaResultAfter403 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+            logInfo "Cancelled reservation."
+            respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
 
 listReservations ::
   ( MonadLogger m

@@ -19,6 +19,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Reservation
 import Mensam.Space
+import Mensam.Space.Role
 import Mensam.Time
 import Mensam.User
 import Mensam.Widget.Date
@@ -758,6 +759,9 @@ reservationCancel argument =
                         [ MessagePure ClosePopup
                         , MessageEffect RefreshReservations
                         ]
+
+                Ok (Mensam.Api.ReservationCancel.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok (Mensam.Api.ReservationCancel.ErrorBody error) ->
                     MessageEffect <|
