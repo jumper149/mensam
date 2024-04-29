@@ -718,6 +718,19 @@ deskDelete identifier = do
   lift $ logInfo "Deleted desk successfully."
   pure ()
 
+deskNameSet ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierDesk ->
+  NameDesk ->
+  SeldaTransactionT m ()
+deskNameSet identifier name = do
+  lift $ logDebug $ "Setting name " <> T.pack (show name) <> " of desk " <> T.pack (show identifier) <> "."
+  Selda.updateOne
+    tableDesk
+    (#dbDesk_id `Selda.is` Selda.toId @DbDesk (unIdentifierDesk identifier))
+    (\rowDesk -> rowDesk `Selda.with` [#dbDesk_name Selda.:= Selda.literal (unNameDesk name)])
+  lift $ logInfo "Set desk name successfully."
+
 reservationGet ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierReservation ->

@@ -1,5 +1,8 @@
 = Changelog
 
+* API
+  ** Add `/desk/edit` route.
+
 == `0.6.1.0`
 
 * Frontend

@@ -45,6 +45,7 @@ handler =
     , routeRoleDelete = deleteRole
     , routeDeskCreate = createDesk
     , routeDeskDelete = deleteDesk
+    , routeDeskEdit = editDesk
     , routeDeskList = listDesks
     }
 
@@ -590,6 +591,47 @@ deleteDesk auth eitherRequest =
             $ \seldaResultAfter404 ->
               handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter404 $ \() ->
                 respond $ WithStatus @200 MkResponseDeskDelete {responseDeskDeleteUnit = ()}
+
+editDesk ::
+  ( MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseDeskEdit) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)) responses
+  , IsMember (WithStatus 404 (StaticText "Desk not found.")) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestDeskEdit ->
+  m (Union responses)
+editDesk auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to edit desk: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        desk <- deskGetFromId $ requestDeskEditId request
+        permissions <- spaceUserPermissions (deskSpace desk) (userAuthenticatedId authenticated)
+        if MkPermissionSpaceEditDesk `S.member` permissions
+          then do
+            case requestDeskEditName request of
+              Preserve -> pure ()
+              Overwrite name -> deskNameSet (requestDeskEditId request) name
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk
+      handleSeldaException
+        (Proxy @SqlErrorMensamDeskNotFound)
+        (WithStatus @404 $ MkStaticText @"Desk not found.")
+        seldaResult
+        $ \seldaResultAfter404 ->
+          handleSeldaException403InsufficientPermission
+            (Proxy @MkPermissionSpaceEditDesk)
+            seldaResultAfter404
+            $ \seldaResultAfter403 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+                logInfo "Edited space."
+                respond $
+                  WithStatus @200
+                    MkResponseDeskEdit {responseDeskEditUnit = ()}
 
 listDesks ::
   ( MonadLogger m

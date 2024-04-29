@@ -270,6 +270,19 @@ endpointDeskDelete ::
          , WithStatus 500 ()
          ]
     )
+endpointDeskEdit ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.Space.RequestDeskEdit ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.Space.ResponseDeskEdit
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
+         , WithStatus 404 (StaticText "Desk not found.")
+         , WithStatus 500 ()
+         ]
+    )
 endpointDeskList ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Space.RequestDeskList ->
@@ -346,6 +359,7 @@ Route.Api.Routes
       , Route.Api.Space.routeRoleDelete = endpointRoleDelete
       , Route.Api.Space.routeDeskCreate = endpointDeskCreate
       , Route.Api.Space.routeDeskDelete = endpointDeskDelete
+      , Route.Api.Space.routeDeskEdit = endpointDeskEdit
       , Route.Api.Space.routeDeskList = endpointDeskList
       }
   , Route.Api.routeReservation =

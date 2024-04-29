@@ -200,6 +200,8 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskCreate") Route.S
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskCreate") Route.Space.ResponseDeskCreate instance ToSchema Route.Space.ResponseDeskCreate
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskDelete") Route.Space.RequestDeskDelete instance ToSchema Route.Space.RequestDeskDelete
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskDelete") Route.Space.ResponseDeskDelete instance ToSchema Route.Space.ResponseDeskDelete
+deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskEdit") Route.Space.RequestDeskEdit instance ToSchema Route.Space.RequestDeskEdit
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskEdit") Route.Space.ResponseDeskEdit instance ToSchema Route.Space.ResponseDeskEdit
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestDeskList") Route.Space.RequestDeskList instance ToSchema Route.Space.RequestDeskList
 deriving via A.CustomJSON (JSONSettings "Mk" "deskWithInfo") Route.Space.DeskWithInfo instance ToSchema Route.Space.DeskWithInfo
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseDeskList") Route.Space.ResponseDeskList instance ToSchema Route.Space.ResponseDeskList

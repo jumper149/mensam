@@ -290,6 +290,25 @@ data Routes route = Routes
               , WithStatus 404 (StaticText "Desk not found.")
               , WithStatus 500 ()
               ]
+  , routeDeskEdit ::
+      route
+        :- Summary "Edit Desk"
+          :> Description
+              "Update a desk.\n"
+          :> "desk"
+          :> "edit"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskEdit
+          :> UVerb
+              PATCH
+              '[JSON]
+              [ WithStatus 200 ResponseDeskEdit
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
+              , WithStatus 404 (StaticText "Desk not found.")
+              , WithStatus 500 ()
+              ]
   , routeDeskList ::
       route
         :- Summary "List Desks"
@@ -593,6 +612,25 @@ newtype ResponseDeskDelete = MkResponseDeskDelete
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseDeskDelete") ResponseDeskDelete
+
+type RequestDeskEdit :: Type
+data RequestDeskEdit = MkRequestDeskEdit
+  { requestDeskEditId :: IdentifierDesk
+  , requestDeskEditName :: Updatable NameDesk
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestDeskEdit") RequestDeskEdit
+
+type ResponseDeskEdit :: Type
+newtype ResponseDeskEdit = MkResponseDeskEdit
+  { responseDeskEditUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseDeskEdit") ResponseDeskEdit
 
 type RequestDeskList :: Type
 data RequestDeskList = MkRequestDeskList
