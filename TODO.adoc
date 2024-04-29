@@ -30,3 +30,7 @@
 * Simplify names.
   ** [ ] -> Change `SpaceRole` to `Role`
   ** [ ] -> Change `SpaceRolePermission` to `Permission`
+
+* Google calendar integration.
+
+* Microsoft Outlook calender integration.
