@@ -134,6 +134,26 @@ data Routes route = Routes
               , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
               , WithStatus 500 ()
               ]
+  , routeSpaceUserRole ::
+      route
+        :- Summary "Set User Role for Space"
+          :> Description
+              "Give a new role to a user of a space.\n\
+              \You need the `space-edit` permission for that space to redefine user roles.\n"
+          :> "space"
+          :> "user"
+          :> "role"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceUserRole
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseSpaceUserRole
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 500 ()
+              ]
   , routeSpaceView ::
       route
         :- Summary "View Space"
@@ -408,6 +428,26 @@ newtype ResponseSpaceKick = MkResponseSpaceKick
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceKick") ResponseSpaceKick
+
+type RequestSpaceUserRole :: Type
+data RequestSpaceUserRole = MkRequestSpaceUserRole
+  { requestSpaceUserRoleSpace :: IdentifierSpace
+  , requestSpaceUserRoleUser :: IdentifierUser
+  , requestSpaceUserRoleRole :: IdentifierSpaceRole
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceUserRole") RequestSpaceUserRole
+
+type ResponseSpaceUserRole :: Type
+newtype ResponseSpaceUserRole = MkResponseSpaceUserRole
+  { responseSpaceUserRoleUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceUserRole") ResponseSpaceUserRole
 
 type RequestSpaceView :: Type
 newtype RequestSpaceView = MkRequestSpaceView

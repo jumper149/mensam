@@ -12,6 +12,7 @@ import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
 import Mensam.Server.Database.Space
 
+import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
@@ -346,6 +347,34 @@ spaceUserRemove spaceIdentifier userIdentifier = do
     pure dbSpaceUser
   Selda.deleteOneFrom tableSpaceUser $ \row -> row Selda.! #dbSpaceUser_id Selda..== Selda.literal (dbSpaceUser_id dbSpaceUser)
   lift $ logInfo "Removed space-user successfully."
+  pure ()
+
+spaceUserRoleEdit ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  IdentifierUser ->
+  IdentifierSpaceRole ->
+  SeldaTransactionT m ()
+spaceUserRoleEdit spaceIdentifier userIdentifier roleIdentifier = do
+  lift $ logDebug $ "Setting new role " <> T.pack (show roleIdentifier) <> " for user " <> T.pack (show userIdentifier) <> " from space " <> T.pack (show spaceIdentifier) <> "."
+  lift $ logDebug "Ensuring that the role is of the right space."
+  roleBelongsToSpace <- do
+    dbSpaceRole <- Selda.queryOne $ do
+      roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole roleIdentifier
+    let spaceRoleSpaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpaceRole_space dbSpaceRole
+    pure $ spaceRoleSpaceId == spaceIdentifier
+  unless roleBelongsToSpace undefined -- TODO: Use an actual Exception type.
+  lift $ logDebug "Updating the role."
+  dbSpaceUser <- Selda.queryOne $ do
+    dbSpaceUser <- Selda.select tableSpaceUser
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
+    Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
+    pure dbSpaceUser
+  Selda.updateOne
+    tableSpaceUser
+    (#dbSpaceUser_id `Selda.is` dbSpaceUser_id dbSpaceUser)
+    (\rowSpaceUser -> rowSpaceUser `Selda.with` [#dbSpaceUser_role Selda.:= Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole roleIdentifier)])
+  lift $ logInfo "Set new role for space-user successfully."
   pure ()
 
 spaceUserIsOwner ::

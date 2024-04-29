@@ -7,6 +7,7 @@
   ** Add space users to `/space/view/` response.
   ** Only show email address when allowed in `/profile` response.
   ** Add `/space/kick` route.
+  ** Add `/space/user/role` route.
 
 == `0.6.0.1`
 

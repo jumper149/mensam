@@ -37,6 +37,7 @@ handler =
     , routeSpaceJoin = joinSpace
     , routeSpaceLeave = leaveSpace
     , routeSpaceKick = kickUser
+    , routeSpaceUserRole = setUserRole
     , routeSpaceList = listSpaces
     , routeSpaceView = viewSpace
     , routeRoleCreate = createRole
@@ -307,11 +308,44 @@ kickUser auth eitherRequest =
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \removed ->
             if removed
               then do
-                logInfo "Left space."
+                logInfo "Kicked from space."
                 respond $ WithStatus @200 MkResponseSpaceKick {responseSpaceKickUnit = ()}
               else do
                 logInfo "Failed to kick owner from space."
                 respond $ WithStatus @500 () -- TODO: Use HTTP 403
+
+setUserRole ::
+  ( MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseSpaceUserRole) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestSpaceUserRole ->
+  m (Union responses)
+setUserRole auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logDebug $ "Received request to change user role for space: " <> T.pack (show request)
+      seldaResult <- runSeldaTransactionT $ do
+        permissions <- spaceUserPermissions (requestSpaceUserRoleSpace request) (userAuthenticatedId authenticated)
+        if MkPermissionSpaceEditSpace `S.member` permissions
+          then
+            spaceUserRoleEdit
+              (requestSpaceUserRoleSpace request)
+              (requestSpaceUserRoleUser request)
+              (requestSpaceUserRoleRole request)
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace
+      handleSeldaException403InsufficientPermission
+        (Proxy @MkPermissionSpaceEditSpace)
+        seldaResult
+        $ \seldaResultAfter403 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+            logInfo "Set new role successfully."
+            respond $ WithStatus @200 MkResponseSpaceUserRole {responseSpaceUserRoleUnit = ()}
 
 viewSpace ::
   ( MonadLogger m
