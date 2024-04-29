@@ -8,6 +8,7 @@ import Element.Input
 import Html.Attributes
 import List.Extra
 import Mensam.Api.Profile
+import Mensam.Api.SpaceKick
 import Mensam.Api.SpaceUserRole
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
@@ -49,6 +50,9 @@ type PopupModel
         { user : Mensam.User.Identifier
         , role : Maybe Mensam.Space.Role.Identifier
         , selected : Maybe Int
+        }
+    | PopupKickUser
+        { user : Mensam.User.Identifier
         }
 
 
@@ -264,6 +268,29 @@ element model =
                               <|
                                 Element.text "Change Role"
                             , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                ]
+                                [ Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.red
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.padding 10
+                                    , Element.alignRight
+                                    ]
+                                    { onPress = Just <| MessagePure <| OpenDialogToKick popupModel.user
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Kick user"
+                                    }
+                                ]
+                            , Element.row
                                 [ Element.spacing 20
                                 , Element.width Element.fill
                                 , Element.height <| Element.px 25
@@ -402,7 +429,6 @@ element model =
                                 , Element.spacing 10
                                 , Element.alignBottom
                                 ]
-                                -- TODO: Kick
                                 [ Element.Input.button
                                     [ Element.Background.color Mensam.Element.Color.bright.yellow
                                     , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
@@ -447,6 +473,87 @@ element model =
                                     }
                                 ]
                             ]
+
+                Just (PopupKickUser popupModel) ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Kick User"
+                            , Element.row
+                                [ Element.spacing 20
+                                , Element.width Element.fill
+                                , Element.height <| Element.px 25
+                                ]
+                                [ Element.el [] <| Element.text "User:"
+                                , Element.el [] <|
+                                    Element.text <|
+                                        case List.Extra.find (\user -> user.user == popupModel.user) model.users of
+                                            Nothing ->
+                                                ""
+
+                                            Just user ->
+                                                case user.info of
+                                                    Nothing ->
+                                                        ""
+
+                                                    Just info ->
+                                                        Mensam.User.nameToString info.name
+                                ]
+                            , Element.paragraph
+                                []
+                                [ Element.text "Do you really want to remove this user from the space?"
+                                ]
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessagePure <| CloseDialogToKick
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Abort"
+                                    }
+                                , Element.Input.button
+                                    [ Element.Background.color Mensam.Element.Color.bright.red
+                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
+                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.width Element.fill
+                                    , Element.padding 10
+                                    ]
+                                    { onPress = Just <| MessageEffect <| SubmitKickUser { user = popupModel.user }
+                                    , label =
+                                        Element.el
+                                            [ Element.centerX
+                                            , Element.centerY
+                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                            ]
+                                        <|
+                                            Element.text "Kick user"
+                                    }
+                                ]
+                            ]
         }
 
 
@@ -483,6 +590,8 @@ type MessagePure
     | SetSelectedRole (Maybe Int)
     | ChooseNewRole Mensam.Space.Role.Identifier
     | CloseDialogToEditUser
+    | OpenDialogToKick Mensam.User.Identifier
+    | CloseDialogToKick
 
 
 updatePure : MessagePure -> Model -> Model
@@ -525,6 +634,9 @@ updatePure message model =
                 Just (PopupEditUser popupModel) ->
                     { model | popup = Just <| PopupEditUser { popupModel | selected = maybeN } }
 
+                Just (PopupKickUser popupModel) ->
+                    { model | popup = Just <| PopupKickUser popupModel }
+
         ChooseNewRole roleId ->
             case model.popup of
                 Nothing ->
@@ -533,7 +645,16 @@ updatePure message model =
                 Just (PopupEditUser popupModel) ->
                     { model | popup = Just <| PopupEditUser { popupModel | role = Just roleId } }
 
+                Just (PopupKickUser popupModel) ->
+                    { model | popup = Just <| PopupKickUser popupModel }
+
         CloseDialogToEditUser ->
+            { model | popup = Nothing }
+
+        OpenDialogToKick userId ->
+            { model | popup = Just <| PopupKickUser { user = userId } }
+
+        CloseDialogToKick ->
             { model | popup = Nothing }
 
 
@@ -542,6 +663,7 @@ type MessageEffect
     | Refresh
     | GetProfile Mensam.User.Identifier
     | SubmitEditUser { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }
+    | SubmitKickUser { user : Mensam.User.Identifier }
 
 
 spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
@@ -640,7 +762,7 @@ editUserRole jwt spaceId userId roleId =
                 Ok (Mensam.Api.SpaceUserRole.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Failed to request profile" <|
+                            Mensam.Error.message "Failed to edit role" <|
                                 Mensam.Error.message "Bad request body" <|
                                     Mensam.Error.message error <|
                                         Mensam.Error.undefined
@@ -648,11 +770,51 @@ editUserRole jwt spaceId userId roleId =
                 Ok (Mensam.Api.SpaceUserRole.ErrorAuth error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Failed to request profile" <|
+                            Mensam.Error.message "Failed to edit role" <|
                                 Mensam.Auth.Bearer.error error
 
                 Err error ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Failed to request profile" <|
+                            Mensam.Error.message "Failed to edit role" <|
+                                Mensam.Error.http error
+
+
+kickUser : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Cmd Message
+kickUser jwt spaceId userId =
+    Mensam.Api.SpaceKick.request
+        { jwt = jwt
+        , space = spaceId
+        , user = userId
+        }
+    <|
+        \response ->
+            case response of
+                Ok Mensam.Api.SpaceKick.Success ->
+                    Messages
+                        [ MessagePure CloseDialogToKick
+                        , MessageEffect Refresh
+                        ]
+
+                Ok (Mensam.Api.SpaceKick.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+
+                Ok (Mensam.Api.SpaceKick.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to kick user" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceKick.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to kick user" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to kick user" <|
                                 Mensam.Error.http error
