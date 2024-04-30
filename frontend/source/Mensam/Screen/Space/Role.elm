@@ -620,6 +620,7 @@ element model =
                                             }
                                 ]
                             ]
+        , closePopup = MessagePure ClosePopup
         }
 
 
@@ -638,6 +639,7 @@ type MessagePure
     | EditRolePermissionsStart
     | EditRoleSetPermission Mensam.Space.Role.Permission Bool
     | ResetNewRole
+    | ClosePopup
     | OpenDialogToDeleteRole
     | CloseDialogToDeleteRole
     | DeleteRoleSetSelected (Maybe Int)
@@ -791,6 +793,9 @@ updatePure message model =
                                         }
                     }
             }
+
+        ClosePopup ->
+            { model | popup = Nothing }
 
         OpenDialogToDeleteRole ->
             { model | popup = Just <| PopupDeleteRole { selectedN = Nothing, chosenFallback = Nothing } }

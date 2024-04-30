@@ -793,6 +793,7 @@ element model =
                                     }
                                 ]
                             ]
+        , closePopup = MessagePure ClosePopup
         }
 
 
@@ -1160,6 +1161,7 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
+    | ClosePopup
     | OpenDialogToLeave
     | CloseDialogToLeave
     | OpenDialogToCreate
@@ -1203,6 +1205,9 @@ updatePure message model =
 
         SetSelected selection ->
             { model | selected = selection }
+
+        ClosePopup ->
+            { model | popup = Nothing }
 
         OpenDialogToLeave ->
             { model | popup = Just <| PopupLeave }

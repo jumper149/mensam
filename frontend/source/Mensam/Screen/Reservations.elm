@@ -555,6 +555,7 @@ element model =
                                             }
                                         ]
                                     ]
+        , closePopup = MessagePure ClosePopup
         }
 
 

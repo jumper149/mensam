@@ -516,6 +516,7 @@ element model =
                                     }
                                 ]
                             ]
+        , closePopup = MessagePure CloseDialogToCreateRole
         }
 
 

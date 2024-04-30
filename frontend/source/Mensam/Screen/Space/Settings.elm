@@ -418,6 +418,7 @@ element model =
                                     }
                                 ]
                             ]
+        , closePopup = MessagePure CloseDialogToDeleteSpace
         }
 
 

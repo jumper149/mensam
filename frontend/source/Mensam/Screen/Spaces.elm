@@ -259,6 +259,7 @@ element model =
                                     ]
                                 ]
                    )
+        , closePopup = MessagePure CloseDialogToCreate
         }
 
 

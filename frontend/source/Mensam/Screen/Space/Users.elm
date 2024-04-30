@@ -554,6 +554,7 @@ element model =
                                     }
                                 ]
                             ]
+        , closePopup = MessagePure ClosePopup
         }
 
 
@@ -586,6 +587,7 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
+    | ClosePopup
     | ChooseUser Mensam.User.Identifier
     | SetSelectedRole (Maybe Int)
     | ChooseNewRole Mensam.Space.Role.Identifier
@@ -622,6 +624,9 @@ updatePure message model =
 
         SetSelected n ->
             { model | selected = n }
+
+        ClosePopup ->
+            { model | popup = Nothing }
 
         ChooseUser userId ->
             { model | popup = Just <| PopupEditUser { user = userId, role = Nothing, selected = Nothing } }

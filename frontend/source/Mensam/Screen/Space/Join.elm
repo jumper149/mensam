@@ -202,6 +202,7 @@ element model =
                     ]
                 ]
         , popup = Nothing
+        , closePopup = MessagePure ClosePopup
         }
 
 
@@ -214,6 +215,7 @@ type MessagePure
     = SetSpaceInfo Mensam.Space.SpaceView
     | SetRoleToJoin Mensam.Space.Role.Identifier
     | EnterSpacePasswordToJoin (Maybe String)
+    | ClosePopup
 
 
 updatePure : MessagePure -> Model -> Model
@@ -234,6 +236,9 @@ updatePure message model =
 
         EnterSpacePasswordToJoin password ->
             { model | password = password }
+
+        ClosePopup ->
+            model
 
 
 type MessageEffect
