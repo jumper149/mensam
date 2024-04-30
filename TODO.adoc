@@ -17,10 +17,12 @@
 
 * Frontend.
   ** [ ] Improve SVG time picker.
+    *** [ ] Add text based time.
   ** [ ] Terms and Conditions check during registration.
   ** [ ] Add loading screen to HTML wrapper for frontend.
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
   ** [ ] Handle confirmation links.
+  ** [ ] Add QR code generator for URLs to join space.
 
 * Pin timezone libraries.
   ** [ ] tzdata library for Haskell.
