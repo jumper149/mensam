@@ -39,6 +39,7 @@ element screen =
                         [ Element.row
                             [ Element.width Element.fill
                             , Element.height <| Element.px 30
+                            , Element.alignTop
                             , Element.Events.onClick screen.closePopup
                             ]
                             []
@@ -51,20 +52,22 @@ element screen =
                             [ Element.column
                                 [ Element.width Element.fill
                                 , Element.height Element.fill
+                                , Element.alignLeft
                                 , Element.Events.onClick screen.closePopup
                                 ]
                                 []
-                            , Element.el
+                            , Element.column
                                 [ Element.Background.color Mensam.Element.Color.bright.black
-                                , Element.centerX
-                                , Element.width <| Element.maximum 500 <| Element.fill
+                                , Element.width <| Element.minimum 300 <| Element.maximum 330 <| Element.fill
                                 , Element.height Element.fill
+                                , Element.centerX
                                 , Element.paddingXY 30 30
                                 ]
-                                popup
+                                [ popup ]
                             , Element.column
                                 [ Element.width Element.fill
                                 , Element.height Element.fill
+                                , Element.alignRight
                                 , Element.Events.onClick screen.closePopup
                                 ]
                                 []
@@ -72,6 +75,7 @@ element screen =
                         , Element.row
                             [ Element.width Element.fill
                             , Element.height Element.fill
+                            , Element.alignBottom
                             , Element.Events.onClick screen.closePopup
                             ]
                             []
