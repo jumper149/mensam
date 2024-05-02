@@ -175,8 +175,16 @@ spaceListVisible userIdentifier spaceOrder = do
   lift $ logDebug $ "Looking up spaces visible by user: " <> T.pack (show userIdentifier)
   dbSpaces <- Selda.query $ do
     dbSpace <- Selda.select tableSpace
+    dbSpaceUser <-
+      Selda.leftJoin
+        ( \dbSpaceUser ->
+            dbSpaceUser Selda.! #dbSpaceUser_space Selda..== dbSpace Selda.! #dbSpace_id
+              Selda..&& dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
+        )
+        (Selda.select tableSpaceUser)
     Selda.restrict $
       dbSpace Selda.! #dbSpace_visibility Selda..== Selda.literal MkDbSpaceVisibility_visible
+        Selda..|| Selda.not_ (Selda.isNull $ dbSpaceUser Selda.? #dbSpaceUser_id)
     let categorySelector = \case
           SpaceOrderCategoryId -> Selda.MkSomeCol $ dbSpace Selda.! #dbSpace_id
           SpaceOrderCategoryName -> Selda.MkSomeCol $ dbSpace Selda.! #dbSpace_name
