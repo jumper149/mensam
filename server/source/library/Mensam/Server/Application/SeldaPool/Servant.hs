@@ -3,6 +3,8 @@ module Mensam.Server.Application.SeldaPool.Servant where
 import Mensam.Server.Application.SeldaPool.Class
 
 import Control.Exception
+import Control.Monad.Logger.CallStack
+import Data.Text qualified as T
 import Servant
 
 handleSeldaException ::
@@ -28,7 +30,7 @@ handleSeldaException (Proxy :: Proxy e) response seldaResult handleResult =
 
 handleSeldaSomeException ::
   ( HasStatus r
-  , Applicative m
+  , MonadLogger m
   , IsMember r responses
   ) =>
   r ->
@@ -38,4 +40,6 @@ handleSeldaSomeException ::
 handleSeldaSomeException response seldaResult handleResult =
   case seldaResult of
     SeldaSuccess x -> handleResult x
-    SeldaFailure _ -> respond response
+    SeldaFailure err -> do
+      logWarn $ "Handled unexpected Selda failure: " <> T.pack (show err)
+      respond response

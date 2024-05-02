@@ -56,7 +56,7 @@ instance (MonadLogger m, MonadMask m, MonadUnliftIO m) => MonadSeldaPool (SeldaP
                       pure $ SeldaSuccess result
         catch transactionComputation $ \case
           (err :: SomeException) -> do
-            lift $ logWarn $ "SQLite transaction failed and the database was rolled back: " <> T.pack (show err)
+            lift $ logInfo $ "SQLite transaction failed and the database was rolled back: " <> T.pack (show err)
             pure $ SeldaFailure err
    where
     localSetAlreadyInTransaction :: SeldaPoolT m a -> SeldaPoolT m a
