@@ -9,7 +9,6 @@ import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
 import List.Extra
-import Mensam.Api.DeskCreate
 import Mensam.Api.DeskList
 import Mensam.Api.ReservationCreate
 import Mensam.Api.SpaceLeave
@@ -77,10 +76,7 @@ type alias Model =
 
 
 type PopupModel
-    = PopupCreate
-        { name : Mensam.Desk.Name
-        }
-    | PopupLeave
+    = PopupLeave
     | PopupReservation
         { desk :
             { id : Mensam.Desk.Identifier
@@ -278,7 +274,7 @@ element model =
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                         , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                        , Element.Events.onClick <| MessagePure OpenDialogToCreate
+                                        , Element.Events.onClick <| MessageEffect OpenPageToDesks
                                         ]
                                     <|
                                         Element.el
@@ -289,7 +285,7 @@ element model =
                                             , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                             ]
                                         <|
-                                            Element.text "New Desk"
+                                            Element.text "Desks"
                     ]
                 , Element.indexedTable
                     [ Element.width Element.fill
@@ -727,72 +723,6 @@ element model =
                                     }
                                 ]
                             ]
-
-                Just (PopupCreate create) ->
-                    Just <|
-                        Element.column
-                            [ Element.spacing 20
-                            , Element.width Element.fill
-                            , Element.height Element.fill
-                            ]
-                            [ Element.el
-                                [ Element.Font.size 30
-                                , Element.Font.hairline
-                                ]
-                              <|
-                                Element.text "Create Desk"
-                            , Element.Input.text
-                                [ onEnter <| MessageEffect SubmitCreate
-                                , Element.Font.color Mensam.Element.Color.dark.black
-                                ]
-                                { onChange = MessagePure << EnterDeskName << Mensam.Desk.MkName
-                                , text = Mensam.Desk.nameToString create.name
-                                , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
-                                , label = Element.Input.labelAbove [] <| Element.text "Name"
-                                }
-                            , Element.row
-                                [ Element.width Element.fill
-                                , Element.spacing 10
-                                , Element.alignBottom
-                                ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToCreate
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessageEffect <| SubmitCreate
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Submit"
-                                    }
-                                ]
-                            ]
         , closePopup = MessagePure ClosePopup
         }
 
@@ -1164,9 +1094,6 @@ type MessagePure
     | ClosePopup
     | OpenDialogToLeave
     | CloseDialogToLeave
-    | OpenDialogToCreate
-    | CloseDialogToCreate
-    | EnterDeskName Mensam.Desk.Name
     | ViewDetailed
         (Maybe
             { desk :
@@ -1214,27 +1141,6 @@ updatePure message model =
 
         CloseDialogToLeave ->
             { model | popup = Nothing }
-
-        OpenDialogToCreate ->
-            { model | popup = Just <| PopupCreate { name = Mensam.Desk.MkName "" } }
-
-        CloseDialogToCreate ->
-            { model | popup = Nothing }
-
-        EnterDeskName name ->
-            { model
-                | popup =
-                    case model.popup of
-                        Just (PopupCreate create) ->
-                            Just <|
-                                PopupCreate
-                                    { create
-                                        | name = name
-                                    }
-
-                        _ ->
-                            model.popup
-            }
 
         ViewDetailed Nothing ->
             { model | popup = Nothing }
@@ -1430,8 +1336,8 @@ type MessageEffect
     | OpenPageToJoin
     | OpenPageToUsers
     | OpenPageToSettings
+    | OpenPageToDesks
     | SubmitLeave
-    | SubmitCreate
     | SubmitReservation
 
 
@@ -1541,51 +1447,6 @@ deskList jwt model =
 
                 Err error ->
                     MessageEffect <| ReportError <| Mensam.Error.http error
-
-
-deskCreate :
-    { jwt : Mensam.Auth.Bearer.Jwt
-    , space : Mensam.Space.Identifier
-    , name : Mensam.Desk.Name
-    }
-    -> Cmd Message
-deskCreate req =
-    Mensam.Api.DeskCreate.request req <|
-        \result ->
-            case result of
-                Ok (Mensam.Api.DeskCreate.Success _) ->
-                    MessagePure CloseDialogToCreate
-
-                Ok (Mensam.Api.DeskCreate.ErrorInsufficientPermission permission) ->
-                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
-
-                Ok Mensam.Api.DeskCreate.ErrorSpaceNotFound ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Creating desk failed" <|
-                                Mensam.Error.message "Bad request body" <|
-                                    Mensam.Error.message "Space not found" <|
-                                        Mensam.Error.undefined
-
-                Ok (Mensam.Api.DeskCreate.ErrorBody error) ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Creating desk failed" <|
-                                Mensam.Error.message "Bad request body" <|
-                                    Mensam.Error.message error <|
-                                        Mensam.Error.undefined
-
-                Ok (Mensam.Api.DeskCreate.ErrorAuth error) ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Creating desk failed" <|
-                                Mensam.Auth.Bearer.error error
-
-                Err error ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Creating desk failed" <|
-                                Mensam.Error.http error
 
 
 reservationCreate : Mensam.Auth.Bearer.Jwt -> Model -> { desk : { id : Mensam.Desk.Identifier } } -> Cmd Message

@@ -1,5 +1,7 @@
 = Changelog
 
+* Frontend
+  ** Add new page to view, add, edit and delete roles.
 * API
   ** Add `/desk/edit` route.
 
