@@ -1,6 +1,7 @@
 module Mensam.API.Route.Api.Space where
 
 import Mensam.API.Aeson
+import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
@@ -94,7 +95,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceJoin
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (StaticText "Wrong space password.")
+              , WithStatus 403 (StaticTexts ["Role is inaccessible.", "Wrong role password."])
               , WithStatus 500 ()
               ]
   , routeSpaceLeave ::

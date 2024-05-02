@@ -1,6 +1,7 @@
 module Mensam.API.Route.Api.Reservation where
 
 import Mensam.API.Aeson
+import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space

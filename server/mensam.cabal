@@ -112,6 +112,9 @@ library
   exposed-modules:
     , Mensam.API.API
     , Mensam.API.Aeson
+    , Mensam.API.Aeson.StaticText
+    , Mensam.API.Aeson.StaticText.Internal
+    , Mensam.API.Aeson.StaticText.Internal.Union
     , Mensam.API.Data.Desk
     , Mensam.API.Data.Reservation
     , Mensam.API.Data.Space

@@ -1,6 +1,7 @@
 module Mensam.Server.Server.Route.Api.Space where
 
 import Mensam.API.Aeson
+import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
 import Mensam.API.Data.User
@@ -187,7 +188,7 @@ joinSpace ::
   , IsMember (WithStatus 200 ResponseSpaceJoin) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (StaticText "Wrong space password.")) responses
+  , IsMember (WithStatus 403 (StaticTexts ["Role is inaccessible.", "Wrong role password."])) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -215,9 +216,8 @@ joinSpace auth eitherRequest =
         spaceRole <- spaceRoleGet spaceRoleIdentifier
         case spaceRoleAccessibility spaceRole of
           MkAccessibilitySpaceRoleInaccessible -> do
-            let msg :: T.Text = "Space-role is inaccessible. Cannot join."
-            lift $ logWarn msg
-            throwM $ Selda.SqlError $ show msg
+            lift $ logInfo "Space-role is inaccessible. Cannot join."
+            throwM MkSqlErrorMensamSpaceRoleInaccessible
           MkAccessibilitySpaceRoleJoinableWithPassword -> do
             lift $ logDebug "Space-role is joinable with password. Checking password."
             spaceRolePasswordCheck' spaceRoleIdentifier (mkPassword <$> requestSpaceJoinPassword request)
@@ -225,13 +225,18 @@ joinSpace auth eitherRequest =
             lift $ logDebug "Space-role is joinable. Joining."
         spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
       handleSeldaException
-        (Proxy @SqlErrorMensamSpaceRolePasswordCheckFail)
-        (WithStatus @403 $ MkStaticText @"Wrong space password.")
+        (Proxy @SqlErrorMensamSpaceRoleInaccessible)
+        (WithStatus @403 $ specificStaticText @["Role is inaccessible.", "Wrong role password."] $ MkStaticText @"Role is inaccessible.")
         seldaResult
         $ \seldaResultAfter403 ->
-          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
-            logInfo "Joined space."
-            respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
+          handleSeldaException
+            (Proxy @SqlErrorMensamSpaceRolePasswordCheckFail)
+            (WithStatus @403 $ specificStaticText @["Role is inaccessible.", "Wrong role password."] $ MkStaticText @"Wrong role password.")
+            seldaResultAfter403
+            $ \seldaResultAfter403' ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403' $ \() -> do
+                logInfo "Joined space."
+                respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
 
 leaveSpace ::
   ( MonadLogger m

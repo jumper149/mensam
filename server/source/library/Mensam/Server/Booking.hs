@@ -555,6 +555,11 @@ data SqlErrorMensamSpaceRolePasswordCheckFail = MkSqlErrorMensamSpaceRolePasswor
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
 
+type SqlErrorMensamSpaceRoleInaccessible :: Type
+data SqlErrorMensamSpaceRoleInaccessible = MkSqlErrorMensamSpaceRoleInaccessible
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
+
 spaceRoleNameSet ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpaceRole ->

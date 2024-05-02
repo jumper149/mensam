@@ -3,6 +3,7 @@
 module Mensam.Server.OpenApi where
 
 import Mensam.API.Aeson
+import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
@@ -82,6 +83,27 @@ instance KnownSymbol text => ToSchema (StaticText text) where
   declareNamedSchema = pure . NamedSchema (Just $ "StaticText: " <> text) . paramSchemaToSchema
    where
     text = T.pack $ show $ A.toJSON $ MkStaticText @text
+
+instance ToParamSchema (StaticTexts '[]) where
+  toParamSchema Proxy =
+    mempty
+      & type_ ?~ OpenApiString
+      & enum_ ?~ []
+instance (KnownSymbol text, ToParamSchema (StaticTexts texts)) => ToParamSchema (StaticTexts (text : texts)) where
+  toParamSchema Proxy =
+    recParamSchema
+      & enum_ .~ ((A.toJSON (MkStaticText @text) :) <$> (recParamSchema ^. enum_))
+   where
+    recParamSchema = toParamSchema (Proxy @(StaticTexts texts))
+instance ToSchema (StaticTexts '[]) where
+  declareNamedSchema = pure . NamedSchema (Just "StaticTexts: ") . paramSchemaToSchema
+instance (KnownSymbol text, ToSchema (StaticTexts texts), Typeable texts) => ToSchema (StaticTexts (text : texts)) where
+  declareNamedSchema Proxy = do
+    namedSchema <- declareNamedSchema (Proxy @(StaticTexts texts))
+    pure $
+      namedSchema
+        & enum_ .~ ((A.toJSON (MkStaticText @text) :) <$> (namedSchema ^. enum_))
+        & name .~ ((<> (T.pack $ show $ A.toJSON $ MkStaticText @text)) <$> (namedSchema ^. name))
 
 instance ToSchema Route.User.Jwt where
   declareNamedSchema Proxy =

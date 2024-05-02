@@ -21,6 +21,7 @@ type alias Request =
 
 type Response
     = Success
+    | ErrorInaccessible
     | ErrorWrongPassword
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
@@ -79,7 +80,10 @@ responseResult httpResponse =
 
                 403 ->
                     case Decode.decodeString decodeBody403 body of
-                        Ok () ->
+                        Ok MkBody403RoleIsInaccessible ->
+                            Ok <| ErrorInaccessible
+
+                        Ok MkBody403WrongRolePassword ->
                             Ok <| ErrorWrongPassword
 
                         Err err ->
@@ -133,14 +137,22 @@ decodeBody400 =
     Decode.field "error" Decode.string
 
 
-decodeBody403 : Decode.Decoder ()
+type Body403
+    = MkBody403RoleIsInaccessible
+    | MkBody403WrongRolePassword
+
+
+decodeBody403 : Decode.Decoder Body403
 decodeBody403 =
     Decode.string
         |> Decode.andThen
             (\string ->
                 case string of
-                    "Wrong space password." ->
-                        Decode.succeed ()
+                    "Role is inaccessible." ->
+                        Decode.succeed MkBody403RoleIsInaccessible
+
+                    "Wrong role password." ->
+                        Decode.succeed MkBody403WrongRolePassword
 
                     _ ->
                         Decode.fail <| "Unexpected HTTP 403 message: " ++ string

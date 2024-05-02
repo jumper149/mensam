@@ -1,6 +1,7 @@
 module Mensam.API.Data.User where
 
 import Mensam.API.Aeson
+import Mensam.API.Aeson.StaticText
 
 import Data.Aeson qualified as A
 import Data.Int

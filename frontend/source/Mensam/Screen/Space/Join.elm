@@ -298,6 +298,14 @@ spaceJoin jwt spaceId roleId password =
                 Ok Mensam.Api.SpaceJoin.Success ->
                     MessageEffect JoinedSuccessfully
 
+                Ok Mensam.Api.SpaceJoin.ErrorInaccessible ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to join" <|
+                                Mensam.Error.message "Bad request" <|
+                                    Mensam.Error.message "Inaccessible" <|
+                                        Mensam.Error.undefined
+
                 Ok Mensam.Api.SpaceJoin.ErrorWrongPassword ->
                     MessageEffect <|
                         ReportError <|

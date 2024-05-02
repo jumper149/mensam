@@ -1,5 +1,11 @@
 = Changelog
 
+* API
+  ** Add support for multiple enumerable static messages on HTTP errors affecting some routes.
+    *** `/space/join`
+
+== `0.6.2.0`
+
 * Frontend
   ** Add new page to view, add, edit and delete roles.
 * API

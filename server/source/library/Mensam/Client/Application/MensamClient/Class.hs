@@ -1,6 +1,7 @@
 module Mensam.Client.Application.MensamClient.Class where
 
 import Mensam.API.Aeson
+import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Space
 import Mensam.API.Data.User
 import Mensam.API.Route.Api qualified as Route.Api
@@ -144,7 +145,7 @@ endpointSpaceJoin ::
         '[ WithStatus 200 Route.Api.Space.ResponseSpaceJoin
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (StaticText "Wrong space password.")
+         , WithStatus 403 (StaticTexts ["Role is inaccessible.", "Wrong role password."])
          , WithStatus 500 ()
          ]
     )
