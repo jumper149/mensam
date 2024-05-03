@@ -37,14 +37,9 @@ jobs:
     - name: "Set deployment"
       run: echo "\"${{ matrix.deployment }}\"" > final/deployment.json
     - name: "Check"
-      run: nix build -L ".#${{ matrix.check.attr }}"
+      run: nix build -L ".#${{ matrix.attr }}"
     strategy:
-      matrix:
-        check: ${{fromJSON(needs.check-matrix.outputs.matrix)}}
-        deployment:
-          [ development
-          , nixpublic
-          ]
+      matrix: ${{fromJSON(needs.check-matrix.outputs.matrix)}}
   # TODO: Run elm-review using `nix flake check` instead.
   manual-elm-review:
     name: "Lint Elm code"

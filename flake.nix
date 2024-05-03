@@ -92,8 +92,21 @@
 
     githubActions =
       with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-      nix-github-actions.lib.mkGithubMatrix {
-        checks = self.checks;
+      let
+        generated =
+          nix-github-actions.lib.mkGithubMatrix {
+            checks = self.checks;
+          };
+      in {
+        matrix = {
+          include =
+            let
+              addDeploymentDimension = deployment: matrix:
+                matrix // {
+                  deployment = deployment;
+                };
+            in (map (addDeploymentDimension "development") generated.matrix.include) ++ (map (addDeploymentDimension "nixpublic") generated.matrix.include);
+        };
       };
 
   };
