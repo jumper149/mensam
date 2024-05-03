@@ -28,8 +28,32 @@ jobs:
           , subflakes.server.packages.x86_64-linux.default
           , subflakes.static.packages.x86_64-linux.default
           ]
+  check-matrix:
+    name: "Matrix to Check Flake"
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - name: "Set up GitHub Actions"
+      uses: actions/checkout@v4.1.1
+    - name: "Set up Nix"
+      uses: cachix/install-nix-action@v26
+    - name: "Set up Cachix"
+      uses: cachix/cachix-action@v14
+      with:
+        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+        name: jumper149-mensam
+    - name: "Set deployment"
+      run: echo "\"development\"" > final/deployment.json
+    - id: set-matrix
+      name: "Generate Nix Matrix"
+      run: |
+        set -Eeu
+        matrix="$(nix eval --json '.#githubActions.matrix')"
+        echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
   check:
     name: "Check Flake"
+    needs: check-matrix
     runs-on: ubuntu-latest
     steps:
     - name: "Set up GitHub Actions"
@@ -42,14 +66,11 @@ jobs:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         name: jumper149-mensam
     - name: "Set deployment"
-      run: echo "\"${{ matrix.deployment }}\"" > final/deployment.json
+      run: echo "\"development\"" > final/deployment.json
     - name: "Check"
-      run: nix flake check --keep-going --print-build-logs
+      run: nix build -L ".#${{ matrix.attr }}"
     strategy:
-      matrix:
-        deployment:
-          [ development
-          ]
+      matrix: ${{fromJSON(needs.check-matrix.outputs.matrix)}}
   # TODO: Run elm-review using `nix flake check` instead.
   manual-elm-review:
     name: "Lint Elm code"
