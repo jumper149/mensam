@@ -37,7 +37,7 @@ jobs:
     - name: "Set deployment"
       run: echo "\"${{ matrix.deployment }}\"" > final/deployment.json
     - name: "Check"
-      run: nix build -L ".#${{ matrix.attr }}"
+      run: nix build ".#${{ matrix.attr }}" --print-build-logs
     strategy:
       fail-fast: false
       matrix: ${{fromJSON(needs.check-matrix.outputs.matrix)}}
