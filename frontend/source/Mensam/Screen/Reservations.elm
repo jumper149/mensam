@@ -72,20 +72,33 @@ init value =
     let
         initialDateModel =
             let
-                timestamp =
+                timestampNow =
                     Mensam.Time.fromPosix value.time.zone value.time.now
+
+                timestampOneWeekFromNow =
+                    let
+                        weekInMillis =
+                            1000 * 60 * 60 * 24 * 7
+                    in
+                    Mensam.Time.fromPosix value.time.zone <| Time.millisToPosix <| Time.posixToMillis value.time.now + weekInMillis
+
+                timestampToDateModel =
+                    \timestamp ->
+                        Mensam.Widget.Date.MkModel
+                            { year = (Mensam.Time.unDate (Mensam.Time.unTimestamp timestamp).date).year
+                            , month = (Mensam.Time.unDate (Mensam.Time.unTimestamp timestamp).date).month
+                            , selected = (Mensam.Time.unTimestamp timestamp).date
+                            }
             in
-            Mensam.Widget.Date.MkModel
-                { year = (Mensam.Time.unDate (Mensam.Time.unTimestamp timestamp).date).year
-                , month = (Mensam.Time.unDate (Mensam.Time.unTimestamp timestamp).date).month
-                , selected = (Mensam.Time.unTimestamp timestamp).date
-                }
+            { begin = timestampToDateModel timestampNow
+            , end = timestampToDateModel timestampOneWeekFromNow
+            }
     in
     { reservations = []
     , selected = Nothing
     , timezone = value.time.zone
-    , modelDateBegin = initialDateModel
-    , modelDateEnd = initialDateModel
+    , modelDateBegin = initialDateModel.begin
+    , modelDateEnd = initialDateModel.end
     , popup = Nothing
     }
 
