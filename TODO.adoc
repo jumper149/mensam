@@ -1,8 +1,6 @@
 = TODO
 
 * Continuous integration.
-  ** [x] Run weeder as part of `nix flake check`.
-    *** Thank you: https://github.com/NorfairKing/weeder-nix
   ** [ ] Run elm-review as part of `nix flake check`.
     *** https://github.com/jfmengels/elm-review/issues/157
   ** [ ] Use `nixosConfigurations` to test the `nixosModule`.
@@ -13,8 +11,11 @@
 
 * Backend.
   ** [ ] Send email on successful reservations.
-  ** [x] `/space/view` route should return speficific error, when the requesting user is not a member of the space.
   ** [ ] `/space/view` route should return 404 when there is no such space.
+  ** [ ] File uploads.
+    *** [ ] Profile pictures.
+    *** [ ] Space pictures.
+    *** [ ] Desk pictures.
 
 * Frontend.
   ** [ ] Improve SVG time picker.
@@ -24,6 +25,11 @@
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
   ** [ ] Handle confirmation links.
   ** [ ] Add QR code generator for URLs to join space.
+  ** [ ] Light/Dark mode.
+  ** [ ] Dashboard page.
+    *** [ ] Your spaces (with membership).
+    *** [ ] Reservations preview.
+  ** [ ] Factor out duplicate code (buttons, styling and so on).
 
 * Pin timezone libraries.
   ** [ ] tzdata library for Haskell.
