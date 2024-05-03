@@ -39,6 +39,7 @@ jobs:
     - name: "Check"
       run: nix build -L ".#${{ matrix.attr }}"
     strategy:
+      fail-fast: false
       matrix: ${{fromJSON(needs.check-matrix.outputs.matrix)}}
   # TODO: Run elm-review using `nix flake check` instead.
   manual-elm-review:
