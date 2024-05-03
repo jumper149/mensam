@@ -42,6 +42,10 @@
       ];
     };
 
+  checks.x86_64-linux.package = packages.x86_64-linux.default;
+
+  checks.x86_64-linux.devShell = devShells.x86_64-linux.default;
+
   checks.x86_64-linux.elm-format =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     stdenv.mkDerivation {

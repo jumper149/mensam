@@ -74,35 +74,26 @@
         shellHook = fullShellHook;
       };
 
-    checks.x86_64-linux.subflakes =
+    checks.x86_64-linux =
       with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-      pkgs.mkShell {
-        packages =
-          let
-            hasChecks = name: value: __elem "checks" (__attrNames value) && __elem "x86_64-linux" (__attrNames value.checks);
-            checkableSubflakes = lib.filterAttrs hasChecks self.subflakes;
-            checksBySubflake = __mapAttrs (name: value: value.checks.x86_64-linux) checkableSubflakes;
-            checks = __foldl' (a: b: a ++ b) [ ] (map __attrValues (__attrValues checksBySubflake));
-          in checks;
-      };
+      let
+        hasChecks = name: value: __elem "checks" (__attrNames value) && __elem "x86_64-linux" (__attrNames value.checks);
+        checkableSubflakes = lib.filterAttrs hasChecks self.subflakes;
+        checksBySubflake =
+          __mapAttrs (nameSubflake: valueSubflake:
+            lib.mapAttrs' (nameCheck: valueCheck:
+              lib.nameValuePair
+                ("subflake" + "-" + nameSubflake + "-" + nameCheck)
+                valueCheck
+            ) valueSubflake.checks.x86_64-linux
+          ) checkableSubflakes;
+        checks = __foldl' (a: b: a // b) { } (__attrValues checksBySubflake);
+      in checks;
 
     githubActions =
       with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
       nix-github-actions.lib.mkGithubMatrix {
-        checks =
-          let
-            hasChecks = name: value: __elem "checks" (__attrNames value) && __elem "x86_64-linux" (__attrNames value.checks);
-            checkableSubflakes = lib.filterAttrs hasChecks self.subflakes;
-            checksBySubflake =
-              __mapAttrs (nameSubflake: valueSubflake:
-                lib.mapAttrs' (nameCheck: valueCheck:
-                  lib.nameValuePair
-                    (nameSubflake + "-" + nameCheck)
-                    valueCheck
-                ) valueSubflake.checks.x86_64-linux
-              ) checkableSubflakes;
-            checks = __foldl' (a: b: a // b) { } (__attrValues checksBySubflake);
-          in { x86_64-linux = checks; };
+        checks = self.checks;
       };
 
   };

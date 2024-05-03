@@ -1,6 +1,8 @@
 { self, nixpkgs, weeder-nix }: rec {
 
-  packages.x86_64-linux.default =
+  packages.x86_64-linux.default = packages.x86_64-linux.staticExecutables;
+
+  packages.x86_64-linux.staticExecutables =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default overlays.default ]; };
     haskell.lib.justStaticExecutables packages.x86_64-linux.package;
 
@@ -28,6 +30,12 @@
       ];
       withHoogle = true;
     };
+
+  checks.x86_64-linux.staticExecutables = packages.x86_64-linux.staticExecutables;
+
+  checks.x86_64-linux.package = packages.x86_64-linux.package;
+
+  checks.x86_64-linux.devShell = devShells.x86_64-linux.default;
 
   checks.x86_64-linux.fourmolu =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default overlays.default ]; };

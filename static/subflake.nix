@@ -64,4 +64,10 @@
       ];
     };
 
+  checks.x86_64-linux.package = packages.x86_64-linux.default;
+
+  checks.x86_64-linux.fonts = packages.x86_64-linux.fonts;
+
+  checks.x86_64-linux.devShell = devShells.x86_64-linux.default;
+
 }

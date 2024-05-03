@@ -59,6 +59,8 @@
     finalOverlay = overlays.default;
   };
 
+  checks.x86_64-linux.packageDefault = packages.x86_64-linux.default;
+
   checks.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     stdenv.mkDerivation {
