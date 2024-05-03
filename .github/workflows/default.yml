@@ -1,33 +1,4 @@
 jobs:
-  build:
-    name: "Build"
-    runs-on: ubuntu-latest
-    steps:
-    - name: "Set up GitHub Actions"
-      uses: actions/checkout@v4.1.1
-    - name: "Set up Nix"
-      uses: cachix/install-nix-action@v26
-    - name: "Set up Cachix"
-      uses: cachix/cachix-action@v14
-      with:
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        name: jumper149-mensam
-    - name: "Set deployment"
-      run: echo "\"${{ matrix.deployment }}\"" > final/deployment.json
-    - name: "Build"
-      run: nix build --print-build-logs .\#${{ matrix.output }}
-    strategy:
-      matrix:
-        deployment:
-          [ development
-          , nixpublic
-          ]
-        output:
-          [ packages.x86_64-linux.default
-          , devShells.x86_64-linux.default
-          , subflakes.server.packages.x86_64-linux.default
-          , subflakes.static.packages.x86_64-linux.default
-          ]
   check-matrix:
     name: "Matrix to Check Flake"
     runs-on: ubuntu-latest
@@ -43,8 +14,6 @@ jobs:
       with:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         name: jumper149-mensam
-    - name: "Set deployment"
-      run: echo "\"development\"" > final/deployment.json
     - id: set-matrix
       name: "Generate Nix Matrix"
       run: |
@@ -66,11 +35,16 @@ jobs:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         name: jumper149-mensam
     - name: "Set deployment"
-      run: echo "\"development\"" > final/deployment.json
+      run: echo "\"${{ matrix.deployment }}\"" > final/deployment.json
     - name: "Check"
-      run: nix build -L ".#${{ matrix.attr }}"
+      run: nix build -L ".#${{ matrix.check.attr }}"
     strategy:
-      matrix: ${{fromJSON(needs.check-matrix.outputs.matrix)}}
+      matrix:
+        check: ${{fromJSON(needs.check-matrix.outputs.matrix)}}
+        deployment:
+          [ development
+          , nixpublic
+          ]
   # TODO: Run elm-review using `nix flake check` instead.
   manual-elm-review:
     name: "Lint Elm code"
