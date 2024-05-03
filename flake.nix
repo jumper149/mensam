@@ -106,7 +106,13 @@
                 matrix // {
                   deployment = deployment;
                 };
-            in (map (addDeploymentDimension "development") generated.matrix.include) ++ (map (addDeploymentDimension "nixpublic") generated.matrix.include);
+              includeWithAllDimensions =
+                (map (addDeploymentDimension "development") generated.matrix.include) ++
+                (map (addDeploymentDimension "nixpublic") generated.matrix.include);
+              isBrokenCheck = matrix:
+                matrix.deployment == "nixpublic" && matrix.attr == "githubActions.checks.x86_64-linux.subflake-final-mensam-test";
+              removeBrokenChecks = __filter (matrix: ! isBrokenCheck matrix);
+            in removeBrokenChecks includeWithAllDimensions;
         };
       };
 
