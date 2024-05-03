@@ -98,6 +98,7 @@
             checks = self.checks;
           };
       in {
+        checks = generated.checks;
         matrix = {
           include =
             let
