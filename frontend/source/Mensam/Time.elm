@@ -60,6 +60,11 @@ unDay (MkDay n) =
     n
 
 
+compareDay : Day -> Day -> Order
+compareDay (MkDay x) (MkDay y) =
+    compare x y
+
+
 type Month
     = MkMonth Time.Month
 
@@ -67,6 +72,11 @@ type Month
 unMonth : Month -> Time.Month
 unMonth (MkMonth n) =
     n
+
+
+compareMonth : Month -> Month -> Order
+compareMonth x y =
+    compare (monthToNumber x) (monthToNumber y)
 
 
 type Year
@@ -78,6 +88,11 @@ unYear (MkYear n) =
     n
 
 
+compareYear : Year -> Year -> Order
+compareYear (MkYear x) (MkYear y) =
+    compare x y
+
+
 type Date
     = MkDate { year : Year, month : Month, day : Day }
 
@@ -85,6 +100,35 @@ type Date
 unDate : Date -> { year : Year, month : Month, day : Day }
 unDate (MkDate x) =
     x
+
+
+compareDate : Date -> Date -> Order
+compareDate (MkDate x) (MkDate y) =
+    case compareYear x.year y.year of
+        LT ->
+            LT
+
+        EQ ->
+            case compareMonth x.month y.month of
+                LT ->
+                    LT
+
+                EQ ->
+                    case compareDay x.day y.day of
+                        LT ->
+                            LT
+
+                        EQ ->
+                            EQ
+
+                        GT ->
+                            GT
+
+                GT ->
+                    GT
+
+        GT ->
+            GT
 
 
 type Hour
@@ -96,6 +140,11 @@ unHour (MkHour n) =
     n
 
 
+compareHour : Hour -> Hour -> Order
+compareHour (MkHour x) (MkHour y) =
+    compare x y
+
+
 type Minute
     = MkMinute Int
 
@@ -103,6 +152,11 @@ type Minute
 unMinute : Minute -> Int
 unMinute (MkMinute n) =
     n
+
+
+compareMinute : Minute -> Minute -> Order
+compareMinute (MkMinute x) (MkMinute y) =
+    compare x y
 
 
 type Second
@@ -114,6 +168,11 @@ unSecond (MkSecond n) =
     n
 
 
+compareSecond : Second -> Second -> Order
+compareSecond (MkSecond x) (MkSecond y) =
+    compare x y
+
+
 type Time
     = MkTime { hour : Hour, minute : Minute, second : Second }
 
@@ -123,6 +182,35 @@ unTime (MkTime x) =
     x
 
 
+compareTime : Time -> Time -> Order
+compareTime (MkTime x) (MkTime y) =
+    case compareHour x.hour y.hour of
+        LT ->
+            LT
+
+        EQ ->
+            case compareMinute x.minute x.minute of
+                LT ->
+                    LT
+
+                EQ ->
+                    case compareSecond x.second x.second of
+                        LT ->
+                            LT
+
+                        EQ ->
+                            EQ
+
+                        GT ->
+                            GT
+
+                GT ->
+                    GT
+
+        GT ->
+            GT
+
+
 type Timestamp
     = MkTimestamp { date : Date, time : Time }
 
@@ -130,6 +218,27 @@ type Timestamp
 unTimestamp : Timestamp -> { date : Date, time : Time }
 unTimestamp (MkTimestamp x) =
     x
+
+
+compareTimestamp : Timestamp -> Timestamp -> Order
+compareTimestamp (MkTimestamp x) (MkTimestamp y) =
+    case compareDate x.date y.date of
+        LT ->
+            LT
+
+        EQ ->
+            case compareTime x.time x.time of
+                LT ->
+                    LT
+
+                EQ ->
+                    EQ
+
+                GT ->
+                    GT
+
+        GT ->
+            GT
 
 
 fromPosix : Time.Zone -> Time.Posix -> Timestamp

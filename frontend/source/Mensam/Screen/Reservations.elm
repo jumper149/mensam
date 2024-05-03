@@ -609,6 +609,8 @@ type MessagePure
     | ViewDateEndPicker
     | MessageDateBegin Mensam.Widget.Date.Message
     | MessageDateEnd Mensam.Widget.Date.Message
+    | FixLowDateBoundDegenerate
+    | FixHighDateBoundDegenerate
 
 
 updatePure : MessagePure -> Model -> Model
@@ -643,18 +645,19 @@ updatePure message model =
                 (Mensam.Widget.Date.MkModel modelDate) =
                     model.modelDateBegin
             in
-            { model
-                | modelDateBegin =
-                    Mensam.Widget.Date.MkModel
-                        { modelDate
-                            | selected =
-                                Mensam.Time.MkDate
-                                    { year = modelDate.year
-                                    , month = modelDate.month
-                                    , day = day
-                                    }
-                        }
-            }
+            updatePure FixHighDateBoundDegenerate <|
+                { model
+                    | modelDateBegin =
+                        Mensam.Widget.Date.MkModel
+                            { modelDate
+                                | selected =
+                                    Mensam.Time.MkDate
+                                        { year = modelDate.year
+                                        , month = modelDate.month
+                                        , day = day
+                                        }
+                            }
+                }
 
         MessageDateEnd Mensam.Widget.Date.NextMonth ->
             { model | modelDateEnd = Mensam.Widget.Date.updateDateNextMonth model.modelDateEnd }
@@ -667,18 +670,71 @@ updatePure message model =
                 (Mensam.Widget.Date.MkModel modelDate) =
                     model.modelDateEnd
             in
-            { model
-                | modelDateEnd =
-                    Mensam.Widget.Date.MkModel
-                        { modelDate
-                            | selected =
-                                Mensam.Time.MkDate
-                                    { year = modelDate.year
-                                    , month = modelDate.month
-                                    , day = day
-                                    }
-                        }
-            }
+            updatePure FixLowDateBoundDegenerate <|
+                { model
+                    | modelDateEnd =
+                        Mensam.Widget.Date.MkModel
+                            { modelDate
+                                | selected =
+                                    Mensam.Time.MkDate
+                                        { year = modelDate.year
+                                        , month = modelDate.month
+                                        , day = day
+                                        }
+                            }
+                }
+
+        FixLowDateBoundDegenerate ->
+            case Mensam.Time.compareDate (Mensam.Widget.Date.unModel model.modelDateBegin).selected (Mensam.Widget.Date.unModel model.modelDateEnd).selected of
+                LT ->
+                    model
+
+                EQ ->
+                    model
+
+                GT ->
+                    let
+                        (Mensam.Widget.Date.MkModel modelDateBegin) =
+                            model.modelDateBegin
+
+                        (Mensam.Widget.Date.MkModel modelDateEnd) =
+                            model.modelDateEnd
+                    in
+                    { model
+                        | modelDateBegin =
+                            Mensam.Widget.Date.MkModel
+                                { modelDateBegin
+                                    | year = (Mensam.Time.unDate modelDateEnd.selected).year
+                                    , month = (Mensam.Time.unDate modelDateEnd.selected).month
+                                    , selected = modelDateEnd.selected
+                                }
+                    }
+
+        FixHighDateBoundDegenerate ->
+            case Mensam.Time.compareDate (Mensam.Widget.Date.unModel model.modelDateBegin).selected (Mensam.Widget.Date.unModel model.modelDateEnd).selected of
+                LT ->
+                    model
+
+                EQ ->
+                    model
+
+                GT ->
+                    let
+                        (Mensam.Widget.Date.MkModel modelDateBegin) =
+                            model.modelDateBegin
+
+                        (Mensam.Widget.Date.MkModel modelDateEnd) =
+                            model.modelDateEnd
+                    in
+                    { model
+                        | modelDateEnd =
+                            Mensam.Widget.Date.MkModel
+                                { modelDateEnd
+                                    | year = (Mensam.Time.unDate modelDateBegin.selected).year
+                                    , month = (Mensam.Time.unDate modelDateBegin.selected).month
+                                    , selected = modelDateBegin.selected
+                                }
+                    }
 
 
 type MessageEffect
