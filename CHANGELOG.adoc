@@ -3,6 +3,7 @@
 * API
   ** Add support for multiple enumerable static messages on HTTP errors affecting some routes.
     *** `/space/join`
+  ** Add optional `member` field to request body route of `/space/list`.
 
 == `0.6.2.0`
 

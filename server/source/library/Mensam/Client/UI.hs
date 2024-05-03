@@ -112,7 +112,7 @@ handleEvent chan = \case
                 mensamCall $
                   endpointSpaceList
                     (DataJWTWithSession jwt)
-                    (Route.Space.MkRequestSpaceList $ MkOrderByCategories [])
+                    (Route.Space.MkRequestSpaceList (MkOrderByCategories []) Nothing)
             case result of
               Right (Z (I (WithStatus @200 (Route.Space.MkResponseSpaceList xs)))) -> do
                 let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial

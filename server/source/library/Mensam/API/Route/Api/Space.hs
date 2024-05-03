@@ -488,8 +488,9 @@ newtype ResponseSpaceView = MkResponseSpaceView
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") ResponseSpaceView
 
 type RequestSpaceList :: Type
-newtype RequestSpaceList = MkRequestSpaceList
+data RequestSpaceList = MkRequestSpaceList
   { requestSpaceListOrder :: OrderByCategories SpaceOrderCategory
+  , requestSpaceListMember :: Maybe Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

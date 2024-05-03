@@ -14,6 +14,7 @@ import Url.Builder
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
     , order : List { category : String, order : String }
+    , member : Maybe Bool
     }
 
 
@@ -103,6 +104,14 @@ encodeBody body =
                         ]
                 )
                 body.order
+          )
+        , ( "member"
+          , case body.member of
+                Nothing ->
+                    Encode.null
+
+                Just bool ->
+                    Encode.bool bool
           )
         ]
 

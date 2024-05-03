@@ -170,8 +170,10 @@ spaceListVisible ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   OrderByCategories SpaceOrderCategory ->
+  -- | Predicate whether the user has to be a member of the space.
+  Maybe Bool ->
   SeldaTransactionT m [Space]
-spaceListVisible userIdentifier spaceOrder = do
+spaceListVisible userIdentifier spaceOrder maybeIsMember = do
   lift $ logDebug $ "Looking up spaces visible by user: " <> T.pack (show userIdentifier)
   dbSpaces <- Selda.query $ do
     dbSpace <- Selda.select tableSpace
@@ -182,6 +184,10 @@ spaceListVisible userIdentifier spaceOrder = do
               Selda..&& dbSpaceUser Selda.! #dbSpaceUser_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
         )
         (Selda.select tableSpaceUser)
+    case maybeIsMember of
+      Nothing -> pure ()
+      Just True -> Selda.restrict $ Selda.not_ $ Selda.isNull $ dbSpaceUser Selda.? #dbSpaceUser_id
+      Just False -> Selda.restrict $ Selda.isNull $ dbSpaceUser Selda.? #dbSpaceUser_id
     Selda.restrict $
       dbSpace Selda.! #dbSpace_visibility Selda..== Selda.literal MkDbSpaceVisibility_visible
         Selda..|| Selda.not_ (Selda.isNull $ dbSpaceUser Selda.? #dbSpaceUser_id)

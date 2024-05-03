@@ -354,7 +354,7 @@ onEnter msg =
 
 spaceList : Mensam.Auth.Bearer.Jwt -> Cmd Message
 spaceList jwt =
-    Mensam.Api.SpaceList.request { jwt = jwt, order = [] } <|
+    Mensam.Api.SpaceList.request { jwt = jwt, order = [], member = Nothing } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceList.Success value) ->
