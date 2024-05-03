@@ -67,26 +67,6 @@ jobs:
     - name: "Run elm-review"
       run: nix develop "..#subflakes.frontend.devShells.x86_64-linux.default" --command elm-review
       working-directory: ./frontend
-  # TODO: Run weeder using `nix flake check` instead.
-  manual-weeder:
-    name: "Detect dead Haskell code"
-    runs-on: ubuntu-latest
-    steps:
-    - name: "Set up GitHub Actions"
-      uses: actions/checkout@v4.1.1
-    - name: "Set up Nix"
-      uses: cachix/install-nix-action@v26
-    - name: "Set up Cachix"
-      uses: cachix/cachix-action@v14
-      with:
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        name: jumper149-mensam
-    - name: "Prepare weeder"
-      run: nix develop "..#subflakes.server.devShells.x86_64-linux.default" --command cabal build all
-      working-directory: ./server
-    - name: "Run weeder"
-      run: nix develop "..#subflakes.server.devShells.x86_64-linux.default" --command weeder
-      working-directory: ./server
 name: "Default"
 on:
   push:

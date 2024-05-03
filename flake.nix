@@ -8,9 +8,16 @@
       repo = "nixpkgs";
       ref = "nixpkgs-unstable";
     };
+    weeder-nix = {
+      type = "github";
+      owner = "NorfairKing";
+      repo = "weeder-nix";
+      ref = "master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs }: {
+  outputs = { self, nixpkgs, weeder-nix }: {
 
     subflakes =
       let
@@ -18,7 +25,7 @@
           import path (inputs // { self = (if self ? rev then { inherit (self) rev; } else { }) // { subflakes = subflakeInputs; }; });
       in rec {
           setup = importSubflake ./setup/subflake.nix { } { };
-          server = importSubflake ./server/subflake.nix { inherit nixpkgs; } { inherit setup; };
+          server = importSubflake ./server/subflake.nix { inherit nixpkgs weeder-nix; } { inherit setup; };
           frontend = importSubflake ./frontend/subflake.nix { inherit nixpkgs; } { inherit setup; };
           static = importSubflake ./static/subflake.nix { inherit nixpkgs; } { inherit setup frontend; };
           final = importSubflake ./final/subflake.nix { inherit nixpkgs; } { inherit setup server static; };

@@ -1,7 +1,8 @@
 = TODO
 
 * Continuous integration.
-  ** [ ] Run weeder as part of `nix flake check`.
+  ** [x] Run weeder as part of `nix flake check`.
+    *** Thank you: https://github.com/NorfairKing/weeder-nix
   ** [ ] Run elm-review as part of `nix flake check`.
     *** https://github.com/jfmengels/elm-review/issues/157
   ** [ ] Use `nixosConfigurations` to test the `nixosModule`.

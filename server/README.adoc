@@ -47,20 +47,6 @@ Use `fourmolu` to format Haskell.
 fourmolu --mode inplace ./source
 ----
 
-=== `weeder`
-
-Running `weeder` should be a part of linting, but requires manual execution at the moment.
-
-[source,bash]
-----
-# Prepare additional information for weeder.
-cabal clean
-cabal build all
-
-# Run weeder.
-weeder
-----
-
 === `graphmod`
 
 The module dependency graph can be visualised using `graphmod`.

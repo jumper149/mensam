@@ -1,12 +1,13 @@
-{ self, nixpkgs }: rec {
+{ self, nixpkgs, weeder-nix }: rec {
 
   packages.x86_64-linux.default =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default overlays.default ]; };
-    let
-      source = nix-gitignore.gitignoreSource [] ./.;
-      package = (haskellPackages.callCabal2nixWithOptions "mensam" source "-fcabal2nix" {});
-      executables = haskell.lib.justStaticExecutables package;
-    in executables;
+    haskell.lib.justStaticExecutables packages.x86_64-linux.package;
+
+  packages.x86_64-linux.package =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default overlays.default ]; };
+    let source = nix-gitignore.gitignoreSource [] ./.;
+    in haskellPackages.callCabal2nixWithOptions "mensam" source "-fcabal2nix" {};
 
   devShells.x86_64-linux.default =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default overlays.default ]; };
@@ -101,6 +102,14 @@
         haskellPackages.graphmod
         pkgs.graphviz
       ];
+    };
+
+  checks.x86_64-linux.weeder =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default overlays.default ]; };
+    weeder-nix.lib.x86_64-linux.makeWeederCheck {
+      haskellPackages = haskellPackages.extend (self: super: { mensam = packages.x86_64-linux.package; });
+      packages = [ "mensam" ];
+      weederToml = ./weeder.toml;
     };
 
   overlays.default = final: prev: {
