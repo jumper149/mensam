@@ -239,7 +239,7 @@
   font-stretch: condensed;
   font-style: italic;
   font-weight: 600;
-  src: url('fonts/FiraSansCondensed-SemiBoldItalic.woff2') format('woff2');
+  src: url('fonts/FiraSansCondensed-SemiboldItalic.woff2') format('woff2');
 }
 
 @font-face {
@@ -271,7 +271,7 @@
   font-stretch: condensed;
   font-style: italic;
   font-weight: 800;
-  src: url('fonts/FiraSansCondensed-ExtraBoldItalic.woff2') format('woff2');
+  src: url('fonts/FiraSansCondensed-ExtraboldItalic.woff2') format('woff2');
 }
 
 @font-face {

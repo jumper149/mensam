@@ -49,16 +49,17 @@
   , { "pieces": [ "static", "fonts", "FiraSansCondensed-Medium.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraSansCondensed-MediumItalic.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraSansCondensed-SemiBold.woff2" ] }
-  , { "pieces": [ "static", "fonts", "FiraSansCondensed-SemiBoldItalic.woff2" ] }
+  , { "pieces": [ "static", "fonts", "FiraSansCondensed-SemiboldItalic.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraSansCondensed-Bold.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraSansCondensed-BoldItalic.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraSansCondensed-ExtraBold.woff2" ] }
-  , { "pieces": [ "static", "fonts", "FiraSansCondensed-ExtraBoldItalic.woff2" ] }
+  , { "pieces": [ "static", "fonts", "FiraSansCondensed-ExtraboldItalic.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraSansCondensed-Heavy.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraSansCondensed-HeavyItalic.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraMono-Regular.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraMono-Medium.woff2" ] }
   , { "pieces": [ "static", "fonts", "FiraMono-Bold.woff2" ] }
+
   ]
 , "auth":
   { "timeout-seconds": 900
