@@ -2,6 +2,7 @@
 
 * Frontend
   ** Add new dashboard page.
+  ** Support preloaded fonts.
 * API
   ** Add support for multiple enumerable static messages on HTTP errors affecting some routes.
     *** `/space/join`
