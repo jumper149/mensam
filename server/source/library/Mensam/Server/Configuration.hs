@@ -21,7 +21,7 @@ data Configuration = Configuration
   , configDirectoryStatic :: FilePath
   , configPort :: Word16
   , configBaseUrl :: BaseUrl
-  , configPreloadFonts :: [FontPath]
+  , configFonts :: [FontConfig]
   , configAuth :: AuthConfig
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -38,11 +38,12 @@ newtype AuthConfig = AuthConfig
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "" "auth") AuthConfig
 
-type FontPath :: Type
-newtype FontPath = FontPath
+type FontConfig :: Type
+data FontConfig = FontConfig
   { fontPathPieces :: NE.NonEmpty T.Text
+  , fontPreload :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "" "fontPath") FontPath
+    via A.CustomJSON (JSONSettings "" "font") FontConfig

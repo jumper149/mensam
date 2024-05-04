@@ -9,6 +9,7 @@ import Control.Monad.Logger.CallStack
 import Data.Foldable
 import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
+import Data.Maybe qualified as M
 import Data.Text qualified as T
 import Numeric.Natural
 import Servant
@@ -21,7 +22,7 @@ handler ::
   ServerT API m
 handler segments = do
   baseUrl <- configBaseUrl <$> configuration
-  fontPaths <- configPreloadFonts <$> configuration
+  fontConfigs <- configFonts <$> configuration
   let depth =
         case segments of
           [] -> Just 0
@@ -64,8 +65,7 @@ handler segments = do
           ! rel "stylesheet"
           ! type_ "text/css"
           ! hrefWithDepth baseUrl depth "static/fonts.css"
-        let fontPreload fontPath = link ! rel "preload" ! href (fontUrl baseUrl depth fontPath) ! B.customAttribute "as" "font" ! type_ "font/woff2"
-        traverse_ fontPreload fontPaths
+        sequence_ $ M.mapMaybe (fontPreloadLinkMaybe baseUrl depth) fontConfigs
         script ! src (withDepth baseUrl depth "static/frontend.js") $ ""
       body $ do
         H.div ! H.A.id "mensam-frontend" $ ""
@@ -110,14 +110,25 @@ withDepth _ (Just 0) ref = "./" <> ref
 withDepth _ (Just 1) ref = "../" <> ref
 withDepth baseUrl (Just n) ref = withDepth baseUrl (Just $ pred n) $ "../" <> ref
 
+fontPreloadLinkMaybe ::
+  BaseUrl ->
+  -- | depth
+  Maybe Natural ->
+  FontConfig ->
+  Maybe Html
+fontPreloadLinkMaybe baseUrl depth fontConfig =
+  if fontPreload fontConfig
+    then Just $ link ! rel "preload" ! href (fontUrl baseUrl depth $ fontPathPieces fontConfig) ! B.customAttribute "as" "font" ! type_ "font/woff2"
+    else Nothing
+
 fontUrl ::
   BaseUrl ->
   -- | depth
   Maybe Natural ->
-  FontPath ->
+  NE.NonEmpty T.Text ->
   AttributeValue
-fontUrl baseUrl depth fontPath = withDepth baseUrl depth fontPathSerialized
+fontUrl baseUrl depth pathPieces = withDepth baseUrl depth fontPathSerialized
  where
   fontPathSerialized =
-    case B.textValue <$> fontPathPieces fontPath of
+    case B.textValue <$> pathPieces of
       x NE.:| xs -> fold $ L.intersperse "/" (x : xs)
