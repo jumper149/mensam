@@ -118,7 +118,7 @@ fontPreloadLinkMaybe ::
   Maybe Html
 fontPreloadLinkMaybe baseUrl depth fontConfig =
   if fontPreload fontConfig
-    then Just $ link ! rel "preload" ! href (fontUrl baseUrl depth $ fontPathPieces fontConfig) ! B.customAttribute "as" "font" ! type_ "font/woff2"
+    then Just $ link ! rel "preload" ! href (fontUrl baseUrl depth $ fontPathPieces fontConfig) ! B.customAttribute "as" "font" ! type_ "font/woff2" ! B.customAttribute "crossorigin" "anonymous"
     else Nothing
 
 fontUrl ::
