@@ -179,7 +179,7 @@ element model =
                     ]
                 , Element.column
                     [ Element.width Element.fill
-                    , Element.height <| Element.fillPortion 1
+                    , Element.height <| Element.fillPortion 2
                     ]
                     [ Element.row
                         [ Element.width Element.fill
