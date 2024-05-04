@@ -6,9 +6,13 @@ import Mensam.Server.Configuration
 import Mensam.Server.Configuration.BaseUrl
 
 import Control.Monad.Logger.CallStack
+import Data.Foldable
+import Data.List qualified as L
+import Data.List.NonEmpty qualified as NE
 import Data.Text qualified as T
 import Numeric.Natural
 import Servant
+import Text.Blaze qualified as B
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as H.A
 
@@ -17,6 +21,7 @@ handler ::
   ServerT API m
 handler segments = do
   baseUrl <- configBaseUrl <$> configuration
+  fontPaths <- configPreloadFonts <$> configuration
   let depth =
         case segments of
           [] -> Just 0
@@ -48,10 +53,6 @@ handler segments = do
           ! type_ "image/png"
           ! sizes "512x512"
           ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
-        link
-          ! rel "stylesheet"
-          ! type_ "text/css"
-          ! hrefWithDepth baseUrl depth "static/fonts.css"
         meta ! name "apple-mobile-web-app-capable" ! content "yes"
         meta ! name "apple-mobile-web-app-status-bar-style" ! content "black"
         link
@@ -59,6 +60,12 @@ handler segments = do
           ! type_ "image/png"
           ! sizes "512x512"
           ! hrefWithDepth baseUrl depth "static/favicon-512x512.png"
+        link
+          ! rel "stylesheet"
+          ! type_ "text/css"
+          ! hrefWithDepth baseUrl depth "static/fonts.css"
+        let fontPreload fontPath = link ! rel "preload" ! href (fontUrl baseUrl depth fontPath) ! B.customAttribute "as" "font" ! type_ "font/woff2"
+        traverse_ fontPreload fontPaths
         script ! src (withDepth baseUrl depth "static/frontend.js") $ ""
       body $ do
         H.div ! H.A.id "mensam-frontend" $ ""
@@ -102,3 +109,15 @@ withDepth baseUrl Nothing ref = textValue (displayBaseUrl baseUrl) <> ref
 withDepth _ (Just 0) ref = "./" <> ref
 withDepth _ (Just 1) ref = "../" <> ref
 withDepth baseUrl (Just n) ref = withDepth baseUrl (Just $ pred n) $ "../" <> ref
+
+fontUrl ::
+  BaseUrl ->
+  -- | depth
+  Maybe Natural ->
+  FontPath ->
+  AttributeValue
+fontUrl baseUrl depth fontPath = withDepth baseUrl depth fontPathSerialized
+ where
+  fontPathSerialized =
+    case B.textValue <$> fontPathPieces fontPath of
+      x NE.:| xs -> fold $ L.intersperse "/" (x : xs)

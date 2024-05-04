@@ -7,6 +7,7 @@ import Mensam.Server.Configuration.SQLite
 
 import Data.Aeson qualified as A
 import Data.Kind
+import Data.List.NonEmpty qualified as NE
 import Data.Text qualified as T
 import Data.Word
 import Deriving.Aeson qualified as A
@@ -20,6 +21,7 @@ data Configuration = Configuration
   , configDirectoryStatic :: FilePath
   , configPort :: Word16
   , configBaseUrl :: BaseUrl
+  , configPreloadFonts :: [FontPath]
   , configAuth :: AuthConfig
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -35,3 +37,12 @@ newtype AuthConfig = AuthConfig
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "" "auth") AuthConfig
+
+type FontPath :: Type
+newtype FontPath = FontPath
+  { fontPathPieces :: NE.NonEmpty T.Text
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "" "fontPath") FontPath
