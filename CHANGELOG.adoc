@@ -1,5 +1,7 @@
 = Changelog
 
+* Frontend
+  ** Add new dashboard page.
 * API
   ** Add support for multiple enumerable static messages on HTTP errors affecting some routes.
     *** `/space/join`

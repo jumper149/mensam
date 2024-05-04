@@ -16,6 +16,7 @@ import Mensam.Element.Footer
 import Mensam.Element.Header
 import Mensam.Error
 import Mensam.Flags
+import Mensam.Screen.Dashboard
 import Mensam.Screen.Landing
 import Mensam.Screen.Login
 import Mensam.Screen.Register
@@ -75,6 +76,7 @@ type Screen
     = ScreenLanding Mensam.Screen.Landing.Model
     | ScreenRegister Mensam.Screen.Register.Model
     | ScreenLogin Mensam.Screen.Login.Model
+    | ScreenDashboard Mensam.Screen.Dashboard.Model
     | ScreenSpaces Mensam.Screen.Spaces.Model
     | ScreenSpace Mensam.Screen.Space.Model
     | ScreenSpaceJoin Mensam.Screen.Space.Join.Model
@@ -90,6 +92,7 @@ type Route
     = RouteLanding
     | RouteLogin (Maybe Mensam.Screen.Login.Model)
     | RouteRegister
+    | RouteDashboard
     | RouteSpaces
     | RouteSpace Mensam.Space.Identifier
     | RouteSpaceJoin { spaceId : Mensam.Space.Identifier, roleId : Maybe Mensam.Space.Role.Identifier, password : Maybe String }
@@ -112,6 +115,9 @@ routeToUrl route =
 
         RouteRegister ->
             Url.Builder.absolute [ "register" ] []
+
+        RouteDashboard ->
+            Url.Builder.absolute [ "dashboard" ] []
 
         RouteSpaces ->
             Url.Builder.absolute [ "spaces" ] []
@@ -166,6 +172,10 @@ routeToModelUpdate route (MkModel model) =
 
         RouteRegister ->
             update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
+
+        RouteDashboard ->
+            update (MessageDashboard <| Mensam.Screen.Dashboard.MessageEffect Mensam.Screen.Dashboard.RefreshReservations) <|
+                MkModel { model | screen = ScreenDashboard <| Mensam.Screen.Dashboard.init { time = { now = model.time.now, zone = model.time.zone } } }
 
         RouteSpaces ->
             update (MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces) <|
@@ -246,6 +256,7 @@ urlParser =
         [ Url.Parser.map RouteLanding <| Url.Parser.top
         , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
         , Url.Parser.map RouteRegister <| Url.Parser.s "register"
+        , Url.Parser.map RouteDashboard <| Url.Parser.s "dashboard"
         , Url.Parser.map RouteReservations <| Url.Parser.s "reservations"
         , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
         , Url.Parser.map RouteSpace <| Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
@@ -344,6 +355,7 @@ type Message
     | MessageLanding Mensam.Screen.Landing.Message
     | MessageRegister Mensam.Screen.Register.Message
     | MessageLogin Mensam.Screen.Login.Message
+    | MessageDashboard Mensam.Screen.Dashboard.Message
     | MessageSpaces Mensam.Screen.Spaces.Message
     | MessageSpace Mensam.Screen.Space.Message
     | MessageSpaceJoin Mensam.Screen.Space.Join.Message
@@ -439,7 +451,7 @@ update message (MkModel model) =
                                                             RouteLanding
 
                                                         Mensam.Auth.SignedIn _ ->
-                                                            RouteSpaces
+                                                            RouteDashboard
 
                                                 _ ->
                                                     route
@@ -710,11 +722,83 @@ update message (MkModel model) =
                         (Messages
                             [ Auth <| SetSession session
                             , Auth <| RefreshUserInfo
-                            , SetUrl RouteSpaces
+                            , SetUrl RouteDashboard
                             ]
                         )
                     <|
                         MkModel model
+
+        MessageDashboard (Mensam.Screen.Dashboard.MessagePure m) ->
+            case model.screen of
+                ScreenDashboard screenModel ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenDashboard <| Mensam.Screen.Dashboard.updatePure m screenModel }
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
+        MessageDashboard (Mensam.Screen.Dashboard.MessageEffect m) ->
+            case m of
+                Mensam.Screen.Dashboard.ReportError err ->
+                    update (ReportError err) <| MkModel model
+
+                Mensam.Screen.Dashboard.RefreshReservations ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenDashboard screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.reservationList { jwt = jwt, model = screenModel }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Dashboard.SetDateRange ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenDashboard screenModel ->
+                                    case screenModel.popup of
+                                        Just _ ->
+                                            ( MkModel model
+                                            , Platform.Cmd.map (\regularM -> Messages [ MessageDashboard regularM, MessageDashboard <| Mensam.Screen.Dashboard.MessagePure Mensam.Screen.Dashboard.ClosePopup ]) <|
+                                                Mensam.Screen.Dashboard.reservationList { jwt = jwt, model = screenModel }
+                                            )
+
+                                        _ ->
+                                            update (ReportError errorScreen) <| MkModel model
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Dashboard.CancelReservation reservationId ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenDashboard _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.reservationCancel { jwt = jwt, id = reservationId }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+        MessageDashboard (Mensam.Screen.Dashboard.Messages ms) ->
+            case model.screen of
+                ScreenDashboard _ ->
+                    update (Messages <| List.map MessageDashboard ms) <| MkModel model
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
 
         MessageSpaces (Mensam.Screen.Spaces.MessagePure m) ->
             case model.screen of
@@ -1503,7 +1587,7 @@ headerMessage (MkModel model) message =
                     SetUrl RouteLanding
 
                 Mensam.Auth.SignedIn _ ->
-                    SetUrl RouteSpaces
+                    SetUrl RouteDashboard
 
         Mensam.Element.Header.ClickHamburger ->
             if model.viewHamburgerMenu then
@@ -1545,6 +1629,9 @@ headerContent (MkModel model) =
 
             ScreenLogin _ ->
                 Nothing
+
+            ScreenDashboard _ ->
+                Just "Dashboard"
 
             ScreenSpaces _ ->
                 Just "Spaces"
@@ -1605,6 +1692,9 @@ view (MkModel model) =
 
                     ScreenRegister screenModel ->
                         Mensam.Element.screen MessageRegister <| Mensam.Screen.Register.element screenModel
+
+                    ScreenDashboard screenModel ->
+                        Mensam.Element.screen MessageDashboard <| Mensam.Screen.Dashboard.element screenModel
 
                     ScreenSpaces screenModel ->
                         Mensam.Element.screen MessageSpaces <| Mensam.Screen.Spaces.element screenModel
