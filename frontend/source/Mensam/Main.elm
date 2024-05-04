@@ -1631,7 +1631,7 @@ headerContent (MkModel model) =
                 Nothing
 
             ScreenDashboard _ ->
-                Just "Dashboard"
+                Just "Your Dashboard"
 
             ScreenSpaces _ ->
                 Just "Spaces"
@@ -1640,19 +1640,19 @@ headerContent (MkModel model) =
                 Just <| Mensam.Space.nameToString screenModel.name
 
             ScreenSpaceJoin screenModel ->
-                Just <| "Join " ++ Mensam.Space.nameToString screenModel.spaceName
+                Just <| Mensam.Space.nameToString screenModel.spaceName
 
             ScreenSpaceRoles screenModel ->
-                Just <| "Roles for " ++ Mensam.Space.nameToString screenModel.spaceName
+                Just <| Mensam.Space.nameToString screenModel.spaceName
 
             ScreenSpaceRole screenModel ->
-                Just <| "Role: " ++ Mensam.Space.Role.nameToString screenModel.role.name
+                Just <| Mensam.Space.Role.nameToString screenModel.role.name
 
             ScreenSpaceUsers screenModel ->
-                Just <| "Users of " ++ Mensam.Space.nameToString screenModel.spaceName
+                Just <| Mensam.Space.nameToString screenModel.spaceName
 
             ScreenSpaceSettings screenModel ->
-                Just <| "Settings for " ++ Mensam.Space.nameToString screenModel.old.name
+                Just <| Mensam.Space.nameToString screenModel.old.name
 
             ScreenSpaceDesks screenModel ->
                 Just <| Mensam.Space.nameToString screenModel.spaceName

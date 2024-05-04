@@ -283,13 +283,15 @@ elementTitle maybeTitle =
 
         Just text ->
             Element.el
-                [ Element.height Element.fill
+                [ Element.width <| Element.px 140
+                , Element.height Element.fill
                 , Element.centerX
                 , Element.Font.family [ Mensam.Element.Font.sansSerif ]
                 , Element.Font.size 17
                 , Element.Font.extraLight
                 , Element.Font.italic
                 , Element.Font.color Mensam.Element.Color.bright.white
+                , Element.clip
                 ]
             <|
                 Element.el
