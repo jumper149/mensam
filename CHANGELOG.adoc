@@ -1,8 +1,12 @@
 = Changelog
 
+== `0.6.3.0`
+
 * Frontend
   ** Add new dashboard page.
   ** Support preloaded fonts.
+* Backend
+  ** Add `fonts` field to configuration.
 * API
   ** Add support for multiple enumerable static messages on HTTP errors affecting some routes.
     *** `/space/join`
