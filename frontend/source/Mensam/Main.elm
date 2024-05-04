@@ -174,7 +174,13 @@ routeToModelUpdate route (MkModel model) =
             update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
 
         RouteDashboard ->
-            update (MessageDashboard <| Mensam.Screen.Dashboard.MessageEffect Mensam.Screen.Dashboard.RefreshReservations) <|
+            update
+                (Messages
+                    [ MessageDashboard <| Mensam.Screen.Dashboard.MessageEffect Mensam.Screen.Dashboard.RefreshSpaces
+                    , MessageDashboard <| Mensam.Screen.Dashboard.MessageEffect Mensam.Screen.Dashboard.RefreshReservations
+                    ]
+                )
+            <|
                 MkModel { model | screen = ScreenDashboard <| Mensam.Screen.Dashboard.init { time = { now = model.time.now, zone = model.time.zone } } }
 
         RouteSpaces ->
@@ -741,6 +747,24 @@ update message (MkModel model) =
                 Mensam.Screen.Dashboard.ReportError err ->
                     update (ReportError err) <| MkModel model
 
+                Mensam.Screen.Dashboard.RefreshSpaces ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenDashboard _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.spaceList jwt
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Dashboard.ChooseSpace identifier ->
+                    update (SetUrl <| RouteSpace identifier) <| MkModel model
+
                 Mensam.Screen.Dashboard.RefreshReservations ->
                     case model.authenticated of
                         Mensam.Auth.SignedOut ->
@@ -755,27 +779,6 @@ update message (MkModel model) =
 
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
-
-                Mensam.Screen.Dashboard.SetDateRange ->
-                    case model.authenticated of
-                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
-                            case model.screen of
-                                ScreenDashboard screenModel ->
-                                    case screenModel.popup of
-                                        Just _ ->
-                                            ( MkModel model
-                                            , Platform.Cmd.map (\regularM -> Messages [ MessageDashboard regularM, MessageDashboard <| Mensam.Screen.Dashboard.MessagePure Mensam.Screen.Dashboard.ClosePopup ]) <|
-                                                Mensam.Screen.Dashboard.reservationList { jwt = jwt, model = screenModel }
-                                            )
-
-                                        _ ->
-                                            update (ReportError errorScreen) <| MkModel model
-
-                                _ ->
-                                    update (ReportError errorScreen) <| MkModel model
-
-                        Mensam.Auth.SignedOut ->
-                            update (ReportError errorNoAuth) <| MkModel model
 
                 Mensam.Screen.Dashboard.CancelReservation reservationId ->
                     case model.authenticated of

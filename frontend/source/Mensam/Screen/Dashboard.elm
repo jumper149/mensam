@@ -11,6 +11,7 @@ import Json.Decode as Decode
 import List.Extra
 import Mensam.Api.ReservationCancel
 import Mensam.Api.ReservationList
+import Mensam.Api.SpaceList
 import Mensam.Auth.Bearer
 import Mensam.Desk
 import Mensam.Element.Color
@@ -22,12 +23,13 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
 import Mensam.User
-import Mensam.Widget.Date
 import Time
 
 
 type alias Model =
-    { reservations :
+    { spaces : List Mensam.Space.Space
+    , selectedSpace : Maybe Int
+    , reservations :
         List
             { desk :
                 { id : Mensam.Desk.Identifier
@@ -49,22 +51,16 @@ type alias Model =
                 { id : Mensam.User.Identifier
                 }
             }
-    , selected : Maybe Int
+    , selectedReservation : Maybe Int
     , timezone : Time.Zone
-    , modelDateBegin : Mensam.Widget.Date.Model
-    , modelDateEnd : Mensam.Widget.Date.Model
+    , modelDateBegin : Mensam.Time.Date
+    , modelDateEnd : Mensam.Time.Date
     , popup : Maybe PopupModel
     }
 
 
 type PopupModel
-    = PopupDate DateBeginEnd
-    | PopupViewReservation Mensam.Reservation.Identifier
-
-
-type DateBeginEnd
-    = DateBegin
-    | DateEnd
+    = PopupViewReservation Mensam.Reservation.Identifier
 
 
 init : { time : { now : Time.Posix, zone : Time.Zone } } -> Model
@@ -81,21 +77,15 @@ init value =
                             1000 * 60 * 60 * 24 * 7
                     in
                     Mensam.Time.fromPosix value.time.zone <| Time.millisToPosix <| Time.posixToMillis value.time.now + weekInMillis
-
-                timestampToDateModel =
-                    \timestamp ->
-                        Mensam.Widget.Date.MkModel
-                            { year = (Mensam.Time.unDate (Mensam.Time.unTimestamp timestamp).date).year
-                            , month = (Mensam.Time.unDate (Mensam.Time.unTimestamp timestamp).date).month
-                            , selected = (Mensam.Time.unTimestamp timestamp).date
-                            }
             in
-            { begin = timestampToDateModel timestampNow
-            , end = timestampToDateModel timestampOneWeekFromNow
+            { begin = (Mensam.Time.unTimestamp timestampNow).date
+            , end = (Mensam.Time.unTimestamp timestampOneWeekFromNow).date
             }
     in
-    { reservations = []
-    , selected = Nothing
+    { spaces = []
+    , selectedSpace = Nothing
+    , reservations = []
+    , selectedReservation = Nothing
     , timezone = value.time.zone
     , modelDateBegin = initialDateModel.begin
     , modelDateEnd = initialDateModel.end
@@ -111,306 +101,257 @@ element model =
                 [ Element.width Element.fill
                 , Element.height Element.fill
                 ]
-                [ Element.row
+                [ Element.column
                     [ Element.width Element.fill
-                    , Element.height <| Element.px 70
-                    , Element.padding 10
-                    , Element.spacing 30
+                    , Element.height <| Element.fillPortion 1
                     ]
-                    [ Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.blue
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
+                    [ Element.row
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 45
                         , Element.padding 10
+                        , Element.spacing 30
                         ]
-                        { onPress = Just <| MessagePure <| ViewDateBeginPicker
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text <|
-                                    let
-                                        date =
-                                            case model.modelDateBegin of
-                                                Mensam.Widget.Date.MkModel { selected } ->
-                                                    Mensam.Time.unDate selected
-                                    in
-                                    String.concat
-                                        [ Mensam.Time.yearToString date.year
-                                        , ", "
-                                        , Mensam.Time.monthToString date.month
-                                        , " "
-                                        , Mensam.Time.dayToString date.day
-                                        ]
-                        }
-                    , Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.blue
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
-                        , Element.padding 10
-                        ]
-                        { onPress = Just <| MessagePure <| ViewDateEndPicker
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text <|
-                                    let
-                                        date =
-                                            case model.modelDateEnd of
-                                                Mensam.Widget.Date.MkModel { selected } ->
-                                                    Mensam.Time.unDate selected
-                                    in
-                                    String.concat
-                                        [ Mensam.Time.yearToString date.year
-                                        , ", "
-                                        , Mensam.Time.monthToString date.month
-                                        , " "
-                                        , Mensam.Time.dayToString date.day
-                                        ]
-                        }
-                    ]
-                , Element.indexedTable
-                    [ Element.width Element.fill
-                    , Element.height Element.fill
-                    , Element.Background.color (Element.rgba 0 0 0 0.1)
-                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                    , Element.Font.size 16
-                    , Element.clipY
-                    , Element.scrollbarY
-                    ]
-                    { data = model.reservations
-                    , columns =
-                        let
-                            cell =
-                                Element.el
-                                    [ Element.height <| Element.px 50
-                                    , Element.padding 10
-                                    ]
-                        in
-                        [ { header =
-                                Element.el
-                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                    ]
-                                <|
-                                    cell <|
-                                        Element.el
-                                            []
-                                        <|
-                                            Element.text "Time"
-                          , width = Element.px 160
-                          , view =
-                                \n entry ->
-                                    Element.el
-                                        (case entry.reservation.status of
-                                            Mensam.Reservation.MkStatusPlanned ->
-                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                                , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                                , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
-                                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                                , let
-                                                    alpha =
-                                                        case model.selected of
-                                                            Nothing ->
-                                                                0.2
-
-                                                            Just m ->
-                                                                if m == n then
-                                                                    0.4
-
-                                                                else
-                                                                    0.2
-                                                  in
-                                                  Element.Background.color (Element.rgba 0 0 0 alpha)
-                                                ]
-
-                                            Mensam.Reservation.MkStatusCancelled ->
-                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                                , Element.Background.color (Element.rgba 1 0 0 0.2)
-                                                ]
-                                        )
-                                    <|
-                                        cell <|
-                                            Element.column
-                                                [ Element.width <| Element.maximum 160 <| Element.fill ]
-                                                [ Element.row [ Element.alignRight, Element.spacing 3 ]
-                                                    [ Element.el
-                                                        [ Element.Font.size 10
-                                                        , Element.alignBottom
-                                                        , Element.padding 1
-                                                        ]
-                                                      <|
-                                                        Element.text "from"
-                                                    , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
-                                                        Element.text <|
-                                                            Mensam.Time.timestampToString <|
-                                                                Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeBegin
-                                                    ]
-                                                , Element.row [ Element.alignRight, Element.spacing 3 ]
-                                                    [ Element.el
-                                                        [ Element.Font.size 10
-                                                        , Element.alignBottom
-                                                        , Element.padding 1
-                                                        ]
-                                                      <|
-                                                        Element.text "to"
-                                                    , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
-                                                        Element.text <|
-                                                            Mensam.Time.timestampToString <|
-                                                                Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeEnd
-                                                    ]
-                                                ]
-                          }
-                        , { header =
-                                Element.el
-                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                    ]
-                                <|
-                                    cell <|
-                                        Element.el
-                                            []
-                                        <|
-                                            Element.text "Desk"
-                          , width = Element.fill
-                          , view =
-                                \n entry ->
-                                    Element.el
-                                        (case entry.reservation.status of
-                                            Mensam.Reservation.MkStatusPlanned ->
-                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                                , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                                , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
-                                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                                , let
-                                                    alpha =
-                                                        case model.selected of
-                                                            Nothing ->
-                                                                0.2
-
-                                                            Just m ->
-                                                                if m == n then
-                                                                    0.4
-
-                                                                else
-                                                                    0.2
-                                                  in
-                                                  Element.Background.color (Element.rgba 0 0 0 alpha)
-                                                ]
-
-                                            Mensam.Reservation.MkStatusCancelled ->
-                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                                , Element.Background.color (Element.rgba 1 0 0 0.2)
-                                                ]
-                                        )
-                                    <|
-                                        cell <|
-                                            Element.column
-                                                [ Element.width <| Element.maximum 150 <| Element.fill ]
-                                                [ Element.row [ Element.alignLeft, Element.spacing 3 ]
-                                                    [ Element.el
-                                                        [ Element.Font.size 10
-                                                        , Element.alignBottom
-                                                        , Element.padding 1
-                                                        ]
-                                                      <|
-                                                        Element.text "Space"
-                                                    , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
-                                                        Element.text <|
-                                                            Mensam.Space.nameToString entry.space.name
-                                                    ]
-                                                , Element.row [ Element.alignLeft, Element.spacing 3 ]
-                                                    [ Element.el
-                                                        [ Element.Font.size 10
-                                                        , Element.alignBottom
-                                                        , Element.padding 1
-                                                        ]
-                                                      <|
-                                                        Element.text "Desk"
-                                                    , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
-                                                        Element.text <|
-                                                            Mensam.Desk.nameToString entry.desk.name
-                                                    ]
-                                                ]
-                          }
-                        ]
-                    }
-                ]
-        , popup =
-            case model.popup of
-                Nothing ->
-                    Nothing
-
-                Just (PopupDate dateBeginEnd) ->
-                    Just <|
-                        Element.column
+                        [ Element.column
                             [ Element.spacing 20
                             , Element.width Element.fill
                             , Element.height Element.fill
                             ]
                             [ Element.el
-                                [ Element.Font.size 30
+                                [ Element.Font.size 22
                                 , Element.Font.hairline
                                 ]
                               <|
-                                Element.text <|
-                                    case dateBeginEnd of
-                                        DateBegin ->
-                                            "Earliest Date"
+                                Element.text "Your Spaces"
+                            ]
+                        ]
+                    , Element.indexedTable
+                        [ Element.width Element.fill
+                        , Element.height Element.fill
+                        , Element.Background.color (Element.rgba 0 0 0 0.1)
+                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                        , Element.Font.size 16
+                        , Element.clipY
+                        , Element.scrollbarY
+                        ]
+                        { data = model.spaces
+                        , columns =
+                            let
+                                cell =
+                                    Element.el
+                                        [ Element.height <| Element.px 40
+                                        , Element.padding 10
+                                        ]
+                            in
+                            [ { header = Element.none
+                              , width = Element.fill
+                              , view =
+                                    \n (Mensam.Space.MkSpace space) ->
+                                        Element.el
+                                            [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedSpace <| Just n
+                                            , Element.Events.onMouseLeave <| MessagePure <| SetSelectedSpace Nothing
+                                            , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
+                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                            , let
+                                                alpha =
+                                                    case model.selectedSpace of
+                                                        Nothing ->
+                                                            0.2
 
-                                        DateEnd ->
-                                            "Latest Date"
-                            , Element.el
-                                [ Element.width Element.fill
-                                , Element.height Element.fill
+                                                        Just m ->
+                                                            if m == n then
+                                                                0.4
+
+                                                            else
+                                                                0.2
+                                              in
+                                              Element.Background.color (Element.rgba 0 0 0 alpha)
+                                            ]
+                                        <|
+                                            cell <|
+                                                Element.el
+                                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                <|
+                                                    Element.text <|
+                                                        Mensam.Space.nameToString space.name
+                              }
+                            ]
+                        }
+                    ]
+                , Element.column
+                    [ Element.width Element.fill
+                    , Element.height <| Element.fillPortion 1
+                    ]
+                    [ Element.row
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 45
+                        , Element.padding 10
+                        , Element.spacing 30
+                        ]
+                        [ Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 22
+                                , Element.Font.hairline
                                 ]
                               <|
-                                case dateBeginEnd of
-                                    DateBegin ->
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            ]
-                                        <|
-                                            Element.map (MessagePure << MessageDateBegin) <|
-                                                Mensam.Widget.Date.elementPickDate model.modelDateBegin
-
-                                    DateEnd ->
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            ]
-                                        <|
-                                            Element.map (MessagePure << MessageDateEnd) <|
-                                                Mensam.Widget.Date.elementPickDate model.modelDateEnd
-                            , Element.Input.button
-                                [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                , Element.Font.color Mensam.Element.Color.dark.black
-                                , Element.width Element.fill
-                                , Element.padding 10
-                                ]
-                                { onPress = Just <| MessageEffect <| SetDateRange
-                                , label =
-                                    Element.el
-                                        [ Element.centerX
-                                        , Element.centerY
-                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                        ]
-                                    <|
-                                        Element.text "Set date boundary"
-                                }
+                                Element.text "Upcoming Reservations (7 days)"
                             ]
+                        ]
+                    , Element.indexedTable
+                        [ Element.width Element.fill
+                        , Element.height Element.fill
+                        , Element.Background.color (Element.rgba 0 0 0 0.1)
+                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                        , Element.Font.size 16
+                        , Element.clipY
+                        , Element.scrollbarY
+                        ]
+                        { data = model.reservations
+                        , columns =
+                            let
+                                cell =
+                                    Element.el
+                                        [ Element.height <| Element.px 50
+                                        , Element.padding 10
+                                        ]
+                            in
+                            [ { header = Element.none
+                              , width = Element.px 160
+                              , view =
+                                    \n entry ->
+                                        Element.el
+                                            (case entry.reservation.status of
+                                                Mensam.Reservation.MkStatusPlanned ->
+                                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
+                                                    , Element.Events.onMouseLeave <| MessagePure <| SetSelectedReservation Nothing
+                                                    , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
+                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                    , let
+                                                        alpha =
+                                                            case model.selectedReservation of
+                                                                Nothing ->
+                                                                    0.2
+
+                                                                Just m ->
+                                                                    if m == n then
+                                                                        0.4
+
+                                                                    else
+                                                                        0.2
+                                                      in
+                                                      Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                    ]
+
+                                                Mensam.Reservation.MkStatusCancelled ->
+                                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
+                                                    , Element.Background.color (Element.rgba 1 0 0 0.2)
+                                                    ]
+                                            )
+                                        <|
+                                            cell <|
+                                                Element.column
+                                                    [ Element.width <| Element.maximum 160 <| Element.fill ]
+                                                    [ Element.row [ Element.alignRight, Element.spacing 3 ]
+                                                        [ Element.el
+                                                            [ Element.Font.size 10
+                                                            , Element.alignBottom
+                                                            , Element.padding 1
+                                                            ]
+                                                          <|
+                                                            Element.text "from"
+                                                        , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
+                                                            Element.text <|
+                                                                Mensam.Time.timestampToString <|
+                                                                    Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeBegin
+                                                        ]
+                                                    , Element.row [ Element.alignRight, Element.spacing 3 ]
+                                                        [ Element.el
+                                                            [ Element.Font.size 10
+                                                            , Element.alignBottom
+                                                            , Element.padding 1
+                                                            ]
+                                                          <|
+                                                            Element.text "to"
+                                                        , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
+                                                            Element.text <|
+                                                                Mensam.Time.timestampToString <|
+                                                                    Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeEnd
+                                                        ]
+                                                    ]
+                              }
+                            , { header = Element.none
+                              , width = Element.fill
+                              , view =
+                                    \n entry ->
+                                        Element.el
+                                            (case entry.reservation.status of
+                                                Mensam.Reservation.MkStatusPlanned ->
+                                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
+                                                    , Element.Events.onMouseLeave <| MessagePure <| SetSelectedReservation Nothing
+                                                    , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
+                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                    , let
+                                                        alpha =
+                                                            case model.selectedReservation of
+                                                                Nothing ->
+                                                                    0.2
+
+                                                                Just m ->
+                                                                    if m == n then
+                                                                        0.4
+
+                                                                    else
+                                                                        0.2
+                                                      in
+                                                      Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                    ]
+
+                                                Mensam.Reservation.MkStatusCancelled ->
+                                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
+                                                    , Element.Background.color (Element.rgba 1 0 0 0.2)
+                                                    ]
+                                            )
+                                        <|
+                                            cell <|
+                                                Element.column
+                                                    [ Element.width <| Element.maximum 150 <| Element.fill ]
+                                                    [ Element.row [ Element.alignLeft, Element.spacing 3 ]
+                                                        [ Element.el
+                                                            [ Element.Font.size 10
+                                                            , Element.alignBottom
+                                                            , Element.padding 1
+                                                            ]
+                                                          <|
+                                                            Element.text "Space"
+                                                        , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
+                                                            Element.text <|
+                                                                Mensam.Space.nameToString entry.space.name
+                                                        ]
+                                                    , Element.row [ Element.alignLeft, Element.spacing 3 ]
+                                                        [ Element.el
+                                                            [ Element.Font.size 10
+                                                            , Element.alignBottom
+                                                            , Element.padding 1
+                                                            ]
+                                                          <|
+                                                            Element.text "Desk"
+                                                        , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
+                                                            Element.text <|
+                                                                Mensam.Desk.nameToString entry.desk.name
+                                                        ]
+                                                    ]
+                              }
+                            ]
+                        }
+                    ]
+                ]
+        , popup =
+            case model.popup of
+                Nothing ->
+                    Nothing
 
                 Just (PopupViewReservation reservationId) ->
                     case List.Extra.find (\entry -> entry.reservation.id == reservationId) <| model.reservations of
@@ -579,7 +520,9 @@ type Message
 
 
 type MessagePure
-    = SetReservations
+    = SetSpaces (List Mensam.Space.Space)
+    | SetSelectedSpace (Maybe Int)
+    | SetReservations
         (List
             { desk :
                 { id : Mensam.Desk.Identifier
@@ -602,25 +545,25 @@ type MessagePure
                 }
             }
         )
-    | SetSelected (Maybe Int)
+    | SetSelectedReservation (Maybe Int)
     | ChooseReservation Mensam.Reservation.Identifier
     | ClosePopup
-    | ViewDateBeginPicker
-    | ViewDateEndPicker
-    | MessageDateBegin Mensam.Widget.Date.Message
-    | MessageDateEnd Mensam.Widget.Date.Message
-    | FixLowDateBoundDegenerate
-    | FixHighDateBoundDegenerate
 
 
 updatePure : MessagePure -> Model -> Model
 updatePure message model =
     case message of
+        SetSpaces spaces ->
+            { model | spaces = spaces }
+
+        SetSelectedSpace selection ->
+            { model | selectedSpace = selection }
+
         SetReservations reservations ->
             { model | reservations = reservations }
 
-        SetSelected selection ->
-            { model | selected = selection }
+        SetSelectedReservation selection ->
+            { model | selectedReservation = selection }
 
         ChooseReservation id ->
             { model | popup = Just <| PopupViewReservation id }
@@ -628,119 +571,12 @@ updatePure message model =
         ClosePopup ->
             { model | popup = Nothing }
 
-        ViewDateBeginPicker ->
-            { model | popup = Just <| PopupDate DateBegin }
-
-        ViewDateEndPicker ->
-            { model | popup = Just <| PopupDate DateEnd }
-
-        MessageDateBegin Mensam.Widget.Date.NextMonth ->
-            { model | modelDateBegin = Mensam.Widget.Date.updateDateNextMonth model.modelDateBegin }
-
-        MessageDateBegin Mensam.Widget.Date.PreviousMonth ->
-            { model | modelDateBegin = Mensam.Widget.Date.updateDatePreviousMonth model.modelDateBegin }
-
-        MessageDateBegin (Mensam.Widget.Date.ClickDay day) ->
-            let
-                (Mensam.Widget.Date.MkModel modelDate) =
-                    model.modelDateBegin
-            in
-            updatePure FixHighDateBoundDegenerate <|
-                { model
-                    | modelDateBegin =
-                        Mensam.Widget.Date.MkModel
-                            { modelDate
-                                | selected =
-                                    Mensam.Time.MkDate
-                                        { year = modelDate.year
-                                        , month = modelDate.month
-                                        , day = day
-                                        }
-                            }
-                }
-
-        MessageDateEnd Mensam.Widget.Date.NextMonth ->
-            { model | modelDateEnd = Mensam.Widget.Date.updateDateNextMonth model.modelDateEnd }
-
-        MessageDateEnd Mensam.Widget.Date.PreviousMonth ->
-            { model | modelDateEnd = Mensam.Widget.Date.updateDatePreviousMonth model.modelDateEnd }
-
-        MessageDateEnd (Mensam.Widget.Date.ClickDay day) ->
-            let
-                (Mensam.Widget.Date.MkModel modelDate) =
-                    model.modelDateEnd
-            in
-            updatePure FixLowDateBoundDegenerate <|
-                { model
-                    | modelDateEnd =
-                        Mensam.Widget.Date.MkModel
-                            { modelDate
-                                | selected =
-                                    Mensam.Time.MkDate
-                                        { year = modelDate.year
-                                        , month = modelDate.month
-                                        , day = day
-                                        }
-                            }
-                }
-
-        FixLowDateBoundDegenerate ->
-            case Mensam.Time.compareDate (Mensam.Widget.Date.unModel model.modelDateBegin).selected (Mensam.Widget.Date.unModel model.modelDateEnd).selected of
-                LT ->
-                    model
-
-                EQ ->
-                    model
-
-                GT ->
-                    let
-                        (Mensam.Widget.Date.MkModel modelDateBegin) =
-                            model.modelDateBegin
-
-                        (Mensam.Widget.Date.MkModel modelDateEnd) =
-                            model.modelDateEnd
-                    in
-                    { model
-                        | modelDateBegin =
-                            Mensam.Widget.Date.MkModel
-                                { modelDateBegin
-                                    | year = (Mensam.Time.unDate modelDateEnd.selected).year
-                                    , month = (Mensam.Time.unDate modelDateEnd.selected).month
-                                    , selected = modelDateEnd.selected
-                                }
-                    }
-
-        FixHighDateBoundDegenerate ->
-            case Mensam.Time.compareDate (Mensam.Widget.Date.unModel model.modelDateBegin).selected (Mensam.Widget.Date.unModel model.modelDateEnd).selected of
-                LT ->
-                    model
-
-                EQ ->
-                    model
-
-                GT ->
-                    let
-                        (Mensam.Widget.Date.MkModel modelDateBegin) =
-                            model.modelDateBegin
-
-                        (Mensam.Widget.Date.MkModel modelDateEnd) =
-                            model.modelDateEnd
-                    in
-                    { model
-                        | modelDateEnd =
-                            Mensam.Widget.Date.MkModel
-                                { modelDateEnd
-                                    | year = (Mensam.Time.unDate modelDateBegin.selected).year
-                                    , month = (Mensam.Time.unDate modelDateBegin.selected).month
-                                    , selected = modelDateBegin.selected
-                                }
-                    }
-
 
 type MessageEffect
     = ReportError Mensam.Error.Error
+    | RefreshSpaces
+    | ChooseSpace Mensam.Space.Identifier
     | RefreshReservations
-    | SetDateRange
     | CancelReservation Mensam.Reservation.Identifier
 
 
@@ -761,6 +597,35 @@ onEnter msg =
         )
 
 
+spaceList : Mensam.Auth.Bearer.Jwt -> Cmd Message
+spaceList jwt =
+    Mensam.Api.SpaceList.request { jwt = jwt, order = [], member = Just True } <|
+        \result ->
+            case result of
+                Ok (Mensam.Api.SpaceList.Success value) ->
+                    MessagePure <| SetSpaces value.spaces
+
+                Ok (Mensam.Api.SpaceList.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting spaces failed" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceList.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting spaces failed" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting spaces failed" <|
+                                Mensam.Error.http error
+
+
 reservationList : { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
 reservationList argument =
     Mensam.Api.ReservationList.request
@@ -768,7 +633,7 @@ reservationList argument =
         , timeBegin =
             Mensam.Time.toPosix argument.model.timezone <|
                 Mensam.Time.MkTimestamp
-                    { date = (Mensam.Widget.Date.unModel argument.model.modelDateBegin).selected
+                    { date = argument.model.modelDateBegin
                     , time =
                         Mensam.Time.MkTime
                             { hour = Mensam.Time.MkHour 0
@@ -779,7 +644,7 @@ reservationList argument =
         , timeEnd =
             Mensam.Time.toPosix argument.model.timezone <|
                 Mensam.Time.MkTimestamp
-                    { date = (Mensam.Widget.Date.unModel argument.model.modelDateEnd).selected
+                    { date = argument.model.modelDateEnd
                     , time =
                         Mensam.Time.MkTime
                             { hour = Mensam.Time.MkHour 23
