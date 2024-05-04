@@ -160,7 +160,7 @@ element model =
                     [ Element.width Element.fill
                     , Element.height <| Element.px 70
                     , Element.padding 10
-                    , Element.spacing 30
+                    , Element.spacing 20
                     ]
                     [ case model.yourRole of
                         Nothing ->
@@ -183,7 +183,7 @@ element model =
                                     , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                     ]
                                 <|
-                                    Element.text "Join space"
+                                    Element.text "Join"
 
                         Just _ ->
                             Element.el
