@@ -111,18 +111,34 @@ element model =
                         , Element.padding 10
                         , Element.spacing 30
                         ]
-                        [ Element.column
-                            [ Element.spacing 20
-                            , Element.width Element.fill
-                            , Element.height Element.fill
+                        [ Element.el
+                            [ Element.Font.size 22
+                            , Element.Font.hairline
+                            , Element.alignBottom
+                            , Element.alignLeft
                             ]
-                            [ Element.el
-                                [ Element.Font.size 22
-                                , Element.Font.hairline
+                          <|
+                            Element.text "Your Spaces"
+                        , Element.el
+                            [ Element.alignRight
+                            , Element.padding 7
+                            , Element.Background.color Mensam.Element.Color.bright.yellow
+                            , Element.Font.color Mensam.Element.Color.dark.black
+                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                            , Element.Events.onClick <| MessageEffect OpenPageToBrowseSpaces
+                            ]
+                          <|
+                            Element.el
+                                [ Element.centerX
+                                , Element.centerY
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                , Element.Font.size 15
+                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
-                              <|
-                                Element.text "Your Spaces"
-                            ]
+                            <|
+                                Element.text "Browse"
                         ]
                     , Element.indexedTable
                         [ Element.width Element.fill
@@ -187,18 +203,34 @@ element model =
                         , Element.padding 10
                         , Element.spacing 30
                         ]
-                        [ Element.column
-                            [ Element.spacing 20
-                            , Element.width Element.fill
-                            , Element.height Element.fill
+                        [ Element.el
+                            [ Element.Font.size 22
+                            , Element.Font.hairline
+                            , Element.alignBottom
+                            , Element.alignLeft
                             ]
-                            [ Element.el
-                                [ Element.Font.size 22
-                                , Element.Font.hairline
+                          <|
+                            Element.text "Upcoming Reservations"
+                        , Element.el
+                            [ Element.alignRight
+                            , Element.padding 7
+                            , Element.Background.color Mensam.Element.Color.bright.yellow
+                            , Element.Font.color Mensam.Element.Color.dark.black
+                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                            , Element.Events.onClick <| MessageEffect OpenPageToViewReservations
+                            ]
+                          <|
+                            Element.el
+                                [ Element.centerX
+                                , Element.centerY
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                , Element.Font.size 15
+                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                 ]
-                              <|
-                                Element.text "Upcoming Reservations (7 days)"
-                            ]
+                            <|
+                                Element.text "More"
                         ]
                     , Element.indexedTable
                         [ Element.width Element.fill
@@ -578,6 +610,8 @@ type MessageEffect
     | ChooseSpace Mensam.Space.Identifier
     | RefreshReservations
     | CancelReservation Mensam.Reservation.Identifier
+    | OpenPageToBrowseSpaces
+    | OpenPageToViewReservations
 
 
 onEnter : msg -> Element.Attribute msg

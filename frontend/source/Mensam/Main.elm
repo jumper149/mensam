@@ -795,6 +795,12 @@ update message (MkModel model) =
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
 
+                Mensam.Screen.Dashboard.OpenPageToBrowseSpaces ->
+                    update (SetUrl RouteSpaces) <| MkModel model
+
+                Mensam.Screen.Dashboard.OpenPageToViewReservations ->
+                    update (SetUrl RouteReservations) <| MkModel model
+
         MessageDashboard (Mensam.Screen.Dashboard.Messages ms) ->
             case model.screen of
                 ScreenDashboard _ ->
