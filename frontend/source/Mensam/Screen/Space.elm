@@ -169,7 +169,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.alignRight, Element.centerY ]
                                     , color = Mensam.Element.Button.Yellow
-                                    , message = MessageEffect OpenPageToJoin
+                                    , message = Just <| MessageEffect OpenPageToJoin
                                     , text = "Join"
                                     }
 
@@ -178,7 +178,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.alignRight, Element.centerY ]
                                     , color = Mensam.Element.Button.Red
-                                    , message = MessagePure OpenDialogToLeave
+                                    , message = Just <| MessagePure OpenDialogToLeave
                                     , text = "Leave"
                                     }
                     , case model.yourRole of
@@ -195,14 +195,14 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.alignRight, Element.centerY ]
                                             , color = Mensam.Element.Button.Yellow
-                                            , message = MessageEffect OpenPageToSettings
+                                            , message = Just <| MessageEffect OpenPageToSettings
                                             , text = "Settings"
                                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
-                            , message = MessageEffect OpenPageToUsers
+                            , message = Just <| MessageEffect OpenPageToUsers
                             , text = "Users"
                             }
                     , case model.yourRole of
@@ -219,7 +219,7 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.alignRight, Element.centerY ]
                                             , color = Mensam.Element.Button.Yellow
-                                            , message = MessageEffect OpenPageToDesks
+                                            , message = Just <| MessageEffect OpenPageToDesks
                                             , text = "Desks"
                                             }
                     ]

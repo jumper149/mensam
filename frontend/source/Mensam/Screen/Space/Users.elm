@@ -276,7 +276,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.alignRight ]
                                         , color = Mensam.Element.Button.Red
-                                        , message = MessagePure <| OpenDialogToKick popupModel.user
+                                        , message = Just <| MessagePure <| OpenDialogToKick popupModel.user
                                         , text = "Kick User"
                                         }
                                 ]

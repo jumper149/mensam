@@ -85,7 +85,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
-                            , message = MessagePure OpenDialogToCreateRole
+                            , message = Just <| MessagePure OpenDialogToCreateRole
                             , text = "New Role"
                             }
                     ]

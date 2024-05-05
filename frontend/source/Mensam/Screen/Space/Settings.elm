@@ -83,7 +83,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
-                            , message = MessageEffect OpenPageToRoles
+                            , message = Just <| MessageEffect OpenPageToRoles
                             , text = "Roles"
                             }
                     ]
