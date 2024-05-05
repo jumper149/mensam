@@ -15,6 +15,7 @@ import Mensam.Api.SpaceLeave
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Desk
+import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
@@ -162,60 +163,24 @@ element model =
                     , Element.padding 10
                     , Element.spacing 20
                     ]
-                    [ Element.el
-                        [ Element.Font.size 30
-                        , Element.Font.hairline
-                        , Element.alignLeft
-                        , Element.centerY
-                        ]
-                      <|
-                        Element.text "Space Overview"
-                    , case model.yourRole of
+                    [ case model.yourRole of
                         Nothing ->
-                            Element.el
-                                [ Element.alignRight
-                                , Element.centerY
-                                , Element.padding 10
-                                , Element.Background.color Mensam.Element.Color.bright.yellow
-                                , Element.Font.color Mensam.Element.Color.dark.black
-                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                , Element.Events.onClick <| MessageEffect <| OpenPageToJoin
-                                ]
-                            <|
-                                Element.el
-                                    [ Element.centerX
-                                    , Element.centerY
-                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                    , Element.Font.size 17
-                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                    ]
-                                <|
-                                    Element.text "Join"
+                            Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = [ Element.alignRight, Element.centerY ]
+                                    , color = Mensam.Element.Button.Yellow
+                                    , message = MessageEffect OpenPageToJoin
+                                    , text = "Join"
+                                    }
 
                         Just _ ->
-                            Element.el
-                                [ Element.alignRight
-                                , Element.centerY
-                                , Element.padding 10
-                                , Element.Background.color Mensam.Element.Color.bright.red
-                                , Element.Font.color Mensam.Element.Color.dark.black
-                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                , Element.Events.onClick <| MessagePure <| OpenDialogToLeave
-                                ]
-                            <|
-                                Element.el
-                                    [ Element.centerX
-                                    , Element.centerY
-                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                    , Element.Font.size 17
-                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                    ]
-                                <|
-                                    Element.text "Leave"
+                            Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = [ Element.alignRight, Element.centerY ]
+                                    , color = Mensam.Element.Button.Red
+                                    , message = MessagePure OpenDialogToLeave
+                                    , text = "Leave"
+                                    }
                     , case model.yourRole of
                         Nothing ->
                             Element.none
@@ -226,48 +191,20 @@ element model =
                                     Element.none
 
                                 Just _ ->
-                                    Element.el
-                                        [ Element.alignRight
-                                        , Element.centerY
-                                        , Element.padding 10
-                                        , Element.Background.color Mensam.Element.Color.bright.yellow
-                                        , Element.Font.color Mensam.Element.Color.dark.black
-                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                        , Element.Events.onClick <| MessageEffect OpenPageToSettings
-                                        ]
-                                    <|
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.Font.size 17
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Settings"
-                    , Element.el
-                        [ Element.alignRight
-                        , Element.centerY
-                        , Element.padding 10
-                        , Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Events.onClick <| MessageEffect OpenPageToUsers
-                        ]
-                      <|
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                            , Element.Font.size 17
-                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                            ]
-                        <|
-                            Element.text "Users"
+                                    Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.alignRight, Element.centerY ]
+                                            , color = Mensam.Element.Button.Yellow
+                                            , message = MessageEffect OpenPageToSettings
+                                            , text = "Settings"
+                                            }
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignRight, Element.centerY ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = MessageEffect OpenPageToUsers
+                            , text = "Users"
+                            }
                     , case model.yourRole of
                         Nothing ->
                             Element.none
@@ -278,27 +215,13 @@ element model =
                                     Element.none
 
                                 Just _ ->
-                                    Element.el
-                                        [ Element.alignRight
-                                        , Element.centerY
-                                        , Element.padding 10
-                                        , Element.Background.color Mensam.Element.Color.bright.yellow
-                                        , Element.Font.color Mensam.Element.Color.dark.black
-                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                        , Element.Events.onClick <| MessageEffect OpenPageToDesks
-                                        ]
-                                    <|
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.Font.size 17
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Desks"
+                                    Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.alignRight, Element.centerY ]
+                                            , color = Mensam.Element.Button.Yellow
+                                            , message = MessageEffect OpenPageToDesks
+                                            , text = "Desks"
+                                            }
                     ]
                 , Element.indexedTable
                     [ Element.width Element.fill

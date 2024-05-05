@@ -9,6 +9,7 @@ import Html.Attributes
 import Mensam.Api.RoleCreate
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
+import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
@@ -72,38 +73,21 @@ element model =
                     , Element.padding 10
                     , Element.spacing 30
                     ]
-                    [ Element.column
-                        [ Element.spacing 20
-                        , Element.width Element.fill
-                        , Element.height Element.fill
-                        ]
-                        [ Element.el
-                            [ Element.Font.size 30
-                            , Element.Font.hairline
-                            ]
-                          <|
-                            Element.text "Edit Roles"
-                        ]
-                    , Element.el
-                        [ Element.alignRight
-                        , Element.padding 10
-                        , Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Events.onClick <| MessagePure OpenDialogToCreateRole
+                    [ Element.el
+                        [ Element.Font.size 30
+                        , Element.Font.hairline
+                        , Element.alignLeft
+                        , Element.centerY
                         ]
                       <|
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                            , Element.Font.size 17
-                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                            ]
-                        <|
-                            Element.text "New Role"
+                        Element.text "Edit Roles"
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignRight, Element.centerY ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = MessagePure OpenDialogToCreateRole
+                            , text = "New Role"
+                            }
                     ]
                 , Element.indexedTable
                     [ Element.width Element.fill

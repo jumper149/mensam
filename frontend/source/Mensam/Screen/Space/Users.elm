@@ -12,6 +12,7 @@ import Mensam.Api.SpaceKick
 import Mensam.Api.SpaceUserRole
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
+import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
@@ -271,24 +272,13 @@ element model =
                                 [ Element.width Element.fill
                                 , Element.spacing 10
                                 ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.red
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.padding 10
-                                    , Element.alignRight
-                                    ]
-                                    { onPress = Just <| MessagePure <| OpenDialogToKick popupModel.user
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Kick user"
-                                    }
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.alignRight ]
+                                        , color = Mensam.Element.Button.Red
+                                        , message = MessagePure <| OpenDialogToKick popupModel.user
+                                        , text = "Kick User"
+                                        }
                                 ]
                             , Element.row
                                 [ Element.spacing 20
