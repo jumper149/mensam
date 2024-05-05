@@ -162,10 +162,19 @@ element model =
                     , Element.padding 10
                     , Element.spacing 20
                     ]
-                    [ case model.yourRole of
+                    [ Element.el
+                        [ Element.Font.size 30
+                        , Element.Font.hairline
+                        , Element.alignLeft
+                        , Element.centerY
+                        ]
+                      <|
+                        Element.text "Space Overview"
+                    , case model.yourRole of
                         Nothing ->
                             Element.el
                                 [ Element.alignRight
+                                , Element.centerY
                                 , Element.padding 10
                                 , Element.Background.color Mensam.Element.Color.bright.yellow
                                 , Element.Font.color Mensam.Element.Color.dark.black
@@ -188,6 +197,7 @@ element model =
                         Just _ ->
                             Element.el
                                 [ Element.alignRight
+                                , Element.centerY
                                 , Element.padding 10
                                 , Element.Background.color Mensam.Element.Color.bright.red
                                 , Element.Font.color Mensam.Element.Color.dark.black
@@ -218,6 +228,7 @@ element model =
                                 Just _ ->
                                     Element.el
                                         [ Element.alignRight
+                                        , Element.centerY
                                         , Element.padding 10
                                         , Element.Background.color Mensam.Element.Color.bright.yellow
                                         , Element.Font.color Mensam.Element.Color.dark.black
@@ -238,6 +249,7 @@ element model =
                                             Element.text "Settings"
                     , Element.el
                         [ Element.alignRight
+                        , Element.centerY
                         , Element.padding 10
                         , Element.Background.color Mensam.Element.Color.bright.yellow
                         , Element.Font.color Mensam.Element.Color.dark.black
@@ -268,6 +280,7 @@ element model =
                                 Just _ ->
                                     Element.el
                                         [ Element.alignRight
+                                        , Element.centerY
                                         , Element.padding 10
                                         , Element.Background.color Mensam.Element.Color.bright.yellow
                                         , Element.Font.color Mensam.Element.Color.dark.black

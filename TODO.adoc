@@ -30,6 +30,7 @@
     *** [ ] Your spaces (with membership).
     *** [ ] Reservations preview.
   ** [ ] Factor out duplicate code (buttons, styling and so on).
+  ** [ ] When SignedInHamburgerDropDown is open a click anywhere should close it again.
 
 * Pin timezone libraries.
   ** [ ] tzdata library for Haskell.
