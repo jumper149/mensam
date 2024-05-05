@@ -20,8 +20,6 @@ element screen =
     Element.el
         [ Element.width Element.fill
         , Element.height Element.fill
-        , Element.padding 10
-        , Element.Background.color (Element.rgba 0 0 0 0.1)
         , Element.Font.size 16
         , Element.Font.family [ Mensam.Element.Font.sansSerif ]
         , Element.inFront <|

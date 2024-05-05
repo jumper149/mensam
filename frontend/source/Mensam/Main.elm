@@ -1689,7 +1689,7 @@ view (MkModel model) =
             , Element.el
                 [ Element.width Element.fill
                 , Element.height Element.fill
-                , Element.padding 20
+                , Element.padding 12
                 ]
               <|
                 case model.screen of

@@ -100,6 +100,7 @@ element model =
             Element.column
                 [ Element.width Element.fill
                 , Element.height Element.fill
+                , Element.spacing 10
                 ]
                 [ Element.column
                     [ Element.width Element.fill
