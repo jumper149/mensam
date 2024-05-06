@@ -1,5 +1,10 @@
 = Changelog
 
+== `0.6.3.3`
+
+* Frontend
+  ** Add explanation texts to popups.
+
 == `0.6.3.2`
 
 * Frontend
