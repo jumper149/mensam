@@ -19,8 +19,9 @@ type alias Content =
 
 type Message
     = CloseDropdown
-    | SignOut
+    | YourDashboard
     | YourReservations
+    | SignOut
 
 
 element : Content -> Element.Element Message
@@ -60,6 +61,11 @@ element content =
                         , Element.Font.size 16
                         ]
                         [ dropdownEntry
+                            { attributes = []
+                            , text = "Your Dashboard"
+                            , message = YourDashboard
+                            }
+                        , dropdownEntry
                             { attributes = []
                             , text = "Your Reservations"
                             , message = YourReservations

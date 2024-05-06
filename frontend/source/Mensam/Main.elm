@@ -1676,16 +1676,22 @@ dropdownMessage (MkModel _) message =
         Mensam.Element.Dropdown.CloseDropdown ->
             HideHamburgerMenu
 
-        Mensam.Element.Dropdown.SignOut ->
+        Mensam.Element.Dropdown.YourDashboard ->
             Messages
                 [ HideHamburgerMenu
-                , Auth Logout
+                , SetUrl RouteDashboard
                 ]
 
         Mensam.Element.Dropdown.YourReservations ->
             Messages
                 [ HideHamburgerMenu
                 , SetUrl RouteReservations
+                ]
+
+        Mensam.Element.Dropdown.SignOut ->
+            Messages
+                [ HideHamburgerMenu
+                , Auth Logout
                 ]
 
 
