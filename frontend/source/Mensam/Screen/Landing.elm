@@ -71,28 +71,6 @@ element () =
                             , text = "Sign in"
                             }
                     ]
-            , Element.el
-                [ Element.Font.size 30
-                , Element.Font.bold
-                , Element.Font.color Mensam.Element.Color.bright.magenta
-                , Element.centerX
-                ]
-              <|
-                Element.paragraph
-                    []
-                    [ Element.text "WORK IN PROGRESS"
-                    ]
-            , Element.el
-                [ Element.Font.size 20
-                , Element.Font.regular
-                , Element.Font.color Mensam.Element.Color.dark.magenta
-                , Element.centerX
-                ]
-              <|
-                Element.paragraph
-                    []
-                    [ Element.text "Don't expect this to work yet!"
-                    ]
             ]
 
 
