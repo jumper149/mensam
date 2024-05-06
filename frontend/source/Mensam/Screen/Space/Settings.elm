@@ -299,6 +299,14 @@ element model =
                                 ]
                               <|
                                 Element.text "Delete Space"
+                            , Element.paragraph
+                                []
+                                [ Element.text "Are you sure you want to delete this space?"
+                                ]
+                            , Element.paragraph
+                                []
+                                [ Element.text "Deleting a space will permanently delete all of its data and is not recoverable. This includes desks, roles, memberships and reservations."
+                                ]
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10

@@ -480,6 +480,10 @@ element model =
                                 []
                                 [ Element.text "Do you really want to remove this user from the space?"
                                 ]
+                            , Element.paragraph
+                                []
+                                [ Element.text "Kicking a user will also delete all reservations associated with this user."
+                                ]
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10

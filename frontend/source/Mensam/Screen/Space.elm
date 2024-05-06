@@ -549,6 +549,14 @@ element model =
                                 ]
                               <|
                                 Element.text "Leave Space"
+                            , Element.paragraph
+                                []
+                                [ Element.text "Are you sure you want to leave this space?"
+                                ]
+                            , Element.paragraph
+                                []
+                                [ Element.text "When leaving a space all associated data such as your reservations will be permanently deleted."
+                                ]
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10
