@@ -77,7 +77,14 @@ element model =
                         , Element.centerY
                         ]
                       <|
-                        Element.text "Edit Settings"
+                        Element.text "Settings"
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignLeft, Element.centerY ]
+                            , color = Mensam.Element.Button.Red
+                            , message = Just <| MessagePure OpenDialogToDeleteSpace
+                            , text = "Delete Space"
+                            }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
@@ -248,6 +255,7 @@ element model =
                 , Element.row
                     [ Element.spacing 20
                     , Element.width Element.fill
+                    , Element.alignBottom
                     ]
                     [ Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
@@ -264,13 +272,6 @@ element model =
                             , text = "Apply Settings"
                             }
                     ]
-                , Mensam.Element.Button.button <|
-                    Mensam.Element.Button.MkButton
-                        { attributes = [ Element.width Element.fill ]
-                        , color = Mensam.Element.Button.Red
-                        , message = Just <| MessagePure OpenDialogToDeleteSpace
-                        , text = "Delete Space"
-                        }
                 ]
         , popup =
             case model.popup of

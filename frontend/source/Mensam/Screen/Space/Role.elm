@@ -103,18 +103,21 @@ element model =
                     , Element.padding 10
                     , Element.spacing 30
                     ]
-                    [ Element.column
-                        [ Element.spacing 20
-                        , Element.width Element.fill
-                        , Element.height Element.fill
+                    [ Element.el
+                        [ Element.Font.size 30
+                        , Element.Font.hairline
+                        , Element.alignLeft
+                        , Element.centerY
                         ]
-                        [ Element.el
-                            [ Element.Font.size 30
-                            , Element.Font.hairline
-                            ]
-                          <|
-                            Element.text "Edit Role"
-                        ]
+                      <|
+                        Element.text "Edit Role"
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignLeft, Element.centerY ]
+                            , color = Mensam.Element.Button.Red
+                            , message = Just <| MessagePure OpenDialogToDeleteRole
+                            , text = "Delete Role"
+                            }
                     ]
                 , Element.column
                     [ Element.spacing 20
@@ -392,13 +395,6 @@ element model =
                                 }
                         ]
                     ]
-                , Mensam.Element.Button.button <|
-                    Mensam.Element.Button.MkButton
-                        { attributes = [ Element.width Element.fill ]
-                        , color = Mensam.Element.Button.Red
-                        , message = Just <| MessagePure OpenDialogToDeleteRole
-                        , text = "Delete Role"
-                        }
                 ]
         , popup =
             case model.popup of
