@@ -17,12 +17,13 @@ element : Content -> Element.Element msg
 element content =
     Element.el
         [ Element.width Element.fill
-        , Element.height <| Element.px 60
+        , Element.height <| Element.px 45
         , Element.Background.color <| Element.rgba 1 1 1 0.1
         , Element.Font.family [ Mensam.Element.Font.condensed ]
         , Element.Font.light
         , Element.Font.size 17
         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+        , Element.clip
         ]
     <|
         Element.row
