@@ -61,6 +61,22 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 500 ()
               ]
+  , routePasswordChange ::
+      route
+        :- Summary "Change Password"
+          :> Description
+              "Set a new password for your user account.\n"
+          :> "password"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestPasswordChange
+          :> UVerb
+              PATCH
+              '[JSON]
+              [ WithStatus 200 ResponsePasswordChange
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 500 ()
+              ]
   , routeConfirm ::
       route
         :- Summary "Confirm"
@@ -143,6 +159,24 @@ newtype ResponseRegister = MkResponseRegister
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseRegister") ResponseRegister
+
+type RequestPasswordChange :: Type
+newtype RequestPasswordChange = MkRequestPasswordChange
+  { requestPasswordChangeNewPassword :: T.Text
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestPasswordChange") RequestPasswordChange
+
+type ResponsePasswordChange :: Type
+newtype ResponsePasswordChange = MkResponsePasswordChange
+  { responsePasswordChangeUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responsePasswordChange") ResponsePasswordChange
 
 type RequestConfirm :: Type
 newtype RequestConfirm = MkRequestConfirm

@@ -39,6 +39,7 @@ handler =
     { routeLogin = login
     , routeLogout = logout
     , routeRegister = register
+    , routePasswordChange = passwordChange
     , routeConfirm = confirm
     , routeProfile = profile
     }
@@ -188,6 +189,30 @@ register eitherRequest =
               { responseRegisterEmailSent = emailSent
               }
 
+passwordChange ::
+  ( MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponsePasswordChange) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String RequestPasswordChange ->
+  m (Union responses)
+passwordChange auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBody eitherRequest $ \request -> do
+      logInfo "Changing user password."
+      seldaResult <-
+        runSeldaTransactionT $
+          userSetPassword
+            (userAuthenticatedId authenticated)
+            (mkPassword $ requestPasswordChangeNewPassword request)
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
+        logInfo "Changed user password successfully."
+        respond $ WithStatus @200 MkResponsePasswordChange {responsePasswordChangeUnit = ()}
+
 confirm ::
   ( MonadEmail m
   , MonadIO m
@@ -272,3 +297,16 @@ profile auth eitherRequest =
                         then Just $ userEmail user
                         else Nothing
                   }
+
+handleBadRequestBody ::
+  ( MonadLogger m
+  , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  ) =>
+  Either String a ->
+  (a -> m (Union responses)) ->
+  m (Union responses)
+handleBadRequestBody parsedRequestBody handler' =
+  -- TODO: Rename arguments `handler'` to `handler`
+  case parsedRequestBody of
+    Right a -> handler' a
+    Left err -> respond $ WithStatus @400 $ MkErrorParseBodyJson err

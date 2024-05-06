@@ -145,6 +145,21 @@ userCreate username password emailAddress emailAddressVisible = do
   lift $ logInfo "Created user successfully."
   pure $ MkIdentifierUser $ Selda.fromId @DbUser dbUserId
 
+userSetPassword ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierUser ->
+  Password ->
+  SeldaTransactionT m ()
+userSetPassword identifier password = do
+  lift $ logDebug "Set new user password."
+  passwordHash :: PasswordHash Bcrypt <- hashPassword password
+  lift $ logDebug "Hashed password."
+  Selda.updateOne
+    tableUser
+    (#dbUser_id `Selda.is` Selda.toId @DbUser (unIdentifierUser identifier))
+    (`Selda.with` [#dbUser_password_hash Selda.:= Selda.literal (unPasswordHash passwordHash)])
+  lift $ logInfo "Set new password successfully."
+
 type SessionValidity :: Type
 data SessionValidity
   = SessionValid

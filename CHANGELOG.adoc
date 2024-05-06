@@ -1,5 +1,8 @@
 = Changelog
 
+* API
+  ** Add `/password` route to change your user password.
+
 == `0.6.3.3`
 
 * Frontend
