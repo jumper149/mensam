@@ -68,7 +68,7 @@ element model =
                     [ Element.width Element.fill
                     , Element.height <| Element.px 70
                     , Element.padding 10
-                    , Element.spacing 30
+                    , Element.spacing 10
                     ]
                     [ Element.el
                         [ Element.Font.size 30
@@ -83,7 +83,7 @@ element model =
                             { attributes = [ Element.alignLeft, Element.centerY ]
                             , color = Mensam.Element.Button.Red
                             , message = Just <| MessagePure OpenDialogToDeleteSpace
-                            , text = "Delete Space"
+                            , text = "Delete"
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
@@ -91,6 +91,13 @@ element model =
                             , color = Mensam.Element.Button.Yellow
                             , message = Just <| MessageEffect OpenPageToRoles
                             , text = "Roles"
+                            }
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignRight, Element.centerY ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessageEffect ReturnToSpace
+                            , text = "Go back"
                             }
                     ]
                 , Element.column
@@ -254,15 +261,16 @@ element model =
                     ]
                 , Element.row
                     [ Element.spacing 20
+                    , Element.padding 20
                     , Element.width Element.fill
                     , Element.alignBottom
                     ]
                     [ Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
-                            { attributes = [ Element.width Element.fill ]
+                            { attributes = []
                             , color = Mensam.Element.Button.Yellow
                             , message = Just <| MessageEffect ReturnToSpace
-                            , text = "Abort"
+                            , text = "Go back"
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton

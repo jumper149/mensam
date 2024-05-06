@@ -101,7 +101,7 @@ element model =
                     [ Element.width Element.fill
                     , Element.height <| Element.px 70
                     , Element.padding 10
-                    , Element.spacing 30
+                    , Element.spacing 20
                     ]
                     [ Element.el
                         [ Element.Font.size 30
@@ -117,6 +117,13 @@ element model =
                             , color = Mensam.Element.Button.Red
                             , message = Just <| MessagePure OpenDialogToDeleteRole
                             , text = "Delete Role"
+                            }
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignRight, Element.centerY ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessageEffect ReturnToRoles
+                            , text = "Go back"
                             }
                     ]
                 , Element.column
@@ -381,10 +388,10 @@ element model =
                         ]
                         [ Mensam.Element.Button.button <|
                             Mensam.Element.Button.MkButton
-                                { attributes = [ Element.width Element.fill ]
+                                { attributes = []
                                 , color = Mensam.Element.Button.Yellow
                                 , message = Just <| MessageEffect ReturnToRoles
-                                , text = "Abort"
+                                , text = "Go back"
                                 }
                         , Mensam.Element.Button.button <|
                             Mensam.Element.Button.MkButton

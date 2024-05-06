@@ -70,40 +70,30 @@ element model =
                     [ Element.width Element.fill
                     , Element.height <| Element.px 70
                     , Element.padding 10
-                    , Element.spacing 30
+                    , Element.spacing 20
                     ]
-                    [ Element.column
-                        [ Element.spacing 20
-                        , Element.width Element.fill
-                        , Element.height Element.fill
-                        ]
-                        [ Element.el
-                            [ Element.Font.size 30
-                            , Element.Font.hairline
-                            ]
-                          <|
-                            Element.text "Edit Desks"
-                        ]
-                    , Element.el
-                        [ Element.alignRight
-                        , Element.padding 10
-                        , Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Events.onClick <| MessagePure OpenDialogToCreateDesk
+                    [ Element.el
+                        [ Element.Font.size 30
+                        , Element.Font.hairline
+                        , Element.alignLeft
+                        , Element.centerY
                         ]
                       <|
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                            , Element.Font.size 17
-                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                            ]
-                        <|
-                            Element.text "New Desk"
+                        Element.text "Edit Desks"
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignRight, Element.centerY ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessagePure OpenDialogToCreateDesk
+                            , text = "New Desk"
+                            }
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignRight, Element.centerY ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessageEffect ReturnToSpace
+                            , text = "Go back"
+                            }
                     ]
                 , Element.indexedTable
                     [ Element.width Element.fill
@@ -498,6 +488,7 @@ type MessageEffect
     | SubmitCreateDesk { name : Mensam.Desk.Name }
     | SubmitEditDesk { id : Mensam.Desk.Identifier, name : Maybe Mensam.Desk.Name }
     | SubmitDeleteDesk { id : Mensam.Desk.Identifier }
+    | ReturnToSpace
 
 
 spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message

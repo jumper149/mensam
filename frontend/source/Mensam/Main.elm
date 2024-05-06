@@ -1112,6 +1112,14 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+                Mensam.Screen.Space.Roles.ReturnToSpaceSettings ->
+                    case model.screen of
+                        ScreenSpaceRoles screenModel ->
+                            update (SetUrl <| RouteSpaceSettings screenModel.spaceId) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
         MessageSpaceRoles (Mensam.Screen.Space.Roles.Messages ms) ->
             case model.screen of
                 ScreenSpaceRoles _ ->
@@ -1419,6 +1427,14 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+                Mensam.Screen.Space.Desks.ReturnToSpace ->
+                    case model.screen of
+                        ScreenSpaceDesks screenModel ->
+                            update (SetUrl <| RouteSpace screenModel.spaceId) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
         MessageSpaceDesks (Mensam.Screen.Space.Desks.Messages ms) ->
             case model.screen of
                 ScreenSpaceDesks _ ->
@@ -1503,6 +1519,14 @@ update message (MkModel model) =
 
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Space.Users.ReturnToSpace ->
+                    case model.screen of
+                        ScreenSpaceUsers screenModel ->
+                            update (SetUrl <| RouteSpace screenModel.spaceId) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
 
         MessageSpaceUsers (Mensam.Screen.Space.Users.Messages ms) ->
             case model.screen of

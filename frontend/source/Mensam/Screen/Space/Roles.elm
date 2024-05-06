@@ -71,7 +71,7 @@ element model =
                     [ Element.width Element.fill
                     , Element.height <| Element.px 70
                     , Element.padding 10
-                    , Element.spacing 30
+                    , Element.spacing 20
                     ]
                     [ Element.el
                         [ Element.Font.size 30
@@ -87,6 +87,13 @@ element model =
                             , color = Mensam.Element.Button.Yellow
                             , message = Just <| MessagePure OpenDialogToCreateRole
                             , text = "New Role"
+                            }
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignRight, Element.centerY ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessageEffect ReturnToSpaceSettings
+                            , text = "Go back"
                             }
                     ]
                 , Element.indexedTable
@@ -620,6 +627,7 @@ type MessageEffect
             , cancelReservation : Bool
             }
         }
+    | ReturnToSpaceSettings
 
 
 spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message

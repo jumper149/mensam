@@ -78,20 +78,23 @@ element model =
                     [ Element.width Element.fill
                     , Element.height <| Element.px 70
                     , Element.padding 10
-                    , Element.spacing 30
+                    , Element.spacing 10
                     ]
-                    [ Element.column
-                        [ Element.spacing 20
-                        , Element.width Element.fill
-                        , Element.height Element.fill
+                    [ Element.el
+                        [ Element.Font.size 30
+                        , Element.Font.hairline
+                        , Element.alignLeft
+                        , Element.centerY
                         ]
-                        [ Element.el
-                            [ Element.Font.size 30
-                            , Element.Font.hairline
-                            ]
-                          <|
-                            Element.text "Users"
-                        ]
+                      <|
+                        Element.text "Users"
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignRight, Element.centerY ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessageEffect ReturnToSpace
+                            , text = "Go back"
+                            }
                     ]
                 , Element.indexedTable
                     [ Element.width Element.fill
@@ -613,6 +616,7 @@ type MessageEffect
     | GetProfile Mensam.User.Identifier
     | SubmitEditUser { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }
     | SubmitKickUser { user : Mensam.User.Identifier }
+    | ReturnToSpace
 
 
 spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
