@@ -4,7 +4,6 @@ import Element
 import Element.Background
 import Element.Font
 import Element.Input
-import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
 import Mensam.Api.SpaceDelete
@@ -108,24 +107,13 @@ element model =
                       <|
                         case model.new.name of
                             Nothing ->
-                                Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| EnterName <| Just <| Mensam.Space.MkName ""
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Edit Name"
-                                    }
+                                Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure <| EnterName <| Just <| Mensam.Space.MkName ""
+                                        , text = "Edit Name"
+                                        }
 
                             Just name ->
                                 Element.Input.text
@@ -159,24 +147,13 @@ element model =
                       <|
                         case model.new.timezone of
                             Nothing ->
-                                Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| SetTimezone <| Just <| Mensam.Time.MkTimezoneIdentifier ""
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Edit Timezone"
-                                    }
+                                Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure <| SetTimezone <| Just <| Mensam.Time.MkTimezoneIdentifier ""
+                                        , text = "Edit Timezone"
+                                        }
 
                             Just timezone ->
                                 Element.Input.text
@@ -210,24 +187,13 @@ element model =
                       <|
                         case model.new.visibility of
                             Nothing ->
-                                Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| SetVisibility <| Just <| model.old.visibility
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Edit Visibility"
-                                    }
+                                Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure <| SetVisibility <| Just <| model.old.visibility
+                                        , text = "Edit Visibility"
+                                        }
 
                             Just visibility ->
                                 Element.row
@@ -283,62 +249,28 @@ element model =
                     [ Element.spacing 20
                     , Element.width Element.fill
                     ]
-                    [ Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.red
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
-                        , Element.padding 10
-                        ]
-                        { onPress = Just <| MessageEffect ReturnToSpace
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Abort"
-                        }
-                    , Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.blue
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
-                        , Element.padding 10
-                        ]
-                        { onPress = Just <| MessageEffect SubmitSettings
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Apply settings"
-                        }
+                    [ Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.width Element.fill ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessageEffect ReturnToSpace
+                            , text = "Abort"
+                            }
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.width Element.fill ]
+                            , color = Mensam.Element.Button.Blue
+                            , message = Just <| MessageEffect SubmitSettings
+                            , text = "Apply Settings"
+                            }
                     ]
-                , Element.Input.button
-                    [ Element.Background.color Mensam.Element.Color.bright.red
-                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                    , Element.Font.color Mensam.Element.Color.dark.black
-                    , Element.width Element.fill
-                    , Element.padding 10
-                    , Element.alignBottom
-                    ]
-                    { onPress = Just <| MessagePure OpenDialogToDeleteSpace
-                    , label =
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                            ]
-                        <|
-                            Element.text "Delete space"
-                    }
+                , Mensam.Element.Button.button <|
+                    Mensam.Element.Button.MkButton
+                        { attributes = [ Element.width Element.fill ]
+                        , color = Mensam.Element.Button.Red
+                        , message = Just <| MessagePure OpenDialogToDeleteSpace
+                        , text = "Delete Space"
+                        }
                 ]
         , popup =
             case model.popup of
@@ -363,42 +295,20 @@ element model =
                                 , Element.spacing 10
                                 , Element.alignBottom
                                 ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToDeleteSpace
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.red
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessageEffect <| SubmitDeleteSpace
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Delete space permanently"
-                                    }
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure CloseDialogToDeleteSpace
+                                        , text = "Abort"
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Red
+                                        , message = Just <| MessageEffect SubmitDeleteSpace
+                                        , text = "Delete Space permanently"
+                                        }
                                 ]
                             ]
         , closePopup = MessagePure CloseDialogToDeleteSpace

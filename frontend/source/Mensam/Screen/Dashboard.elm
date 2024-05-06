@@ -4,7 +4,6 @@ import Element
 import Element.Background
 import Element.Events
 import Element.Font
-import Element.Input
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
@@ -14,6 +13,7 @@ import Mensam.Api.ReservationList
 import Mensam.Api.SpaceList
 import Mensam.Auth.Bearer
 import Mensam.Desk
+import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
@@ -504,42 +504,20 @@ element model =
                                         , Element.spacing 10
                                         , Element.alignBottom
                                         ]
-                                        [ Element.Input.button
-                                            [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                            , Element.Font.color Mensam.Element.Color.dark.black
-                                            , Element.width Element.fill
-                                            , Element.padding 10
-                                            ]
-                                            { onPress = Just <| MessagePure <| ClosePopup
-                                            , label =
-                                                Element.el
-                                                    [ Element.centerX
-                                                    , Element.centerY
-                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                    ]
-                                                <|
-                                                    Element.text "Go back"
-                                            }
-                                        , Element.Input.button
-                                            [ Element.Background.color Mensam.Element.Color.bright.red
-                                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                            , Element.Font.color Mensam.Element.Color.dark.black
-                                            , Element.width Element.fill
-                                            , Element.padding 10
-                                            ]
-                                            { onPress = Just <| MessageEffect <| CancelReservation reservationId
-                                            , label =
-                                                Element.el
-                                                    [ Element.centerX
-                                                    , Element.centerY
-                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                    ]
-                                                <|
-                                                    Element.text "Cancel reservation"
-                                            }
+                                        [ Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Yellow
+                                                , message = Just <| MessagePure <| ClosePopup
+                                                , text = "Go back"
+                                                }
+                                        , Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Red
+                                                , message = Just <| MessageEffect <| CancelReservation reservationId
+                                                , text = "Cancel Reservation"
+                                                }
                                         ]
                                     ]
         , closePopup = MessagePure ClosePopup

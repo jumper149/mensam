@@ -22,6 +22,7 @@ type Color
     = Yellow
     | Blue
     | Red
+    | Transparent
 
 
 button : Button msg -> Element.Element msg
@@ -38,6 +39,22 @@ button (MkButton buttonData) =
 
                 Red ->
                     Mensam.Element.Color.bright.red
+
+                Transparent ->
+                    Mensam.Element.Color.transparent
+         , Element.Font.color <|
+            case buttonData.color of
+                Yellow ->
+                    Mensam.Element.Color.dark.black
+
+                Blue ->
+                    Mensam.Element.Color.dark.black
+
+                Red ->
+                    Mensam.Element.Color.dark.black
+
+                Transparent ->
+                    Mensam.Element.Color.bright.blue
          , Element.mouseOver
             [ Element.Background.color <|
                 case buttonData.color of
@@ -49,8 +66,23 @@ button (MkButton buttonData) =
 
                     Red ->
                         Mensam.Element.Color.bright.white
+
+                    Transparent ->
+                        Mensam.Element.Color.transparent
+            , Element.Font.color <|
+                case buttonData.color of
+                    Yellow ->
+                        Mensam.Element.Color.dark.black
+
+                    Blue ->
+                        Mensam.Element.Color.dark.black
+
+                    Red ->
+                        Mensam.Element.Color.dark.black
+
+                    Transparent ->
+                        Mensam.Element.Color.bright.green
             ]
-         , Element.Font.color Mensam.Element.Color.dark.black
          ]
             ++ buttonData.attributes
         )

@@ -4,14 +4,13 @@ import Element
 import Element.Background
 import Element.Font
 import Element.Input
-import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
 import Mensam.Api.Login
 import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
+import Mensam.Element.Button
 import Mensam.Element.Color
-import Mensam.Element.Font
 import Mensam.Error
 import Mensam.User
 import Time
@@ -65,7 +64,7 @@ element model =
                 , label = Element.Input.labelAbove [] <| Element.text "Password"
                 , show = False
                 }
-            , Element.el
+            , Element.column
                 [ Element.width Element.fill
                 , Element.paddingEach
                     { top = 0
@@ -73,63 +72,33 @@ element model =
                     , bottom = 5
                     , left = 10
                     }
+                , Element.spacing 3
                 ]
-              <|
-                Element.column
-                    [ Element.width Element.fill
-                    , Element.spacing 3
+                [ Element.el
+                    [ Element.height <| Element.px 14
+                    , Element.paddingXY 5 0
+                    , Element.Font.size 14
+                    , Element.Font.color Mensam.Element.Color.bright.red
                     ]
-                    [ Element.el
-                        [ Element.height <| Element.px 14
-                        , Element.paddingXY 5 0
-                        , Element.Font.size 14
-                        , Element.Font.color Mensam.Element.Color.bright.red
-                        ]
-                      <|
-                        Element.text <|
-                            model.hint
-                    , Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
-                        , Element.padding 10
-                        ]
-                        { onPress = Just <| MessageEffect <| SubmitLogin
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Sign in"
+                  <|
+                    Element.text <|
+                        model.hint
+                , Mensam.Element.Button.button <|
+                    Mensam.Element.Button.MkButton
+                        { attributes = [ Element.width Element.fill ]
+                        , color = Mensam.Element.Button.Yellow
+                        , message = Just <| MessageEffect SubmitLogin
+                        , text = "Sign in"
                         }
-                    ]
-            , Element.el
-                [ Element.width Element.fill
+                , Element.el [ Element.height <| Element.px 10 ] Element.none
+                , Mensam.Element.Button.button <|
+                    Mensam.Element.Button.MkButton
+                        { attributes = [ Element.centerX ]
+                        , color = Mensam.Element.Button.Transparent
+                        , message = Just <| MessageEffect Register
+                        , text = "Register"
+                        }
                 ]
-              <|
-                Element.row
-                    [ Element.centerX
-                    ]
-                    [ Element.Input.button
-                        [ Element.Font.color Mensam.Element.Color.bright.blue
-                        , Element.mouseOver [ Element.Font.color Mensam.Element.Color.bright.green ]
-                        ]
-                        { onPress = Just <| MessageEffect <| Register
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Register"
-                        }
-                    ]
             ]
 
 

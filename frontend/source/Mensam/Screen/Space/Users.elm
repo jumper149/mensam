@@ -4,7 +4,6 @@ import Element
 import Element.Background
 import Element.Events
 import Element.Font
-import Element.Input
 import Html.Attributes
 import List.Extra
 import Mensam.Api.Profile
@@ -13,7 +12,6 @@ import Mensam.Api.SpaceUserRole
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Element.Button
-import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
@@ -419,48 +417,26 @@ element model =
                                 , Element.spacing 10
                                 , Element.alignBottom
                                 ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToEditUser
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress =
-                                        case popupModel.role of
-                                            Nothing ->
-                                                Nothing
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure <| CloseDialogToEditUser
+                                        , text = "Abort"
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message =
+                                            case popupModel.role of
+                                                Nothing ->
+                                                    Nothing
 
-                                            Just role ->
-                                                Just <| MessageEffect <| SubmitEditUser { user = popupModel.user, role = role }
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Change role"
-                                    }
+                                                Just role ->
+                                                    Just <| MessageEffect <| SubmitEditUser { user = popupModel.user, role = role }
+                                        , text = "Change Role"
+                                        }
                                 ]
                             ]
 
@@ -506,42 +482,20 @@ element model =
                                 , Element.spacing 10
                                 , Element.alignBottom
                                 ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToKick
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.red
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessageEffect <| SubmitKickUser { user = popupModel.user }
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Kick user"
-                                    }
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure <| CloseDialogToKick
+                                        , text = "Abort"
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Red
+                                        , message = Just <| MessageEffect <| SubmitKickUser { user = popupModel.user }
+                                        , text = "Kick User"
+                                        }
                                 ]
                             ]
         , closePopup = MessagePure ClosePopup

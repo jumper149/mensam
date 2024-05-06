@@ -13,6 +13,7 @@ import Mensam.Api.DeskList
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Desk
+import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
@@ -238,42 +239,20 @@ element model =
                                 , Element.spacing 10
                                 , Element.alignBottom
                                 ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToCreateDesk
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessageEffect <| SubmitCreateDesk popupModel
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Create desk"
-                                    }
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure <| CloseDialogToCreateDesk
+                                        , text = "Abort"
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Blue
+                                        , message = Just <| MessageEffect <| SubmitCreateDesk popupModel
+                                        , text = "Create Desk"
+                                        }
                                 ]
                             ]
 
@@ -295,42 +274,20 @@ element model =
                                 , Element.spacing 10
                                 , Element.alignBottom
                                 ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToDeleteDesk
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.red
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessageEffect <| SubmitDeleteDesk { id = popupModel.id }
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Delete desk"
-                                    }
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure <| CloseDialogToDeleteDesk
+                                        , text = "Abort"
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Red
+                                        , message = Just <| MessageEffect <| SubmitDeleteDesk { id = popupModel.id }
+                                        , text = "Delete Desk"
+                                        }
                                 ]
                             ]
 
@@ -388,24 +345,13 @@ element model =
                               <|
                                 case popupModel.newName of
                                     Nothing ->
-                                        Element.Input.button
-                                            [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                            , Element.Font.color Mensam.Element.Color.dark.black
-                                            , Element.width Element.fill
-                                            , Element.padding 10
-                                            ]
-                                            { onPress = Just <| MessagePure <| EditDeskEnterName <| Just <| Mensam.Desk.MkName ""
-                                            , label =
-                                                Element.el
-                                                    [ Element.centerX
-                                                    , Element.centerY
-                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                    ]
-                                                <|
-                                                    Element.text "Edit Name"
-                                            }
+                                        Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Yellow
+                                                , message = Just <| MessagePure <| EditDeskEnterName <| Just <| Mensam.Desk.MkName ""
+                                                , text = "Edit Name"
+                                                }
 
                                     Just name ->
                                         Element.Input.text
@@ -421,48 +367,26 @@ element model =
                                 , Element.spacing 10
                                 , Element.alignBottom
                                 ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToEditDesk
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.blue
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress =
-                                        Just <|
-                                            MessageEffect <|
-                                                SubmitEditDesk
-                                                    { id = popupModel.id
-                                                    , name = popupModel.newName
-                                                    }
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Apply changes"
-                                    }
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure <| CloseDialogToEditDesk
+                                        , text = "Abort"
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Blue
+                                        , message =
+                                            Just <|
+                                                MessageEffect <|
+                                                    SubmitEditDesk
+                                                        { id = popupModel.id
+                                                        , name = popupModel.newName
+                                                        }
+                                        , text = "Apply Changes"
+                                        }
                                 ]
                             ]
         , closePopup = MessagePure ClosePopup

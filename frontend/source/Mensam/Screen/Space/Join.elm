@@ -12,8 +12,8 @@ import List.Extra
 import Mensam.Api.SpaceJoin
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
+import Mensam.Element.Button
 import Mensam.Element.Color
-import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.NameOrIdentifier
@@ -162,41 +162,20 @@ element model =
                             , Element.spacing 10
                             , Element.alignBottom
                             ]
-                            [ Element.Input.button
-                                ([ Element.width Element.fill
-                                 , Element.padding 10
-                                 ]
-                                    ++ (case model.roleIdSelected of
+                            [ Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = [ Element.width Element.fill ]
+                                    , color = Mensam.Element.Button.Yellow
+                                    , message =
+                                        case model.roleIdSelected of
+                                            -- TODO: Show a help text in this case.
                                             Nothing ->
-                                                [ Element.Background.color Mensam.Element.Color.dark.white
-                                                , Element.Font.color Mensam.Element.Color.dark.black
-                                                ]
+                                                Nothing
 
                                             Just _ ->
-                                                [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                                , Element.Font.color Mensam.Element.Color.dark.black
-                                                ]
-                                       )
-                                )
-                                { onPress =
-                                    case model.roleIdSelected of
-                                        -- TODO: Show a help text in this case.
-                                        Nothing ->
-                                            Nothing
-
-                                        Just _ ->
-                                            Just <| MessageEffect <| SubmitJoin
-                                , label =
-                                    Element.el
-                                        [ Element.centerX
-                                        , Element.centerY
-                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                        ]
-                                    <|
-                                        Element.text "Submit"
-                                }
+                                                Just <| MessageEffect <| SubmitJoin
+                                    , text = "Submit"
+                                    }
                             ]
                         ]
                     ]

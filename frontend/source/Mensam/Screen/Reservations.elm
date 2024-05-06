@@ -4,7 +4,6 @@ import Element
 import Element.Background
 import Element.Events
 import Element.Font
-import Element.Input
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
@@ -13,7 +12,7 @@ import Mensam.Api.ReservationCancel
 import Mensam.Api.ReservationList
 import Mensam.Auth.Bearer
 import Mensam.Desk
-import Mensam.Element.Color
+import Mensam.Element.Button
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
@@ -117,68 +116,46 @@ element model =
                     , Element.padding 10
                     , Element.spacing 30
                     ]
-                    [ Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.blue
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
-                        , Element.padding 10
-                        ]
-                        { onPress = Just <| MessagePure <| ViewDateBeginPicker
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text <|
-                                    let
-                                        date =
-                                            case model.modelDateBegin of
-                                                Mensam.Widget.Date.MkModel { selected } ->
-                                                    Mensam.Time.unDate selected
-                                    in
-                                    String.concat
-                                        [ Mensam.Time.yearToString date.year
-                                        , ", "
-                                        , Mensam.Time.monthToString date.month
-                                        , " "
-                                        , Mensam.Time.dayToString date.day
-                                        ]
-                        }
-                    , Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.blue
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
-                        , Element.padding 10
-                        ]
-                        { onPress = Just <| MessagePure <| ViewDateEndPicker
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text <|
-                                    let
-                                        date =
-                                            case model.modelDateEnd of
-                                                Mensam.Widget.Date.MkModel { selected } ->
-                                                    Mensam.Time.unDate selected
-                                    in
-                                    String.concat
-                                        [ Mensam.Time.yearToString date.year
-                                        , ", "
-                                        , Mensam.Time.monthToString date.month
-                                        , " "
-                                        , Mensam.Time.dayToString date.day
-                                        ]
-                        }
+                    [ Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.width Element.fill ]
+                            , color = Mensam.Element.Button.Blue
+                            , message = Just <| MessagePure ViewDateBeginPicker
+                            , text =
+                                let
+                                    date =
+                                        case model.modelDateBegin of
+                                            Mensam.Widget.Date.MkModel { selected } ->
+                                                Mensam.Time.unDate selected
+                                in
+                                String.concat
+                                    [ Mensam.Time.yearToString date.year
+                                    , ", "
+                                    , Mensam.Time.monthToString date.month
+                                    , " "
+                                    , Mensam.Time.dayToString date.day
+                                    ]
+                            }
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.width Element.fill ]
+                            , color = Mensam.Element.Button.Blue
+                            , message = Just <| MessagePure ViewDateEndPicker
+                            , text =
+                                let
+                                    date =
+                                        case model.modelDateEnd of
+                                            Mensam.Widget.Date.MkModel { selected } ->
+                                                Mensam.Time.unDate selected
+                                in
+                                String.concat
+                                    [ Mensam.Time.yearToString date.year
+                                    , ", "
+                                    , Mensam.Time.monthToString date.month
+                                    , " "
+                                    , Mensam.Time.dayToString date.day
+                                    ]
+                            }
                     ]
                 , Element.indexedTable
                     [ Element.width Element.fill
@@ -392,24 +369,14 @@ element model =
                                         <|
                                             Element.map (MessagePure << MessageDateEnd) <|
                                                 Mensam.Widget.Date.elementPickDate model.modelDateEnd
-                            , Element.Input.button
-                                [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                , Element.Font.color Mensam.Element.Color.dark.black
-                                , Element.width Element.fill
-                                , Element.padding 10
-                                ]
-                                { onPress = Just <| MessageEffect <| SetDateRange
-                                , label =
-                                    Element.el
-                                        [ Element.centerX
-                                        , Element.centerY
-                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                        , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                        ]
-                                    <|
-                                        Element.text "Set date boundary"
-                                }
+                            , Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = [ Element.width Element.fill ]
+                                    , color = Mensam.Element.Button.Yellow
+                                    , message = Just <| MessageEffect SetDateRange
+                                    , text =
+                                        "Set date boundary"
+                                    }
                             ]
 
                 Just (PopupViewReservation reservationId) ->
@@ -530,42 +497,20 @@ element model =
                                         , Element.spacing 10
                                         , Element.alignBottom
                                         ]
-                                        [ Element.Input.button
-                                            [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                            , Element.Font.color Mensam.Element.Color.dark.black
-                                            , Element.width Element.fill
-                                            , Element.padding 10
-                                            ]
-                                            { onPress = Just <| MessagePure <| ClosePopup
-                                            , label =
-                                                Element.el
-                                                    [ Element.centerX
-                                                    , Element.centerY
-                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                    ]
-                                                <|
-                                                    Element.text "Go back"
-                                            }
-                                        , Element.Input.button
-                                            [ Element.Background.color Mensam.Element.Color.bright.red
-                                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                            , Element.Font.color Mensam.Element.Color.dark.black
-                                            , Element.width Element.fill
-                                            , Element.padding 10
-                                            ]
-                                            { onPress = Just <| MessageEffect <| CancelReservation reservationId
-                                            , label =
-                                                Element.el
-                                                    [ Element.centerX
-                                                    , Element.centerY
-                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                    ]
-                                                <|
-                                                    Element.text "Cancel reservation"
-                                            }
+                                        [ Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Yellow
+                                                , message = Just <| MessagePure ClosePopup
+                                                , text = "Go back"
+                                                }
+                                        , Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Red
+                                                , message = Just <| MessageEffect <| CancelReservation reservationId
+                                                , text = "Cancel reservation"
+                                                }
                                         ]
                                     ]
         , closePopup = MessagePure ClosePopup

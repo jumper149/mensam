@@ -462,42 +462,20 @@ element model =
                                 , Element.spacing 10
                                 , Element.alignBottom
                                 ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToCreateRole
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessageEffect <| SubmitCreateRole popupModel
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Create role"
-                                    }
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure CloseDialogToCreateRole
+                                        , text = "Abort"
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Blue
+                                        , message = Just <| MessageEffect <| SubmitCreateRole popupModel
+                                        , text = "Create Role"
+                                        }
                                 ]
                             ]
         , closePopup = MessagePure CloseDialogToCreateRole

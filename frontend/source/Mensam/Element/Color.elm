@@ -39,3 +39,8 @@ type alias AnsiIso6429 =
     , cyan : Element.Color
     , white : Element.Color
     }
+
+
+transparent : Element.Color
+transparent =
+    Element.rgba255 0 0 0 0

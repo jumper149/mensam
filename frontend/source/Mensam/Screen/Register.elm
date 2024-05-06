@@ -4,12 +4,11 @@ import Element
 import Element.Background
 import Element.Font
 import Element.Input
-import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
 import Mensam.Api.Register
+import Mensam.Element.Button
 import Mensam.Element.Color
-import Mensam.Element.Font
 import Mensam.Error
 
 
@@ -105,24 +104,13 @@ element model =
                       <|
                         Element.text <|
                             model.hint
-                    , Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
-                        , Element.padding 10
-                        ]
-                        { onPress = Just <| MessageEffect <| Submit
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Sign up"
-                        }
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.width Element.fill ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessageEffect Submit
+                            , text = "Sign up"
+                            }
                     ]
             ]
 

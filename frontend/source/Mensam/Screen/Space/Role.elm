@@ -13,6 +13,7 @@ import Mensam.Api.RoleDelete
 import Mensam.Api.RoleEdit
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
+import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
@@ -137,24 +138,13 @@ element model =
                       <|
                         case model.new.name of
                             Nothing ->
-                                Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| EnterName <| Just model.role.name
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Edit Name"
-                                    }
+                                Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure <| EnterName <| Just model.role.name
+                                        , text = "Edit Name"
+                                        }
 
                             Just name ->
                                 Element.Input.text
@@ -182,24 +172,13 @@ element model =
                       <|
                         case model.new.accessibilityAndPassword of
                             Nothing ->
-                                Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure EditRoleAccessibilityAndPasswordStart
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Edit Accessibility"
-                                    }
+                                Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure EditRoleAccessibilityAndPasswordStart
+                                        , text = "Edit Accessibility"
+                                        }
 
                             Just accessibilityAndPassword ->
                                 Element.column
@@ -316,24 +295,13 @@ element model =
                       <|
                         case model.new.permissions of
                             Nothing ->
-                                Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure EditRolePermissionsStart
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Edit Permissions"
-                                    }
+                                Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure EditRolePermissionsStart
+                                        , text = "Edit Permissions"
+                                        }
 
                             Just permissions ->
                                 Element.column
@@ -408,62 +376,29 @@ element model =
                         [ Element.spacing 20
                         , Element.width Element.fill
                         ]
-                        [ Element.Input.button
-                            [ Element.Background.color Mensam.Element.Color.bright.red
-                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                            , Element.Font.color Mensam.Element.Color.dark.black
-                            , Element.width Element.fill
-                            , Element.padding 10
-                            ]
-                            { onPress = Just <| MessageEffect ReturnToRoles
-                            , label =
-                                Element.el
-                                    [ Element.centerX
-                                    , Element.centerY
-                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                    ]
-                                <|
-                                    Element.text "Abort"
-                            }
-                        , Element.Input.button
-                            [ Element.Background.color Mensam.Element.Color.bright.blue
-                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                            , Element.Font.color Mensam.Element.Color.dark.black
-                            , Element.width Element.fill
-                            , Element.padding 10
-                            ]
-                            { onPress = Just <| MessageEffect SubmitEditRole
-                            , label =
-                                Element.el
-                                    [ Element.centerX
-                                    , Element.centerY
-                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                    ]
-                                <|
-                                    Element.text "Apply settings"
-                            }
+                        [ Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.width Element.fill ]
+                                , color = Mensam.Element.Button.Yellow
+                                , message = Just <| MessageEffect ReturnToRoles
+                                , text = "Abort"
+                                }
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.width Element.fill ]
+                                , color = Mensam.Element.Button.Blue
+                                , message = Just <| MessageEffect SubmitEditRole
+                                , text = "Apply Settings"
+                                }
                         ]
                     ]
-                , Element.Input.button
-                    [ Element.Background.color Mensam.Element.Color.bright.red
-                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                    , Element.Font.color Mensam.Element.Color.dark.black
-                    , Element.width Element.fill
-                    , Element.padding 10
-                    ]
-                    { onPress = Just <| MessagePure OpenDialogToDeleteRole
-                    , label =
-                        Element.el
-                            [ Element.centerX
-                            , Element.centerY
-                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                            ]
-                        <|
-                            Element.text "Delete role"
-                    }
+                , Mensam.Element.Button.button <|
+                    Mensam.Element.Button.MkButton
+                        { attributes = [ Element.width Element.fill ]
+                        , color = Mensam.Element.Button.Red
+                        , message = Just <| MessagePure OpenDialogToDeleteRole
+                        , text = "Delete Role"
+                        }
                 ]
         , popup =
             case model.popup of
@@ -561,63 +496,20 @@ element model =
                                 , Element.spacing 10
                                 , Element.alignBottom
                                 ]
-                                [ Element.Input.button
-                                    [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                                    { onPress = Just <| MessagePure <| CloseDialogToDeleteRole
-                                    , label =
-                                        Element.el
-                                            [ Element.centerX
-                                            , Element.centerY
-                                            , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                            , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                            ]
-                                        <|
-                                            Element.text "Abort"
-                                    }
-                                , case popupModel.chosenFallback of
-                                    Nothing ->
-                                        Element.Input.button
-                                            [ Element.Background.color Mensam.Element.Color.bright.black
-                                            , Element.Font.color Mensam.Element.Color.dark.black
-                                            , Element.width Element.fill
-                                            , Element.padding 10
-                                            ]
-                                            { onPress = Nothing
-                                            , label =
-                                                Element.el
-                                                    [ Element.centerX
-                                                    , Element.centerY
-                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                    ]
-                                                <|
-                                                    Element.text "Delete role permanently"
-                                            }
-
-                                    Just fallback ->
-                                        Element.Input.button
-                                            [ Element.Background.color Mensam.Element.Color.bright.red
-                                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                            , Element.Font.color Mensam.Element.Color.dark.black
-                                            , Element.width Element.fill
-                                            , Element.padding 10
-                                            ]
-                                            { onPress = Just <| MessageEffect <| SubmitDeleteRole { fallback = fallback }
-                                            , label =
-                                                Element.el
-                                                    [ Element.centerX
-                                                    , Element.centerY
-                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                    ]
-                                                <|
-                                                    Element.text "Delete role permanently"
-                                            }
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessagePure CloseDialogToDeleteRole
+                                        , text = "Abort"
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Red
+                                        , message = Maybe.map (\fallback -> MessageEffect <| SubmitDeleteRole { fallback = fallback }) popupModel.chosenFallback
+                                        , text = "Delete Role permanently"
+                                        }
                                 ]
                             ]
         , closePopup = MessagePure ClosePopup

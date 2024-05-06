@@ -11,6 +11,7 @@ import Json.Decode as Decode
 import Mensam.Api.SpaceCreate
 import Mensam.Api.SpaceList
 import Mensam.Auth.Bearer
+import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
@@ -220,42 +221,20 @@ element model =
                                     , Element.spacing 10
                                     , Element.alignBottom
                                     ]
-                                    [ Element.Input.button
-                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
-                                        , Element.width Element.fill
-                                        , Element.padding 10
-                                        ]
-                                        { onPress = Just <| MessagePure <| CloseDialogToCreate
-                                        , label =
-                                            Element.el
-                                                [ Element.centerX
-                                                , Element.centerY
-                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                ]
-                                            <|
-                                                Element.text "Abort"
-                                        }
-                                    , Element.Input.button
-                                        [ Element.Background.color Mensam.Element.Color.bright.yellow
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
-                                        , Element.width Element.fill
-                                        , Element.padding 10
-                                        ]
-                                        { onPress = Just <| MessageEffect <| SubmitCreate formData
-                                        , label =
-                                            Element.el
-                                                [ Element.centerX
-                                                , Element.centerY
-                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                                ]
-                                            <|
-                                                Element.text "Submit"
-                                        }
+                                    [ Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.width Element.fill ]
+                                            , color = Mensam.Element.Button.Yellow
+                                            , message = Just <| MessagePure <| CloseDialogToCreate
+                                            , text = "Abort"
+                                            }
+                                    , Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.width Element.fill ]
+                                            , color = Mensam.Element.Button.Yellow
+                                            , message = Just <| MessageEffect <| SubmitCreate formData
+                                            , text = "Submit"
+                                            }
                                     ]
                                 ]
                    )

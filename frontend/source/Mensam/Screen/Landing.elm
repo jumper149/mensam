@@ -1,12 +1,9 @@
 module Mensam.Screen.Landing exposing (..)
 
 import Element
-import Element.Background
 import Element.Font
-import Element.Input
-import Html.Attributes
+import Mensam.Element.Button
 import Mensam.Element.Color
-import Mensam.Element.Font
 
 
 type alias Model =
@@ -59,42 +56,20 @@ element () =
                     [ Element.width Element.fill
                     , Element.spacing 30
                     ]
-                    [ Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
-                        , Element.padding 10
-                        ]
-                        { onPress = Just <| MessageEffect <| Register
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Sign up"
-                        }
-                    , Element.Input.button
-                        [ Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Font.color Mensam.Element.Color.dark.black
-                        , Element.width Element.fill
-                        , Element.padding 10
-                        ]
-                        { onPress = Just <| MessageEffect <| Login
-                        , label =
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Sign in"
-                        }
+                    [ Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.width Element.fill ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessageEffect Register
+                            , text = "Sign up"
+                            }
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.width Element.fill ]
+                            , color = Mensam.Element.Button.Yellow
+                            , message = Just <| MessageEffect Login
+                            , text = "Sign in"
+                            }
                     ]
             , Element.el
                 [ Element.Font.size 30
