@@ -42,7 +42,6 @@ element content =
         , Element.Font.light
         , Element.Font.size 17
         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-        , Element.clip
         ]
     <|
         Element.row
