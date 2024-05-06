@@ -13,7 +13,15 @@ document : Element.Element msg -> Browser.Document msg
 document element =
     { title = "Mensam"
     , body =
-        [ Element.layout
+        [ Element.layoutWith
+            { options =
+                [ Element.focusStyle
+                    { borderColor = Nothing
+                    , backgroundColor = Nothing
+                    , shadow = Nothing
+                    }
+                ]
+            }
             [ Element.Background.gradient
                 { angle = 0
                 , steps = [ Mensam.Element.Color.dark.yellow, Mensam.Element.Color.bright.yellow ]
