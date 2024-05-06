@@ -4,6 +4,7 @@ import Element
 import Element.Background
 import Element.Events
 import Element.Font
+import Element.Input
 import Html.Attributes
 import Http.Extra
 import Mensam.Auth
@@ -55,7 +56,7 @@ element content =
             [ elementMensam
             , elementStatus content.httpStatus
             , elementErrors content.errors content.unfoldErrors
-            , elementSignInOut content.unfoldHamburgerDropDown content.authenticated
+            , elementHamburger content.unfoldHamburgerDropDown content.authenticated
             ]
 
 
@@ -83,8 +84,8 @@ elementMensam =
             Element.text "Mensam"
 
 
-elementSignInOut : Bool -> Mensam.Auth.Model -> Element.Element Message
-elementSignInOut unfoldDropDownMenu authenticated =
+elementHamburger : Bool -> Mensam.Auth.Model -> Element.Element Message
+elementHamburger unfoldDropDownMenu authenticated =
     Element.el
         [ Element.height Element.fill
         , Element.alignRight
@@ -93,7 +94,7 @@ elementSignInOut unfoldDropDownMenu authenticated =
                 Mensam.Element.Color.bright.black
 
             else
-                Element.rgba 1 1 1 0
+                Mensam.Element.Color.transparent
         , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
         , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
@@ -101,10 +102,9 @@ elementSignInOut unfoldDropDownMenu authenticated =
     <|
         case authenticated of
             Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication authentication) ->
-                Element.el
+                Element.Input.button
                     [ Element.height Element.fill
                     , Element.paddingXY 20 0
-                    , Element.Events.onClick <| ClickHamburger
                     , Element.below <|
                         if unfoldDropDownMenu then
                             Element.column
@@ -165,46 +165,49 @@ elementSignInOut unfoldDropDownMenu authenticated =
                         else
                             Element.none
                     ]
-                <|
-                    Element.column
-                        [ Element.centerX
-                        , Element.centerY
-                        , Element.width <| Element.px 14
-                        , Element.spacing 4
-                        ]
-                        [ Element.el
-                            [ Element.width Element.fill
-                            , Element.height <| Element.px 1
-                            , Element.Background.color Mensam.Element.Color.bright.white
+                    { onPress = Just ClickHamburger
+                    , label =
+                        Element.column
+                            [ Element.centerX
+                            , Element.centerY
+                            , Element.width <| Element.px 14
+                            , Element.spacing 4
                             ]
-                            Element.none
-                        , Element.el
-                            [ Element.width Element.fill
-                            , Element.height <| Element.px 1
-                            , Element.Background.color Mensam.Element.Color.bright.white
+                            [ Element.el
+                                [ Element.width Element.fill
+                                , Element.height <| Element.px 1
+                                , Element.Background.color Mensam.Element.Color.bright.white
+                                ]
+                                Element.none
+                            , Element.el
+                                [ Element.width Element.fill
+                                , Element.height <| Element.px 1
+                                , Element.Background.color Mensam.Element.Color.bright.white
+                                ]
+                                Element.none
+                            , Element.el
+                                [ Element.width Element.fill
+                                , Element.height <| Element.px 1
+                                , Element.Background.color Mensam.Element.Color.bright.white
+                                ]
+                                Element.none
                             ]
-                            Element.none
-                        , Element.el
-                            [ Element.width Element.fill
-                            , Element.height <| Element.px 1
-                            , Element.Background.color Mensam.Element.Color.bright.white
-                            ]
-                            Element.none
-                        ]
+                    }
 
             Mensam.Auth.SignedOut ->
-                Element.el
+                Element.Input.button
                     [ Element.height Element.fill
                     , Element.paddingXY 20 0
-                    , Element.Events.onClick <| SignIn
                     ]
-                <|
-                    Element.el
-                        [ Element.centerX
-                        , Element.centerY
-                        ]
-                    <|
-                        Element.text "Sign in"
+                    { onPress = Just SignIn
+                    , label =
+                        Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            ]
+                        <|
+                            Element.text "Sign in"
+                    }
 
 
 elementErrors : List Mensam.Error.Error -> Bool -> Element.Element Message
