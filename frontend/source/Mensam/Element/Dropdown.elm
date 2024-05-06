@@ -108,6 +108,7 @@ dropdownWrapper content insideElement =
                     , Element.width <| Element.px 200
                     , Element.height Element.fill
                     , Element.alignRight
+                    , Element.clip
                     ]
                     [ insideElement ]
                 ]
