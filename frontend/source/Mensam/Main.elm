@@ -12,6 +12,7 @@ import Mensam.Application
 import Mensam.Auth
 import Mensam.Auth.Bearer
 import Mensam.Element
+import Mensam.Element.Dropdown
 import Mensam.Element.Footer
 import Mensam.Element.Header
 import Mensam.Error
@@ -1587,9 +1588,6 @@ update message (MkModel model) =
 headerMessage : Model -> Mensam.Element.Header.Message -> Message
 headerMessage (MkModel model) message =
     case message of
-        Mensam.Element.Header.EmptyMessage ->
-            EmptyMessage
-
         Mensam.Element.Header.ClickMensam ->
             case model.authenticated of
                 Mensam.Auth.SignedOut ->
@@ -1607,12 +1605,6 @@ headerMessage (MkModel model) message =
 
         Mensam.Element.Header.SignIn ->
             SetUrl <| RouteLogin Nothing
-
-        Mensam.Element.Header.SignOut ->
-            Auth Logout
-
-        Mensam.Element.Header.YourReservations ->
-            SetUrl RouteReservations
 
         Mensam.Element.Header.ClickErrors ->
             if model.viewErrors then
@@ -1678,6 +1670,25 @@ footerContent =
     }
 
 
+dropdownMessage : Model -> Mensam.Element.Dropdown.Message -> Message
+dropdownMessage (MkModel _) message =
+    case message of
+        Mensam.Element.Dropdown.CloseDropdown ->
+            HideHamburgerMenu
+
+        Mensam.Element.Dropdown.SignOut ->
+            Messages
+                [ HideHamburgerMenu
+                , Auth Logout
+                ]
+
+        Mensam.Element.Dropdown.YourReservations ->
+            Messages
+                [ HideHamburgerMenu
+                , SetUrl RouteReservations
+                ]
+
+
 view : Model -> Browser.Document Message
 view (MkModel model) =
     Mensam.Element.document <|
@@ -1690,6 +1701,12 @@ view (MkModel model) =
                 [ Element.width Element.fill
                 , Element.height Element.fill
                 , Element.padding 12
+                , Element.inFront <|
+                    Element.map (dropdownMessage <| MkModel model) <|
+                        Mensam.Element.Dropdown.element
+                            { unfoldDropdownMenu = model.viewHamburgerMenu
+                            , authenticated = model.authenticated
+                            }
                 ]
               <|
                 case model.screen of

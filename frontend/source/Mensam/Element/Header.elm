@@ -11,7 +11,6 @@ import Mensam.Auth
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
-import Mensam.User
 import Svg
 import Svg.Attributes
 
@@ -27,12 +26,9 @@ type alias Content =
 
 
 type Message
-    = EmptyMessage
-    | ClickMensam
+    = ClickMensam
     | ClickHamburger
     | SignIn
-    | SignOut
-    | YourReservations
     | ClickErrors
 
 
@@ -101,69 +97,10 @@ elementHamburger unfoldDropDownMenu authenticated =
         ]
     <|
         case authenticated of
-            Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication authentication) ->
+            Mensam.Auth.SignedIn _ ->
                 Element.Input.button
                     [ Element.height Element.fill
                     , Element.paddingXY 20 0
-                    , Element.below <|
-                        if unfoldDropDownMenu then
-                            Element.column
-                                [ Element.width <| Element.px 200
-                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
-                                , Element.htmlAttribute <| Html.Attributes.style "overflow-x" "hidden"
-                                , Element.Events.onClick <| EmptyMessage
-                                , Element.alignRight
-                                , Element.paddingEach
-                                    { top = 19
-                                    , right = 12
-                                    , bottom = 12
-                                    , left = 12
-                                    }
-                                , Element.spacing 10
-                                , Element.Background.color Mensam.Element.Color.bright.black
-                                , Element.Font.color Mensam.Element.Color.bright.white
-                                ]
-                            <|
-                                [ Element.el
-                                    [ Element.paddingEach { top = 0, bottom = 20, left = 15, right = 15 }
-                                    , Element.centerX
-                                    , Element.centerY
-                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "none"
-                                    ]
-                                  <|
-                                    Element.text <|
-                                        case authentication.user.info of
-                                            Nothing ->
-                                                ""
-
-                                            Just { name } ->
-                                                Mensam.User.nameToString name
-                                , Element.el
-                                    [ Element.paddingXY 10 10
-                                    , Element.centerX
-                                    , Element.centerY
-                                    , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
-                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                    , Element.Events.onClick <| YourReservations
-                                    ]
-                                  <|
-                                    Element.text "Your Reservations"
-                                , Element.el
-                                    [ Element.paddingXY 10 10
-                                    , Element.centerX
-                                    , Element.centerY
-                                    , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
-                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                    , Element.Events.onClick <| SignOut
-                                    ]
-                                  <|
-                                    Element.text "Sign out"
-                                ]
-
-                        else
-                            Element.none
                     ]
                     { onPress = Just ClickHamburger
                     , label =
