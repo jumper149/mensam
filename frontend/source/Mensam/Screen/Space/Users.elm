@@ -30,6 +30,7 @@ type alias Model =
             , accessibility : Mensam.Space.Role.Accessibility
             , permissions : Mensam.Space.Role.Permissions
             }
+    , owner : Mensam.User.Identifier
     , users :
         List
             { user : Mensam.User.Identifier
@@ -60,6 +61,7 @@ init args =
     { spaceId = args.id
     , spaceName = Mensam.Space.MkName ""
     , roles = []
+    , owner = Mensam.User.MkIdentifier -1
     , users = []
     , selected = Nothing
     , popup = Nothing
@@ -211,7 +213,7 @@ element model =
                                             []
                                         <|
                                             Element.text "Role"
-                          , width = Element.px 80
+                          , width = Element.px 120
                           , view =
                                 \n user ->
                                     Element.el
@@ -239,14 +241,21 @@ element model =
                                             Element.el
                                                 [ Element.width <| Element.maximum 100 <| Element.fill ]
                                             <|
-                                                case List.Extra.find (\role -> role.id == user.role) model.roles of
-                                                    Nothing ->
-                                                        Element.text <|
-                                                            Mensam.Space.Role.identifierToString user.role
+                                                Element.text <|
+                                                    let
+                                                        roleText =
+                                                            case List.Extra.find (\role -> role.id == user.role) model.roles of
+                                                                Nothing ->
+                                                                    Mensam.Space.Role.identifierToString user.role
 
-                                                    Just role ->
-                                                        Element.text <|
-                                                            Mensam.Space.Role.nameToString role.name
+                                                                Just role ->
+                                                                    Mensam.Space.Role.nameToString role.name
+                                                    in
+                                                    if user.user == model.owner then
+                                                        roleText ++ " (Owner)"
+
+                                                    else
+                                                        roleText
                           }
                         ]
                     }
@@ -544,6 +553,7 @@ type MessagePure
             , permissions : Mensam.Space.Role.Permissions
             }
         )
+    | SetOwner Mensam.User.Identifier
     | SetSelected (Maybe Int)
     | ClosePopup
     | ChooseUser Mensam.User.Identifier
@@ -579,6 +589,9 @@ updatePure message model =
 
         SetRoles roles ->
             { model | roles = roles }
+
+        SetOwner owner ->
+            { model | owner = owner }
 
         SetSelected n ->
             { model | selected = n }
@@ -645,6 +658,7 @@ spaceView jwt id =
                         [ MessagePure <| SetUserIds view.users
                         , MessagePure <| SetRoles view.roles
                         , MessagePure <| SetSpaceName view.name
+                        , MessagePure <| SetOwner view.owner
                         ]
                             ++ List.map (\user -> MessageEffect <| GetProfile user.user) view.users
 
