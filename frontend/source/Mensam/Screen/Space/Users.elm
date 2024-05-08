@@ -280,6 +280,13 @@ element model =
                                         , message = Just <| MessagePure <| OpenDialogToKick popupModel.user
                                         , text = "Kick User"
                                         }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.alignRight ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , message = Just <| MessageEffect <| OpenPageToProfile popupModel.user
+                                        , text = "Profile"
+                                        }
                                 ]
                             , Element.row
                                 [ Element.spacing 20
@@ -621,6 +628,7 @@ type MessageEffect
     | SubmitEditUser { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }
     | SubmitKickUser { user : Mensam.User.Identifier }
     | ReturnToSpace
+    | OpenPageToProfile Mensam.User.Identifier
 
 
 spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message

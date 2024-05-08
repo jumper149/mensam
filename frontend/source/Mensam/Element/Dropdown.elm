@@ -19,6 +19,7 @@ type alias Content =
 
 type Message
     = CloseDropdown
+    | YourProfile Mensam.User.Identifier
     | YourDashboard
     | YourReservations
     | SignOut
@@ -41,20 +42,34 @@ element content =
                                     }
                            )
                     )
-                    [ Element.el
+                    [ Element.Input.button
                         [ Element.paddingXY 0 20
-                        , Element.centerX
+                        , Element.width Element.fill
                         , Element.alignTop
                         , Element.Font.italic
+                        , Element.mouseOver
+                            [ Element.Font.color <| Mensam.Element.Color.bright.yellow
+                            , Element.Font.shadow
+                                { offset = ( 0, 0 )
+                                , blur = 50
+                                , color = Mensam.Element.Color.bright.yellow
+                                }
+                            ]
                         ]
-                      <|
-                        Element.text <|
-                            case authentication.user.info of
-                                Nothing ->
-                                    ""
+                        { onPress = Just <| YourProfile authentication.user.id
+                        , label =
+                            Element.el
+                                [ Element.centerX
+                                ]
+                            <|
+                                Element.text <|
+                                    case authentication.user.info of
+                                        Nothing ->
+                                            ""
 
-                                Just { name } ->
-                                    Mensam.User.nameToString name
+                                        Just { name } ->
+                                            Mensam.User.nameToString name
+                        }
                     , Element.column
                         [ Element.height Element.fill
                         , Element.width Element.fill

@@ -20,6 +20,7 @@ import Mensam.Flags
 import Mensam.Screen.Dashboard
 import Mensam.Screen.Landing
 import Mensam.Screen.Login
+import Mensam.Screen.Profile
 import Mensam.Screen.Register
 import Mensam.Screen.Reservations
 import Mensam.Screen.Space
@@ -87,6 +88,7 @@ type Screen
     | ScreenSpaceSettings Mensam.Screen.Space.Settings.Model
     | ScreenSpaceDesks Mensam.Screen.Space.Desks.Model
     | ScreenReservations Mensam.Screen.Reservations.Model
+    | ScreenProfile Mensam.Screen.Profile.Model
 
 
 type Route
@@ -103,6 +105,7 @@ type Route
     | RouteSpaceSettings Mensam.Space.Identifier
     | RouteSpaceDesks Mensam.Space.Identifier
     | RouteReservations
+    | RouteProfile Mensam.User.Identifier
 
 
 routeToUrl : Route -> String
@@ -155,6 +158,9 @@ routeToUrl route =
 
         RouteReservations ->
             Url.Builder.absolute [ "reservations" ] []
+
+        RouteProfile identifier ->
+            Url.Builder.absolute [ "profile", Mensam.User.identifierToString identifier ] []
 
 
 routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
@@ -256,6 +262,15 @@ routeToModelUpdate route (MkModel model) =
             update (MessageReservations <| Mensam.Screen.Reservations.MessageEffect Mensam.Screen.Reservations.RefreshReservations) <|
                 MkModel { model | screen = ScreenReservations <| Mensam.Screen.Reservations.init { time = { now = model.time.now, zone = model.time.zone } } }
 
+        RouteProfile identifier ->
+            update
+                (Messages
+                    [ MessageProfile <| Mensam.Screen.Profile.MessageEffect Mensam.Screen.Profile.Refresh
+                    ]
+                )
+            <|
+                MkModel { model | screen = ScreenProfile <| Mensam.Screen.Profile.init { id = identifier } }
+
 
 urlParser : Url.Parser.Parser (Route -> c) c
 urlParser =
@@ -297,6 +312,7 @@ urlParser =
         , Url.Parser.map RouteSpaceUsers <| Url.Parser.s "users" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         , Url.Parser.map RouteSpaceSettings <| Url.Parser.s "settings" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         , Url.Parser.map RouteSpaceDesks <| Url.Parser.s "desks" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
+        , Url.Parser.map RouteProfile <| Url.Parser.s "profile" </> Url.Parser.map Mensam.User.MkIdentifier Url.Parser.int
         ]
 
 
@@ -372,6 +388,7 @@ type Message
     | MessageSpaceSettings Mensam.Screen.Space.Settings.Message
     | MessageSpaceDesks Mensam.Screen.Space.Desks.Message
     | MessageReservations Mensam.Screen.Reservations.Message
+    | MessageProfile Mensam.Screen.Profile.Message
 
 
 type MessageAuth
@@ -1528,6 +1545,14 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
+                Mensam.Screen.Space.Users.OpenPageToProfile userId ->
+                    case model.screen of
+                        ScreenSpaceUsers _ ->
+                            update (SetUrl <| RouteProfile userId) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
         MessageSpaceUsers (Mensam.Screen.Space.Users.Messages ms) ->
             case model.screen of
                 ScreenSpaceUsers _ ->
@@ -1608,6 +1633,42 @@ update message (MkModel model) =
                 _ ->
                     update (ReportError errorScreen) <| MkModel model
 
+        MessageProfile (Mensam.Screen.Profile.MessagePure m) ->
+            case model.screen of
+                ScreenProfile screenModel ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenProfile <| Mensam.Screen.Profile.updatePure m screenModel }
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
+        MessageProfile (Mensam.Screen.Profile.MessageEffect m) ->
+            case m of
+                Mensam.Screen.Profile.ReportError err ->
+                    update (ReportError err) <| MkModel model
+
+                Mensam.Screen.Profile.Refresh ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenProfile screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.profile jwt screenModel.id
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+        MessageProfile (Mensam.Screen.Profile.Messages ms) ->
+            case model.screen of
+                ScreenProfile _ ->
+                    update (Messages <| List.map MessageProfile ms) <| MkModel model
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
 
 headerMessage : Model -> Mensam.Element.Header.Message -> Message
 headerMessage (MkModel model) message =
@@ -1684,6 +1745,9 @@ headerContent (MkModel model) =
 
             ScreenReservations _ ->
                 Just "Your Reservations"
+
+            ScreenProfile screenModel ->
+                Just <| Mensam.User.nameToString screenModel.name
     , httpStatus = model.httpStatus
     }
 
@@ -1716,6 +1780,12 @@ dropdownMessage (MkModel _) message =
             Messages
                 [ HideHamburgerMenu
                 , Auth Logout
+                ]
+
+        Mensam.Element.Dropdown.YourProfile id ->
+            Messages
+                [ HideHamburgerMenu
+                , SetUrl <| RouteProfile id
                 ]
 
 
@@ -1778,6 +1848,9 @@ view (MkModel model) =
 
                     ScreenReservations screenModel ->
                         Mensam.Element.screen MessageReservations <| Mensam.Screen.Reservations.element screenModel
+
+                    ScreenProfile screenModel ->
+                        Mensam.Element.screen MessageProfile <| Mensam.Screen.Profile.element screenModel
             , Mensam.Element.Footer.element <| footerContent
             ]
 

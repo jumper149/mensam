@@ -1,5 +1,7 @@
 = Changelog
 
+* Frontend
+  ** Add new page to view user profiles.
 * API
   ** Add `/password` route to change your user password.
 
