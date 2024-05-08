@@ -295,7 +295,8 @@ data Routes route = Routes
       route
         :- Summary "Edit Desk"
           :> Description
-              "Update a desk.\n"
+              "Update a desk.\n\
+              \You need the `desk-edit` permission for that space to edit desks.\n"
           :> "desk"
           :> "edit"
           :> Auth '[JWTWithSession] UserAuthenticated
