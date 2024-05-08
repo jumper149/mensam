@@ -204,7 +204,20 @@ updatePure message model =
             { model
                 | spaceId = space.id
                 , spaceName = space.name
-                , roles = space.roles
+                , roles =
+                    List.filter
+                        (\role ->
+                            case role.accessibility of
+                                Mensam.Space.Role.MkAccessibilityJoinable ->
+                                    True
+
+                                Mensam.Space.Role.MkAccessibilityJoinableWithPassword ->
+                                    True
+
+                                Mensam.Space.Role.MkAccessibilityInaccessible ->
+                                    False
+                        )
+                        space.roles
                 , timezoneIdentifier = space.timezone
                 , visibility = space.visibility
                 , yourRole = space.yourRole
