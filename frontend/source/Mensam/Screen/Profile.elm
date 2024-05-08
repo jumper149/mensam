@@ -19,10 +19,6 @@ type alias Model =
     }
 
 
-type PopupModel
-    = PopupChangePassword { newPassword : String }
-
-
 init : { id : Mensam.User.Identifier } -> Model
 init value =
     { id = value.id
