@@ -4,7 +4,6 @@ import Mensam.API.Aeson
 import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
-import Mensam.API.Data.Space
 import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
 import Mensam.API.Route.Api.Reservation
@@ -13,9 +12,7 @@ import Mensam.Server.Application.SeldaPool.Servant
 import Mensam.Server.Booking
 import Mensam.Server.Server.Auth
 
-import Control.Monad.Catch
 import Control.Monad.Logger.CallStack
-import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Traversable
 import Data.Typeable
@@ -60,14 +57,14 @@ createReservation auth eitherRequest = do
                 Just deskId -> pure deskId
             Identifier deskId -> pure deskId
         desk <- deskGetFromId deskIdentifier
-        permissions <- spaceUserPermissions (deskSpace desk) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceCreateReservation `S.member` permissions
-          then
-            reservationCreate
-              deskIdentifier
-              (userAuthenticatedId authenticated)
-              (requestReservationCreateTimeWindow request)
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceCreateReservation
+        checkPermission
+          SMkPermissionSpaceCreateReservation
+          (userAuthenticatedId authenticated)
+          (deskSpace desk)
+        reservationCreate
+          deskIdentifier
+          (userAuthenticatedId authenticated)
+          (requestReservationCreateTimeWindow request)
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceCreateReservation)
         seldaResult
@@ -100,15 +97,14 @@ cancelReservation auth eitherRequest = do
       let reservationIdentifier = requestReservationCancelId request
       seldaResult <- runSeldaTransactionT $ do
         reservation <- reservationGet reservationIdentifier
-        permissions <- do
-          desk <- deskGetFromId $ reservationDesk reservation
-          let spaceIdentifier :: IdentifierSpace = deskSpace desk
-          spaceUserPermissions spaceIdentifier $ userAuthenticatedId authenticated
-        if MkPermissionSpaceCancelReservation `S.member` permissions
-          then case reservationStatus reservation of
-            MkStatusReservationCancelled -> error "Already cancelled."
-            MkStatusReservationPlanned -> reservationCancel reservationIdentifier
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceCancelReservation
+        desk <- deskGetFromId $ reservationDesk reservation
+        checkPermission
+          SMkPermissionSpaceCancelReservation
+          (userAuthenticatedId authenticated)
+          (deskSpace desk)
+        case reservationStatus reservation of
+          MkStatusReservationCancelled -> error "Already cancelled."
+          MkStatusReservationPlanned -> reservationCancel reservationIdentifier
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceCancelReservation)
         seldaResult
