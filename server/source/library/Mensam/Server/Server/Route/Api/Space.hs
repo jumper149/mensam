@@ -4,6 +4,7 @@ import Mensam.API.Aeson
 import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Space
+import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
 import Mensam.API.Route.Api.Space
 import Mensam.API.Update
@@ -18,7 +19,6 @@ import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Foldable
 import Data.Password.Bcrypt
-import Data.Set qualified as S
 import Data.Text qualified as T
 import Data.Traversable
 import Data.Typeable
@@ -148,20 +148,20 @@ editSpace auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to edit space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        permissions <- spaceUserPermissions (requestSpaceEditId request) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditSpace `S.member` permissions
-          then do
-            case requestSpaceEditName request of
-              Preserve -> pure ()
-              Overwrite name -> spaceNameSet (requestSpaceEditId request) name
-            case requestSpaceEditTimezone request of
-              Preserve -> pure ()
-              Overwrite timezone -> spaceTimezoneSet (requestSpaceEditId request) timezone
-            case requestSpaceEditVisibility request of
-              Preserve -> pure ()
-              Overwrite visibility -> spaceVisibilitySet (requestSpaceEditId request) visibility
-            spaceInternalGetFromId (requestSpaceEditId request)
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace
+        checkPermission
+          SMkPermissionSpaceEditSpace
+          (userAuthenticatedId authenticated)
+          (requestSpaceEditId request)
+        case requestSpaceEditName request of
+          Preserve -> pure ()
+          Overwrite name -> spaceNameSet (requestSpaceEditId request) name
+        case requestSpaceEditTimezone request of
+          Preserve -> pure ()
+          Overwrite timezone -> spaceTimezoneSet (requestSpaceEditId request) timezone
+        case requestSpaceEditVisibility request of
+          Preserve -> pure ()
+          Overwrite visibility -> spaceVisibilitySet (requestSpaceEditId request) visibility
+        spaceInternalGetFromId (requestSpaceEditId request)
       handleSeldaException
         (Proxy @SqlErrorMensamSpaceNotFound)
         (WithStatus @404 $ MkStaticText @"Space not found.")
@@ -294,19 +294,19 @@ kickUser auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to kick user from space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        permissions <- spaceUserPermissions (requestSpaceKickSpace request) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditSpace `S.member` permissions
+        checkPermission
+          SMkPermissionSpaceEditSpace
+          (userAuthenticatedId authenticated)
+          (requestSpaceKickSpace request)
+        isOwner <- spaceUserIsOwner (requestSpaceKickSpace request) (requestSpaceKickUser request)
+        if isOwner
           then do
-            isOwner <- spaceUserIsOwner (requestSpaceKickSpace request) (requestSpaceKickUser request)
-            if isOwner
-              then do
-                lift $ logInfo "User is the owner of the space and can therefore not be kicked."
-                pure False
-              else do
-                lift $ logInfo "Removing user from space."
-                spaceUserRemove (requestSpaceKickSpace request) (requestSpaceKickUser request)
-                pure True
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace
+            lift $ logInfo "User is the owner of the space and can therefore not be kicked."
+            pure False
+          else do
+            lift $ logInfo "Removing user from space."
+            spaceUserRemove (requestSpaceKickSpace request) (requestSpaceKickUser request)
+            pure True
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceEditSpace)
         seldaResult
@@ -337,14 +337,14 @@ setUserRole auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to change user role for space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        permissions <- spaceUserPermissions (requestSpaceUserRoleSpace request) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditSpace `S.member` permissions
-          then
-            spaceUserRoleEdit
-              (requestSpaceUserRoleSpace request)
-              (requestSpaceUserRoleUser request)
-              (requestSpaceUserRoleRole request)
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditSpace
+        checkPermission
+          SMkPermissionSpaceEditSpace
+          (userAuthenticatedId authenticated)
+          (requestSpaceUserRoleSpace request)
+        spaceUserRoleEdit
+          (requestSpaceUserRoleSpace request)
+          (requestSpaceUserRoleUser request)
+          (requestSpaceUserRoleRole request)
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceEditSpace)
         seldaResult
@@ -419,18 +419,18 @@ createRole auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to create role: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        permissions <- spaceUserPermissions (requestRoleCreateSpace request) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditRole `S.member` permissions
-          then do
-            spaceRoleId <-
-              spaceRoleCreate
-                (requestRoleCreateSpace request)
-                (requestRoleCreateName request)
-                (requestRoleCreateAccessibility request)
-                (mkPassword <$> requestRoleCreatePassword request)
-            traverse_ (spaceRolePermissionGive spaceRoleId) (requestRoleCreatePermissions request)
-            pure spaceRoleId
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
+        checkPermission
+          SMkPermissionSpaceEditRole
+          (userAuthenticatedId authenticated)
+          (requestRoleCreateSpace request)
+        spaceRoleId <-
+          spaceRoleCreate
+            (requestRoleCreateSpace request)
+            (requestRoleCreateName request)
+            (requestRoleCreateAccessibility request)
+            (mkPassword <$> requestRoleCreatePassword request)
+        traverse_ (spaceRolePermissionGive spaceRoleId) (requestRoleCreatePermissions request)
+        pure spaceRoleId
       handleSeldaException
         (Proxy @SqlErrorMensamSpaceNotFound)
         (WithStatus @404 $ MkStaticText @"Space not found.")
@@ -468,23 +468,23 @@ editRole auth eitherRequest =
       logDebug $ "Received request to delete role: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <- spaceRoleSpace <$> spaceRoleGet (requestRoleEditId request)
-        permissionsRequestingUser <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditRole `S.member` permissionsRequestingUser
-          then do
-            case requestRoleEditName request of
-              Preserve -> pure ()
-              Overwrite name -> spaceRoleNameSet (requestRoleEditId request) name
-            case requestRoleEditAccessibilityAndPassword request of
-              Preserve -> pure ()
-              Overwrite accessibilityAndPassword ->
-                spaceRoleAccessibilityAndPasswordSet
-                  (requestRoleEditId request)
-                  (roleEditAccessibilityAndPasswordAccessibility accessibilityAndPassword)
-                  (mkPassword <$> roleEditAccessibilityAndPasswordPassword accessibilityAndPassword)
-            case requestRoleEditPermissions request of
-              Preserve -> pure ()
-              Overwrite permissions -> spaceRolePermissionsSet (requestRoleEditId request) permissions
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
+        checkPermission
+          SMkPermissionSpaceEditRole
+          (userAuthenticatedId authenticated)
+          spaceIdentifier
+        case requestRoleEditName request of
+          Preserve -> pure ()
+          Overwrite name -> spaceRoleNameSet (requestRoleEditId request) name
+        case requestRoleEditAccessibilityAndPassword request of
+          Preserve -> pure ()
+          Overwrite accessibilityAndPassword ->
+            spaceRoleAccessibilityAndPasswordSet
+              (requestRoleEditId request)
+              (roleEditAccessibilityAndPasswordAccessibility accessibilityAndPassword)
+              (mkPassword <$> roleEditAccessibilityAndPasswordPassword accessibilityAndPassword)
+        case requestRoleEditPermissions request of
+          Preserve -> pure ()
+          Overwrite permissions -> spaceRolePermissionsSet (requestRoleEditId request) permissions
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceEditRole)
         seldaResult
@@ -511,10 +511,11 @@ deleteRole auth eitherRequest =
       logDebug $ "Received request to delete role: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <- spaceRoleSpace <$> spaceRoleGet (requestRoleDeleteId request)
-        permissions <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditRole `S.member` permissions
-          then spaceRoleDeleteWithFallback (requestRoleDeleteId request) (requestRoleDeleteFallbackId request)
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditRole
+        checkPermission
+          SMkPermissionSpaceEditRole
+          (userAuthenticatedId authenticated)
+          spaceIdentifier
+        spaceRoleDeleteWithFallback (requestRoleDeleteId request) (requestRoleDeleteFallbackId request)
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceEditRole)
         seldaResult
@@ -545,10 +546,11 @@ createDesk auth eitherRequest =
           case requestDeskCreateSpace request of
             Identifier spaceId -> pure spaceId
             Name name -> spaceLookupId name
-        permissions <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditDesk `S.member` permissions
-          then deskCreate (requestDeskCreateName request) spaceIdentifier
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk
+        checkPermission
+          SMkPermissionSpaceEditDesk
+          (userAuthenticatedId authenticated)
+          spaceIdentifier
+        deskCreate (requestDeskCreateName request) spaceIdentifier
       handleSeldaException
         (Proxy @SqlErrorMensamSpaceNotFound)
         (WithStatus @404 $ MkStaticText @"Space not found.")
@@ -581,10 +583,11 @@ deleteDesk auth eitherRequest =
       logDebug $ "Received request to delete desk: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         desk <- deskGetFromId $ requestDeskDeleteId request
-        permissions <- spaceUserPermissions (deskSpace desk) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditDesk `S.member` permissions
-          then deskDelete $ deskId desk
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk
+        checkPermission
+          SMkPermissionSpaceEditDesk
+          (userAuthenticatedId authenticated)
+          (deskSpace desk)
+        deskDelete $ deskId desk
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceEditDesk)
         seldaResult
@@ -616,13 +619,13 @@ editDesk auth eitherRequest =
       logDebug $ "Received request to edit desk: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         desk <- deskGetFromId $ requestDeskEditId request
-        permissions <- spaceUserPermissions (deskSpace desk) (userAuthenticatedId authenticated)
-        if MkPermissionSpaceEditDesk `S.member` permissions
-          then do
-            case requestDeskEditName request of
-              Preserve -> pure ()
-              Overwrite name -> deskNameSet (requestDeskEditId request) name
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceEditDesk
+        checkPermission
+          SMkPermissionSpaceEditDesk
+          (userAuthenticatedId authenticated)
+          (deskSpace desk)
+        case requestDeskEditName request of
+          Preserve -> pure ()
+          Overwrite name -> deskNameSet (requestDeskEditId request) name
       handleSeldaException
         (Proxy @SqlErrorMensamDeskNotFound)
         (WithStatus @404 $ MkStaticText @"Desk not found.")
@@ -659,10 +662,10 @@ listDesks auth eitherRequest =
           case requestDeskListSpace request of
             Name spaceName -> spaceLookupId spaceName
             Identifier spaceId -> pure spaceId
-        permissions <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
-        if MkPermissionSpaceViewSpace `S.member` permissions
-          then pure ()
-          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceViewSpace
+        checkPermission
+          SMkPermissionSpaceViewSpace
+          (userAuthenticatedId authenticated)
+          spaceIdentifier
         desks <- deskList spaceIdentifier (userAuthenticatedId authenticated)
         for desks $ \desk -> do
           reservations <-
@@ -679,9 +682,9 @@ listDesks auth eitherRequest =
         (Proxy @MkPermissionSpaceViewSpace)
         seldaResult
         $ \seldaResultAfter403 ->
-        handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \desksWithInfo -> do
-          logInfo "Listed desks."
-          respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \desksWithInfo -> do
+            logInfo "Listed desks."
+            respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
 
 handleBadRequestBody ::
   ( MonadLogger m

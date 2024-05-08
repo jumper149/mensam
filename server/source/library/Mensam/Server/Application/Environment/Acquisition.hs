@@ -8,7 +8,7 @@ import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Elevator
 import Control.Monad.Trans.State
 import Data.List qualified as L
-import Data.Singletons
+import Data.Proxy
 import Data.Text qualified as T
 import GHC.TypeLits
 import System.Posix.Env qualified as System

@@ -5,6 +5,7 @@ module Mensam.Server.Booking where
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
+import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
 import Mensam.API.Order
 import Mensam.Server.Application.SeldaPool.Class
@@ -23,9 +24,11 @@ import Data.List qualified as L
 import Data.Maybe
 import Data.Password.Bcrypt
 import Data.Set qualified as S
+import Data.Singletons
 import Data.Text qualified as T
 import Data.Time qualified as T
 import Data.Time.Zones.All qualified as T
+import Data.Typeable
 import Database.Selda qualified as Selda
 import GHC.Generics
 
@@ -33,6 +36,23 @@ type SqlErrorMensamSpacePermissionNotSatisfied :: PermissionSpace -> Type
 data SqlErrorMensamSpacePermissionNotSatisfied permission = MkSqlErrorMensamSpacePermissionNotSatisfied
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
+
+checkPermission ::
+  (MonadLogger m, MonadSeldaPool m, Typeable p) =>
+  SPermissionSpace p ->
+  IdentifierUser ->
+  IdentifierSpace ->
+  SeldaTransactionT m ()
+checkPermission sPermission userIdentifier spaceIdentifier = do
+  let permission = fromSing sPermission
+  lift $ logDebug $ "Checking permission " <> T.pack (show permission) <> " for user " <> T.pack (show userIdentifier) <> " in space " <> T.pack (show spaceIdentifier) <> "."
+  permissions <- spaceUserPermissions spaceIdentifier userIdentifier
+  if permission `S.member` permissions
+    then lift $ logInfo "Permission satisfied."
+    else do
+      lift $ logInfo "Permission was not satisfied."
+      case sPermission of
+        (_ :: SPermissionSpace permission) -> throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @permission
 
 spaceLookupId ::
   (MonadLogger m, MonadSeldaPool m) =>
