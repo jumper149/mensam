@@ -662,6 +662,9 @@ listDesks jwt spaceId =
                         [ MessagePure <| SetDesks <| List.map (\x -> { id = x.desk.id, name = x.desk.name }) value.desks
                         ]
 
+                Ok (Mensam.Api.DeskList.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+
                 Ok (Mensam.Api.DeskList.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|

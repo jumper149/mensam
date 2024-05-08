@@ -1290,6 +1290,9 @@ deskList jwt model =
                 Ok (Mensam.Api.DeskList.Success value) ->
                     MessagePure <| SetDesks value.desks
 
+                Ok (Mensam.Api.DeskList.ErrorInsufficientPermission permission) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+
                 Ok (Mensam.Api.DeskList.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|

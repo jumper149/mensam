@@ -9,6 +9,7 @@ import Mensam.Auth.Bearer
 import Mensam.Desk
 import Mensam.Reservation
 import Mensam.Space
+import Mensam.Space.Role
 import Time
 import Url.Builder
 
@@ -39,6 +40,7 @@ type Response
                         }
                 }
         }
+    | ErrorInsufficientPermission Mensam.Space.Role.Permission
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -90,6 +92,14 @@ responseResult httpResponse =
                     case Decode.decodeString Mensam.Auth.Bearer.http401BodyDecoder body of
                         Ok error ->
                             Ok <| ErrorAuth error
+
+                        Err err ->
+                            Err <| Http.BadBody <| Decode.errorToString err
+
+                403 ->
+                    case Decode.decodeString Mensam.Space.Role.http403BodyDecoder body of
+                        Ok permission ->
+                            Ok <| ErrorInsufficientPermission permission
 
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err

@@ -4,6 +4,7 @@
   ** Add new page to view user profiles.
 * API
   ** Add `/password` route to change your user password.
+  ** Route `/desk/list` checks the `view_space` permission now.
 
 == `0.6.3.3`
 

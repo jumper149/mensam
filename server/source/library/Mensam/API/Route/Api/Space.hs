@@ -326,6 +326,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseDeskList
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)
               , WithStatus 500 ()
               ]
   }

@@ -644,6 +644,7 @@ listDesks ::
   , IsMember (WithStatus 200 ResponseDeskList) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -658,6 +659,10 @@ listDesks auth eitherRequest =
           case requestDeskListSpace request of
             Name spaceName -> spaceLookupId spaceName
             Identifier spaceId -> pure spaceId
+        permissions <- spaceUserPermissions spaceIdentifier (userAuthenticatedId authenticated)
+        if MkPermissionSpaceViewSpace `S.member` permissions
+          then pure ()
+          else throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @MkPermissionSpaceViewSpace
         desks <- deskList spaceIdentifier (userAuthenticatedId authenticated)
         for desks $ \desk -> do
           reservations <-
@@ -670,9 +675,13 @@ listDesks auth eitherRequest =
               { deskWithInfoDesk = desk
               , deskWithInfoReservations = reservations
               }
-      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \desksWithInfo -> do
-        logInfo "Listed desks."
-        respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
+      handleSeldaException403InsufficientPermission
+        (Proxy @MkPermissionSpaceViewSpace)
+        seldaResult
+        $ \seldaResultAfter403 ->
+        handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \desksWithInfo -> do
+          logInfo "Listed desks."
+          respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
 
 handleBadRequestBody ::
   ( MonadLogger m

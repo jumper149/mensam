@@ -303,6 +303,7 @@ endpointDeskList ::
         '[ WithStatus 200 Route.Api.Space.ResponseDeskList
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)
          , WithStatus 500 ()
          ]
     )
