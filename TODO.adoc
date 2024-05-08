@@ -50,7 +50,7 @@
   ** [ ] Show more info for spaces in "Your Dashboard" and "Browse Spaces"
     *** [ ] City.
     *** more?
-  ** [ ] Don't show inaccessible roles when jaoining a space.
+  ** [x] Don't show inaccessible roles when joining a space.
   ** [ ] When editing (for example "Name") insert current value into the text input field.
     *** [ ] For Spaces.
     *** [ ] For Desks.

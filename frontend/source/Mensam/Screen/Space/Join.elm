@@ -263,7 +263,16 @@ spaceView jwt model =
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success value) ->
-                    MessagePure <| SetSpaceInfo value.space
+                    let
+                        (Mensam.Space.MkSpaceView spaceview) =
+                            value.space
+                    in
+                    case spaceview.yourRole of
+                        Nothing ->
+                            MessagePure <| SetSpaceInfo value.space
+
+                        Just _ ->
+                            MessageEffect JoinedSuccessfully
 
                 Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
