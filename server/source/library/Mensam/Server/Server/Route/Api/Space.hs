@@ -110,25 +110,24 @@ deleteSpace auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to delete space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        isOwner <- spaceUserIsOwner (requestSpaceDeleteId request) (userAuthenticatedId authenticated)
-        if isOwner
-          then do
-            lift $ logInfo "Delete space."
-            spaceDelete $ requestSpaceDeleteId request
-            pure $ Just ()
-          else pure Nothing
+        checkPermission
+          SMkPermissionSpaceEditSpace
+          (userAuthenticatedId authenticated)
+          (requestSpaceDeleteId request)
+        lift $ logInfo "Delete space."
+        spaceDelete $ requestSpaceDeleteId request
       handleSeldaException
         (Proxy @SqlErrorMensamSpaceNotFound)
         (WithStatus @404 $ MkStaticText @"Space not found.")
         seldaResult
         $ \seldaResultAfter404 ->
-          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter404 $ \case
-            Nothing -> do
-              logInfo "Didn't delete space because of insufficient permission. User needs to the owner."
-              respond $ WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionSpaceEditSpace
-            Just () -> do
-              logInfo "Deleted space."
-              respond $ WithStatus @200 MkResponseSpaceDelete {responseSpaceDeleteUnit = ()}
+          handleSeldaException403InsufficientPermission
+            (Proxy @MkPermissionSpaceEditSpace)
+            seldaResultAfter404
+            $ \seldaResultAfter403 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+                logInfo "Deleted space."
+                respond $ WithStatus @200 MkResponseSpaceDelete {responseSpaceDeleteUnit = ()}
 
 editSpace ::
   ( MonadLogger m
