@@ -19,10 +19,9 @@
   ** [ ] Simplify names.
     ** [ ] -> Change `SpaceRole` to `Role`
     ** [ ] -> Change `SpaceRolePermission` to `Permission`
+  ** [ ] Space visibility should be hidden by default.
 
 * Frontend.
-  ** [ ] Improve SVG time picker.
-    *** [ ] Add text based time.
   ** [ ] Terms and Conditions check during registration.
   ** [ ] Add loading screen to HTML wrapper for frontend.
     *** This is harder than expected. Is it possible to start Elm from JS directly?
@@ -36,6 +35,39 @@
   ** [ ] Factor out duplicate code (buttons, styling and so on).
     *** [x] Buttons
   ** [x] When SignedInHamburgerDropDown is open a click anywhere should close it again.
+  ** [ ] Automatically sign in after sign up.
+    *** Currently this doesn't work with setting the URL and reloading that URL again.
+  ** [ ] Create space on dashboard.
+    *** When there are no space memberships there should be a big button to create a new space.
+  ** [ ] Automatically add desks when creating a space.
+    *** This could be achieved with a selector of how many desks you want and then adding default desks.
+  ** [ ] Unified button to "Go back". Top left instead of "Mensam" text?
+  ** [ ] Title in header will cut off titles that are too long. This looks broken. Maybe add "...".
+  ** [ ] Error messages are shitty. These should popup immediately to tell the user something is wrong.
+    *** Maybe we want non-error popups as well.
+  ** [ ] Filter "Your Reservations".
+    *** [ ] Filter by space.
+  ** [ ] Show more info for spaces in "Your Dashboard" and "Browse Spaces"
+    *** [ ] City.
+    *** more?
+  ** [ ] Don't show inaccessible roles when jaoining a space.
+  ** [ ] When editing (for example "Name") insert current value into the text input field.
+    *** [ ] For Spaces.
+    *** [ ] For Desks.
+    *** [x] For Roles.
+  ** Creating reservations.
+    *** [ ] Describe "from" and "to" when creating reservation.
+    *** [ ] Improve SVG time picker.
+      **** [ ] Add text based time.
+      **** [ ] Don't select seconds. Just `hh:mm`.
+      **** [ ] Automatically set upper/lower bound when entering negative time interval.
+      **** [ ] Grey out "Submit" button when the entered time span is already booked/not possible.
+      **** [ ] Better default time when opening the dialog to create a reservation.
+
+* Wording and explanation.
+  ** [ ] A space is just an environment for desks and not the desk itself.
+  ** [ ] Visibility: hidden and visible or private and public?
+  ** [ ] Roles and permissions are complicated. This needs some better description, tooltips (info icon) and interface.
 
 * Pin timezone libraries.
   ** [ ] tzdata library for Haskell.
