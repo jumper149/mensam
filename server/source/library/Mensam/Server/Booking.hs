@@ -48,15 +48,15 @@ checkPermission sPermission userIdentifier spaceIdentifier = do
   lift $ logDebug $ "Checking permission " <> T.pack (show permission) <> " for user " <> T.pack (show userIdentifier) <> " in space " <> T.pack (show spaceIdentifier) <> "."
   isOwner <- spaceUserIsOwner spaceIdentifier userIdentifier
   if isOwner
-     then lift $ logInfo "User is owner. Permission granted."
-     else do
-       permissions <- spaceUserPermissions spaceIdentifier userIdentifier
-       if permission `S.member` permissions
-         then lift $ logInfo "Permission satisfied."
-         else do
-           lift $ logInfo "Permission was not satisfied."
-           case sPermission of
-             (_ :: SPermissionSpace permission) -> throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @permission
+    then lift $ logInfo "User is owner. Permission granted."
+    else do
+      permissions <- spaceUserPermissions spaceIdentifier userIdentifier
+      if permission `S.member` permissions
+        then lift $ logInfo "Permission satisfied."
+        else do
+          lift $ logInfo "Permission was not satisfied."
+          case sPermission of
+            (_ :: SPermissionSpace permission) -> throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @permission
 
 spaceLookupId ::
   (MonadLogger m, MonadSeldaPool m) =>
