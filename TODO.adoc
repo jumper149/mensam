@@ -16,30 +16,31 @@
     *** [ ] Profile pictures.
     *** [ ] Space pictures.
     *** [ ] Desk pictures.
+  ** [ ] Simplify names.
+    ** [ ] -> Change `SpaceRole` to `Role`
+    ** [ ] -> Change `SpaceRolePermission` to `Permission`
 
 * Frontend.
   ** [ ] Improve SVG time picker.
     *** [ ] Add text based time.
   ** [ ] Terms and Conditions check during registration.
   ** [ ] Add loading screen to HTML wrapper for frontend.
+    *** This is harder than expected. Is it possible to start Elm from JS directly?
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
   ** [ ] Handle confirmation links.
   ** [ ] Add QR code generator for URLs to join space.
   ** [ ] Light/Dark mode.
-  ** [ ] Dashboard page.
-    *** [ ] Your spaces (with membership).
-    *** [ ] Reservations preview.
+  ** [x] Dashboard page.
+    *** [x] Your spaces (with membership).
+    *** [x] Reservations preview.
   ** [ ] Factor out duplicate code (buttons, styling and so on).
-  ** [ ] When SignedInHamburgerDropDown is open a click anywhere should close it again.
+    *** [x] Buttons
+  ** [x] When SignedInHamburgerDropDown is open a click anywhere should close it again.
 
 * Pin timezone libraries.
   ** [ ] tzdata library for Haskell.
   ** [ ] justinmimbs/timezone-data for Elm.
   ** [ ] Matching IANA database versions.
-
-* Simplify names.
-  ** [ ] -> Change `SpaceRole` to `Role`
-  ** [ ] -> Change `SpaceRolePermission` to `Permission`
 
 * Google calendar integration.
 
