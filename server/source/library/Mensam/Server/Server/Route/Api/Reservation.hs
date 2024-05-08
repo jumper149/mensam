@@ -5,6 +5,7 @@ import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
+import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
 import Mensam.API.Route.Api.Reservation
 import Mensam.Server.Application.SeldaPool.Class

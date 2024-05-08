@@ -3,6 +3,7 @@ module Mensam.Client.Application.MensamClient.Class where
 import Mensam.API.Aeson
 import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Space
+import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
 import Mensam.API.Route.Api qualified as Route.Api
 import Mensam.API.Route.Api.OpenApi qualified as Route.Api.OpenApi
