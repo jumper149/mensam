@@ -2,6 +2,7 @@
 
 * Frontend
   ** Add new page to view user profiles.
+  ** Add new page to edit your user settings.
 * API
   ** Add `/password` route to change your user password.
   ** Route `/desk/list` checks the `view_space` permission now.

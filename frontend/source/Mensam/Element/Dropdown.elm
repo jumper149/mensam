@@ -22,6 +22,7 @@ type Message
     | YourProfile Mensam.User.Identifier
     | YourDashboard
     | YourReservations
+    | UserSettings
     | SignOut
 
 
@@ -76,14 +77,19 @@ element content =
                         , Element.Font.size 16
                         ]
                         [ dropdownEntry
-                            { attributes = []
+                            { attributes = [ Element.alignTop ]
                             , text = "Your Dashboard"
                             , message = YourDashboard
                             }
                         , dropdownEntry
-                            { attributes = []
+                            { attributes = [ Element.alignTop ]
                             , text = "Your Reservations"
                             , message = YourReservations
+                            }
+                        , dropdownEntry
+                            { attributes = [ Element.alignBottom ]
+                            , text = "Settings"
+                            , message = UserSettings
                             }
                         , dropdownEntry
                             { attributes = [ Element.alignBottom ]
@@ -108,7 +114,7 @@ dropdownWrapper content insideElement =
             ]
             [ Element.row
                 [ Element.width Element.fill
-                , Element.height <| Element.px 200
+                , Element.height <| Element.px 220
                 , Element.alignTop
                 ]
                 [ Element.column
