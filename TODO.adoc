@@ -29,12 +29,8 @@
   ** [ ] Handle confirmation links.
   ** [ ] Add QR code generator for URLs to join space.
   ** [ ] Light/Dark mode.
-  ** [x] Dashboard page.
-    *** [x] Your spaces (with membership).
-    *** [x] Reservations preview.
   ** [ ] Factor out duplicate code (buttons, styling and so on).
     *** [x] Buttons
-  ** [x] When SignedInHamburgerDropDown is open a click anywhere should close it again.
   ** [ ] Automatically sign in after sign up.
     *** Currently this doesn't work with setting the URL and reloading that URL again.
   ** [ ] Create space on dashboard.
@@ -50,7 +46,6 @@
   ** [ ] Show more info for spaces in "Your Dashboard" and "Browse Spaces"
     *** [ ] City.
     *** more?
-  ** [x] Don't show inaccessible roles when joining a space.
   ** [ ] When editing (for example "Name") insert current value into the text input field.
     *** [ ] For Spaces.
     *** [ ] For Desks.
