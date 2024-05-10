@@ -124,6 +124,7 @@ type MessagePure
     = EnterUsername String
     | EnterPassword String
     | EnterEmail String
+    | SetHintUsernameIsTaken
 
 
 updatePure : MessagePure -> Model -> Model
@@ -137,6 +138,9 @@ updatePure message model =
 
         EnterEmail email ->
             { model | email = email }
+
+        SetHintUsernameIsTaken ->
+            { model | hint = "Username is already taken." }
 
 
 type MessageEffect
@@ -169,6 +173,9 @@ register model =
             case result of
                 Ok (Mensam.Api.Register.Success value) ->
                     MessageEffect <| Submitted value
+
+                Ok Mensam.Api.Register.ErrorUsernameIsTaken ->
+                    MessagePure SetHintUsernameIsTaken
 
                 Ok (Mensam.Api.Register.ErrorBody error) ->
                     MessageEffect <|

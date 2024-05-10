@@ -19,6 +19,7 @@ type Response
     = Success
         { emailSent : Bool
         }
+    | ErrorUsernameIsTaken
     | ErrorBody String
 
 
@@ -62,6 +63,14 @@ responseResult httpResponse =
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err
 
+                409 ->
+                    case Decode.decodeString decodeBody409 body of
+                        Ok () ->
+                            Ok ErrorUsernameIsTaken
+
+                        Err err ->
+                            Err <| Http.BadBody <| Decode.errorToString err
+
                 status ->
                     Err <| Http.BadStatus status
 
@@ -98,3 +107,17 @@ decodeBody201 =
 decodeBody400 : Decode.Decoder String
 decodeBody400 =
     Decode.field "error" Decode.string
+
+
+decodeBody409 : Decode.Decoder ()
+decodeBody409 =
+    Decode.string
+        |> Decode.andThen
+            (\string ->
+                case string of
+                    "Username is taken." ->
+                        Decode.succeed ()
+
+                    _ ->
+                        Decode.fail <| "Unexpected HTTP 409 message: " ++ string
+            )

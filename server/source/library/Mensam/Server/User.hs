@@ -9,6 +9,7 @@ import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
 
+import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
@@ -127,6 +128,12 @@ userCreate ::
   SeldaTransactionT m IdentifierUser
 userCreate username password emailAddress emailAddressVisible = do
   lift $ logDebug "Creating user."
+  maybeExistingUser <- userLookupId username
+  case maybeExistingUser of
+    Nothing -> lift $ logInfo "Username doesn't exist yet."
+    Just _ -> do
+      lift $ logInfo "Username is already taken. Cannot create new user."
+      throwM MkSqlErrorMensamUsernameIsTaken
   passwordHash :: PasswordHash Bcrypt <- hashPassword password
   let dbUser =
         MkDbUser
@@ -144,6 +151,11 @@ userCreate username password emailAddress emailAddressVisible = do
   dbUserId <- Selda.insertWithPK tableUser [dbUser]
   lift $ logInfo "Created user successfully."
   pure $ MkIdentifierUser $ Selda.fromId @DbUser dbUserId
+
+type SqlErrorMensamUsernameIsTaken :: Type
+data SqlErrorMensamUsernameIsTaken = MkSqlErrorMensamUsernameIsTaken
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
 
 userSetPassword ::
   (MonadLogger m, MonadSeldaPool m) =>

@@ -1,6 +1,7 @@
 module Mensam.Server.Server.Route.Api.User where
 
 import Mensam.API.Aeson
+import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.User
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.User
@@ -138,6 +139,7 @@ register ::
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseRegister) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
+  , IsMember (WithStatus 409 (StaticText "Username is taken.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   Either String RequestRegister ->
@@ -160,34 +162,39 @@ register eitherRequest =
           let effect = MkConfirmationEffectEmailValidation requestRegisterEmail
           expirationTime <- lift . liftIO $ (T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime`) <$> T.getCurrentTime
           userConfirmationCreate userIdentifier effect expirationTime
-      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \confirmationSecret -> do
-        logInfo "Registered new user."
-        logDebug "Sending confirmation email."
-        config <- configuration
-        sendEmailResult <-
-          sendEmail
-            MkEmail
-              { emailRecipient = requestRegisterEmail
-              , emailTitle = "Account Verification: " <> unUsername requestRegisterName
-              , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
-                  H.head $ do
-                    H.title $ H.text $ "Account Verification: " <> unUsername requestRegisterName
-                  H.body $ do
-                    H.p $ H.text $ "Welcome " <> unUsername requestRegisterName <> "!"
-                    H.p $ H.text "You have been registered successfully. Click the link to confirm your email address."
-                    let confirmLink :: T.Text = displayBaseUrl (configBaseUrl config) <> "register/confirm/" <> unConfirmationSecret confirmationSecret
-                    H.p $ H.a H.! H.A.href (H.textValue confirmLink) $ H.text confirmLink
-                    H.div $ H.small $ H.text "If you did not register this account, feel free to ignore this message."
-              }
-        let emailSent =
-              case sendEmailResult of
-                EmailSent -> True
-                EmailFailedToSend -> False
-        respond $
-          WithStatus @201
-            MkResponseRegister
-              { responseRegisterEmailSent = emailSent
-              }
+      handleSeldaException
+        (Proxy @SqlErrorMensamUsernameIsTaken)
+        (WithStatus @409 $ MkStaticText @"Username is taken.")
+        seldaResult
+        $ \seldaResultAfter409 -> do
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter409 $ \confirmationSecret -> do
+            logInfo "Registered new user."
+            logDebug "Sending confirmation email."
+            config <- configuration
+            sendEmailResult <-
+              sendEmail
+                MkEmail
+                  { emailRecipient = requestRegisterEmail
+                  , emailTitle = "Account Verification: " <> unUsername requestRegisterName
+                  , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
+                      H.head $ do
+                        H.title $ H.text $ "Account Verification: " <> unUsername requestRegisterName
+                      H.body $ do
+                        H.p $ H.text $ "Welcome " <> unUsername requestRegisterName <> "!"
+                        H.p $ H.text "You have been registered successfully. Click the link to confirm your email address."
+                        let confirmLink :: T.Text = displayBaseUrl (configBaseUrl config) <> "register/confirm/" <> unConfirmationSecret confirmationSecret
+                        H.p $ H.a H.! H.A.href (H.textValue confirmLink) $ H.text confirmLink
+                        H.div $ H.small $ H.text "If you did not register this account, feel free to ignore this message."
+                  }
+            let emailSent =
+                  case sendEmailResult of
+                    EmailSent -> True
+                    EmailFailedToSend -> False
+            respond $
+              WithStatus @201
+                MkResponseRegister
+                  { responseRegisterEmailSent = emailSent
+                  }
 
 passwordChange ::
   ( MonadLogger m

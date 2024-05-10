@@ -1,6 +1,7 @@
 module Mensam.API.Route.Api.User where
 
 import Mensam.API.Aeson
+import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.User
 import Mensam.API.Data.User.Username
 
@@ -59,6 +60,7 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 201 ResponseRegister
               , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 409 (StaticText "Username is taken.")
               , WithStatus 500 ()
               ]
   , routePasswordChange ::

@@ -73,6 +73,7 @@ endpointRegister ::
     ( Union
         '[ WithStatus 201 Route.Api.User.ResponseRegister
          , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 409 (StaticText "Username is taken.")
          , WithStatus 500 ()
          ]
     )
