@@ -103,32 +103,26 @@ instance FromBasicAuthData UserAuthenticated where
           pure NoSuchUser
         Right usernameText -> do
           logDebug $ "Decoded UTF-8 username: " <> T.pack (show usernameText)
-          logDebug $ "Parsing username: " <> T.pack (show usernameText)
-          case mkUsername usernameText of
-            Left err -> do
-              logInfo $ "Failed to parse username: " <> T.pack (show err)
-              pure NoSuchUser
-            Right username -> do
-              logDebug $ "Parsed username: " <> T.pack (show username)
-              logDebug "Decoding UTF-8 password."
-              case mkPassword <$> T.decodeUtf8' basicAuthPassword of
-                Left _err -> do
-                  logInfo "Failed to decode password as UTF-8."
-                  pure BadPassword
-                Right password -> do
-                  logDebug "Decoded UTF-8 password."
-                  seldaAuthResult <- runSeldaTransactionT $ userAuthenticate username password
-                  case seldaAuthResult of
-                    SeldaFailure err -> do
-                      -- This case should not occur under normal circumstances.
-                      -- The transaction in this case is just a read transaction.
-                      logError "Authentication failed because of a database error."
-                      throwM err
-                    SeldaSuccess authResult ->
-                      case authResult of
-                        Left AuthenticationErrorUserDoesNotExist -> pure NoSuchUser
-                        Left AuthenticationErrorWrongPassword -> pure BadPassword
-                        Right authenticated -> pure $ Authenticated authenticated
+          let username = MkUsernameUnsafe usernameText
+          logDebug "Decoding UTF-8 password."
+          case mkPassword <$> T.decodeUtf8' basicAuthPassword of
+            Left _err -> do
+              logInfo "Failed to decode password as UTF-8."
+              pure BadPassword
+            Right password -> do
+              logDebug "Decoded UTF-8 password."
+              seldaAuthResult <- runSeldaTransactionT $ userAuthenticate username password
+              case seldaAuthResult of
+                SeldaFailure err -> do
+                  -- This case should not occur under normal circumstances.
+                  -- The transaction in this case is just a read transaction.
+                  logError "Authentication failed because of a database error."
+                  throwM err
+                SeldaSuccess authResult ->
+                  case authResult of
+                    Left AuthenticationErrorUserDoesNotExist -> pure NoSuchUser
+                    Left AuthenticationErrorWrongPassword -> pure BadPassword
+                    Right authenticated -> pure $ Authenticated authenticated
 
 type instance BasicAuthCfg = RunLoginInIO
 
