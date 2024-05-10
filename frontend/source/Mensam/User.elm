@@ -112,8 +112,8 @@ passwordRegexPattern =
     "^[a-zA-Z0-9" ++ String.fromList (escapeCharsForPatternCharacterSet passwordValidSymbols) ++ "]{4,32}$"
 
 
-stringToPassword : String -> Maybe Password
-stringToPassword string =
+parsePassword : String -> Maybe Password
+parsePassword string =
     let
         chars =
             String.toList string

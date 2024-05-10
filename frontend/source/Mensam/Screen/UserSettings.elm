@@ -207,7 +207,7 @@ submitNewPasswordMessage :
     }
     -> Message
 submitNewPasswordMessage popupModel =
-    case Mensam.User.stringToPassword popupModel.newPassword of
+    case Mensam.User.parsePassword popupModel.newPassword of
         Nothing ->
             MessagePure <| SetPasswordHint <| "Password: " ++ Mensam.User.passwordRegexPattern
 

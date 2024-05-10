@@ -121,7 +121,7 @@ element model =
 
 submitRegisterMessage : Model -> Message
 submitRegisterMessage model =
-    case Mensam.User.stringToPassword model.password of
+    case Mensam.User.parsePassword model.password of
         Nothing ->
             MessagePure SetHintPasswordNotAccepted
 
