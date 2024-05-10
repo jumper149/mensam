@@ -40,11 +40,14 @@ element model =
         , Element.Font.size 16
         , Element.centerX
         , Element.centerY
+        , Element.width <| Element.px 300
+        , Element.height <| Element.px 400
         ]
     <|
         Element.column
             [ Element.padding 20
             , Element.spacing 20
+            , Element.width Element.fill
             ]
             [ Element.el
                 [ Element.Font.size 30
@@ -88,6 +91,7 @@ element model =
                     , bottom = 5
                     , left = 10
                     }
+                , Element.alignBottom
                 ]
               <|
                 Element.column
@@ -99,6 +103,7 @@ element model =
                         , Element.paddingXY 5 0
                         , Element.Font.size 14
                         , Element.Font.color Mensam.Element.Color.bright.red
+                        , Element.width Element.fill
                         ]
                       <|
                         Element.text <|
