@@ -18,7 +18,7 @@ type alias Model =
     , password : String
     , email : String
     , emailVisible : Bool
-    , hint : String
+    , hint : List String
     }
 
 
@@ -28,7 +28,7 @@ init =
     , password = ""
     , email = ""
     , emailVisible = False
-    , hint = ""
+    , hint = []
     }
 
 
@@ -41,7 +41,7 @@ element model =
         , Element.centerX
         , Element.centerY
         , Element.width <| Element.px 300
-        , Element.height <| Element.px 400
+        , Element.height <| Element.px 440
         ]
     <|
         Element.column
@@ -83,49 +83,41 @@ element model =
                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Email"
                 , label = Element.Input.labelAbove [] <| Element.text "Email"
                 }
-            , Element.el
+            , Element.column
                 [ Element.width Element.fill
-                , Element.paddingEach
-                    { top = 0
-                    , right = 10
-                    , bottom = 5
-                    , left = 10
-                    }
+                , Element.spacing 3
                 , Element.alignBottom
+                , Element.paddingXY 10 0
                 ]
-              <|
-                Element.column
-                    [ Element.width Element.fill
-                    , Element.spacing 3
+                [ Element.column
+                    [ Element.height <| Element.px 50
+                    , Element.spacing 2
+                    , Element.paddingXY 5 0
+                    , Element.Font.size 14
+                    , Element.Font.color Mensam.Element.Color.bright.red
+                    , Element.width Element.fill
+                    , Element.alignBottom
                     ]
-                    [ Element.el
-                        [ Element.height <| Element.px 14
-                        , Element.paddingXY 5 0
-                        , Element.Font.size 14
-                        , Element.Font.color Mensam.Element.Color.bright.red
-                        , Element.width Element.fill
-                        ]
-                      <|
-                        Element.text <|
-                            model.hint
-                    , Mensam.Element.Button.button <|
-                        Mensam.Element.Button.MkButton
-                            { attributes = [ Element.width Element.fill ]
-                            , color = Mensam.Element.Button.Yellow
-                            , message = Just <| submitRegisterMessage model
-                            , text = "Sign up"
-                            }
-                    ]
+                  <|
+                    List.map (\line -> Element.text <| line ++ "\n") model.hint
+                , Mensam.Element.Button.button <|
+                    Mensam.Element.Button.MkButton
+                        { attributes = [ Element.width Element.fill, Element.alignBottom ]
+                        , color = Mensam.Element.Button.Yellow
+                        , message = Just <| submitRegisterMessage model
+                        , text = "Sign up"
+                        }
+                ]
             ]
 
 
 submitRegisterMessage : Model -> Message
 submitRegisterMessage model =
     case Mensam.User.parsePassword model.password of
-        Nothing ->
-            MessagePure SetHintPasswordNotAccepted
+        Err err ->
+            MessagePure <| SetHintPasswordNotAccepted err
 
-        Just password ->
+        Ok password ->
             MessageEffect <|
                 Submit
                     { username = model.username
@@ -144,7 +136,7 @@ type MessagePure
     = EnterUsername String
     | EnterPassword String
     | EnterEmail String
-    | SetHintPasswordNotAccepted
+    | SetHintPasswordNotAccepted Mensam.User.ErrorPasswordParse
     | SetHintUsernameIsTaken
 
 
@@ -160,11 +152,34 @@ updatePure message model =
         EnterEmail email ->
             { model | email = email }
 
-        SetHintPasswordNotAccepted ->
-            { model | hint = "Password: " ++ Mensam.User.passwordRegexPattern }
+        SetHintPasswordNotAccepted err ->
+            { model
+                | hint =
+                    case err of
+                        Mensam.User.MkErrorPasswordParseTooShort ->
+                            [ "Password too short."
+                            , "Needs atleast 4 characters."
+                            ]
+
+                        Mensam.User.MkErrorPasswordParseTooLong ->
+                            [ "Password too short."
+                            , "Takes atmost 32 characters."
+                            ]
+
+                        Mensam.User.MkErrorPasswordParseInvalidCharacter ->
+                            [ "Password uses invalid character."
+                            , "Only some symbols are allowed."
+                            , String.fromList Mensam.User.passwordValidSymbols
+                            ]
+            }
 
         SetHintUsernameIsTaken ->
-            { model | hint = "Username is already taken." }
+            { model
+                | hint =
+                    [ "Username is already taken."
+                    , "Choose a different username."
+                    ]
+            }
 
 
 type MessageEffect

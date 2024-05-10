@@ -112,7 +112,7 @@ passwordRegexPattern =
     "^[a-zA-Z0-9" ++ String.fromList (escapeCharsForPatternCharacterSet passwordValidSymbols) ++ "]{4,32}$"
 
 
-parsePassword : String -> Maybe Password
+parsePassword : String -> Result ErrorPasswordParse Password
 parsePassword string =
     let
         chars =
@@ -121,21 +121,28 @@ parsePassword string =
         isSupportedChar char =
             Char.isAlphaNum char || List.member char passwordValidSymbols
 
-        usesSupportedChars =
-            List.all isSupportedChar chars
-
-        isCorrectLength =
-            let
-                length =
-                    List.length chars
-            in
-            length >= 4 && length <= 32
+        length =
+            List.length chars
     in
-    if isCorrectLength && usesSupportedChars then
-        Just <| MkPasswordUnsafe string
+    if length >= 4 then
+        if length <= 32 then
+            if List.all isSupportedChar chars then
+                Ok <| MkPasswordUnsafe string
+
+            else
+                Err MkErrorPasswordParseInvalidCharacter
+
+        else
+            Err MkErrorPasswordParseTooLong
 
     else
-        Nothing
+        Err MkErrorPasswordParseTooShort
+
+
+type ErrorPasswordParse
+    = MkErrorPasswordParseTooShort
+    | MkErrorPasswordParseTooLong
+    | MkErrorPasswordParseInvalidCharacter
 
 
 passwordEncode : Password -> Encode.Value

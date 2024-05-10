@@ -26,7 +26,7 @@ type alias Model =
 type PopupModel
     = PopupChangePassword
         { newPassword : String
-        , hint : String
+        , hint : List String
         }
 
 
@@ -166,16 +166,17 @@ element model =
                                 , label = Element.Input.labelHidden "New Password"
                                 , show = False
                                 }
-                            , Element.el
-                                [ Element.height <| Element.px 14
+                            , Element.column
+                                [ Element.height <| Element.px 50
+                                , Element.spacing 2
                                 , Element.paddingXY 5 0
                                 , Element.Font.size 14
                                 , Element.Font.color Mensam.Element.Color.bright.red
+                                , Element.width Element.fill
                                 , Element.alignBottom
                                 ]
                               <|
-                                Element.text <|
-                                    popupModel.hint
+                                List.map (\line -> Element.text <| line ++ "\n") popupModel.hint
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10
@@ -203,15 +204,15 @@ element model =
 
 submitNewPasswordMessage :
     { newPassword : String
-    , hint : String
+    , hint : List String
     }
     -> Message
 submitNewPasswordMessage popupModel =
     case Mensam.User.parsePassword popupModel.newPassword of
-        Nothing ->
-            MessagePure <| SetPasswordHint <| "Password: " ++ Mensam.User.passwordRegexPattern
+        Err err ->
+            MessagePure <| SetPasswordHint err
 
-        Just password ->
+        Ok password ->
             MessageEffect <| SubmitNewPassword { newPassword = password }
 
 
@@ -226,7 +227,7 @@ type MessagePure
     | SetEmail (Maybe String)
     | OpenDialogToChangePassword
     | EnterNewPassword String
-    | SetPasswordHint String
+    | SetPasswordHint Mensam.User.ErrorPasswordParse
     | ClosePopup
 
 
@@ -240,7 +241,7 @@ updatePure message model =
             { model | email = email }
 
         OpenDialogToChangePassword ->
-            { model | popup = Just <| PopupChangePassword { newPassword = "", hint = "" } }
+            { model | popup = Just <| PopupChangePassword { newPassword = "", hint = [] } }
 
         EnterNewPassword newPassword ->
             { model
@@ -253,7 +254,7 @@ updatePure message model =
                             Just <| PopupChangePassword { popupModel | newPassword = newPassword }
             }
 
-        SetPasswordHint hint ->
+        SetPasswordHint err ->
             { model
                 | popup =
                     case model.popup of
@@ -261,7 +262,27 @@ updatePure message model =
                             Nothing
 
                         Just (PopupChangePassword popupModel) ->
-                            Just <| PopupChangePassword { popupModel | hint = hint }
+                            Just <|
+                                PopupChangePassword
+                                    { popupModel
+                                        | hint =
+                                            case err of
+                                                Mensam.User.MkErrorPasswordParseTooShort ->
+                                                    [ "Password too short."
+                                                    , "Needs atleast 4 characters."
+                                                    ]
+
+                                                Mensam.User.MkErrorPasswordParseTooLong ->
+                                                    [ "Password too short."
+                                                    , "Takes atmost 32 characters."
+                                                    ]
+
+                                                Mensam.User.MkErrorPasswordParseInvalidCharacter ->
+                                                    [ "Password uses invalid character."
+                                                    , "Only some symbols are allowed."
+                                                    , String.fromList Mensam.User.passwordValidSymbols
+                                                    ]
+                                    }
             }
 
         ClosePopup ->
