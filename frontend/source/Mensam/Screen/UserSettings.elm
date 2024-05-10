@@ -66,15 +66,41 @@ element model =
                         ]
                     , Element.row
                         [ Element.width Element.fill
-                        , Element.height <| Element.px 45
+                        , Element.height <| Element.px 60
+                        , Element.padding 10
+                        , Element.spacing 20
+                        ]
+                        [ Element.el
+                            [ Element.alignLeft
+                            , Element.centerY
+                            ]
+                          <|
+                            Element.text "Identifier:"
+                        , Element.el [] <| Element.text <| Mensam.User.identifierToString model.id
+                        ]
+                    , Element.row
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 60
+                        , Element.padding 10
+                        , Element.spacing 20
+                        ]
+                        [ Element.el
+                            [ Element.alignLeft
+                            , Element.centerY
+                            ]
+                          <|
+                            Element.text "Username:"
+                        , Element.el [] <| Element.text <| Mensam.User.nameToString model.name
+                        ]
+                    , Element.row
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 60
                         , Element.padding 10
                         , Element.spacing 30
                         ]
                         [ Element.el
-                            [ Element.Font.size 22
-                            , Element.Font.hairline
-                            , Element.alignBottom
-                            , Element.alignLeft
+                            [ Element.alignLeft
+                            , Element.centerY
                             ]
                           <|
                             Element.text "Password"
@@ -88,25 +114,13 @@ element model =
                         ]
                     , Element.row
                         [ Element.width Element.fill
-                        , Element.height <| Element.px 45
+                        , Element.height <| Element.px 60
                         , Element.padding 10
                         , Element.spacing 20
                         ]
                         [ Element.el
                             [ Element.alignLeft
-                            ]
-                          <|
-                            Element.text "User:"
-                        , Element.el [] <| Element.text <| Mensam.User.nameToString model.name
-                        ]
-                    , Element.row
-                        [ Element.width Element.fill
-                        , Element.height <| Element.px 45
-                        , Element.padding 10
-                        , Element.spacing 20
-                        ]
-                        [ Element.el
-                            [ Element.alignLeft
+                            , Element.centerY
                             ]
                           <|
                             Element.text "Email:"
