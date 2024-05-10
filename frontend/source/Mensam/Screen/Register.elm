@@ -10,6 +10,7 @@ import Mensam.Api.Register
 import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Error
+import Mensam.User
 
 
 type alias Model =
@@ -52,7 +53,7 @@ element model =
               <|
                 Element.text "Register"
             , Element.Input.username
-                [ onEnter <| MessageEffect Submit
+                [ onEnter <| submitRegisterMessage model
                 , Element.Font.color Mensam.Element.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterUsername
@@ -61,7 +62,7 @@ element model =
                 , label = Element.Input.labelAbove [] <| Element.text "Username"
                 }
             , Element.Input.newPassword
-                [ onEnter <| MessageEffect Submit
+                [ onEnter <| submitRegisterMessage model
                 , Element.Font.color Mensam.Element.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterPassword
@@ -71,7 +72,7 @@ element model =
                 , show = False
                 }
             , Element.Input.email
-                [ onEnter <| MessageEffect Submit
+                [ onEnter <| submitRegisterMessage model
                 , Element.Font.color Mensam.Element.Color.dark.black
                 ]
                 { onChange = MessagePure << EnterEmail
@@ -106,11 +107,27 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Yellow
-                            , message = Just <| MessageEffect Submit
+                            , message = Just <| submitRegisterMessage model
                             , text = "Sign up"
                             }
                     ]
             ]
+
+
+submitRegisterMessage : Model -> Message
+submitRegisterMessage model =
+    case Mensam.User.stringToPassword model.password of
+        Nothing ->
+            MessagePure SetHintPasswordNotAccepted
+
+        Just password ->
+            MessageEffect <|
+                Submit
+                    { username = model.username
+                    , password = password
+                    , email = model.email
+                    , emailVisible = model.emailVisible
+                    }
 
 
 type Message
@@ -122,6 +139,7 @@ type MessagePure
     = EnterUsername String
     | EnterPassword String
     | EnterEmail String
+    | SetHintPasswordNotAccepted
     | SetHintUsernameIsTaken
 
 
@@ -137,6 +155,9 @@ updatePure message model =
         EnterEmail email ->
             { model | email = email }
 
+        SetHintPasswordNotAccepted ->
+            { model | hint = "Password: " ++ Mensam.User.passwordRegexPattern }
+
         SetHintUsernameIsTaken ->
             { model | hint = "Username is already taken." }
 
@@ -144,6 +165,11 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Submit
+        { username : String
+        , password : Mensam.User.Password
+        , email : String
+        , emailVisible : Bool
+        }
     | Submitted { emailSent : Bool }
 
 
@@ -164,9 +190,21 @@ onEnter msg =
         )
 
 
-register : Model -> Cmd Message
-register model =
-    Mensam.Api.Register.request { email = model.email, emailVisible = model.emailVisible, name = model.username, password = model.password } <|
+register :
+    { username : String
+    , password : Mensam.User.Password
+    , email : String
+    , emailVisible : Bool
+    }
+    -> Cmd Message
+register args =
+    Mensam.Api.Register.request
+        { email = args.email
+        , emailVisible = args.emailVisible
+        , name = args.username
+        , password = args.password
+        }
+    <|
         \result ->
             case result of
                 Ok (Mensam.Api.Register.Success value) ->

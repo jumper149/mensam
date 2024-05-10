@@ -4,6 +4,7 @@ import Mensam.API.Aeson
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
+import Mensam.API.Data.User.Password
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.Reservation qualified as Route.Reservation
 import Mensam.API.Route.Api.Space qualified as Route.Space
@@ -15,7 +16,6 @@ import Mensam.Client.OrphanInstances
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Class
 import Data.SOP
-import Data.Text qualified as T
 import Data.Time qualified as T
 import Data.Time.Zones.All qualified as T
 import Servant
@@ -32,7 +32,7 @@ f :: ClientM ()
 f = do
   let
     name :: Username = MkUsernameUnsafe "maxmustermann7"
-    pw :: T.Text = "asdf"
+    pw :: Password = MkPasswordUnsafe "pw"
     email :: EmailAddress = fromTextUnsafe "maxmustermann@gmail.com"
     spacename :: NameSpace = MkNameSpace "solarsystem"
 
@@ -51,7 +51,7 @@ f = do
   let credentials =
         MkCredentials
           { credentialsUsername = unUsername name
-          , credentialsPassword = pw
+          , credentialsPassword = unPassword pw
           }
   resultLogin <- endpointLogin $ DataBasicAuth credentials
   liftIO $ print resultLogin

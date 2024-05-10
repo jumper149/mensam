@@ -24,7 +24,10 @@ type alias Model =
 
 
 type PopupModel
-    = PopupChangePassword { newPassword : String }
+    = PopupChangePassword
+        { newPassword : String
+        , hint : String
+        }
 
 
 init : { id : Mensam.User.Identifier } -> Model
@@ -154,7 +157,7 @@ element model =
                               <|
                                 Element.text "Change Password"
                             , Element.Input.newPassword
-                                [ onEnter <| MessageEffect <| SubmitNewPassword { newPassword = popupModel.newPassword }
+                                [ onEnter <| submitNewPasswordMessage popupModel
                                 , Element.Font.color Mensam.Element.Color.dark.black
                                 ]
                                 { onChange = MessagePure << EnterNewPassword
@@ -163,6 +166,16 @@ element model =
                                 , label = Element.Input.labelHidden "New Password"
                                 , show = False
                                 }
+                            , Element.el
+                                [ Element.height <| Element.px 14
+                                , Element.paddingXY 5 0
+                                , Element.Font.size 14
+                                , Element.Font.color Mensam.Element.Color.bright.red
+                                , Element.alignBottom
+                                ]
+                              <|
+                                Element.text <|
+                                    popupModel.hint
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10
@@ -179,13 +192,27 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
-                                        , message = Just <| MessageEffect <| SubmitNewPassword { newPassword = popupModel.newPassword }
+                                        , message = Just <| submitNewPasswordMessage popupModel
                                         , text = "Submit new Password"
                                         }
                                 ]
                             ]
         , closePopup = MessagePure ClosePopup
         }
+
+
+submitNewPasswordMessage :
+    { newPassword : String
+    , hint : String
+    }
+    -> Message
+submitNewPasswordMessage popupModel =
+    case Mensam.User.stringToPassword popupModel.newPassword of
+        Nothing ->
+            MessagePure <| SetPasswordHint <| "Password: " ++ Mensam.User.passwordRegexPattern
+
+        Just password ->
+            MessageEffect <| SubmitNewPassword { newPassword = password }
 
 
 type Message
@@ -199,6 +226,7 @@ type MessagePure
     | SetEmail (Maybe String)
     | OpenDialogToChangePassword
     | EnterNewPassword String
+    | SetPasswordHint String
     | ClosePopup
 
 
@@ -212,7 +240,7 @@ updatePure message model =
             { model | email = email }
 
         OpenDialogToChangePassword ->
-            { model | popup = Just <| PopupChangePassword { newPassword = "" } }
+            { model | popup = Just <| PopupChangePassword { newPassword = "", hint = "" } }
 
         EnterNewPassword newPassword ->
             { model
@@ -225,6 +253,17 @@ updatePure message model =
                             Just <| PopupChangePassword { popupModel | newPassword = newPassword }
             }
 
+        SetPasswordHint hint ->
+            { model
+                | popup =
+                    case model.popup of
+                        Nothing ->
+                            Nothing
+
+                        Just (PopupChangePassword popupModel) ->
+                            Just <| PopupChangePassword { popupModel | hint = hint }
+            }
+
         ClosePopup ->
             { model | popup = Nothing }
 
@@ -232,7 +271,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Refresh
-    | SubmitNewPassword { newPassword : String }
+    | SubmitNewPassword { newPassword : Mensam.User.Password }
 
 
 onEnter : msg -> Element.Attribute msg
@@ -294,7 +333,7 @@ profile jwt userId =
                                 Mensam.Error.http error
 
 
-changePassword : { jwt : Mensam.Auth.Bearer.Jwt, newPassword : String } -> Cmd Message
+changePassword : { jwt : Mensam.Auth.Bearer.Jwt, newPassword : Mensam.User.Password } -> Cmd Message
 changePassword args =
     Mensam.Api.PasswordChange.request
         { jwt = args.jwt

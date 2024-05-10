@@ -120,6 +120,7 @@ library
     , Mensam.API.Data.Space
     , Mensam.API.Data.Space.Permission
     , Mensam.API.Data.User
+    , Mensam.API.Data.User.Password
     , Mensam.API.Data.User.Username
     , Mensam.API.Order
     , Mensam.API.Route

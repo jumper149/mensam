@@ -3,6 +3,7 @@ module Mensam.Server.Server.Route.Api.User where
 import Mensam.API.Aeson
 import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.User
+import Mensam.API.Data.User.Password
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.User
 import Mensam.Server.Application.Configured.Class
@@ -20,7 +21,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.ByteString qualified as B
-import Data.Password.Bcrypt
+import Data.Password.Bcrypt qualified as Bcrypt
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as TL
@@ -156,7 +157,7 @@ register eitherRequest =
           userIdentifier <-
             userCreate
               requestRegisterName
-              (mkPassword requestRegisterPassword)
+              (Bcrypt.mkPassword $ unPassword requestRegisterPassword)
               requestRegisterEmail
               requestRegisterEmailVisible
           let effect = MkConfirmationEffectEmailValidation requestRegisterEmail
@@ -215,7 +216,7 @@ passwordChange auth eitherRequest =
         runSeldaTransactionT $
           userSetPassword
             (userAuthenticatedId authenticated)
-            (mkPassword $ requestPasswordChangeNewPassword request)
+            (Bcrypt.mkPassword $ unPassword $ requestPasswordChangeNewPassword request)
       handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
         logInfo "Changed user password successfully."
         respond $ WithStatus @200 MkResponsePasswordChange {responsePasswordChangeUnit = ()}

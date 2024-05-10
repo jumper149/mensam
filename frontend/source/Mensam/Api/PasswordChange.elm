@@ -5,12 +5,13 @@ import Http.Extra
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
+import Mensam.User
 import Url.Builder
 
 
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
-    , newPassword : String
+    , newPassword : Mensam.User.Password
     }
 
 
@@ -91,7 +92,7 @@ encodeBody : Request -> Encode.Value
 encodeBody body =
     Encode.object
         [ ( "new-password"
-          , Encode.string body.newPassword
+          , Mensam.User.passwordEncode body.newPassword
           )
         ]
 

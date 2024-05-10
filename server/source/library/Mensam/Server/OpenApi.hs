@@ -9,6 +9,7 @@ import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
+import Mensam.API.Data.User.Password
 import Mensam.API.Data.User.Username
 import Mensam.API.Order
 import Mensam.API.Route.Api qualified as Route.Api
@@ -64,6 +65,16 @@ instance ToSchema OpenApi where
                         & at 200 ?~ "OK"
                      )
             )
+
+instance ToParamSchema Password where
+  toParamSchema Proxy =
+    mempty
+      & type_ ?~ OpenApiString
+      & minLength ?~ 4
+      & maxLength ?~ 32
+      & Data.OpenApi.pattern ?~ ("^[a-zA-Z0-9" <> T.pack (escapeCharsForPatternCharacterSet passwordValidSymbols) <> "]{4,32}$")
+instance ToSchema Password where
+  declareNamedSchema = pure . NamedSchema (Just "Password") . paramSchemaToSchema
 
 instance ToParamSchema Username where
   toParamSchema Proxy =
@@ -240,3 +251,12 @@ deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationList") 
 
 openapiJsonStdout :: IO ()
 openapiJsonStdout = TL.putStrLn $ TL.decodeUtf8 $ A.encode Mensam.Server.OpenApi.openapi
+
+escapeCharsForPatternCharacterSet :: [Char] -> String
+escapeCharsForPatternCharacterSet = \case
+  [] -> []
+  '-' : chars -> '\\' : '-' : escapeCharsForPatternCharacterSet chars
+  '[' : chars -> '\\' : '[' : escapeCharsForPatternCharacterSet chars
+  ']' : chars -> '\\' : ']' : escapeCharsForPatternCharacterSet chars
+  '\\' : chars -> '\\' : '\\' : escapeCharsForPatternCharacterSet chars
+  char : chars -> char : escapeCharsForPatternCharacterSet chars

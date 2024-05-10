@@ -3,6 +3,7 @@ module Mensam.API.Route.Api.User where
 import Mensam.API.Aeson
 import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.User
+import Mensam.API.Data.User.Password
 import Mensam.API.Data.User.Username
 
 import Data.Aeson qualified as A
@@ -144,7 +145,7 @@ newtype ResponseLogout = MkResponseLogout
 type RequestRegister :: Type
 data RequestRegister = MkRequestRegister
   { requestRegisterName :: Username
-  , requestRegisterPassword :: T.Text
+  , requestRegisterPassword :: Password
   , requestRegisterEmail :: EmailAddress
   , requestRegisterEmailVisible :: Bool
   }
@@ -164,7 +165,7 @@ newtype ResponseRegister = MkResponseRegister
 
 type RequestPasswordChange :: Type
 newtype RequestPasswordChange = MkRequestPasswordChange
-  { requestPasswordChangeNewPassword :: T.Text
+  { requestPasswordChangeNewPassword :: Password
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

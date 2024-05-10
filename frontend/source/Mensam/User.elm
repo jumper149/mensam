@@ -41,3 +41,103 @@ nameEncode =
 nameDecoder : Decode.Decoder Name
 nameDecoder =
     Decode.map MkName Decode.string
+
+
+type Password
+    = MkPasswordUnsafe String
+
+
+passwordValidSymbols : List Char
+passwordValidSymbols =
+    [ ' '
+    , '~'
+    , '`'
+    , '!'
+    , '?'
+    , '@'
+    , '#'
+    , '$'
+    , '%'
+    , '^'
+    , '&'
+    , '*'
+    , '_'
+    , '-'
+    , '+'
+    , '='
+    , '<'
+    , '>'
+    , '('
+    , ')'
+    , '{'
+    , '}'
+    , '['
+    , ']'
+    , '|'
+    , '\''
+    , '"'
+    , ','
+    , '.'
+    , ':'
+    , ';'
+    , '/'
+    , '\\'
+    ]
+
+
+passwordRegexPattern : String
+passwordRegexPattern =
+    let
+        escapeCharsForPatternCharacterSet : List Char -> List Char
+        escapeCharsForPatternCharacterSet cs =
+            case cs of
+                [] ->
+                    []
+
+                '-' :: chars ->
+                    '\\' :: '-' :: escapeCharsForPatternCharacterSet chars
+
+                '[' :: chars ->
+                    '\\' :: '[' :: escapeCharsForPatternCharacterSet chars
+
+                ']' :: chars ->
+                    '\\' :: ']' :: escapeCharsForPatternCharacterSet chars
+
+                '\\' :: chars ->
+                    '\\' :: '\\' :: escapeCharsForPatternCharacterSet chars
+
+                char :: chars ->
+                    char :: escapeCharsForPatternCharacterSet chars
+    in
+    "^[a-zA-Z0-9" ++ String.fromList (escapeCharsForPatternCharacterSet passwordValidSymbols) ++ "]{4,32}$"
+
+
+stringToPassword : String -> Maybe Password
+stringToPassword string =
+    let
+        chars =
+            String.toList string
+
+        isSupportedChar char =
+            Char.isAlphaNum char || List.member char passwordValidSymbols
+
+        usesSupportedChars =
+            List.all isSupportedChar chars
+
+        isCorrectLength =
+            let
+                length =
+                    List.length chars
+            in
+            length >= 4 && length <= 32
+    in
+    if isCorrectLength && usesSupportedChars then
+        Just <| MkPasswordUnsafe string
+
+    else
+        Nothing
+
+
+passwordEncode : Password -> Encode.Value
+passwordEncode (MkPasswordUnsafe password) =
+    Encode.string password

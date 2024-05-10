@@ -708,11 +708,11 @@ update message (MkModel model) =
                 Mensam.Screen.Register.ReportError err ->
                     update (ReportError err) <| MkModel model
 
-                Mensam.Screen.Register.Submit ->
+                Mensam.Screen.Register.Submit args ->
                     case model.screen of
-                        ScreenRegister screenModel ->
+                        ScreenRegister _ ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageRegister <| Mensam.Screen.Register.register screenModel
+                            , Platform.Cmd.map MessageRegister <| Mensam.Screen.Register.register args
                             )
 
                         _ ->

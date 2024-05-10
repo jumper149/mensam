@@ -4,6 +4,7 @@ import Http
 import Http.Extra
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Mensam.User
 import Url.Builder
 
 
@@ -11,7 +12,7 @@ type alias Request =
     { email : String
     , emailVisible : Bool
     , name : String
-    , password : String
+    , password : Mensam.User.Password
     }
 
 
@@ -94,7 +95,7 @@ encodeBody body =
         [ ( "email", Encode.string body.email )
         , ( "email-visible", Encode.bool body.emailVisible )
         , ( "name", Encode.string body.name )
-        , ( "password", Encode.string body.password )
+        , ( "password", Mensam.User.passwordEncode body.password )
         ]
 
 

@@ -2,6 +2,7 @@
 
 module Mensam.Client.UI.Register where
 
+import Mensam.API.Data.User.Password
 import Mensam.API.Data.User.Username
 import Mensam.API.Route.Api.User qualified as Route.User
 import Mensam.Client.Application.Event.Class
@@ -90,7 +91,7 @@ registerHandleEvent = \case
           ClientEventSendRequestRegister
             Route.User.MkRequestRegister
               { Route.User.requestRegisterName = MkUsernameUnsafe $ registerInfo ^. registerInfoUsername
-              , Route.User.requestRegisterPassword = registerInfo ^. registerInfoPassword
+              , Route.User.requestRegisterPassword = MkPasswordUnsafe $ registerInfo ^. registerInfoPassword
               , Route.User.requestRegisterEmail = fromTextUnsafe $ registerInfo ^. registerInfoEmail
               , Route.User.requestRegisterEmailVisible = registerInfo ^. registerInfoEmailVisible
               }
