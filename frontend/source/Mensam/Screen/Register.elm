@@ -16,8 +16,6 @@ type alias Model =
     { username : String
     , password : String
     , email : String
-
-    -- TODO: Add checkbox.
     , emailVisible : Bool
     , hint : String
     }
@@ -28,7 +26,7 @@ init =
     { username = ""
     , password = ""
     , email = ""
-    , emailVisible = True
+    , emailVisible = False
     , hint = ""
     }
 
