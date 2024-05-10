@@ -438,7 +438,7 @@ element model =
                                 , Element.clipY
                                 , Element.scrollbarY
                                 ]
-                                { data = model.roles
+                                { data = List.filter (\role -> role.id /= model.role.id) model.roles
                                 , columns =
                                     let
                                         cell =
