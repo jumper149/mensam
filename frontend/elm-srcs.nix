@@ -1,5 +1,10 @@
 {
 
+      "bellroy/elm-email" = {
+        sha256 = "0j5h9yr6b6mj27rqrl31nzq0zsv4n7vgh7h0xf4vpg5iiqxl8mx9";
+        version = "1.0.1";
+      };
+
       "elm/browser" = {
         sha256 = "0nagb9ajacxbbg985r4k9h0jadqpp0gp84nm94kcgbr5sf8i9x13";
         version = "1.0.2";
