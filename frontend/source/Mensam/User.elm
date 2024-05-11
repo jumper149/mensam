@@ -148,3 +148,12 @@ type ErrorPasswordParse
 passwordEncode : Password -> Encode.Value
 passwordEncode (MkPasswordUnsafe password) =
     Encode.string password
+
+
+type ConfirmationSecret
+    = MkConfirmationSecret String
+
+
+confirmationSecretEncode : ConfirmationSecret -> Encode.Value
+confirmationSecretEncode (MkConfirmationSecret secret) =
+    Encode.string secret

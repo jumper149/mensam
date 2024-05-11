@@ -17,6 +17,7 @@ import Mensam.Element.Footer
 import Mensam.Element.Header
 import Mensam.Error
 import Mensam.Flags
+import Mensam.Screen.Confirm
 import Mensam.Screen.Dashboard
 import Mensam.Screen.Landing
 import Mensam.Screen.Login
@@ -91,6 +92,7 @@ type Screen
     | ScreenReservations Mensam.Screen.Reservations.Model
     | ScreenProfile Mensam.Screen.Profile.Model
     | ScreenUserSettings Mensam.Screen.UserSettings.Model
+    | ScreenConfirm Mensam.Screen.Confirm.Model
 
 
 type Route
@@ -109,6 +111,7 @@ type Route
     | RouteReservations
     | RouteProfile Mensam.User.Identifier
     | RouteUserSettings
+    | RouteConfirm Mensam.User.ConfirmationSecret
 
 
 routeToUrl : Route -> String
@@ -167,6 +170,9 @@ routeToUrl route =
 
         RouteUserSettings ->
             Url.Builder.absolute [ "user", "settings" ] []
+
+        RouteConfirm (Mensam.User.MkConfirmationSecret secret) ->
+            Url.Builder.absolute [ "register", "confirm", secret ] []
 
 
 routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
@@ -291,12 +297,22 @@ routeToModelUpdate route (MkModel model) =
                     <|
                         MkModel { model | screen = ScreenUserSettings <| Mensam.Screen.UserSettings.init { id = authentication.user.id } }
 
+        RouteConfirm secret ->
+            case model.authenticated of
+                Mensam.Auth.SignedOut ->
+                    update (SetUrl <| RouteLogin Nothing) <| MkModel model
+
+                Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication _) ->
+                    update (Messages []) <|
+                        MkModel { model | screen = ScreenConfirm <| Mensam.Screen.Confirm.init { secret = secret } }
+
 
 urlParser : Url.Parser.Parser (Route -> c) c
 urlParser =
     Url.Parser.oneOf
         [ Url.Parser.map RouteLanding <| Url.Parser.top
         , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
+        , Url.Parser.map RouteConfirm <| Url.Parser.s "register" </> Url.Parser.s "confirm" </> Url.Parser.map Mensam.User.MkConfirmationSecret Url.Parser.string
         , Url.Parser.map RouteRegister <| Url.Parser.s "register"
         , Url.Parser.map RouteDashboard <| Url.Parser.s "dashboard"
         , Url.Parser.map RouteReservations <| Url.Parser.s "reservations"
@@ -411,6 +427,7 @@ type Message
     | MessageReservations Mensam.Screen.Reservations.Message
     | MessageProfile Mensam.Screen.Profile.Message
     | MessageUserSettings Mensam.Screen.UserSettings.Message
+    | MessageConfirm Mensam.Screen.Confirm.Message
 
 
 type MessageAuth
@@ -1746,6 +1763,57 @@ update message (MkModel model) =
                 _ ->
                     update (ReportError errorScreen) <| MkModel model
 
+        MessageConfirm (Mensam.Screen.Confirm.MessagePure m) ->
+            case model.screen of
+                ScreenConfirm screenModel ->
+                    update EmptyMessage <| MkModel { model | screen = ScreenConfirm <| Mensam.Screen.Confirm.updatePure m screenModel }
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
+        MessageConfirm (Mensam.Screen.Confirm.MessageEffect m) ->
+            case m of
+                Mensam.Screen.Confirm.ReportError err ->
+                    update (ReportError err) <| MkModel model
+
+                Mensam.Screen.Confirm.SubmitConfirm secret ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenConfirm _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageConfirm <| Mensam.Screen.Confirm.confirm jwt secret
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Confirm.LeaveConfirmationPage ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenConfirm screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageConfirm <| Mensam.Screen.Confirm.confirm jwt screenModel.secret
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+        MessageConfirm (Mensam.Screen.Confirm.Messages ms) ->
+            case model.screen of
+                ScreenConfirm _ ->
+                    update (Messages <| List.map MessageConfirm ms) <| MkModel model
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
 
 headerMessage : Model -> Mensam.Element.Header.Message -> Message
 headerMessage (MkModel model) message =
@@ -1828,6 +1896,9 @@ headerContent (MkModel model) =
 
             ScreenUserSettings _ ->
                 Just "Your Settings"
+
+            ScreenConfirm _ ->
+                Just "Confirm Email"
     , httpStatus = model.httpStatus
     }
 
@@ -1940,6 +2011,9 @@ view (MkModel model) =
 
                     ScreenUserSettings screenModel ->
                         Mensam.Element.screen MessageUserSettings <| Mensam.Screen.UserSettings.element screenModel
+
+                    ScreenConfirm screenModel ->
+                        Mensam.Element.screen MessageConfirm <| Mensam.Screen.Confirm.element screenModel
             , Mensam.Element.Footer.element <| footerContent
             ]
 
