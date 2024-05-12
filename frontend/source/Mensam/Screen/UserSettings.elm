@@ -5,6 +5,7 @@ import Element.Font
 import Element.Input
 import Html.Events
 import Json.Decode as Decode
+import Mensam.Api.ConfirmationRequest
 import Mensam.Api.PasswordChange
 import Mensam.Api.Profile
 import Mensam.Auth.Bearer
@@ -135,6 +136,26 @@ element model =
 
                                     Just email ->
                                         Mensam.User.emailToString email
+                        ]
+                    , Element.row
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 60
+                        , Element.padding 10
+                        , Element.spacing 30
+                        ]
+                        [ Element.el
+                            [ Element.alignLeft
+                            , Element.centerY
+                            ]
+                          <|
+                            Element.text "Email Address verified?"
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.alignRight, Element.centerY ]
+                                , color = Mensam.Element.Button.Yellow
+                                , message = Just <| MessageEffect SubmitConfirmationRequest
+                                , text = "Confirm Email Address"
+                                }
                         ]
                     ]
                 ]
@@ -293,6 +314,7 @@ type MessageEffect
     = ReportError Mensam.Error.Error
     | Refresh
     | SubmitNewPassword { newPassword : Mensam.User.Password }
+    | SubmitConfirmationRequest
 
 
 onEnter : msg -> Element.Attribute msg
@@ -385,4 +407,29 @@ changePassword args =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to change password" <|
+                                Mensam.Error.http error
+
+
+confirmationRequest : { jwt : Mensam.Auth.Bearer.Jwt } -> Cmd Message
+confirmationRequest args =
+    Mensam.Api.ConfirmationRequest.request
+        { jwt = args.jwt
+        }
+    <|
+        \response ->
+            case response of
+                Ok Mensam.Api.ConfirmationRequest.Success ->
+                    Messages
+                        [ MessagePure ClosePopup ]
+
+                Ok (Mensam.Api.ConfirmationRequest.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to perform confirmation request" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to perform confirmation request" <|
                                 Mensam.Error.http error

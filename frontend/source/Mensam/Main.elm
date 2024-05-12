@@ -1755,6 +1755,22 @@ update message (MkModel model) =
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
 
+                Mensam.Screen.UserSettings.SubmitConfirmationRequest ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenUserSettings _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageUserSettings <|
+                                        Mensam.Screen.UserSettings.confirmationRequest { jwt = jwt }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
         MessageUserSettings (Mensam.Screen.UserSettings.Messages ms) ->
             case model.screen of
                 ScreenUserSettings _ ->
