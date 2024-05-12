@@ -71,6 +71,11 @@
   ** [ ] justinmimbs/timezone-data for Elm.
   ** [ ] Matching IANA database versions.
 
+* Smart desk assignment.
+  ** Users can choose to reserve any desk (not a specific one).
+  ** Mensam will not choose the desk until the reservation actually happens.
+  ** That way other people with preferences can still choose whatever they want.
+
 * Google calendar integration.
 
 * Microsoft Outlook calender integration.
