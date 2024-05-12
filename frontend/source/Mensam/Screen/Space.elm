@@ -555,7 +555,11 @@ element model =
                                 ]
                             , Element.paragraph
                                 []
-                                [ Element.text "When leaving a space all associated data such as your reservations will be permanently deleted."
+                                [ Element.text "When leaving a space you lose all permissions you had for this space."
+                                ]
+                            , Element.paragraph
+                                []
+                                [ Element.text "Your reservations will remain untouched."
                                 ]
                             , Element.row
                                 [ Element.width Element.fill

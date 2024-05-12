@@ -498,7 +498,11 @@ element model =
                                 ]
                             , Element.paragraph
                                 []
-                                [ Element.text "Kicking a user will also delete all reservations associated with this user."
+                                [ Element.text "Kicking a user will remove all permissions for this user."
+                                ]
+                            , Element.paragraph
+                                []
+                                [ Element.text "Reservations will remain untouched."
                                 ]
                             , Element.row
                                 [ Element.width Element.fill
