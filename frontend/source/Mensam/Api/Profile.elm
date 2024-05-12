@@ -18,6 +18,7 @@ type alias Request =
 type Response
     = Success
         { email : Maybe Mensam.User.Email
+        , emailVerified : Bool
         , id : Mensam.User.Identifier
         , name : Mensam.User.Name
         }
@@ -117,11 +118,12 @@ encodeBody body =
         ]
 
 
-decodeBody200 : Decode.Decoder { email : Maybe Mensam.User.Email, id : Mensam.User.Identifier, name : Mensam.User.Name }
+decodeBody200 : Decode.Decoder { email : Maybe Mensam.User.Email, emailVerified : Bool, id : Mensam.User.Identifier, name : Mensam.User.Name }
 decodeBody200 =
-    Decode.map3
-        (\email id name -> { email = email, id = id, name = name })
+    Decode.map4
+        (\email emailVerified id name -> { email = email, emailVerified = emailVerified, id = id, name = name })
         (Decode.field "email" <| Decode.maybe Mensam.User.emailDecoder)
+        (Decode.field "email-verified" <| Decode.bool)
         (Decode.field "id" Mensam.User.identifierDecoder)
         (Decode.field "name" Mensam.User.nameDecoder)
 

@@ -238,6 +238,7 @@ data ResponseProfile = MkResponseProfile
   { responseProfileId :: IdentifierUser
   , responseProfileName :: Username
   , responseProfileEmail :: Maybe EmailAddress
+  , responseProfileEmailVerified :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

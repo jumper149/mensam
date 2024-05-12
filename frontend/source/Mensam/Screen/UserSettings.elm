@@ -20,6 +20,7 @@ type alias Model =
     { id : Mensam.User.Identifier
     , name : Mensam.User.Name
     , email : Maybe Mensam.User.Email
+    , emailVerified : Bool
     , popup : Maybe PopupModel
     }
 
@@ -36,6 +37,7 @@ init value =
     { id = value.id
     , name = Mensam.User.MkNameUnsafe ""
     , email = Nothing
+    , emailVerified = True
     , popup = Nothing
     }
 
@@ -149,13 +151,22 @@ element model =
                             ]
                           <|
                             Element.text "Email Address verified?"
-                        , Mensam.Element.Button.button <|
-                            Mensam.Element.Button.MkButton
-                                { attributes = [ Element.alignRight, Element.centerY ]
-                                , color = Mensam.Element.Button.Yellow
-                                , message = Just <| MessageEffect SubmitConfirmationRequest
-                                , text = "Confirm Email Address"
-                                }
+                        , if model.emailVerified then
+                            Element.el
+                                [ Element.alignLeft
+                                , Element.centerY
+                                ]
+                            <|
+                                Element.text "Yes"
+
+                          else
+                            Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = [ Element.alignRight, Element.centerY ]
+                                    , color = Mensam.Element.Button.Yellow
+                                    , message = Just <| MessageEffect SubmitConfirmationRequest
+                                    , text = "Confirm Email Address"
+                                    }
                         ]
                     ]
                 ]
@@ -246,6 +257,7 @@ type Message
 type MessagePure
     = SetName Mensam.User.Name
     | SetEmail (Maybe Mensam.User.Email)
+    | SetEmailVerified Bool
     | OpenDialogToChangePassword
     | EnterNewPassword String
     | SetPasswordHint Mensam.User.ErrorPasswordParse
@@ -260,6 +272,9 @@ updatePure message model =
 
         SetEmail email ->
             { model | email = email }
+
+        SetEmailVerified verified ->
+            { model | emailVerified = verified }
 
         OpenDialogToChangePassword ->
             { model | popup = Just <| PopupChangePassword { newPassword = "", hint = [] } }
@@ -347,6 +362,7 @@ profile jwt userId =
                     Messages
                         [ MessagePure <| SetName body.name
                         , MessagePure <| SetEmail body.email
+                        , MessagePure <| SetEmailVerified body.emailVerified
                         ]
 
                 Ok Mensam.Api.Profile.ErrorUnknownUser ->

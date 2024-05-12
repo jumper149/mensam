@@ -15,6 +15,7 @@ type alias Model =
     { id : Mensam.User.Identifier
     , name : Mensam.User.Name
     , email : Maybe Mensam.User.Email
+    , emailVerified : Bool
     , popup : ()
     }
 
@@ -24,6 +25,7 @@ init value =
     { id = value.id
     , name = Mensam.User.MkNameUnsafe ""
     , email = Nothing
+    , emailVerified = False
     , popup = ()
     }
 
@@ -82,12 +84,20 @@ element model =
                             Element.text "Email:"
                         , Element.el [] <|
                             Element.text <|
+                                let
+                                    verifiedText =
+                                        if model.emailVerified then
+                                            " (verified)"
+
+                                        else
+                                            ""
+                                in
                                 case model.email of
                                     Nothing ->
-                                        "hidden"
+                                        "hidden" ++ verifiedText
 
                                     Just email ->
-                                        Mensam.User.emailToString email
+                                        Mensam.User.emailToString email ++ verifiedText
                         ]
                     ]
                 ]
@@ -105,6 +115,7 @@ type Message
 type MessagePure
     = SetName Mensam.User.Name
     | SetEmail (Maybe Mensam.User.Email)
+    | SetEmailVerified Bool
     | ClosePopup
 
 
@@ -116,6 +127,9 @@ updatePure message model =
 
         SetEmail email ->
             { model | email = email }
+
+        SetEmailVerified verified ->
+            { model | emailVerified = verified }
 
         ClosePopup ->
             { model | popup = () }
@@ -156,6 +170,7 @@ profile jwt userId =
                     Messages
                         [ MessagePure <| SetName body.name
                         , MessagePure <| SetEmail body.email
+                        , MessagePure <| SetEmailVerified body.emailVerified
                         ]
 
                 Ok Mensam.Api.Profile.ErrorUnknownUser ->

@@ -352,6 +352,7 @@ profile auth eitherRequest =
                       if userEmailVisible user
                         then Just $ userEmail user
                         else Nothing
+                  , responseProfileEmailVerified = userEmailValidated user
                   }
 
 handleBadRequestBody ::
