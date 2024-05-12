@@ -6,6 +6,7 @@
   ** Add new page to confirm your email.
 * API
   ** Add `/password` route to change your user password.
+  ** Add `/confirmation/request` route to send a verification email to your email address.
   ** Route `/desk/list` checks the `view_space` permission now.
   ** Respond with HTTP 409 at `/register` when the username is already taken.
   ** Restrict password characters.

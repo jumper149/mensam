@@ -42,6 +42,7 @@ handler =
     , routeLogout = logout
     , routeRegister = register
     , routePasswordChange = passwordChange
+    , routeConfirmationRequest = confirmationRequest
     , routeConfirm = confirm
     , routeProfile = profile
     }
@@ -220,6 +221,53 @@ passwordChange auth eitherRequest =
       handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
         logInfo "Changed user password successfully."
         respond $ WithStatus @200 MkResponsePasswordChange {responsePasswordChangeUnit = ()}
+
+confirmationRequest ::
+  ( MonadConfigured m
+  , MonadEmail m
+  , MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 ResponseConfirmationRequest) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  m (Union responses)
+confirmationRequest auth =
+  handleAuthBearer auth $ \authenticated -> do
+    logDebug $ "Requesting email confirmation for user: " <> T.pack (show authenticated)
+    seldaResult <- runSeldaTransactionT $ do
+      user <- userGet (userAuthenticatedId authenticated)
+      let effect = MkConfirmationEffectEmailValidation $ userEmail user
+      expirationTime <- lift . liftIO $ (T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime`) <$> T.getCurrentTime
+      confirmationSecret <- userConfirmationCreate (userId user) effect expirationTime
+      lift $ logDebug "Sending confirmation email."
+      config <- lift configuration
+      sendEmailResult <-
+        lift $
+          sendEmail
+            MkEmail
+              { emailRecipient = userEmail user
+              , emailTitle = "Email Address Verification: " <> unUsername (userName user)
+              , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
+                  H.head $ do
+                    H.title $ H.text $ "Email Address Verification: " <> unUsername (userName user)
+                  H.body $ do
+                    H.p $ H.text "Click the link to confirm your email address."
+                    let confirmLink :: T.Text = displayBaseUrl (configBaseUrl config) <> "register/confirm/" <> unConfirmationSecret confirmationSecret
+                    H.p $ H.a H.! H.A.href (H.textValue confirmLink) $ H.text confirmLink
+                    H.div $ H.small $ H.text "If you did not register this account, feel free to ignore this message."
+              }
+      case sendEmailResult of
+        EmailSent -> lift $ logDebug "Sent confirmation email."
+        EmailFailedToSend -> error "Failed to send email."
+    handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
+      respond $
+        WithStatus @200
+          MkResponseConfirmationRequest
+            { responseConfirmationRequestUnit = ()
+            }
 
 confirm ::
   ( MonadEmail m

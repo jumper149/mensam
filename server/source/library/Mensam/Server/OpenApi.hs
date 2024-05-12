@@ -202,6 +202,7 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRegister") Route.Use
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRegister") Route.User.ResponseRegister instance ToSchema Route.User.ResponseRegister
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestPasswordChange") Route.User.RequestPasswordChange instance ToSchema Route.User.RequestPasswordChange
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responsePasswordChange") Route.User.ResponsePasswordChange instance ToSchema Route.User.ResponsePasswordChange
+deriving via A.CustomJSON (JSONSettings "MkResponse" "responseConfirmationRequest") Route.User.ResponseConfirmationRequest instance ToSchema Route.User.ResponseConfirmationRequest
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestConfirm") Route.User.RequestConfirm instance ToSchema Route.User.RequestConfirm
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseConfirm") Route.User.ResponseConfirm instance ToSchema Route.User.ResponseConfirm
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestProfile") Route.User.RequestProfile instance ToSchema Route.User.RequestProfile

@@ -88,6 +88,15 @@ endpointPasswordChange ::
          , WithStatus 500 ()
          ]
     )
+endpointConfirmationRequest ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.User.ResponseConfirmationRequest
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 500 ()
+         ]
+    )
 endpointConfirm ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.User.RequestConfirm ->
@@ -355,6 +364,7 @@ Route.Api.Routes
       , Route.Api.User.routeLogout = endpointLogout
       , Route.Api.User.routeRegister = endpointRegister
       , Route.Api.User.routePasswordChange = endpointPasswordChange
+      , Route.Api.User.routeConfirmationRequest = endpointConfirmationRequest
       , Route.Api.User.routeConfirm = endpointConfirm
       , Route.Api.User.routeProfile = endpointProfile
       }

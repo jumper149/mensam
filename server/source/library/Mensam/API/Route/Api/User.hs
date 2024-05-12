@@ -80,11 +80,27 @@ data Routes route = Routes
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
+  , routeConfirmationRequest ::
+      route
+        :- Summary "Request Email Address Confirmation"
+          :> Description
+              "Send an email to your email address including a link.\n\
+              \This email includes a link to verify your email address.\n"
+          :> "confirmation"
+          :> "request"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseConfirmationRequest
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 500 ()
+              ]
   , routeConfirm ::
       route
-        :- Summary "Confirm"
+        :- Summary "Confirm Email Address"
           :> Description
-              "Confirm your email address.\n"
+              "Verify your email address.\n"
           :> "confirm"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestConfirm
@@ -180,6 +196,15 @@ newtype ResponsePasswordChange = MkResponsePasswordChange
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responsePasswordChange") ResponsePasswordChange
+
+type ResponseConfirmationRequest :: Type
+newtype ResponseConfirmationRequest = MkResponseConfirmationRequest
+  { responseConfirmationRequestUnit :: ()
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseConfirmationRequest") ResponseConfirmationRequest
 
 type RequestConfirm :: Type
 newtype RequestConfirm = MkRequestConfirm
