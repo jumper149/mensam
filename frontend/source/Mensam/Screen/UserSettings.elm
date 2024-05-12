@@ -18,7 +18,7 @@ import Mensam.User
 type alias Model =
     { id : Mensam.User.Identifier
     , name : Mensam.User.Name
-    , email : Maybe String
+    , email : Maybe Mensam.User.Email
     , popup : Maybe PopupModel
     }
 
@@ -134,7 +134,7 @@ element model =
                                         "hidden"
 
                                     Just email ->
-                                        email
+                                        Mensam.User.emailToString email
                         ]
                     ]
                 ]
@@ -224,7 +224,7 @@ type Message
 
 type MessagePure
     = SetName Mensam.User.Name
-    | SetEmail (Maybe String)
+    | SetEmail (Maybe Mensam.User.Email)
     | OpenDialogToChangePassword
     | EnterNewPassword String
     | SetPasswordHint Mensam.User.ErrorPasswordParse

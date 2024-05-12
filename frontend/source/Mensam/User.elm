@@ -1,5 +1,6 @@
 module Mensam.User exposing (..)
 
+import Email
 import Json.Decode as Decode
 import Json.Encode as Encode
 
@@ -157,3 +158,36 @@ type ConfirmationSecret
 confirmationSecretEncode : ConfirmationSecret -> Encode.Value
 confirmationSecretEncode (MkConfirmationSecret secret) =
     Encode.string secret
+
+
+type Email
+    = MkEmail Email.Email
+
+
+emailFromString : String -> Maybe Email
+emailFromString string =
+    Maybe.map MkEmail <| Email.fromString string
+
+
+emailToString : Email -> String
+emailToString (MkEmail email) =
+    Email.toString email
+
+
+emailEncode : Email -> Encode.Value
+emailEncode (MkEmail email) =
+    Encode.string <| Email.toString email
+
+
+emailDecoder : Decode.Decoder Email
+emailDecoder =
+    Decode.andThen
+        (\string ->
+            case Email.fromString string of
+                Just email ->
+                    Decode.succeed <| MkEmail email
+
+                Nothing ->
+                    Decode.fail <| "Trying to decode email, but this string cannot be parsed: " ++ string
+        )
+        Decode.string

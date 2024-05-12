@@ -9,7 +9,7 @@ import Url.Builder
 
 
 type alias Request =
-    { email : String
+    { email : Mensam.User.Email
     , emailVisible : Bool
     , name : String
     , password : Mensam.User.Password
@@ -92,7 +92,7 @@ responseResult httpResponse =
 encodeBody : Request -> Encode.Value
 encodeBody body =
     Encode.object
-        [ ( "email", Encode.string body.email )
+        [ ( "email", Mensam.User.emailEncode body.email )
         , ( "email-visible", Encode.bool body.emailVisible )
         , ( "name", Encode.string body.name )
         , ( "password", Mensam.User.passwordEncode body.password )

@@ -118,13 +118,18 @@ submitRegisterMessage model =
             MessagePure <| SetHintPasswordNotAccepted err
 
         Ok password ->
-            MessageEffect <|
-                Submit
-                    { username = model.username
-                    , password = password
-                    , email = model.email
-                    , emailVisible = model.emailVisible
-                    }
+            case Mensam.User.emailFromString model.email of
+                Nothing ->
+                    MessagePure SetHintEmailNotParsed
+
+                Just email ->
+                    MessageEffect <|
+                        Submit
+                            { username = model.username
+                            , password = password
+                            , email = email
+                            , emailVisible = model.emailVisible
+                            }
 
 
 type Message
@@ -137,6 +142,7 @@ type MessagePure
     | EnterPassword String
     | EnterEmail String
     | SetHintPasswordNotAccepted Mensam.User.ErrorPasswordParse
+    | SetHintEmailNotParsed
     | SetHintUsernameIsTaken
 
 
@@ -173,6 +179,14 @@ updatePure message model =
                             ]
             }
 
+        SetHintEmailNotParsed ->
+            { model
+                | hint =
+                    [ "Cannot recognize email address."
+                    , "Use a valid email address."
+                    ]
+            }
+
         SetHintUsernameIsTaken ->
             { model
                 | hint =
@@ -187,7 +201,7 @@ type MessageEffect
     | Submit
         { username : String
         , password : Mensam.User.Password
-        , email : String
+        , email : Mensam.User.Email
         , emailVisible : Bool
         }
     | Submitted { emailSent : Bool }
@@ -213,7 +227,7 @@ onEnter msg =
 register :
     { username : String
     , password : Mensam.User.Password
-    , email : String
+    , email : Mensam.User.Email
     , emailVisible : Bool
     }
     -> Cmd Message
