@@ -26,7 +26,8 @@
   ** [ ] Add loading screen to HTML wrapper for frontend.
     *** This is harder than expected. Is it possible to start Elm from JS directly?
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
-  ** [ ] Handle confirmation links.
+  ** [x] Handle confirmation links.
+    *** [ ] A way to send a new confirmation link when the old one is timed out.
   ** [ ] Add QR code generator for URLs to join space.
   ** [ ] Light/Dark mode.
   ** [ ] Factor out duplicate code (buttons, styling and so on).
