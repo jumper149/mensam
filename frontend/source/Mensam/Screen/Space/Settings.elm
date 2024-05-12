@@ -125,7 +125,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
-                                        , message = Just <| MessagePure <| EnterName <| Just <| Mensam.Space.MkName ""
+                                        , message = Just <| MessagePure <| EnterName <| Just <| model.old.name
                                         , text = "Edit Name"
                                         }
 
@@ -165,7 +165,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
-                                        , message = Just <| MessagePure <| SetTimezone <| Just <| Mensam.Time.MkTimezoneIdentifier ""
+                                        , message = Just <| MessagePure <| SetTimezone <| Just model.old.timezone
                                         , text = "Edit Timezone"
                                         }
 

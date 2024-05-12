@@ -48,9 +48,9 @@
   ** [ ] Show more info for spaces in "Your Dashboard" and "Browse Spaces"
     *** [ ] City.
     *** more?
-  ** [ ] When editing (for example "Name") insert current value into the text input field.
-    *** [ ] For Spaces.
-    *** [ ] For Desks.
+  ** [x] When editing (for example "Name") insert current value into the text input field.
+    *** [x] For Spaces.
+    *** [x] For Desks.
     *** [x] For Roles.
   ** Creating reservations.
     *** [ ] Describe "from" and "to" when creating reservation.

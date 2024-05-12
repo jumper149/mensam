@@ -44,6 +44,7 @@ type PopupModel
         }
     | PopupEditDesk
         { id : Mensam.Desk.Identifier
+        , oldName : Mensam.Desk.Name
         , newName : Maybe Mensam.Desk.Name
         }
 
@@ -129,7 +130,7 @@ element model =
                                     Element.el
                                         [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseDesk desk.id
+                                        , Element.Events.onClick <| MessagePure <| ChooseDesk { id = desk.id, name = desk.name }
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -170,7 +171,7 @@ element model =
                                     Element.el
                                         [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
                                         , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseDesk desk.id
+                                        , Element.Events.onClick <| MessagePure <| ChooseDesk { id = desk.id, name = desk.name }
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -339,7 +340,7 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Yellow
-                                                , message = Just <| MessagePure <| EditDeskEnterName <| Just <| Mensam.Desk.MkName ""
+                                                , message = Just <| MessagePure <| EditDeskEnterName <| Just popupModel.oldName
                                                 , text = "Edit Name"
                                                 }
 
@@ -399,13 +400,13 @@ type MessagePure
         )
     | SetSelected (Maybe Int)
     | ClosePopup
-    | ChooseDesk Mensam.Desk.Identifier
+    | ChooseDesk { id : Mensam.Desk.Identifier, name : Mensam.Desk.Name }
     | OpenDialogToCreateDesk
     | CreateDeskEnterName Mensam.Desk.Name
     | CloseDialogToCreateDesk
     | OpenDialogToDeleteDesk Mensam.Desk.Identifier
     | CloseDialogToDeleteDesk
-    | OpenDialogToEditDesk Mensam.Desk.Identifier
+    | OpenDialogToEditDesk { id : Mensam.Desk.Identifier, name : Mensam.Desk.Name }
     | EditDeskEnterName (Maybe Mensam.Desk.Name)
     | CloseDialogToEditDesk
 
@@ -425,8 +426,8 @@ updatePure message model =
         ClosePopup ->
             { model | popup = Nothing }
 
-        ChooseDesk deskId ->
-            updatePure (OpenDialogToEditDesk deskId) model
+        ChooseDesk { id, name } ->
+            updatePure (OpenDialogToEditDesk { id = id, name = name }) model
 
         OpenDialogToCreateDesk ->
             { model | popup = Just <| PopupCreateDesk { name = Mensam.Desk.MkName "" } }
@@ -457,8 +458,8 @@ updatePure message model =
         CloseDialogToDeleteDesk ->
             { model | popup = Nothing }
 
-        OpenDialogToEditDesk id ->
-            { model | popup = Just <| PopupEditDesk { id = id, newName = Nothing } }
+        OpenDialogToEditDesk { id, name } ->
+            { model | popup = Just <| PopupEditDesk { id = id, oldName = name, newName = Nothing } }
 
         EditDeskEnterName name ->
             { model
