@@ -231,7 +231,7 @@ type MessageEffect
         , email : Mensam.User.Email
         , emailVisible : Bool
         }
-    | Submitted { emailSent : Bool }
+    | Submitted { username : Mensam.User.Name, password : Mensam.User.Password, emailSent : Bool }
 
 
 onEnter : msg -> Element.Attribute msg
@@ -269,7 +269,12 @@ register args =
         \result ->
             case result of
                 Ok (Mensam.Api.Register.Success value) ->
-                    MessageEffect <| Submitted value
+                    MessageEffect <|
+                        Submitted
+                            { username = args.username
+                            , password = args.password
+                            , emailSent = value.emailSent
+                            }
 
                 Ok Mensam.Api.Register.ErrorUsernameIsTaken ->
                     MessagePure SetHintUsernameIsTaken

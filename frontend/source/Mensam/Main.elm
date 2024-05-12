@@ -6,10 +6,12 @@ import Element
 import Http
 import Http.Extra
 import Json.Encode as Encode
+import Mensam.Api.Login
 import Mensam.Api.Logout
 import Mensam.Api.Profile
 import Mensam.Application
 import Mensam.Auth
+import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
 import Mensam.Element
 import Mensam.Element.Dropdown
@@ -433,6 +435,7 @@ type Message
 type MessageAuth
     = SetSession { jwt : Mensam.Auth.Bearer.Jwt, expiration : Maybe Time.Posix, id : Mensam.User.Identifier }
     | UnsetSession
+    | Login { username : Mensam.User.Name, password : Mensam.User.Password }
     | Logout
     | CheckExpirationExplicit Time.Posix
     | RefreshUserInfo
@@ -587,6 +590,48 @@ update message (MkModel model) =
         Auth UnsetSession ->
             ( MkModel { model | authenticated = Mensam.Auth.SignedOut }, Mensam.Storage.unset )
 
+        Auth (Login { username, password }) ->
+            ( MkModel model
+            , Mensam.Api.Login.request
+                (Mensam.Api.Login.BasicAuth <|
+                    Mensam.Auth.Basic.MkCredentials
+                        { username = Mensam.User.nameToString username
+                        , password = Mensam.User.passwordToString password
+                        }
+                )
+              <|
+                \result ->
+                    case result of
+                        Ok (Mensam.Api.Login.Success value) ->
+                            Messages
+                                [ Auth <| SetSession value
+                                , SetUrl RouteDashboard
+                                ]
+
+                        Ok (Mensam.Api.Login.ErrorAuth Mensam.Auth.Basic.ErrorUsername) ->
+                            ReportError <|
+                                Mensam.Error.message "Login failed" <|
+                                    Mensam.Error.message "Authentication" <|
+                                        Mensam.Error.message "Wrong username" Mensam.Error.undefined
+
+                        Ok (Mensam.Api.Login.ErrorAuth Mensam.Auth.Basic.ErrorPassword) ->
+                            ReportError <|
+                                Mensam.Error.message "Login failed" <|
+                                    Mensam.Error.message "Authentication" <|
+                                        Mensam.Error.message "Wrong password" Mensam.Error.undefined
+
+                        Ok (Mensam.Api.Login.ErrorAuth Mensam.Auth.Basic.ErrorIndefinite) ->
+                            ReportError <|
+                                Mensam.Error.message "Login failed" <|
+                                    Mensam.Error.message "Authentication" <|
+                                        Mensam.Error.message "Indefinite" Mensam.Error.undefined
+
+                        Err error ->
+                            ReportError <|
+                                Mensam.Error.message "Login failed" <|
+                                    Mensam.Error.http error
+            )
+
         Auth Logout ->
             update
                 (Messages
@@ -735,17 +780,17 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
-                Mensam.Screen.Register.Submitted { emailSent } ->
+                Mensam.Screen.Register.Submitted { username, password, emailSent } ->
                     case model.screen of
-                        ScreenRegister screenModel ->
+                        ScreenRegister _ ->
                             update
                                 (Messages
-                                    [ SetUrl <| RouteLogin <| Just { username = screenModel.username, password = screenModel.password, hint = "" }
-                                    , if emailSent then
+                                    [ if emailSent then
                                         EmptyMessage
 
                                       else
                                         ReportError <| Mensam.Error.message "Failed to send confirmation email" Mensam.Error.undefined
+                                    , Auth (Login { username = username, password = password })
                                     ]
                                 )
                             <|

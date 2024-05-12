@@ -216,9 +216,14 @@ type ErrorPasswordParse
     | MkErrorPasswordParseInvalidCharacter
 
 
+passwordToString : Password -> String
+passwordToString (MkPasswordUnsafe password) =
+    password
+
+
 passwordEncode : Password -> Encode.Value
-passwordEncode (MkPasswordUnsafe password) =
-    Encode.string password
+passwordEncode =
+    Encode.string << passwordToString
 
 
 type ConfirmationSecret

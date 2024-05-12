@@ -32,8 +32,9 @@
   ** [ ] Light/Dark mode.
   ** [ ] Factor out duplicate code (buttons, styling and so on).
     *** [x] Buttons
-  ** [ ] Automatically sign in after sign up.
+  ** [x] Automatically sign in after sign up.
     *** Currently this doesn't work with setting the URL and reloading that URL again.
+    *** Solution: Skip login page. Go directly to dashboard.
   ** [ ] Create space on dashboard.
     *** When there are no space memberships there should be a big button to create a new space.
   ** [ ] Automatically add desks when creating a space.
