@@ -26,15 +26,10 @@
   ** [ ] Add loading screen to HTML wrapper for frontend.
     *** This is harder than expected. Is it possible to start Elm from JS directly?
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
-  ** [x] Handle confirmation links.
-    *** [ ] A way to send a new confirmation link when the old one is timed out.
   ** [ ] Add QR code generator for URLs to join space.
   ** [ ] Light/Dark mode.
   ** [ ] Factor out duplicate code (buttons, styling and so on).
     *** [x] Buttons
-  ** [x] Automatically sign in after sign up.
-    *** Currently this doesn't work with setting the URL and reloading that URL again.
-    *** Solution: Skip login page. Go directly to dashboard.
   ** [ ] Create space on dashboard.
     *** When there are no space memberships there should be a big button to create a new space.
   ** [ ] Automatically add desks when creating a space.
@@ -48,10 +43,6 @@
   ** [ ] Show more info for spaces in "Your Dashboard" and "Browse Spaces"
     *** [ ] City.
     *** more?
-  ** [x] When editing (for example "Name") insert current value into the text input field.
-    *** [x] For Spaces.
-    *** [x] For Desks.
-    *** [x] For Roles.
   ** Creating reservations.
     *** [ ] Describe "from" and "to" when creating reservation.
     *** [ ] Improve SVG time picker.
