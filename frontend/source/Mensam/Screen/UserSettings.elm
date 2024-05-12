@@ -33,7 +33,7 @@ type PopupModel
 init : { id : Mensam.User.Identifier } -> Model
 init value =
     { id = value.id
-    , name = Mensam.User.MkName ""
+    , name = Mensam.User.MkNameUnsafe ""
     , email = Nothing
     , popup = Nothing
     }
@@ -208,7 +208,7 @@ submitNewPasswordMessage :
     }
     -> Message
 submitNewPasswordMessage popupModel =
-    case Mensam.User.parsePassword popupModel.newPassword of
+    case Mensam.User.passwordParse popupModel.newPassword of
         Err err ->
             MessagePure <| SetPasswordHint err
 

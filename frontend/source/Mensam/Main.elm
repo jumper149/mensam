@@ -348,7 +348,7 @@ urlParser =
         , Url.Parser.map RouteSpaceUsers <| Url.Parser.s "users" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         , Url.Parser.map RouteSpaceSettings <| Url.Parser.s "settings" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         , Url.Parser.map RouteSpaceDesks <| Url.Parser.s "desks" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
-        , Url.Parser.map RouteProfile <| Url.Parser.s "profile" </> Url.Parser.map Mensam.User.MkIdentifier Url.Parser.int
+        , Url.Parser.map RouteProfile <| Url.Parser.s "profile" </> Url.Parser.map Mensam.User.MkIdentifierUnsafe Url.Parser.int
         , Url.Parser.map RouteUserSettings <| Url.Parser.s "user" </> Url.Parser.s "settings"
         ]
 

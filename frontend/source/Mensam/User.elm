@@ -6,31 +6,101 @@ import Json.Encode as Encode
 
 
 type Identifier
-    = MkIdentifier Int
+    = MkIdentifierUnsafe Int
+
+
+identifierParse : String -> Maybe Identifier
+identifierParse string =
+    Maybe.map MkIdentifierUnsafe <| String.toInt string
 
 
 identifierToString : Identifier -> String
-identifierToString (MkIdentifier identifier) =
+identifierToString (MkIdentifierUnsafe identifier) =
     String.fromInt identifier
 
 
 identifierEncode : Identifier -> Encode.Value
-identifierEncode (MkIdentifier identifier) =
+identifierEncode (MkIdentifierUnsafe identifier) =
     Encode.int identifier
 
 
 identifierDecoder : Decode.Decoder Identifier
 identifierDecoder =
-    Decode.map MkIdentifier
+    Decode.map MkIdentifierUnsafe
         Decode.int
 
 
 type Name
-    = MkName String
+    = MkNameUnsafe String
+
+
+nameValidSymbols : List Char
+nameValidSymbols =
+    []
+
+
+nameRegexPattern : String
+nameRegexPattern =
+    let
+        escapeCharsForPatternCharacterSet : List Char -> List Char
+        escapeCharsForPatternCharacterSet cs =
+            case cs of
+                [] ->
+                    []
+
+                '-' :: chars ->
+                    '\\' :: '-' :: escapeCharsForPatternCharacterSet chars
+
+                '[' :: chars ->
+                    '\\' :: '[' :: escapeCharsForPatternCharacterSet chars
+
+                ']' :: chars ->
+                    '\\' :: ']' :: escapeCharsForPatternCharacterSet chars
+
+                '\\' :: chars ->
+                    '\\' :: '\\' :: escapeCharsForPatternCharacterSet chars
+
+                char :: chars ->
+                    char :: escapeCharsForPatternCharacterSet chars
+    in
+    "^[a-zA-Z0-9" ++ String.fromList (escapeCharsForPatternCharacterSet nameValidSymbols) ++ "]{4,32}$"
+
+
+nameParse : String -> Result ErrorNameParse Name
+nameParse string =
+    let
+        chars =
+            String.toList string
+
+        isSupportedChar char =
+            Char.isAlphaNum char || List.member char nameValidSymbols
+
+        length =
+            List.length chars
+    in
+    if length >= 4 then
+        if length <= 32 then
+            if List.all isSupportedChar chars then
+                Ok <| MkNameUnsafe string
+
+            else
+                Err MkErrorNameParseInvalidCharacter
+
+        else
+            Err MkErrorNameParseTooLong
+
+    else
+        Err MkErrorNameParseTooShort
+
+
+type ErrorNameParse
+    = MkErrorNameParseTooShort
+    | MkErrorNameParseTooLong
+    | MkErrorNameParseInvalidCharacter
 
 
 nameToString : Name -> String
-nameToString (MkName name) =
+nameToString (MkNameUnsafe name) =
     name
 
 
@@ -41,7 +111,7 @@ nameEncode =
 
 nameDecoder : Decode.Decoder Name
 nameDecoder =
-    Decode.map MkName Decode.string
+    Decode.map MkNameUnsafe Decode.string
 
 
 type Password
@@ -113,8 +183,8 @@ passwordRegexPattern =
     "^[a-zA-Z0-9" ++ String.fromList (escapeCharsForPatternCharacterSet passwordValidSymbols) ++ "]{4,32}$"
 
 
-parsePassword : String -> Result ErrorPasswordParse Password
-parsePassword string =
+passwordParse : String -> Result ErrorPasswordParse Password
+passwordParse string =
     let
         chars =
             String.toList string
@@ -161,21 +231,21 @@ confirmationSecretEncode (MkConfirmationSecret secret) =
 
 
 type Email
-    = MkEmail Email.Email
+    = MkEmailUnsafe Email.Email
 
 
-emailFromString : String -> Maybe Email
-emailFromString string =
-    Maybe.map MkEmail <| Email.fromString string
+emailParse : String -> Maybe Email
+emailParse string =
+    Maybe.map MkEmailUnsafe <| Email.fromString string
 
 
 emailToString : Email -> String
-emailToString (MkEmail email) =
+emailToString (MkEmailUnsafe email) =
     Email.toString email
 
 
 emailEncode : Email -> Encode.Value
-emailEncode (MkEmail email) =
+emailEncode (MkEmailUnsafe email) =
     Encode.string <| Email.toString email
 
 
@@ -185,7 +255,7 @@ emailDecoder =
         (\string ->
             case Email.fromString string of
                 Just email ->
-                    Decode.succeed <| MkEmail email
+                    Decode.succeed <| MkEmailUnsafe email
 
                 Nothing ->
                     Decode.fail <| "Trying to decode email, but this string cannot be parsed: " ++ string

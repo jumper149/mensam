@@ -11,7 +11,7 @@ import Url.Builder
 type alias Request =
     { email : Mensam.User.Email
     , emailVisible : Bool
-    , name : String
+    , name : Mensam.User.Name
     , password : Mensam.User.Password
     }
 
@@ -94,7 +94,7 @@ encodeBody body =
     Encode.object
         [ ( "email", Mensam.User.emailEncode body.email )
         , ( "email-visible", Encode.bool body.emailVisible )
-        , ( "name", Encode.string body.name )
+        , ( "name", Mensam.User.nameEncode body.name )
         , ( "password", Mensam.User.passwordEncode body.password )
         ]
 

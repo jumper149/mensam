@@ -113,23 +113,28 @@ element model =
 
 submitRegisterMessage : Model -> Message
 submitRegisterMessage model =
-    case Mensam.User.parsePassword model.password of
+    case Mensam.User.nameParse model.username of
         Err err ->
-            MessagePure <| SetHintPasswordNotAccepted err
+            MessagePure <| SetHintNameNotAccepted err
 
-        Ok password ->
-            case Mensam.User.emailFromString model.email of
-                Nothing ->
-                    MessagePure SetHintEmailNotParsed
+        Ok username ->
+            case Mensam.User.passwordParse model.password of
+                Err err ->
+                    MessagePure <| SetHintPasswordNotAccepted err
 
-                Just email ->
-                    MessageEffect <|
-                        Submit
-                            { username = model.username
-                            , password = password
-                            , email = email
-                            , emailVisible = model.emailVisible
-                            }
+                Ok password ->
+                    case Mensam.User.emailParse model.email of
+                        Nothing ->
+                            MessagePure SetHintEmailNotParsed
+
+                        Just email ->
+                            MessageEffect <|
+                                Submit
+                                    { username = username
+                                    , password = password
+                                    , email = email
+                                    , emailVisible = model.emailVisible
+                                    }
 
 
 type Message
@@ -141,6 +146,7 @@ type MessagePure
     = EnterUsername String
     | EnterPassword String
     | EnterEmail String
+    | SetHintNameNotAccepted Mensam.User.ErrorNameParse
     | SetHintPasswordNotAccepted Mensam.User.ErrorPasswordParse
     | SetHintEmailNotParsed
     | SetHintUsernameIsTaken
@@ -157,6 +163,27 @@ updatePure message model =
 
         EnterEmail email ->
             { model | email = email }
+
+        SetHintNameNotAccepted err ->
+            { model
+                | hint =
+                    case err of
+                        Mensam.User.MkErrorNameParseTooShort ->
+                            [ "Username too short."
+                            , "Needs atleast 4 characters."
+                            ]
+
+                        Mensam.User.MkErrorNameParseTooLong ->
+                            [ "Username too short."
+                            , "Takes atmost 32 characters."
+                            ]
+
+                        Mensam.User.MkErrorNameParseInvalidCharacter ->
+                            [ "Username uses invalid character."
+                            , "Only some symbols are allowed."
+                            , String.fromList Mensam.User.passwordValidSymbols
+                            ]
+            }
 
         SetHintPasswordNotAccepted err ->
             { model
@@ -199,7 +226,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Submit
-        { username : String
+        { username : Mensam.User.Name
         , password : Mensam.User.Password
         , email : Mensam.User.Email
         , emailVisible : Bool
@@ -225,7 +252,7 @@ onEnter msg =
 
 
 register :
-    { username : String
+    { username : Mensam.User.Name
     , password : Mensam.User.Password
     , email : Mensam.User.Email
     , emailVisible : Bool

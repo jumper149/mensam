@@ -22,7 +22,7 @@ type alias Model =
 init : { id : Mensam.User.Identifier } -> Model
 init value =
     { id = value.id
-    , name = Mensam.User.MkName ""
+    , name = Mensam.User.MkNameUnsafe ""
     , email = Nothing
     , popup = ()
     }
