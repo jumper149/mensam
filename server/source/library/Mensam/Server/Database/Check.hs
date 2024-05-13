@@ -88,4 +88,20 @@ checkDatabase = void $ runSeldaTransactionT $ do
         [] -> lift $ logInfo "No space roles with passwords and unexpected accessibility found."
         _ : _ -> lift $ logError $ "There are unexpected accessibilities in space roles: " <> T.pack (show dbSpaceRolesNotJoinableWithPasswordButPasswordNotNull)
 
+  do
+    lift $ logInfo "Checking that the roles used for `space_user`s actually belong to the right space."
+    dbSpaceUsersWithWrongRoles <- Selda.query $ do
+      dbSpaceUser <- Selda.select tableSpaceUser
+      dbSpaceRole <-
+        Selda.innerJoin
+          ( \dbSpaceRole ->
+              dbSpaceRole Selda.! #dbSpaceRole_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_role
+                Selda..&& dbSpaceRole Selda.! #dbSpaceRole_space Selda../= dbSpaceUser Selda.! #dbSpaceUser_space
+          )
+          (Selda.select tableSpaceRole)
+      pure (dbSpaceUser Selda.:*: dbSpaceRole)
+    case dbSpaceUsersWithWrongRoles of
+      [] -> lift $ logInfo "No users have roles from other spaces."
+      _ : _ -> lift $ logError $ "There are unexpected role/space combinations in space users: " <> T.pack (show dbSpaceUsersWithWrongRoles)
+
   pure ()
