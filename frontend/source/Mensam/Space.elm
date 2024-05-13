@@ -2,38 +2,8 @@ module Mensam.Space exposing (..)
 
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Mensam.Space.Role
 import Mensam.Time
 import Mensam.User
-
-
-type SpaceView
-    = MkSpaceView
-        { id : Identifier
-        , name : Name
-        , roles :
-            List
-                { accessibility : Mensam.Space.Role.Accessibility
-                , id : Mensam.Space.Role.Identifier
-                , name : Mensam.Space.Role.Name
-                , permissions : Mensam.Space.Role.Permissions
-                }
-        , users :
-            List
-                { user : Mensam.User.Identifier
-                , role : Mensam.Space.Role.Identifier
-                }
-        , timezone : Mensam.Time.TimezoneIdentifier
-        , visibility : Visibility
-        , owner : Mensam.User.Identifier
-        , yourRole :
-            Maybe
-                { accessibility : Mensam.Space.Role.Accessibility
-                , id : Mensam.Space.Role.Identifier
-                , name : Mensam.Space.Role.Name
-                , permissions : Mensam.Space.Role.Permissions
-                }
-        }
 
 
 type Space

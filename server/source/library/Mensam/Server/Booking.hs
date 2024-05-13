@@ -190,6 +190,19 @@ spaceView userIdentifier spaceIdentifier = do
             , spaceViewYourRole = maybeSpaceRoleIdentifier
             }
 
+type SpaceView :: Type
+data SpaceView = MkSpaceView
+  { spaceViewId :: IdentifierSpace
+  , spaceViewName :: NameSpace
+  , spaceViewTimezone :: T.TZLabel
+  , spaceViewVisibility :: VisibilitySpace
+  , spaceViewOwner :: IdentifierUser
+  , spaceViewRoles :: S.Set SpaceRole
+  , spaceViewUsers :: S.Set SpaceUser
+  , spaceViewYourRole :: Maybe IdentifierSpaceRole
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+
 spaceListVisible ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->

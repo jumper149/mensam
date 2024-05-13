@@ -635,11 +635,7 @@ spaceView jwt id =
     Mensam.Api.SpaceView.request { jwt = jwt, id = id } <|
         \result ->
             case result of
-                Ok (Mensam.Api.SpaceView.Success value) ->
-                    let
-                        (Mensam.Space.MkSpaceView view) =
-                            value.space
-                    in
+                Ok (Mensam.Api.SpaceView.Success view) ->
                     Messages
                         [ MessagePure <| SetRoles view.roles
                         , MessagePure <| SetSpaceName view.name

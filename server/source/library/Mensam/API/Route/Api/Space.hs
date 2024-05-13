@@ -482,8 +482,15 @@ newtype RequestSpaceView = MkRequestSpaceView
     via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceView") RequestSpaceView
 
 type ResponseSpaceView :: Type
-newtype ResponseSpaceView = MkResponseSpaceView
-  { responseSpaceViewSpace :: SpaceView
+data ResponseSpaceView = MkResponseSpaceView
+  { responseSpaceViewId :: IdentifierSpace
+  , responseSpaceViewName :: NameSpace
+  , responseSpaceViewTimezone :: T.TZLabel
+  , responseSpaceViewVisibility :: VisibilitySpace
+  , responseSpaceViewOwner :: IdentifierUser
+  , responseSpaceViewRoles :: S.Set SpaceRole
+  , responseSpaceViewUsers :: S.Set SpaceUser
+  , responseSpaceViewYourRole :: Maybe IdentifierSpaceRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

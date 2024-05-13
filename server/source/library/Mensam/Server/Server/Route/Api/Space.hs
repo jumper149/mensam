@@ -376,7 +376,18 @@ viewSpace auth eitherRequest =
           respond $ WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionSpaceViewSpace
         Just space -> do
           logInfo "Viewed space."
-          respond $ WithStatus @200 MkResponseSpaceView {responseSpaceViewSpace = space}
+          respond $
+            WithStatus @200
+              MkResponseSpaceView
+                { responseSpaceViewId = spaceViewId space
+                , responseSpaceViewName = spaceViewName space
+                , responseSpaceViewTimezone = spaceViewTimezone space
+                , responseSpaceViewVisibility = spaceViewVisibility space
+                , responseSpaceViewOwner = spaceViewOwner space
+                , responseSpaceViewRoles = spaceViewRoles space
+                , responseSpaceViewUsers = spaceViewUsers space
+                , responseSpaceViewYourRole = spaceViewYourRole space
+                }
 
 listSpaces ::
   ( MonadLogger m

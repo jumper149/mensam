@@ -14,22 +14,6 @@ import Data.Time.Zones.All.OrphanInstances ()
 import Deriving.Aeson qualified as A
 import GHC.Generics
 
-type SpaceView :: Type
-data SpaceView = MkSpaceView
-  { spaceViewId :: IdentifierSpace
-  , spaceViewName :: NameSpace
-  , spaceViewTimezone :: T.TZLabel
-  , spaceViewVisibility :: VisibilitySpace
-  , spaceViewOwner :: IdentifierUser
-  , spaceViewRoles :: S.Set SpaceRole
-  , spaceViewUsers :: S.Set SpaceUser
-  , spaceViewYourRole :: Maybe IdentifierSpaceRole
-  }
-  deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving
-    (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "Mk" "spaceView") SpaceView
-
 type Space :: Type
 data Space = MkSpace
   { spaceId :: IdentifierSpace

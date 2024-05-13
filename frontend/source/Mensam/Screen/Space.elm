@@ -930,7 +930,26 @@ type Message
 
 
 type MessagePure
-    = SetSpaceInfo Mensam.Space.SpaceView
+    = SetSpaceInfo
+        { id : Mensam.Space.Identifier
+        , name : Mensam.Space.Name
+        , roles :
+            List
+                { accessibility : Mensam.Space.Role.Accessibility
+                , id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        , timezone : Mensam.Time.TimezoneIdentifier
+        , visibility : Mensam.Space.Visibility
+        , yourRole :
+            Maybe
+                { accessibility : Mensam.Space.Role.Accessibility
+                , id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        }
     | SetDesks
         (List
             { desk :
@@ -975,7 +994,7 @@ type MessagePure
 updatePure : MessagePure -> Model -> Model
 updatePure message model =
     case message of
-        SetSpaceInfo (Mensam.Space.MkSpaceView space) ->
+        SetSpaceInfo space ->
             { model
                 | space = space.id
                 , name = space.name
@@ -1222,20 +1241,22 @@ spaceView jwt model =
     Mensam.Api.SpaceView.request { jwt = jwt, id = model.space } <|
         \result ->
             case result of
-                Ok (Mensam.Api.SpaceView.Success value) ->
-                    case
-                        let
-                            (Mensam.Space.MkSpaceView spaceview) =
-                                value.space
-                        in
-                        spaceview.yourRole
-                    of
+                Ok (Mensam.Api.SpaceView.Success view) ->
+                    case view.yourRole of
                         Nothing ->
                             MessageEffect OpenPageToJoin
 
                         Just _ ->
                             Messages
-                                [ MessagePure <| SetSpaceInfo value.space
+                                [ MessagePure <|
+                                    SetSpaceInfo
+                                        { id = view.id
+                                        , name = view.name
+                                        , roles = view.roles
+                                        , timezone = view.timezone
+                                        , visibility = view.visibility
+                                        , yourRole = view.yourRole
+                                        }
                                 , MessageEffect
                                     RefreshDesks
                                 ]

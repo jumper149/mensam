@@ -8,6 +8,7 @@
   ** Add `/password` route to change your user password.
   ** Add `/confirmation/request` route to send a verification email to your email address.
   ** Add `email-verified` field to response body of route `/profile`.
+  ** Change response structure of `/space/view`.
   ** Route `/desk/list` checks the `view_space` permission now.
   ** Respond with HTTP 409 at `/register` when the username is already taken.
   ** Respond with HTTP 409 at `/reservation/cancel` when the reservation is already cancelled.
