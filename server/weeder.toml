@@ -9,7 +9,6 @@ roots = [
   "^Mensam.Server.Database.Check.checkDatabase$",
   "^Mensam.Server.Database.Extra.updateUnique$",
   "^Mensam.Server.Database.Space.spaceListDesks$",
-  "^Mensam.Server.User.userProfile$",
   "^Mensam.Server.User.userSessionGet$",
 ]
 
