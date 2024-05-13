@@ -113,8 +113,8 @@ element model =
                 [ Element.row
                     [ Element.width Element.fill
                     , Element.height <| Element.px 70
-                    , Element.padding 10
-                    , Element.spacing 30
+                    , Element.paddingXY 0 6
+                    , Element.spacing 10
                     ]
                     [ Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
@@ -127,14 +127,29 @@ element model =
                                             Mensam.Widget.Date.MkModel { selected } ->
                                                 Mensam.Time.unDate selected
                                 in
-                                Element.text <|
-                                    String.concat
-                                        [ Mensam.Time.yearToString date.year
-                                        , ", "
-                                        , Mensam.Time.monthToString date.month
-                                        , " "
-                                        , Mensam.Time.dayToString date.day
+                                Element.row [ Element.spacing 4 ]
+                                    [ Element.el
+                                        [ Element.Font.size 12
+                                        , Element.alignLeft
+                                        , Element.alignTop
                                         ]
+                                      <|
+                                        Element.text "from"
+                                    , Element.el
+                                        [ Element.Font.size 16
+                                        , Element.alignRight
+                                        , Element.centerY
+                                        ]
+                                      <|
+                                        Element.text <|
+                                            String.concat
+                                                [ Mensam.Time.yearToString date.year
+                                                , ", "
+                                                , Mensam.Time.monthToString date.month
+                                                , " "
+                                                , Mensam.Time.dayToString date.day
+                                                ]
+                                    ]
                             , message = Just <| MessagePure ViewDateBeginPicker
                             }
                     , Mensam.Element.Button.button <|
@@ -148,14 +163,29 @@ element model =
                                             Mensam.Widget.Date.MkModel { selected } ->
                                                 Mensam.Time.unDate selected
                                 in
-                                Element.text <|
-                                    String.concat
-                                        [ Mensam.Time.yearToString date.year
-                                        , ", "
-                                        , Mensam.Time.monthToString date.month
-                                        , " "
-                                        , Mensam.Time.dayToString date.day
+                                Element.row [ Element.spacing 4 ]
+                                    [ Element.el
+                                        [ Element.Font.size 12
+                                        , Element.alignLeft
+                                        , Element.alignTop
                                         ]
+                                      <|
+                                        Element.text "to"
+                                    , Element.el
+                                        [ Element.Font.size 16
+                                        , Element.alignRight
+                                        , Element.centerY
+                                        ]
+                                      <|
+                                        Element.text <|
+                                            String.concat
+                                                [ Mensam.Time.yearToString date.year
+                                                , ", "
+                                                , Mensam.Time.monthToString date.month
+                                                , " "
+                                                , Mensam.Time.dayToString date.day
+                                                ]
+                                    ]
                             , message = Just <| MessagePure ViewDateEndPicker
                             }
                     ]
