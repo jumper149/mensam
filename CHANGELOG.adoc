@@ -1,15 +1,20 @@
 = Changelog
 
-* Backend.
+== `0.7.0.0`
+
+* Backend
   ** Add `sqlite.check-data-integrity-on-startup` field to configuration to run sanity checks on the database.
 * Database
   ** Remove space members which might have malicously tried to use a role from a different space to gain access.
     *** This exploit is fixed now.
-  ** Add new permission `role_edit`.
+  ** Add new permission `edit_role`.
+     Given to everyone who also has the `edit_space` permission.
+* API
+  ** Use `edit-space` permission for `/space/kick` and `/space/user/role`.
 
 == `0.6.4.1`
 
-* Frontend.
+* Frontend
   ** Forward to dashboard after successful email verification.
 
 == `0.6.4.0`
