@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.6.4.0`
+
 * Frontend
   ** Add new page to view user profiles.
   ** Add new page to edit your user settings.
