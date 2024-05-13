@@ -57,7 +57,9 @@ checkDatabase = void $ runSeldaTransactionT $ do
     lift $ logInfo "Checking for overlapping reservations."
     reservationsOverlapping <- Selda.query $ do
       dbReservationX <- Selda.select tableReservation
+      Selda.restrict $ dbReservationX Selda.! #dbReservation_status Selda../= Selda.literal MkDbReservationStatus_cancelled
       dbReservationY <- Selda.select tableReservation
+      Selda.restrict $ dbReservationY Selda.! #dbReservation_status Selda../= Selda.literal MkDbReservationStatus_cancelled
       Selda.restrict $ dbReservationX Selda.! #dbReservation_id Selda../= dbReservationY Selda.! #dbReservation_id
       Selda.restrict $ dbReservationX Selda.! #dbReservation_desk Selda..== dbReservationY Selda.! #dbReservation_desk
       Selda.restrict $ dbReservationX Selda.! #dbReservation_time_begin Selda..< dbReservationY Selda.! #dbReservation_time_end
