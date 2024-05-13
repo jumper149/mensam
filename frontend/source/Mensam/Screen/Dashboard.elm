@@ -262,6 +262,7 @@ element model =
                                                     , Element.Events.onMouseLeave <| MessagePure <| SetSelectedReservation Nothing
                                                     , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
                                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                    , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     , let
                                                         alpha =
                                                             case model.selectedReservation of
@@ -281,6 +282,7 @@ element model =
                                                 Mensam.Reservation.MkStatusCancelled ->
                                                     [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
                                                     , Element.Background.color (Element.rgba 1 0 0 0.2)
+                                                    , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     ]
                                             )
                                         <|
@@ -326,6 +328,7 @@ element model =
                                                     , Element.Events.onMouseLeave <| MessagePure <| SetSelectedReservation Nothing
                                                     , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
                                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                    , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     , let
                                                         alpha =
                                                             case model.selectedReservation of
@@ -345,6 +348,7 @@ element model =
                                                 Mensam.Reservation.MkStatusCancelled ->
                                                     [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
                                                     , Element.Background.color (Element.rgba 1 0 0 0.2)
+                                                    , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     ]
                                             )
                                         <|
