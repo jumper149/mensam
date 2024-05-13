@@ -53,6 +53,8 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCancelReservation)
+              , WithStatus 409 (StaticText "Already cancelled.")
+              , WithStatus 410 (StaticText "Already happened.")
               , WithStatus 500 ()
               ]
   , routeReservationList ::

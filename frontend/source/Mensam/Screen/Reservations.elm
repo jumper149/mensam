@@ -778,6 +778,21 @@ reservationCancel argument =
                 Ok (Mensam.Api.ReservationCancel.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
+                Ok Mensam.Api.ReservationCancel.ErrorAlreadyCancelled ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Cancelling reservation failed" <|
+                                Mensam.Error.message "Reservation is already cancelled" <|
+                                    Mensam.Error.undefined
+
+                Ok Mensam.Api.ReservationCancel.ErrorAlreadyHappened ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Cancelling reservation failed" <|
+                                Mensam.Error.message "Reservation already happened in the past" <|
+                                    Mensam.Error.message "It is not possible to cancel fulfilled reservations" <|
+                                        Mensam.Error.undefined
+
                 Ok (Mensam.Api.ReservationCancel.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|

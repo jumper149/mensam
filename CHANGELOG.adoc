@@ -10,6 +10,8 @@
   ** Add `email-verified` field to response body of route `/profile`.
   ** Route `/desk/list` checks the `view_space` permission now.
   ** Respond with HTTP 409 at `/register` when the username is already taken.
+  ** Respond with HTTP 409 at `/reservation/cancel` when the reservation is already cancelled.
+  ** Respond with HTTP 410 at `/reservation/cancel` when the reservation already happened.
   ** Restrict password characters.
 
 == `0.6.3.3`

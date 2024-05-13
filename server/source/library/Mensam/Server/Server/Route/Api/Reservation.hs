@@ -12,6 +12,7 @@ import Mensam.Server.Application.SeldaPool.Servant
 import Mensam.Server.Booking
 import Mensam.Server.Server.Auth
 
+import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Data.Text qualified as T
 import Data.Traversable
@@ -21,7 +22,7 @@ import Servant.Auth.Server
 import Servant.Server.Generic
 
 handler ::
-  (MonadLogger m, MonadSeldaPool m) =>
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Routes (AsServerT m)
 handler =
   Routes
@@ -79,12 +80,15 @@ createReservation auth eitherRequest = do
                 respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
 
 cancelReservation ::
-  ( MonadLogger m
+  ( MonadIO m
+  , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 200 ResponseReservationCancel) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCancelReservation)) responses
+  , IsMember (WithStatus 409 (StaticText "Already cancelled.")) responses
+  , IsMember (WithStatus 410 (StaticText "Already happened.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -102,16 +106,24 @@ cancelReservation auth eitherRequest = do
           SMkPermissionSpaceCancelReservation
           (userAuthenticatedId authenticated)
           (deskSpace desk)
-        case reservationStatus reservation of
-          MkStatusReservationCancelled -> error "Already cancelled."
-          MkStatusReservationPlanned -> reservationCancel reservationIdentifier
+        reservationCancel reservationIdentifier
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceCancelReservation)
         seldaResult
         $ \seldaResultAfter403 ->
-          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
-            logInfo "Cancelled reservation."
-            respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
+          handleSeldaException
+            (Proxy @SqlErrorMensamReservationAlreadyCancelled)
+            (WithStatus @409 $ MkStaticText @"Already cancelled.")
+            seldaResultAfter403
+            $ \seldaResultAfter409 ->
+              handleSeldaException
+                (Proxy @SqlErrorMensamReservationIsInThePast)
+                (WithStatus @410 $ MkStaticText @"Already happened.")
+                seldaResultAfter409
+                $ \seldaResultAfter410 ->
+                  handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter410 $ \() -> do
+                    logInfo "Cancelled reservation."
+                    respond $ WithStatus @200 MkResponseReservationCancel {responseReservationCancelUnit = ()}
 
 listReservations ::
   ( MonadLogger m

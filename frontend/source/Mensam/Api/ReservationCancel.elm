@@ -19,6 +19,8 @@ type alias Request =
 type Response
     = Success
     | ErrorInsufficientPermission Mensam.Space.Role.Permission
+    | ErrorAlreadyCancelled
+    | ErrorAlreadyHappened
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -82,6 +84,22 @@ responseResult httpResponse =
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err
 
+                409 ->
+                    case Decode.decodeString decodeBody409 body of
+                        Ok () ->
+                            Ok ErrorAlreadyCancelled
+
+                        Err err ->
+                            Err <| Http.BadBody <| Decode.errorToString err
+
+                410 ->
+                    case Decode.decodeString decodeBody410 body of
+                        Ok () ->
+                            Ok ErrorAlreadyHappened
+
+                        Err err ->
+                            Err <| Http.BadBody <| Decode.errorToString err
+
                 status ->
                     Err <| Http.BadStatus status
 
@@ -117,3 +135,31 @@ decodeBody200 =
 decodeBody400 : Decode.Decoder String
 decodeBody400 =
     Decode.field "error" Decode.string
+
+
+decodeBody409 : Decode.Decoder ()
+decodeBody409 =
+    Decode.string
+        |> Decode.andThen
+            (\string ->
+                case string of
+                    "Already cancelled." ->
+                        Decode.succeed ()
+
+                    _ ->
+                        Decode.fail <| "Unexpected HTTP 409 message: " ++ string
+            )
+
+
+decodeBody410 : Decode.Decoder ()
+decodeBody410 =
+    Decode.string
+        |> Decode.andThen
+            (\string ->
+                case string of
+                    "Already happened." ->
+                        Decode.succeed ()
+
+                    _ ->
+                        Decode.fail <| "Unexpected HTTP 410 message: " ++ string
+            )

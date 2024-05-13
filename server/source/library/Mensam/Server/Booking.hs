@@ -925,16 +925,39 @@ data SqlErrorMensamDeskAlreadyReserved = MkSqlErrorMensamDeskAlreadyReserved
   deriving anyclass (Exception)
 
 reservationCancel ::
-  (MonadLogger m, MonadSeldaPool m) =>
+  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierReservation ->
   SeldaTransactionT m ()
 reservationCancel reservationIdentifier = do
   lift $ logDebug "Cancelling reservation."
+  reservation <- reservationGet reservationIdentifier
+  case reservationStatus reservation of
+    MkStatusReservationCancelled -> do
+      lift $ logDebug "Reservation is already cancelled."
+      throwM MkSqlErrorMensamReservationAlreadyCancelled
+    MkStatusReservationPlanned ->
+      lift $ logDebug "Reservation is currently still planned."
+  timeCurrent <- lift $ liftIO T.getCurrentTime
+  if timeCurrent >= reservationTimeBegin reservation
+    then do
+      lift $ logDebug "Reservation has already started."
+      throwM MkSqlErrorMensamReservationIsInThePast
+    else lift $ logDebug "Reservation is set for a time in the future."
   Selda.update_
     tableReservation
     (\dbReservation -> dbReservation Selda.! #dbReservation_id Selda..== Selda.literal (Selda.toId @DbReservation $ unIdentifierReservation reservationIdentifier))
     (\dbReservation -> dbReservation `Selda.with` [#dbReservation_status Selda.:= Selda.literal MkDbReservationStatus_cancelled])
   lift $ logInfo "Cancelled reservation successfully."
+
+type SqlErrorMensamReservationAlreadyCancelled :: Type
+data SqlErrorMensamReservationAlreadyCancelled = MkSqlErrorMensamReservationAlreadyCancelled
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
+
+type SqlErrorMensamReservationIsInThePast :: Type
+data SqlErrorMensamReservationIsInThePast = MkSqlErrorMensamReservationIsInThePast
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)
 
 spaceVisibilityApiToDb :: VisibilitySpace -> DbSpaceVisibility
 spaceVisibilityApiToDb = \case
