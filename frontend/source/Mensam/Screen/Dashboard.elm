@@ -512,15 +512,15 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Yellow
+                                                , label = Element.text "Go back"
                                                 , message = Just <| MessagePure <| ClosePopup
-                                                , text = "Go back"
                                                 }
                                         , Mensam.Element.Button.button <|
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Red
+                                                , label = Element.text "Cancel Reservation"
                                                 , message = Just <| MessageEffect <| CancelReservation reservationId
-                                                , text = "Cancel Reservation"
                                                 }
                                         ]
                                     ]

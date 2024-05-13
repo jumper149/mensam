@@ -114,8 +114,8 @@ element model =
                             Mensam.Element.Button.MkButton
                                 { attributes = [ Element.alignRight, Element.centerY ]
                                 , color = Mensam.Element.Button.Yellow
+                                , label = Element.text "Change Password"
                                 , message = Just <| MessagePure OpenDialogToChangePassword
-                                , text = "Change Password"
                                 }
                         ]
                     , Element.row
@@ -164,8 +164,8 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.alignRight, Element.centerY ]
                                     , color = Mensam.Element.Button.Yellow
+                                    , label = Element.text "Confirm Email Address"
                                     , message = Just <| MessageEffect SubmitConfirmationRequest
-                                    , text = "Confirm Email Address"
                                     }
                         ]
                     ]
@@ -218,15 +218,15 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = []
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Go back"
                                         , message = Just <| MessagePure <| ClosePopup
-                                        , text = "Go back"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
+                                        , label = Element.text "Submit new Password"
                                         , message = Just <| submitNewPasswordMessage popupModel
-                                        , text = "Submit new Password"
                                         }
                                 ]
                             ]

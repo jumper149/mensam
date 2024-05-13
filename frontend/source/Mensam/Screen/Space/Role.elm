@@ -115,15 +115,15 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignLeft, Element.centerY ]
                             , color = Mensam.Element.Button.Red
+                            , label = Element.text "Delete Role"
                             , message = Just <| MessagePure OpenDialogToDeleteRole
-                            , text = "Delete Role"
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToRoles
-                            , text = "Go back"
                             }
                     ]
                 , Element.column
@@ -152,8 +152,8 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Edit Name"
                                         , message = Just <| MessagePure <| EnterName <| Just model.role.name
-                                        , text = "Edit Name"
                                         }
 
                             Just name ->
@@ -186,8 +186,8 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Edit Accessibility"
                                         , message = Just <| MessagePure EditRoleAccessibilityAndPasswordStart
-                                        , text = "Edit Accessibility"
                                         }
 
                             Just accessibilityAndPassword ->
@@ -309,8 +309,8 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Edit Permissions"
                                         , message = Just <| MessagePure EditRolePermissionsStart
-                                        , text = "Edit Permissions"
                                         }
 
                             Just permissions ->
@@ -390,15 +390,15 @@ element model =
                             Mensam.Element.Button.MkButton
                                 { attributes = []
                                 , color = Mensam.Element.Button.Yellow
+                                , label = Element.text "Go back"
                                 , message = Just <| MessageEffect ReturnToRoles
-                                , text = "Go back"
                                 }
                         , Mensam.Element.Button.button <|
                             Mensam.Element.Button.MkButton
                                 { attributes = [ Element.width Element.fill ]
                                 , color = Mensam.Element.Button.Blue
+                                , label = Element.text "Apply Settings"
                                 , message = Just <| MessageEffect SubmitEditRole
-                                , text = "Apply Settings"
                                 }
                         ]
                     ]
@@ -503,15 +503,15 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Abort"
                                         , message = Just <| MessagePure CloseDialogToDeleteRole
-                                        , text = "Abort"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Red
+                                        , label = Element.text "Delete Role permanently"
                                         , message = Maybe.map (\fallback -> MessageEffect <| SubmitDeleteRole { fallback = fallback }) popupModel.chosenFallback
-                                        , text = "Delete Role permanently"
                                         }
                                 ]
                             ]

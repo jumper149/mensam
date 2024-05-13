@@ -94,8 +94,8 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
-                            , text = "Go back"
                             }
                     ]
                 , Element.indexedTable
@@ -286,15 +286,15 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.alignRight ]
                                         , color = Mensam.Element.Button.Red
+                                        , label = Element.text "Kick User"
                                         , message = Just <| MessagePure <| OpenDialogToKick popupModel.user
-                                        , text = "Kick User"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.alignRight ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Profile"
                                         , message = Just <| MessageEffect <| OpenPageToProfile popupModel.user
-                                        , text = "Profile"
                                         }
                                 ]
                             , Element.row
@@ -440,13 +440,14 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToEditUser
-                                        , text = "Abort"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Change Role"
                                         , message =
                                             case popupModel.role of
                                                 Nothing ->
@@ -454,7 +455,6 @@ element model =
 
                                                 Just role ->
                                                     Just <| MessageEffect <| SubmitEditUser { user = popupModel.user, role = role }
-                                        , text = "Change Role"
                                         }
                                 ]
                             ]
@@ -513,15 +513,15 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToKick
-                                        , text = "Abort"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Red
+                                        , label = Element.text "Kick User"
                                         , message = Just <| MessageEffect <| SubmitKickUser { user = popupModel.user }
-                                        , text = "Kick User"
                                         }
                                 ]
                             ]

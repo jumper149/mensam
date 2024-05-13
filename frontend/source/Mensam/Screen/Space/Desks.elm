@@ -85,15 +85,15 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "New Desk"
                             , message = Just <| MessagePure OpenDialogToCreateDesk
-                            , text = "New Desk"
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
-                            , text = "Go back"
                             }
                     ]
                 , Element.indexedTable
@@ -234,15 +234,15 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToCreateDesk
-                                        , text = "Abort"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
+                                        , label = Element.text "Create Desk"
                                         , message = Just <| MessageEffect <| SubmitCreateDesk popupModel
-                                        , text = "Create Desk"
                                         }
                                 ]
                             ]
@@ -269,15 +269,15 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToDeleteDesk
-                                        , text = "Abort"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Red
+                                        , label = Element.text "Delete Desk"
                                         , message = Just <| MessageEffect <| SubmitDeleteDesk { id = popupModel.id }
-                                        , text = "Delete Desk"
                                         }
                                 ]
                             ]
@@ -340,8 +340,8 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Yellow
+                                                , label = Element.text "Edit Name"
                                                 , message = Just <| MessagePure <| EditDeskEnterName <| Just popupModel.oldName
-                                                , text = "Edit Name"
                                                 }
 
                                     Just name ->
@@ -362,13 +362,14 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToEditDesk
-                                        , text = "Abort"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
+                                        , label = Element.text "Apply Changes"
                                         , message =
                                             Just <|
                                                 MessageEffect <|
@@ -376,7 +377,6 @@ element model =
                                                         { id = popupModel.id
                                                         , name = popupModel.newName
                                                         }
-                                        , text = "Apply Changes"
                                         }
                                 ]
                             ]

@@ -57,8 +57,8 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = []
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "Submit Confirmation"
                             , message = Just <| MessageEffect <| SubmitConfirm model.secret
-                            , text = "Submit Confirmation"
                             }
                     ]
                 ]

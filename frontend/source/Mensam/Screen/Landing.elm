@@ -60,15 +60,15 @@ element () =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "Sign up"
                             , message = Just <| MessageEffect Register
-                            , text = "Sign up"
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "Sign in"
                             , message = Just <| MessageEffect Login
-                            , text = "Sign in"
                             }
                     ]
             ]

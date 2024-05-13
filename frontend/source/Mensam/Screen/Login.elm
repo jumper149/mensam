@@ -87,16 +87,16 @@ element model =
                     Mensam.Element.Button.MkButton
                         { attributes = [ Element.width Element.fill ]
                         , color = Mensam.Element.Button.Yellow
+                        , label = Element.text "Sign in"
                         , message = Just <| MessageEffect SubmitLogin
-                        , text = "Sign in"
                         }
                 , Element.el [ Element.height <| Element.px 10 ] Element.none
                 , Mensam.Element.Button.button <|
                     Mensam.Element.Button.MkButton
                         { attributes = [ Element.centerX ]
                         , color = Mensam.Element.Button.Transparent
+                        , label = Element.text "Register"
                         , message = Just <| MessageEffect Register
-                        , text = "Register"
                         }
                 ]
             ]

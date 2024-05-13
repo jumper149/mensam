@@ -166,6 +166,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.width Element.fill ]
                                     , color = Mensam.Element.Button.Yellow
+                                    , label = Element.text "Submit"
                                     , message =
                                         case model.roleIdSelected of
                                             -- TODO: Show a help text in this case.
@@ -174,7 +175,6 @@ element model =
 
                                             Just _ ->
                                                 Just <| MessageEffect <| SubmitJoin
-                                    , text = "Submit"
                                     }
                             ]
                         ]

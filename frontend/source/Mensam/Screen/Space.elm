@@ -168,8 +168,8 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.alignRight, Element.centerY ]
                                     , color = Mensam.Element.Button.Yellow
+                                    , label = Element.text "Join"
                                     , message = Just <| MessageEffect OpenPageToJoin
-                                    , text = "Join"
                                     }
 
                         Just _ ->
@@ -177,8 +177,8 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.alignRight, Element.centerY ]
                                     , color = Mensam.Element.Button.Red
+                                    , label = Element.text "Leave"
                                     , message = Just <| MessagePure OpenDialogToLeave
-                                    , text = "Leave"
                                     }
                     , case model.yourRole of
                         Nothing ->
@@ -194,15 +194,15 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.alignRight, Element.centerY ]
                                             , color = Mensam.Element.Button.Yellow
+                                            , label = Element.text "Settings"
                                             , message = Just <| MessageEffect OpenPageToSettings
-                                            , text = "Settings"
                                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "Users"
                             , message = Just <| MessageEffect OpenPageToUsers
-                            , text = "Users"
                             }
                     , case model.yourRole of
                         Nothing ->
@@ -218,8 +218,8 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.alignRight, Element.centerY ]
                                             , color = Mensam.Element.Button.Yellow
+                                            , label = Element.text "Desks"
                                             , message = Just <| MessageEffect OpenPageToDesks
-                                            , text = "Desks"
                                             }
                     ]
                 , Element.indexedTable
@@ -400,35 +400,36 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
-                                        , message = Just <| MessagePure ViewDateBeginPicker
-                                        , text =
+                                        , label =
                                             let
                                                 date =
                                                     case model.modelDateBegin of
                                                         Mensam.Widget.Date.MkModel { selected } ->
                                                             Mensam.Time.unDate selected
                                             in
-                                            String.concat
-                                                [ Mensam.Time.yearToString date.year
-                                                , ", "
-                                                , Mensam.Time.monthToString date.month
-                                                , " "
-                                                , Mensam.Time.dayToString date.day
-                                                ]
+                                            Element.text <|
+                                                String.concat
+                                                    [ Mensam.Time.yearToString date.year
+                                                    , ", "
+                                                    , Mensam.Time.monthToString date.month
+                                                    , " "
+                                                    , Mensam.Time.dayToString date.day
+                                                    ]
+                                        , message = Just <| MessagePure ViewDateBeginPicker
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
-                                        , message = Just <| MessagePure ViewTimeBeginPicker
-                                        , text =
+                                        , label =
                                             let
                                                 time =
                                                     case model.modelTimeBegin of
                                                         Mensam.Widget.Time.MkModel { selected } ->
                                                             selected
                                             in
-                                            Mensam.Time.timeToString time
+                                            Element.text <| Mensam.Time.timeToString time
+                                        , message = Just <| MessagePure ViewTimeBeginPicker
                                         }
                                 ]
                             , Element.el
@@ -483,35 +484,36 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
-                                        , message = Just <| MessagePure ViewDateEndPicker
-                                        , text =
+                                        , label =
                                             let
                                                 date =
                                                     case model.modelDateEnd of
                                                         Mensam.Widget.Date.MkModel { selected } ->
                                                             Mensam.Time.unDate selected
                                             in
-                                            String.concat
-                                                [ Mensam.Time.yearToString date.year
-                                                , ", "
-                                                , Mensam.Time.monthToString date.month
-                                                , " "
-                                                , Mensam.Time.dayToString date.day
-                                                ]
+                                            Element.text <|
+                                                String.concat
+                                                    [ Mensam.Time.yearToString date.year
+                                                    , ", "
+                                                    , Mensam.Time.monthToString date.month
+                                                    , " "
+                                                    , Mensam.Time.dayToString date.day
+                                                    ]
+                                        , message = Just <| MessagePure ViewDateEndPicker
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
-                                        , message = Just <| MessagePure ViewTimeEndPicker
-                                        , text =
+                                        , label =
                                             let
                                                 time =
                                                     case model.modelTimeEnd of
                                                         Mensam.Widget.Time.MkModel { selected } ->
                                                             selected
                                             in
-                                            Mensam.Time.timeToString time
+                                            Element.text <| Mensam.Time.timeToString time
+                                        , message = Just <| MessagePure ViewTimeEndPicker
                                         }
                                 ]
                             , Element.row
@@ -523,15 +525,15 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| ViewDetailed Nothing
-                                        , text = "Abort"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Submit"
                                         , message = Just <| MessageEffect <| SubmitReservation
-                                        , text = "Submit"
                                         }
                                 ]
                             ]
@@ -570,15 +572,15 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Abort"
                                         , message = Just <| MessagePure CloseDialogToLeave
-                                        , text = "Abort"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Red
+                                        , label = Element.text "Abandon space"
                                         , message = Just <| MessageEffect SubmitLeave
-                                        , text = "Abandon space"
                                         }
                                 ]
                             ]

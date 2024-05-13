@@ -120,41 +120,43 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Blue
-                            , message = Just <| MessagePure ViewDateBeginPicker
-                            , text =
+                            , label =
                                 let
                                     date =
                                         case model.modelDateBegin of
                                             Mensam.Widget.Date.MkModel { selected } ->
                                                 Mensam.Time.unDate selected
                                 in
-                                String.concat
-                                    [ Mensam.Time.yearToString date.year
-                                    , ", "
-                                    , Mensam.Time.monthToString date.month
-                                    , " "
-                                    , Mensam.Time.dayToString date.day
-                                    ]
+                                Element.text <|
+                                    String.concat
+                                        [ Mensam.Time.yearToString date.year
+                                        , ", "
+                                        , Mensam.Time.monthToString date.month
+                                        , " "
+                                        , Mensam.Time.dayToString date.day
+                                        ]
+                            , message = Just <| MessagePure ViewDateBeginPicker
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Blue
-                            , message = Just <| MessagePure ViewDateEndPicker
-                            , text =
+                            , label =
                                 let
                                     date =
                                         case model.modelDateEnd of
                                             Mensam.Widget.Date.MkModel { selected } ->
                                                 Mensam.Time.unDate selected
                                 in
-                                String.concat
-                                    [ Mensam.Time.yearToString date.year
-                                    , ", "
-                                    , Mensam.Time.monthToString date.month
-                                    , " "
-                                    , Mensam.Time.dayToString date.day
-                                    ]
+                                Element.text <|
+                                    String.concat
+                                        [ Mensam.Time.yearToString date.year
+                                        , ", "
+                                        , Mensam.Time.monthToString date.month
+                                        , " "
+                                        , Mensam.Time.dayToString date.day
+                                        ]
+                            , message = Just <| MessagePure ViewDateEndPicker
                             }
                     ]
                 , Element.indexedTable
@@ -377,9 +379,8 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.width Element.fill ]
                                     , color = Mensam.Element.Button.Yellow
+                                    , label = Element.text "Set date boundary"
                                     , message = Just <| MessageEffect SetDateRange
-                                    , text =
-                                        "Set date boundary"
                                     }
                             ]
 
@@ -505,15 +506,15 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Yellow
+                                                , label = Element.text "Go back"
                                                 , message = Just <| MessagePure ClosePopup
-                                                , text = "Go back"
                                                 }
                                         , Mensam.Element.Button.button <|
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Red
+                                                , label = Element.text "Cancel reservation"
                                                 , message = Just <| MessageEffect <| CancelReservation reservationId
-                                                , text = "Cancel reservation"
                                                 }
                                         ]
                                     ]

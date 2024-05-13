@@ -85,15 +85,15 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "New Role"
                             , message = Just <| MessagePure OpenDialogToCreateRole
-                            , text = "New Role"
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpaceSettings
-                            , text = "Go back"
                             }
                     ]
                 , Element.indexedTable
@@ -473,15 +473,15 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Abort"
                                         , message = Just <| MessagePure CloseDialogToCreateRole
-                                        , text = "Abort"
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
+                                        , label = Element.text "Create Role"
                                         , message = Just <| MessageEffect <| SubmitCreateRole popupModel
-                                        , text = "Create Role"
                                         }
                                 ]
                             ]
