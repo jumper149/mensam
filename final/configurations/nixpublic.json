@@ -2,6 +2,7 @@
   { "filepath": "/var/lib/mensam/mensam.sqlite"
   , "connection-pool-timeout-seconds": 10
   , "connection-pool-max-number-of-connections": 4
+  , "check-data-integrity-on-startup": true
   }
 , "email-config":
   { "hostname": ""

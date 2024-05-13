@@ -14,6 +14,8 @@ data SQLiteConfig = MkSQLiteConfig
   -- ^ Number of seconds, that an unused resource is kept in the pool.
   , sqliteConnectionPoolMaxNumberOfConnections :: Int
   -- ^ Maximum number of resources open at once.
+  , sqliteCheckDataIntegrityOnStartup :: Bool
+  -- ^ Maximum number of resources open at once.
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

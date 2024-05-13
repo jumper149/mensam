@@ -1,5 +1,8 @@
 = Changelog
 
+* Backend.
+  ** Add `sqlite.check-data-integrity-on-startup` field to configuration to run sanity checks on the database.
+
 == `0.6.4.1`
 
 * Frontend.

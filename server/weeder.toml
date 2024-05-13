@@ -6,7 +6,6 @@ roots = [
   "^Mensam.Client.Application.Event.runAppEventT$",
   "^Mensam.Client.Application.MensamClient.*$",
   "^Mensam.Client.Debug.runF$",
-  "^Mensam.Server.Database.Check.checkDatabase$",
   "^Mensam.Server.Database.Extra.updateUnique$",
   "^Mensam.Server.Database.Space.spaceListDesks$",
   "^Mensam.Server.User.userSessionGet$",
