@@ -1853,19 +1853,12 @@ update message (MkModel model) =
                                     update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Confirm.LeaveConfirmationPage ->
-                    case model.authenticated of
-                        Mensam.Auth.SignedOut ->
-                            update (ReportError errorNoAuth) <| MkModel model
+                    case model.screen of
+                        ScreenConfirm _ ->
+                            update (SetUrl RouteDashboard) <| MkModel model
 
-                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
-                            case model.screen of
-                                ScreenConfirm screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageConfirm <| Mensam.Screen.Confirm.confirm jwt screenModel.secret
-                                    )
-
-                                _ ->
-                                    update (ReportError errorScreen) <| MkModel model
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
 
         MessageConfirm (Mensam.Screen.Confirm.Messages ms) ->
             case model.screen of
