@@ -19,7 +19,6 @@
   ** [ ] Simplify names.
     ** [ ] -> Change `SpaceRole` to `Role`
     ** [ ] -> Change `SpaceRolePermission` to `Permission`
-  ** [ ] Space visibility should be hidden by default.
 
 * Frontend.
   ** [ ] Terms and Conditions check during registration.

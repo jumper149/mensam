@@ -271,7 +271,7 @@ updatePure message mainModel model =
                     Just
                         { name = Mensam.Space.MkName ""
                         , timezone = mainModel.timezone
-                        , visible = True
+                        , visible = False
                         }
             }
 
