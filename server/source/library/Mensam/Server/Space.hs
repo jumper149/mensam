@@ -818,6 +818,7 @@ spacePermissionApiToDb :: PermissionSpace -> DbSpacePermission
 spacePermissionApiToDb = \case
   MkPermissionSpaceViewSpace -> MkDbSpacePermission_view_space
   MkPermissionSpaceEditDesk -> MkDbSpacePermission_edit_desk
+  MkPermissionSpaceEditUser -> MkDbSpacePermission_edit_user
   MkPermissionSpaceEditRole -> MkDbSpacePermission_edit_role
   MkPermissionSpaceEditSpace -> MkDbSpacePermission_edit_space
   MkPermissionSpaceCreateReservation -> MkDbSpacePermission_create_reservation
@@ -827,6 +828,7 @@ spacePermissionDbToApi :: DbSpacePermission -> PermissionSpace
 spacePermissionDbToApi = \case
   MkDbSpacePermission_view_space -> MkPermissionSpaceViewSpace
   MkDbSpacePermission_edit_desk -> MkPermissionSpaceEditDesk
+  MkDbSpacePermission_edit_user -> MkPermissionSpaceEditUser
   MkDbSpacePermission_edit_role -> MkPermissionSpaceEditRole
   MkDbSpacePermission_edit_space -> MkPermissionSpaceEditSpace
   MkDbSpacePermission_create_reservation -> MkPermissionSpaceCreateReservation

@@ -58,6 +58,7 @@ nameDecoder =
 type Permission
     = MkPermissionViewSpace
     | MkPermissionEditDesk
+    | MkPermissionEditUser
     | MkPermissionEditRole
     | MkPermissionEditSpace
     | MkPermissionCreateReservation
@@ -73,17 +74,20 @@ permissionToInt permission =
         MkPermissionEditDesk ->
             1
 
-        MkPermissionEditRole ->
+        MkPermissionEditUser ->
             2
 
-        MkPermissionEditSpace ->
+        MkPermissionEditRole ->
             3
 
-        MkPermissionCreateReservation ->
+        MkPermissionEditSpace ->
             4
 
-        MkPermissionCancelReservation ->
+        MkPermissionCreateReservation ->
             5
+
+        MkPermissionCancelReservation ->
+            6
 
 
 permissionFromInt : Int -> Maybe Permission
@@ -96,15 +100,18 @@ permissionFromInt int =
             Just MkPermissionEditDesk
 
         2 ->
-            Just MkPermissionEditRole
+            Just MkPermissionEditUser
 
         3 ->
-            Just MkPermissionEditSpace
+            Just MkPermissionEditRole
 
         4 ->
-            Just MkPermissionCreateReservation
+            Just MkPermissionEditSpace
 
         5 ->
+            Just MkPermissionCreateReservation
+
+        6 ->
             Just MkPermissionCancelReservation
 
         _ ->
@@ -119,6 +126,9 @@ permissionToString permission =
 
         MkPermissionEditDesk ->
             "edit-desk"
+
+        MkPermissionEditUser ->
+            "edit-user"
 
         MkPermissionEditRole ->
             "edit-role"
@@ -149,6 +159,9 @@ permissionDecoder =
 
                     "edit-desk" ->
                         Decode.succeed MkPermissionEditDesk
+
+                    "edit-user" ->
+                        Decode.succeed MkPermissionEditUser
 
                     "edit-role" ->
                         Decode.succeed MkPermissionEditRole
@@ -216,6 +229,9 @@ http403BodyDecoder =
 
                             "'MkPermissionSpaceEditDesk" ->
                                 Decode.succeed MkPermissionEditDesk
+
+                            "'MkPermissionSpaceEditUser" ->
+                                Decode.succeed MkPermissionEditUser
 
                             "'MkPermissionSpaceEditRole" ->
                                 Decode.succeed MkPermissionEditRole

@@ -41,6 +41,7 @@ type PopupModel
         , permissions :
             { viewSpace : Bool
             , editDesk : Bool
+            , editUser : Bool
             , editRole : Bool
             , editSpace : Bool
             , createReservation : Bool
@@ -397,7 +398,7 @@ element model =
                                         Element.none
                                 ]
                             , Element.column
-                                [ Element.spacing 10
+                                [ Element.spacing 5
                                 , Element.paddingXY 20 0
                                 , Element.width Element.fill
                                 , Element.height <| Element.px 120
@@ -422,6 +423,16 @@ element model =
                                         , label = Element.Input.labelHidden "Permission: edit-desk"
                                         }
                                     , Element.text "Edit Desks"
+                                    ]
+                                , Element.row
+                                    [ Element.spacing 10 ]
+                                    [ Element.Input.checkbox []
+                                        { onChange = MessagePure << CreateRoleSetPermission Mensam.Space.Role.MkPermissionEditUser
+                                        , icon = Element.Input.defaultCheckbox
+                                        , checked = popupModel.permissions.editUser
+                                        , label = Element.Input.labelHidden "Permission: edit-user"
+                                        }
+                                    , Element.text "Edit Users"
                                     ]
                                 , Element.row
                                     [ Element.spacing 10 ]
@@ -537,6 +548,7 @@ updatePure message model =
                             , permissions =
                                 { viewSpace = False
                                 , editDesk = False
+                                , editUser = False
                                 , editRole = False
                                 , editSpace = False
                                 , createReservation = False
@@ -592,6 +604,9 @@ updatePure message model =
                                                 Mensam.Space.Role.MkPermissionEditDesk ->
                                                     { oldPermissions | editDesk = bool }
 
+                                                Mensam.Space.Role.MkPermissionEditUser ->
+                                                    { oldPermissions | editUser = bool }
+
                                                 Mensam.Space.Role.MkPermissionEditRole ->
                                                     { oldPermissions | editRole = bool }
 
@@ -621,6 +636,7 @@ type MessageEffect
         , permissions :
             { viewSpace : Bool
             , editDesk : Bool
+            , editUser : Bool
             , editRole : Bool
             , editSpace : Bool
             , createReservation : Bool
@@ -667,6 +683,7 @@ roleCreate :
     , permissions :
         { viewSpace : Bool
         , editDesk : Bool
+        , editUser : Bool
         , editRole : Bool
         , editSpace : Bool
         , createReservation : Bool
@@ -699,13 +716,13 @@ roleCreate args =
 
                       else
                         Nothing
-                    , if args.permissions.editRole then
-                        Just Mensam.Space.Role.MkPermissionEditRole
+                    , if args.permissions.editUser then
+                        Just Mensam.Space.Role.MkPermissionEditUser
 
                       else
                         Nothing
-                    , if args.permissions.editSpace then
-                        Just Mensam.Space.Role.MkPermissionEditSpace
+                    , if args.permissions.editRole then
+                        Just Mensam.Space.Role.MkPermissionEditRole
 
                       else
                         Nothing

@@ -5,6 +5,7 @@
 * Database
   ** Remove space members which might have malicously tried to use a role from a different space to gain access.
     *** This exploit is fixed now.
+  ** Add new permission `role_edit`.
 
 == `0.6.4.1`
 

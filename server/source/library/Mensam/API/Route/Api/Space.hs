@@ -122,7 +122,7 @@ data Routes route = Routes
         :- Summary "Kick User from Space"
           :> Description
               "Kick a user out of a space.\n\
-              \You need the `space-edit` permission for that space to remove users.\n"
+              \You need the `edit-user` permission for that space to remove users.\n"
           :> "space"
           :> "kick"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -133,7 +133,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceKick
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)
               , WithStatus 500 ()
               ]
   , routeSpaceUserRole ::
@@ -141,7 +141,7 @@ data Routes route = Routes
         :- Summary "Set User Role for Space"
           :> Description
               "Give a new role to a user of a space.\n\
-              \You need the `space-edit` permission for that space to redefine user roles.\n"
+              \You need the `edit-user` permission for that space to redefine user roles.\n"
           :> "space"
           :> "user"
           :> "role"
@@ -153,7 +153,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceUserRole
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)
               , WithStatus 500 ()
               ]
   , routeSpaceView ::
@@ -197,7 +197,7 @@ data Routes route = Routes
           :> Description
               "Create a new role.\n\
               \This role will be a way to access the given space.\n\
-              \You need the `role-edit` permission for that space to create roles.\n"
+              \You need the `edit-role` permission for that space to create roles.\n"
           :> "role"
           :> "create"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -217,7 +217,7 @@ data Routes route = Routes
         :- Summary "Edit Role"
           :> Description
               "Update settings of a role.\n\
-              \You need the `role-edit` permission for the space to edit roles.\n"
+              \You need the `edit-role` permission for the space to edit roles.\n"
           :> "role"
           :> "edit"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -237,7 +237,7 @@ data Routes route = Routes
           :> Description
               "Delete a role.\n\
               \You have to provide a fallback role to reassign members to that fallback role.\n\
-              \You need the `role-edit` permission for the space to delete roles.\n"
+              \You need the `edit-role` permission for the space to delete roles.\n"
           :> "role"
           :> "delete"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -257,7 +257,7 @@ data Routes route = Routes
           :> Description
               "Create a new desk.\n\
               \This desk will belong to the given space.\n\
-              \You need the `desk-edit` permission for that space to create desks.\n"
+              \You need the `edit-desk` permission for that space to create desks.\n"
           :> "desk"
           :> "create"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -277,7 +277,7 @@ data Routes route = Routes
         :- Summary "Delete Desk"
           :> Description
               "Delete a desk.\n\
-              \You need the `desk-edit` permission for that space to delete desks.\n"
+              \You need the `edit-desk` permission for that space to delete desks.\n"
           :> "desk"
           :> "delete"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -297,7 +297,7 @@ data Routes route = Routes
         :- Summary "Edit Desk"
           :> Description
               "Update a desk.\n\
-              \You need the `desk-edit` permission for that space to edit desks.\n"
+              \You need the `edit-desk` permission for that space to edit desks.\n"
           :> "desk"
           :> "edit"
           :> Auth '[JWTWithSession] UserAuthenticated

@@ -76,6 +76,7 @@ createSpace auth eitherRequest =
           spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Admin") MkAccessibilitySpaceRoleInaccessible Nothing
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditDesk
+          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditUser
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditRole
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditSpace
           spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
@@ -283,7 +284,7 @@ kickUser ::
   , IsMember (WithStatus 200 ResponseSpaceKick) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -295,7 +296,7 @@ kickUser auth eitherRequest =
       logDebug $ "Received request to kick user from space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         checkPermission
-          SMkPermissionSpaceEditSpace
+          SMkPermissionSpaceEditUser
           (userAuthenticatedId authenticated)
           (requestSpaceKickSpace request)
         isOwner <- spaceUserIsOwner (requestSpaceKickSpace request) (requestSpaceKickUser request)
@@ -308,7 +309,7 @@ kickUser auth eitherRequest =
             spaceUserRemove (requestSpaceKickSpace request) (requestSpaceKickUser request)
             pure True
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceEditSpace)
+        (Proxy @MkPermissionSpaceEditUser)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \removed ->
@@ -326,7 +327,7 @@ setUserRole ::
   , IsMember (WithStatus 200 ResponseSpaceUserRole) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -338,7 +339,7 @@ setUserRole auth eitherRequest =
       logDebug $ "Received request to change user role for space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         checkPermission
-          SMkPermissionSpaceEditSpace
+          SMkPermissionSpaceEditUser
           (userAuthenticatedId authenticated)
           (requestSpaceUserRoleSpace request)
         spaceUserRoleEdit
@@ -346,7 +347,7 @@ setUserRole auth eitherRequest =
           (requestSpaceUserRoleUser request)
           (requestSpaceUserRoleRole request)
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceEditSpace)
+        (Proxy @MkPermissionSpaceEditUser)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do

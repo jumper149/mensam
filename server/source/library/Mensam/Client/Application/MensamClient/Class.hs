@@ -190,7 +190,7 @@ endpointSpaceKick ::
         '[ WithStatus 200 Route.Api.Space.ResponseSpaceKick
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)
          , WithStatus 500 ()
          ]
     )
@@ -202,7 +202,7 @@ endpointSpaceUserRole ::
         '[ WithStatus 200 Route.Api.Space.ResponseSpaceUserRole
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)
          , WithStatus 500 ()
          ]
     )

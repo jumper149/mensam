@@ -52,6 +52,7 @@ type alias Model =
             Maybe
                 { viewSpace : Bool
                 , editDesk : Bool
+                , editUser : Bool
                 , editRole : Bool
                 , editSpace : Bool
                 , createReservation : Bool
@@ -340,6 +341,16 @@ element model =
                                             , label = Element.Input.labelHidden "Permission: edit-desk"
                                             }
                                         , Element.text "Edit Desks"
+                                        ]
+                                    , Element.row
+                                        [ Element.spacing 10 ]
+                                        [ Element.Input.checkbox []
+                                            { onChange = MessagePure << EditRoleSetPermission Mensam.Space.Role.MkPermissionEditUser
+                                            , icon = Element.Input.defaultCheckbox
+                                            , checked = permissions.editUser
+                                            , label = Element.Input.labelHidden "Permission: edit-user"
+                                            }
+                                        , Element.text "Edit Users"
                                         ]
                                     , Element.row
                                         [ Element.spacing 10 ]
@@ -648,6 +659,7 @@ updatePure message model =
                             Just
                                 { viewSpace = checkPerm Mensam.Space.Role.MkPermissionViewSpace
                                 , editDesk = checkPerm Mensam.Space.Role.MkPermissionEditDesk
+                                , editUser = checkPerm Mensam.Space.Role.MkPermissionEditUser
                                 , editRole = checkPerm Mensam.Space.Role.MkPermissionEditRole
                                 , editSpace = checkPerm Mensam.Space.Role.MkPermissionEditSpace
                                 , createReservation = checkPerm Mensam.Space.Role.MkPermissionCreateReservation
@@ -681,6 +693,7 @@ updatePure message model =
                                     Just
                                         { viewSpace = updatePerm Mensam.Space.Role.MkPermissionViewSpace permissions.viewSpace
                                         , editDesk = updatePerm Mensam.Space.Role.MkPermissionEditDesk permissions.editDesk
+                                        , editUser = updatePerm Mensam.Space.Role.MkPermissionEditUser permissions.editUser
                                         , editRole = updatePerm Mensam.Space.Role.MkPermissionEditRole permissions.editRole
                                         , editSpace = updatePerm Mensam.Space.Role.MkPermissionEditSpace permissions.editSpace
                                         , createReservation = updatePerm Mensam.Space.Role.MkPermissionCreateReservation permissions.createReservation
@@ -780,6 +793,7 @@ roleEdit :
         Maybe
             { viewSpace : Bool
             , editDesk : Bool
+            , editUser : Bool
             , editRole : Bool
             , editSpace : Bool
             , createReservation : Bool
@@ -814,6 +828,11 @@ roleEdit args =
                                     Nothing
                                 , if permissions.editDesk then
                                     Just Mensam.Space.Role.MkPermissionEditDesk
+
+                                  else
+                                    Nothing
+                                , if permissions.editUser then
+                                    Just Mensam.Space.Role.MkPermissionEditUser
 
                                   else
                                     Nothing
