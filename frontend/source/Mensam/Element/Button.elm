@@ -7,13 +7,12 @@ import Element.Input
 import Html.Attributes
 import Mensam.Element.Color
 import Mensam.Element.Font
-import Void
 
 
 type Button msg
     = MkButton
         { color : Color
-        , label : Element.Element Void.Void
+        , label : Element.Element Never
         , message : Maybe msg
         , attributes : List (Element.Attribute msg)
         }
@@ -97,5 +96,5 @@ button (MkButton buttonData) =
                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                 ]
             <|
-                Element.map Void.absurd buttonData.label
+                Element.map never buttonData.label
         }
