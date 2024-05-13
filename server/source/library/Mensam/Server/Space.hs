@@ -371,6 +371,13 @@ spaceUserAdd ::
   SeldaTransactionT m ()
 spaceUserAdd spaceIdentifier userIdentifier roleIdentifier = do
   lift $ logDebug $ "Adding user " <> T.pack (show userIdentifier) <> " to space " <> T.pack (show spaceIdentifier) <> " as " <> T.pack (show roleIdentifier) <> "."
+  lift $ logDebug "Ensuring that the role is of the right space."
+  roleBelongsToSpace <- do
+    dbSpaceRole <- Selda.queryOne $ do
+      roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole roleIdentifier
+    let spaceRoleSpaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpaceRole_space dbSpaceRole
+    pure $ spaceRoleSpaceId == spaceIdentifier
+  unless roleBelongsToSpace undefined -- TODO: Use an actual Exception type.
   let dbSpaceUser =
         MkDbSpaceUser
           { dbSpaceUser_id = Selda.def
