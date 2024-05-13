@@ -10,8 +10,9 @@ import Mensam.API.Route.Api.Space
 import Mensam.API.Update
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Application.SeldaPool.Servant
-import Mensam.Server.Booking
+import Mensam.Server.Reservation
 import Mensam.Server.Server.Auth
+import Mensam.Server.Space
 
 import Control.Monad.Catch
 import Control.Monad.IO.Class

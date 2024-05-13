@@ -172,7 +172,6 @@ library
     , Mensam.Server.Application.SeldaPool
     , Mensam.Server.Application.SeldaPool.Class
     , Mensam.Server.Application.SeldaPool.Servant
-    , Mensam.Server.Booking
     , Mensam.Server.Configuration
     , Mensam.Server.Configuration.BaseUrl
     , Mensam.Server.Configuration.Email
@@ -184,6 +183,7 @@ library
     , Mensam.Server.Database.Space
     , Mensam.Server.Environment
     , Mensam.Server.OpenApi
+    , Mensam.Server.Reservation
     , Mensam.Server.Secrets
     , Mensam.Server.Server
     , Mensam.Server.Server.Auth
@@ -200,6 +200,7 @@ library
     , Mensam.Server.Server.Route.Frontend
     , Mensam.Server.Server.Route.OpenApi
     , Mensam.Server.Server.Route.Static
+    , Mensam.Server.Space
     , Mensam.Server.User
   other-modules:
     , Control.Monad.Logger.OrphanInstances
