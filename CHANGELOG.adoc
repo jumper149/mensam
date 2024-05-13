@@ -2,6 +2,9 @@
 
 * Backend.
   ** Add `sqlite.check-data-integrity-on-startup` field to configuration to run sanity checks on the database.
+* Database
+  ** Remove space members which might have malicously tried to use a role from a different space to gain access.
+    *** This exploit is fixed now.
 
 == `0.6.4.1`
 

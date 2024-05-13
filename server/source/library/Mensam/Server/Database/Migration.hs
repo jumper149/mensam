@@ -322,6 +322,20 @@ migrations =
             \WHERE space_role_permission.permission = 'edit_space'\n\
             \ON CONFLICT DO NOTHING"
       }
+  , MkMigration
+      { migrationId = Selda.toId 11
+      , migrationName = "deleteSpaceUsersWithForeignRole"
+      , migrationWork = do
+          lift $ logDebug "Due to an oversight it was possible to join a space with the role of a different space."
+          lift $ logInfo "All space users with foreign roles will be removed permanently."
+          Selda.Unsafe.rawStm
+            "DELETE FROM space_user\n\
+            \WHERE space_user.space NOT IN (\n\
+            \  SELECT space_role.space\n\
+            \  FROM space_role\n\
+            \  WHERE id = space_user.role\n\
+            \)"
+      }
   ]
 
 createDatabase ::
