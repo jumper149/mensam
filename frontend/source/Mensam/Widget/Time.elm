@@ -1,10 +1,11 @@
 module Mensam.Widget.Time exposing (..)
 
 import Element
+import Element.Background
+import Element.Font
+import Element.Input
+import Mensam.Element.Font
 import Mensam.Time
-import Svg
-import Svg.Attributes
-import Svg.Events
 
 
 type Model
@@ -19,87 +20,147 @@ type Message
 
 
 elementPickTime : Model -> Element.Element Message
-elementPickTime (MkModel _) =
+elementPickTime model =
     Element.el
-        [ Element.width <| Element.px 200 ]
+        [ Element.width <| Element.px 200
+        , Element.height <| Element.px 200
+        , Element.centerX
+        , Element.centerY
+        ]
     <|
-        Element.html <|
-            Svg.svg
-                [ Svg.Attributes.viewBox "-120 -120 240 240"
-                , Svg.Attributes.width "100%"
+        Element.row
+            ([ Element.centerX
+             , Element.centerY
+             , Element.padding 20
+             , Element.Font.size 22
+             ]
+                ++ Mensam.Element.Font.font Mensam.Element.Font.Monospace400
+            )
+            [ Element.column
+                [ Element.width <| Element.px 60
+                , Element.height <| Element.px 90
+                , Element.alignLeft
+                , Element.centerY
+                ]
+                [ elementButton
+                    { attributes = [ Element.alignTop ]
+                    , message = SetHour <| increaseHour <| getHour model
+                    , label = "+"
+                    }
+                , elementHour <| getHour model
+                , elementButton
+                    { attributes = [ Element.alignBottom ]
+                    , message = SetHour <| decreaseHour <| getHour model
+                    , label = "-"
+                    }
+                ]
+            , Element.el
+                [ Element.centerX
+                , Element.centerY
+                ]
+              <|
+                Element.text ":"
+            , Element.column
+                [ Element.width <| Element.px 60
+                , Element.height <| Element.px 90
+                , Element.alignRight
+                , Element.centerY
+                ]
+                [ elementButton
+                    { attributes = [ Element.alignTop ]
+                    , message = SetMinute <| increaseMinute <| getMinute model
+                    , label = "+"
+                    }
+                , elementMinute <| getMinute model
+                , elementButton
+                    { attributes = [ Element.alignBottom ]
+                    , message = SetMinute <| decreaseMinute <| getMinute model
+                    , label = "-"
+                    }
+                ]
+            ]
+
+
+getHour : Model -> Mensam.Time.Hour
+getHour (MkModel model) =
+    (Mensam.Time.unTime model.selected).hour
+
+
+increaseHour : Mensam.Time.Hour -> Mensam.Time.Hour
+increaseHour (Mensam.Time.MkHour hour) =
+    Mensam.Time.MkHour <| modBy 24 <| hour + 1
+
+
+decreaseHour : Mensam.Time.Hour -> Mensam.Time.Hour
+decreaseHour (Mensam.Time.MkHour hour) =
+    Mensam.Time.MkHour <| modBy 24 <| hour - 1
+
+
+elementHour : Mensam.Time.Hour -> Element.Element Message
+elementHour (Mensam.Time.MkHour hour) =
+    element2Digit hour
+
+
+getMinute : Model -> Mensam.Time.Minute
+getMinute (MkModel model) =
+    (Mensam.Time.unTime model.selected).minute
+
+
+increaseMinute : Mensam.Time.Minute -> Mensam.Time.Minute
+increaseMinute (Mensam.Time.MkMinute minute) =
+    Mensam.Time.MkMinute <| modBy 60 <| minute + 5
+
+
+decreaseMinute : Mensam.Time.Minute -> Mensam.Time.Minute
+decreaseMinute (Mensam.Time.MkMinute minute) =
+    Mensam.Time.MkMinute <| modBy 60 <| minute - 5
+
+
+elementMinute : Mensam.Time.Minute -> Element.Element Message
+elementMinute (Mensam.Time.MkMinute minute) =
+    element2Digit minute
+
+
+element2Digit : Int -> Element.Element Message
+element2Digit n =
+    Element.el
+        [ Element.width Element.fill
+        , Element.height Element.fill
+        ]
+    <|
+        Element.el
+            [ Element.centerX
+            , Element.centerY
+            ]
+        <|
+            Element.text <|
+                String.padLeft 2 '0' <|
+                    String.fromInt n
+
+
+elementButton :
+    { attributes : List (Element.Attribute Never)
+    , message : Message
+    , label : String
+    }
+    -> Element.Element Message
+elementButton args =
+    Element.Input.button
+        ([ Element.width Element.fill
+         , Element.height <| Element.px 25
+         , Element.Background.color <| Element.rgba 1 1 1 0.05
+         , Element.mouseOver
+            [ Element.Background.color <| Element.rgba 1 1 1 0.1
+            ]
+         ]
+            ++ List.map (Element.mapAttribute never) args.attributes
+        )
+        { onPress = Just args.message
+        , label =
+            Element.el
+                [ Element.centerX
+                , Element.centerY
                 ]
             <|
-                Svg.circle
-                    [ Svg.Attributes.cx "0"
-                    , Svg.Attributes.cy "0"
-                    , Svg.Attributes.r "120"
-                    , Svg.Attributes.fill "rgba(255,255,255,0.1)"
-                    ]
-                    []
-                    :: List.concat
-                        [ svgOnCircle 100 "00" (SetMinute <| Mensam.Time.MkMinute 0) 0 -1
-                        , svgOnCircle 100 "05" (SetMinute <| Mensam.Time.MkMinute 5) (1 / 2) -(sqrt 3 / 2)
-                        , svgOnCircle 100 "10" (SetMinute <| Mensam.Time.MkMinute 10) (sqrt 3 / 2) -(1 / 2)
-                        , svgOnCircle 100 "15" (SetMinute <| Mensam.Time.MkMinute 15) 1 0
-                        , svgOnCircle 100 "20" (SetMinute <| Mensam.Time.MkMinute 20) (sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 100 "25" (SetMinute <| Mensam.Time.MkMinute 25) (1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 100 "30" (SetMinute <| Mensam.Time.MkMinute 30) 0 1
-                        , svgOnCircle 100 "35" (SetMinute <| Mensam.Time.MkMinute 35) -(1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 100 "40" (SetMinute <| Mensam.Time.MkMinute 40) -(sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 100 "45" (SetMinute <| Mensam.Time.MkMinute 45) -1 0
-                        , svgOnCircle 100 "50" (SetMinute <| Mensam.Time.MkMinute 50) -(sqrt 3 / 2) -(1 / 2)
-                        , svgOnCircle 100 "55" (SetMinute <| Mensam.Time.MkMinute 55) -(1 / 2) -(sqrt 3 / 2)
-                        , svgOnCircle 60 "12" (SetHour <| Mensam.Time.MkHour 12) 0 -1
-                        , svgOnCircle 60 "1" (SetHour <| Mensam.Time.MkHour 1) (1 / 2) -(sqrt 3 / 2)
-                        , svgOnCircle 60 "2" (SetHour <| Mensam.Time.MkHour 2) (sqrt 3 / 2) -(1 / 2)
-                        , svgOnCircle 60 "3" (SetHour <| Mensam.Time.MkHour 3) 1 0
-                        , svgOnCircle 60 "4" (SetHour <| Mensam.Time.MkHour 4) (sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 60 "5" (SetHour <| Mensam.Time.MkHour 5) (1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 60 "6" (SetHour <| Mensam.Time.MkHour 6) 0 1
-                        , svgOnCircle 60 "7" (SetHour <| Mensam.Time.MkHour 7) -(1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 60 "8" (SetHour <| Mensam.Time.MkHour 8) -(sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 60 "9" (SetHour <| Mensam.Time.MkHour 9) -1 0
-                        , svgOnCircle 60 "10" (SetHour <| Mensam.Time.MkHour 10) -(sqrt 3 / 2) -(1 / 2)
-                        , svgOnCircle 60 "11" (SetHour <| Mensam.Time.MkHour 11) -(1 / 2) -(sqrt 3 / 2)
-                        , svgOnCircle 40 "0" (SetHour <| Mensam.Time.MkHour 0) 0 -1
-                        , svgOnCircle 40 "13" (SetHour <| Mensam.Time.MkHour 13) (1 / 2) -(sqrt 3 / 2)
-                        , svgOnCircle 40 "14" (SetHour <| Mensam.Time.MkHour 14) (sqrt 3 / 2) -(1 / 2)
-                        , svgOnCircle 40 "15" (SetHour <| Mensam.Time.MkHour 15) 1 0
-                        , svgOnCircle 40 "16" (SetHour <| Mensam.Time.MkHour 16) (sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 40 "17" (SetHour <| Mensam.Time.MkHour 17) (1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 40 "18" (SetHour <| Mensam.Time.MkHour 18) 0 1
-                        , svgOnCircle 40 "19" (SetHour <| Mensam.Time.MkHour 19) -(1 / 2) (sqrt 3 / 2)
-                        , svgOnCircle 40 "20" (SetHour <| Mensam.Time.MkHour 20) -(sqrt 3 / 2) (1 / 2)
-                        , svgOnCircle 40 "21" (SetHour <| Mensam.Time.MkHour 21) -1 0
-                        , svgOnCircle 40 "22" (SetHour <| Mensam.Time.MkHour 22) -(sqrt 3 / 2) -(1 / 2)
-                        , svgOnCircle 40 "23" (SetHour <| Mensam.Time.MkHour 23) -(1 / 2) -(sqrt 3 / 2)
-                        ]
-
-
-svgOnCircle : Float -> String -> msg -> Float -> Float -> List (Svg.Svg msg)
-svgOnCircle factor string msg x y =
-    [ Svg.circle
-        [ Svg.Attributes.cx <| String.fromFloat <| factor * x
-        , Svg.Attributes.cy <| String.fromFloat <| factor * y
-        , Svg.Attributes.r "10"
-        , Svg.Attributes.fill "rgba(255,255,255,0.1)"
-        ]
-        []
-    , Svg.text_
-        [ Svg.Attributes.x <| String.fromFloat <| factor * x
-        , Svg.Attributes.y <| String.fromFloat <| factor * y
-        , Svg.Attributes.textAnchor "middle"
-        , Svg.Attributes.dominantBaseline "central"
-        , Svg.Attributes.style "user-select: none;"
-        ]
-        [ Svg.text string ]
-    , Svg.circle
-        [ Svg.Attributes.cx <| String.fromFloat <| factor * x
-        , Svg.Attributes.cy <| String.fromFloat <| factor * y
-        , Svg.Attributes.r "10"
-        , Svg.Attributes.style "cursor: pointer;"
-        , Svg.Attributes.fill "rgba(255,255,255,0.0)"
-        , Svg.Events.onClick msg
-        ]
-        []
-    ]
+                Element.text args.label
+        }

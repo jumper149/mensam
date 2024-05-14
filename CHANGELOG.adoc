@@ -1,5 +1,8 @@
 = Changelog
 
+* Frontend
+  ** Improve time picker. New simple design like a digital clock.
+
 == `0.7.0.0`
 
 * Backend
