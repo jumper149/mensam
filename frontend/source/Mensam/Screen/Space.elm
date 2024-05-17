@@ -2,6 +2,7 @@ module Mensam.Screen.Space exposing (..)
 
 import Element
 import Element.Background
+import Element.Border
 import Element.Events
 import Element.Font
 import Html.Attributes
@@ -15,7 +16,6 @@ import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Desk
 import Mensam.Element.Button
-import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
@@ -26,6 +26,8 @@ import Mensam.Space.Role
 import Mensam.Time
 import Mensam.Widget.Date
 import Mensam.Widget.Time
+import Svg
+import Svg.Attributes
 import Time
 
 
@@ -222,157 +224,7 @@ element model =
                                             , message = Just <| MessageEffect OpenPageToDesks
                                             }
                     ]
-                , Element.indexedTable
-                    [ Element.width Element.fill
-                    , Element.height Element.fill
-                    , Element.Background.color (Element.rgba 0 0 0 0.1)
-                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                    , Element.Font.size 16
-                    , Element.clipY
-                    , Element.scrollbarY
-                    ]
-                    { data = model.desks
-                    , columns =
-                        let
-                            cell =
-                                Element.el
-                                    [ Element.height <| Element.px 40
-                                    , Element.width Element.fill
-                                    , Element.padding 10
-                                    ]
-                        in
-                        [ { header =
-                                Element.el
-                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                    ]
-                                <|
-                                    cell <|
-                                        Element.el
-                                            []
-                                        <|
-                                            Element.text "ID"
-                          , width = Element.px 40
-                          , view =
-                                \n x ->
-                                    Element.el
-                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
-                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                        , let
-                                            alpha =
-                                                case model.selected of
-                                                    Nothing ->
-                                                        0.2
-
-                                                    Just m ->
-                                                        if m == n then
-                                                            0.4
-
-                                                        else
-                                                            0.2
-                                          in
-                                          Element.Background.color (Element.rgba 0 0 0 alpha)
-                                        ]
-                                    <|
-                                        cell <|
-                                            Element.el
-                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                            <|
-                                                Element.text <|
-                                                    Mensam.Desk.identifierToString x.desk.id
-                          }
-                        , { header =
-                                Element.el
-                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                    ]
-                                <|
-                                    cell <|
-                                        Element.el
-                                            []
-                                        <|
-                                            Element.text "Reservations"
-                          , width = Element.px 120
-                          , view =
-                                \n x ->
-                                    Element.el
-                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
-                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                        , let
-                                            alpha =
-                                                case model.selected of
-                                                    Nothing ->
-                                                        0.2
-
-                                                    Just m ->
-                                                        if m == n then
-                                                            0.4
-
-                                                        else
-                                                            0.2
-                                          in
-                                          Element.Background.color (Element.rgba 0 0 0 alpha)
-                                        ]
-                                    <|
-                                        cell <|
-                                            Element.el
-                                                [ Element.height Element.fill
-                                                , Element.width <| Element.maximum 100 <| Element.fill
-                                                ]
-                                            <|
-                                                let
-                                                    date =
-                                                        case model.modelDateBegin of
-                                                            Mensam.Widget.Date.MkModel m ->
-                                                                m.selected
-                                                in
-                                                visualizeReservations model.timezone date x.reservations
-                          }
-                        , { header =
-                                Element.el
-                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                    ]
-                                <|
-                                    cell <|
-                                        Element.el
-                                            []
-                                        <|
-                                            Element.text "Name"
-                          , width = Element.fill
-                          , view =
-                                \n x ->
-                                    Element.el
-                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
-                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                        , let
-                                            alpha =
-                                                case model.selected of
-                                                    Nothing ->
-                                                        0.2
-
-                                                    Just m ->
-                                                        if m == n then
-                                                            0.4
-
-                                                        else
-                                                            0.2
-                                          in
-                                          Element.Background.color (Element.rgba 0 0 0 alpha)
-                                        ]
-                                    <|
-                                        cell <|
-                                            Element.el
-                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                            <|
-                                                Element.text <|
-                                                    Mensam.Desk.nameToString x.desk.name
-                          }
-                        ]
-                    }
+                , deskTimetable model
                 ]
         , popup =
             case model.popup of
@@ -588,6 +440,191 @@ element model =
         }
 
 
+deskTimetable : Model -> Element.Element Message
+deskTimetable model =
+    Element.indexedTable
+        [ Element.width Element.fill
+        , Element.height Element.fill
+        , Element.Background.color (Element.rgba 0 0 0 0.1)
+        , Element.Font.family [ Mensam.Element.Font.condensed ]
+        , Element.Font.size 16
+        , Element.clipY
+        , Element.scrollbarY
+        ]
+        { data = model.desks
+        , columns =
+            [ { header = Element.none
+              , width = Element.px 100
+              , view =
+                    \n x ->
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height <| Element.px 60
+                            , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                            , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                            , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
+                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                            , let
+                                alpha =
+                                    case model.selected of
+                                        Nothing ->
+                                            0.2
+
+                                        Just m ->
+                                            if m == n then
+                                                0.4
+
+                                            else
+                                                0.2
+                              in
+                              Element.Background.color (Element.rgba 0 0 0 alpha)
+                            , Element.clip
+                            ]
+                        <|
+                            Element.column
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                , Element.Border.widthEach
+                                    { bottom = 0
+                                    , left = 0
+                                    , right = 0
+                                    , top = 1
+                                    }
+                                , Element.padding 10
+                                ]
+                                [ Element.paragraph
+                                    [ Element.Font.size 12
+                                    ]
+                                    [ Element.text <| Mensam.Desk.identifierToString x.desk.id
+                                    ]
+                                , Element.paragraph
+                                    [ Element.Font.size 16
+                                    ]
+                                    [ Element.text <| Mensam.Desk.nameToString x.desk.name
+                                    ]
+                                ]
+              }
+            , { header = Element.none
+              , width = Element.fill
+              , view =
+                    \n x ->
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height <| Element.px 60
+                            , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                            , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                            , let
+                                alpha =
+                                    case model.selected of
+                                        Nothing ->
+                                            0.2
+
+                                        Just m ->
+                                            if m == n then
+                                                0.4
+
+                                            else
+                                                0.2
+                              in
+                              Element.Background.color (Element.rgba 0 0 0 alpha)
+                            ]
+                        <|
+                            Element.row
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                , Element.alignTop
+                                , Element.Border.widthEach
+                                    { bottom = 0
+                                    , left = 0
+                                    , right = 0
+                                    , top = 1
+                                    }
+                                , Element.behindContent <|
+                                    Element.el
+                                        [ Element.width Element.fill
+                                        , Element.height Element.fill
+                                        ]
+                                    <|
+                                        visualizeReservations
+                                            model.timezone
+                                            (Mensam.Widget.Date.unModel model.modelDateBegin).selected
+                                            x.reservations
+                                ]
+                            <|
+                                let
+                                    rowPiece piece =
+                                        Element.el
+                                            [ Element.width Element.fill
+                                            , Element.height Element.fill
+                                            , Element.Events.onClick <|
+                                                Messages
+                                                    [ MessagePure <| MessageTimeBegin <| Mensam.Widget.Time.SetHour <| Mensam.Time.MkHour piece.hour
+                                                    , MessagePure <| MessageTimeBegin <| Mensam.Widget.Time.SetMinute <| Mensam.Time.MkMinute 0
+                                                    , MessagePure <| ViewDetailed <| Just { desk = x.desk }
+                                                    ]
+                                            , Element.mouseOver
+                                                [ Element.Background.color (Element.rgba 0 1 0 0.1)
+                                                ]
+                                            ]
+                                        <|
+                                            Element.el
+                                                [ Element.width Element.fill
+                                                , Element.height <| Element.px piece.height
+                                                , Element.alignTop
+                                                , Element.Font.size 8
+                                                , Element.paddingEach
+                                                    { bottom = 0
+                                                    , left = 1
+                                                    , right = 0
+                                                    , top = 0
+                                                    }
+                                                , Element.Border.widthEach
+                                                    { bottom = 0
+                                                    , left = 1
+                                                    , right = 0
+                                                    , top = 0
+                                                    }
+                                                ]
+                                            <|
+                                                Element.paragraph
+                                                    [ Element.width <| Element.px 8
+                                                    , Element.height <| Element.px 15
+                                                    ]
+                                                    [ Element.text <| String.fromInt piece.hour
+                                                    ]
+                                in
+                                List.map rowPiece
+                                    [ { hour = 0, height = 40 }
+                                    , { hour = 1, height = 12 }
+                                    , { hour = 2, height = 12 }
+                                    , { hour = 3, height = 18 }
+                                    , { hour = 4, height = 12 }
+                                    , { hour = 5, height = 12 }
+                                    , { hour = 6, height = 25 }
+                                    , { hour = 7, height = 12 }
+                                    , { hour = 8, height = 12 }
+                                    , { hour = 9, height = 18 }
+                                    , { hour = 10, height = 12 }
+                                    , { hour = 11, height = 12 }
+                                    , { hour = 12, height = 40 }
+                                    , { hour = 13, height = 12 }
+                                    , { hour = 14, height = 12 }
+                                    , { hour = 15, height = 18 }
+                                    , { hour = 16, height = 12 }
+                                    , { hour = 17, height = 12 }
+                                    , { hour = 18, height = 25 }
+                                    , { hour = 19, height = 12 }
+                                    , { hour = 20, height = 12 }
+                                    , { hour = 21, height = 18 }
+                                    , { hour = 22, height = 12 }
+                                    , { hour = 23, height = 12 }
+                                    ]
+              }
+            ]
+        }
+
+
 visualizeReservations :
     Time.Zone
     -> Mensam.Time.Date
@@ -602,327 +639,139 @@ visualizeReservations :
             }
     -> Element.Element a
 visualizeReservations timezone date reservations =
-    -- TODO: This function is using a conversion to Time.Posix to check for overlapping time. Maybe this is actually fine, but I'm not quite sure at the time of writing.
-    let
-        timePeriods =
-            [ ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 0
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 0
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 1
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 1
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 2
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 2
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 3
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 3
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 4
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 4
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 5
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 5
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 6
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 6
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 7
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 7
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 8
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 8
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 9
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 9
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 10
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 10
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 11
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 11
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 12
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 12
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 13
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 13
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 14
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 14
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 15
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 15
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 16
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 16
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 17
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 17
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 18
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 18
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 19
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 19
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 20
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 20
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 21
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 21
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 22
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 22
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
-            , ( Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 23
-                    , minute = Mensam.Time.MkMinute 0
-                    , second = Mensam.Time.MkSecond 0
-                    }
-              , Mensam.Time.MkTime
-                    { hour = Mensam.Time.MkHour 23
-                    , minute = Mensam.Time.MkMinute 59
-                    , second = Mensam.Time.MkSecond 59
-                    }
-              )
+    Element.html <|
+        Svg.svg
+            [ Svg.Attributes.width "100%"
+            , Svg.Attributes.height "100%"
+            , Svg.Attributes.preserveAspectRatio "none"
+            , Svg.Attributes.viewBox "0 0 86400 100"
             ]
+        <|
+            List.filterMap (visualizeReservation timezone date) reservations
 
-        timeToPosix time =
-            Mensam.Time.toPosix timezone <| Mensam.Time.MkTimestamp { date = date, time = time }
 
-        timeToPosixPeriod =
-            \( t1, t2 ) -> ( timeToPosix t1, timeToPosix t2 )
+visualizeReservation :
+    Time.Zone
+    -> Mensam.Time.Date
+    ->
+        { desk : Mensam.Desk.Identifier
+        , id : Mensam.Reservation.Identifier
+        , status : Mensam.Reservation.Status
+        , timeBegin : Time.Posix
+        , timeEnd : Time.Posix
+        , user : Int
+        }
+    -> Maybe (Svg.Svg a)
+visualizeReservation timezone date reservation =
+    let
+        timestamp =
+            { begin = Mensam.Time.fromPosix timezone reservation.timeBegin
+            , end = Mensam.Time.fromPosix timezone reservation.timeEnd
+            }
 
-        posixPeriods =
-            List.map timeToPosixPeriod timePeriods
+        isToday =
+            { begin =
+                case Mensam.Time.compareDate (Mensam.Time.unTimestamp timestamp.begin).date date of
+                    LT ->
+                        Just False
 
-        -- TODO: Are these checks fine with "strictly smaller/greater" (`<` and `>`)?
-        checkPeriodIsFree =
-            \( t1, t2 ) ->
-                List.all
-                    (\reservation ->
-                        (Time.posixToMillis t1
-                            < Time.posixToMillis reservation.timeEnd
-                            && Time.posixToMillis t2
-                            < Time.posixToMillis reservation.timeBegin
-                        )
-                            || (Time.posixToMillis t1
-                                    > Time.posixToMillis reservation.timeEnd
-                                    && Time.posixToMillis t2
-                                    > Time.posixToMillis reservation.timeBegin
-                               )
-                    )
-                    reservations
+                    EQ ->
+                        Just True
 
-        freePeriods =
-            List.map checkPeriodIsFree posixPeriods
+                    GT ->
+                        Nothing
+            , end =
+                case Mensam.Time.compareDate (Mensam.Time.unTimestamp timestamp.end).date date of
+                    LT ->
+                        Nothing
 
-        freeToElement =
-            \x ->
-                Element.el
-                    [ Element.height Element.fill
-                    , Element.width Element.fill
-                    , Element.Background.color <|
-                        if x then
-                            Mensam.Element.Color.bright.green
+                    EQ ->
+                        Just True
 
-                        else
-                            Mensam.Element.Color.bright.red
-                    ]
-                <|
-                    Element.none
+                    GT ->
+                        Just False
+            }
+
+        time =
+            { begin =
+                case isToday.begin of
+                    Nothing ->
+                        Nothing
+
+                    Just True ->
+                        Just (Mensam.Time.unTimestamp timestamp.begin).time
+
+                    Just False ->
+                        Just <|
+                            Mensam.Time.MkTime
+                                { hour = Mensam.Time.MkHour 0
+                                , minute = Mensam.Time.MkMinute 0
+                                , second = Mensam.Time.MkSecond 0
+                                }
+            , end =
+                case isToday.end of
+                    Nothing ->
+                        Nothing
+
+                    Just True ->
+                        Just (Mensam.Time.unTimestamp timestamp.end).time
+
+                    Just False ->
+                        Just <|
+                            Mensam.Time.MkTime
+                                { hour = Mensam.Time.MkHour 23
+                                , minute = Mensam.Time.MkMinute 59
+                                , second = Mensam.Time.MkSecond 59
+                                }
+            }
+
+        secondsMaybe =
+            { begin = Maybe.map timeToSeconds time.begin
+            , end = Maybe.map timeToSeconds time.end
+            }
+
+        maybeSeconds =
+            case secondsMaybe.begin of
+                Nothing ->
+                    Nothing
+
+                Just begin ->
+                    case secondsMaybe.end of
+                        Nothing ->
+                            Nothing
+
+                        Just end ->
+                            Just { begin = begin, end = end }
     in
-    Element.row
-        [ Element.height Element.fill
-        , Element.width Element.fill
-        , Element.paddingXY 0 6
-        ]
-    <|
-        List.map freeToElement freePeriods
+    case maybeSeconds of
+        Nothing ->
+            Nothing
+
+        Just seconds ->
+            Just <|
+                Svg.rect
+                    [ Svg.Attributes.x <| String.fromInt seconds.begin
+                    , Svg.Attributes.y "0"
+                    , Svg.Attributes.width <| String.fromInt <| seconds.end - seconds.begin
+                    , Svg.Attributes.height "100%"
+                    , Svg.Attributes.rx "0"
+                    , Svg.Attributes.ry "0"
+                    , Svg.Attributes.fill "red"
+                    , Svg.Attributes.opacity "0.2"
+                    ]
+                    []
+
+
+timeToSeconds : Mensam.Time.Time -> Int
+timeToSeconds time =
+    Mensam.Time.unSecond (Mensam.Time.unTime time).second
+        + (60
+            * (Mensam.Time.unMinute (Mensam.Time.unTime time).minute
+                + (60
+                    * Mensam.Time.unHour (Mensam.Time.unTime time).hour
+                  )
+              )
+          )
 
 
 type Message
