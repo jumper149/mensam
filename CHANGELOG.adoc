@@ -1,7 +1,10 @@
 = Changelog
 
+== `0.7.1.0`
+
 * Frontend
   ** Improve time picker. New simple design like a digital clock.
+  ** Improve space view to create reservations.
 
 == `0.7.0.0`
 
