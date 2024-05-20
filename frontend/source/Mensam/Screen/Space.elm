@@ -74,6 +74,7 @@ type alias Model =
     , modelTimeBegin : Mensam.Widget.Time.Model
     , modelDateEnd : Mensam.Widget.Date.Model
     , modelTimeEnd : Mensam.Widget.Time.Model
+    , globalDatePickerVisible : Bool
     }
 
 
@@ -147,6 +148,7 @@ init args =
                     , second = Mensam.Time.MkSecond 0
                     }
             }
+    , globalDatePickerVisible = False
     }
 
 
@@ -225,6 +227,57 @@ element model =
                                             }
                     ]
                 , deskTimetable model
+                , Element.row
+                    [ Element.width Element.fill
+                    , Element.padding 10
+                    , Element.spacing 10
+                    , Element.alignBottom
+                    ]
+                    [ Element.column
+                        [ Element.width Element.fill
+                        , Element.alignBottom
+                        ]
+                        [ if model.globalDatePickerVisible then
+                            Element.el
+                                [ Element.centerX
+                                , Element.alignBottom
+                                ]
+                            <|
+                                Element.map
+                                    (\m ->
+                                        Messages
+                                            [ MessagePure <| MessageDateBegin m
+                                            , MessagePure SetDateEndToDateBegin
+                                            ]
+                                    )
+                                <|
+                                    Mensam.Widget.Date.elementPickDate model.modelDateBegin
+
+                          else
+                            Element.none
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.width Element.fill ]
+                                , color = Mensam.Element.Button.Blue
+                                , label =
+                                    let
+                                        date =
+                                            case model.modelDateBegin of
+                                                Mensam.Widget.Date.MkModel { selected } ->
+                                                    Mensam.Time.unDate selected
+                                    in
+                                    Element.text <|
+                                        String.concat
+                                            [ Mensam.Time.yearToString date.year
+                                            , ", "
+                                            , Mensam.Time.monthToString date.month
+                                            , " "
+                                            , Mensam.Time.dayToString date.day
+                                            ]
+                                , message = Just <| MessagePure <| ViewDateGlobalPicker <| not model.globalDatePickerVisible
+                                }
+                        ]
+                    ]
                 ]
         , popup =
             case model.popup of
@@ -841,6 +894,8 @@ type MessagePure
     | ViewTimeEndPicker
     | MessageDateEnd Mensam.Widget.Date.Message
     | MessageTimeEnd Mensam.Widget.Time.Message
+    | ViewDateGlobalPicker Bool
+    | SetDateEndToDateBegin
 
 
 updatePure : MessagePure -> Model -> Model
@@ -1057,6 +1112,12 @@ updatePure message model =
                                     }
                         }
             }
+
+        ViewDateGlobalPicker visible ->
+            { model | globalDatePickerVisible = visible }
+
+        SetDateEndToDateBegin ->
+            { model | modelDateEnd = model.modelDateBegin }
 
 
 type MessageEffect
