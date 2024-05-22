@@ -248,6 +248,15 @@ element model =
                                         Messages
                                             [ MessagePure <| MessageDateBegin m
                                             , MessagePure SetDateEndToDateBegin
+                                            , case m of
+                                                Mensam.Widget.Date.PreviousMonth ->
+                                                    Messages []
+
+                                                Mensam.Widget.Date.NextMonth ->
+                                                    Messages []
+
+                                                Mensam.Widget.Date.ClickDay _ ->
+                                                    MessagePure <| ViewDateGlobalPicker False
                                             ]
                                     )
                                 <|
