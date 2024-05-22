@@ -51,6 +51,7 @@
       **** [ ] Automatically set upper/lower bound when entering negative time interval.
       **** [ ] Grey out "Submit" button when the entered time span is already booked/not possible.
       **** [x] Better default time when opening the dialog to create a reservation.
+  ** Auto-login after registration doesn't fetch user data.
 
 * Wording and explanation.
   ** [ ] A space is just an environment for desks and not the desk itself.
