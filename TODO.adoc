@@ -45,11 +45,12 @@
   ** Creating reservations.
     *** [ ] Describe "from" and "to" when creating reservation.
     *** [ ] Improve SVG time picker.
-      **** [ ] Add text based time.
-      **** [ ] Don't select seconds. Just `hh:mm`.
+      **** [x] Add text based time.
+      **** [x] Don't select seconds. Just `hh:mm`.
+      **** [ ] Don't show seconds on button? Just `hh:mm`.
       **** [ ] Automatically set upper/lower bound when entering negative time interval.
       **** [ ] Grey out "Submit" button when the entered time span is already booked/not possible.
-      **** [ ] Better default time when opening the dialog to create a reservation.
+      **** [x] Better default time when opening the dialog to create a reservation.
 
 * Wording and explanation.
   ** [ ] A space is just an environment for desks and not the desk itself.
