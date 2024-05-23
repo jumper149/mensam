@@ -19,6 +19,7 @@
   ** [ ] Simplify names.
     ** [ ] -> Change `SpaceRole` to `Role`
     ** [ ] -> Change `SpaceRolePermission` to `Permission`
+  ** [ ] Forbid creating reservations in the past. Maybe this should be configurable for each space (or role?).
 
 * Frontend.
   ** [ ] Terms and Conditions check during registration.
