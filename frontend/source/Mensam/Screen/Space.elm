@@ -624,6 +624,8 @@ deskTimetable model =
                                                 Messages
                                                     [ MessagePure <| MessageTimeBegin <| Mensam.Widget.Time.SetHour <| Mensam.Time.MkHour piece.hour
                                                     , MessagePure <| MessageTimeBegin <| Mensam.Widget.Time.SetMinute <| Mensam.Time.MkMinute 0
+                                                    , MessagePure <| SetTimeEndFromDuration <| Mensam.Time.MkHour 1
+                                                    , MessagePure <| SetDateEndFromDuration <| Mensam.Time.MkHour 1
                                                     , MessagePure <| ViewDetailed <| Just { desk = x.desk }
                                                     ]
                                             , Element.mouseOver
@@ -905,6 +907,8 @@ type MessagePure
     | MessageTimeEnd Mensam.Widget.Time.Message
     | ViewDateGlobalPicker Bool
     | SetDateEndToDateBegin
+    | SetDateEndFromDuration Mensam.Time.Hour
+    | SetTimeEndFromDuration Mensam.Time.Hour
 
 
 updatePure : MessagePure -> Model -> Model
@@ -1127,6 +1131,54 @@ updatePure message model =
 
         SetDateEndToDateBegin ->
             { model | modelDateEnd = model.modelDateBegin }
+
+        SetDateEndFromDuration duration ->
+            { model
+                | modelDateEnd =
+                    let
+                        timestampBegin =
+                            Mensam.Time.MkTimestamp
+                                { date = (Mensam.Widget.Date.unModel model.modelDateBegin).selected
+                                , time = (Mensam.Widget.Time.unModel model.modelTimeBegin).selected
+                                }
+
+                        timestampEndNew =
+                            Mensam.Time.fromPosix model.timezone <|
+                                Time.millisToPosix <|
+                                    Time.posixToMillis (Mensam.Time.toPosix model.timezone timestampBegin)
+                                        + (Mensam.Time.unHour duration * 60 * 60 * 1000)
+                    in
+                    Mensam.Widget.Date.MkModel
+                        { year =
+                            (Mensam.Time.unDate (Mensam.Time.unTimestamp timestampEndNew).date).year
+                        , month =
+                            (Mensam.Time.unDate (Mensam.Time.unTimestamp timestampEndNew).date).month
+                        , selected =
+                            (Mensam.Time.unTimestamp timestampEndNew).date
+                        }
+            }
+
+        SetTimeEndFromDuration duration ->
+            { model
+                | modelTimeEnd =
+                    Mensam.Widget.Time.MkModel
+                        { selected =
+                            let
+                                timestampBegin =
+                                    Mensam.Time.MkTimestamp
+                                        { date = (Mensam.Widget.Date.unModel model.modelDateBegin).selected
+                                        , time = (Mensam.Widget.Time.unModel model.modelTimeBegin).selected
+                                        }
+
+                                timestampEndNew =
+                                    Mensam.Time.fromPosix model.timezone <|
+                                        Time.millisToPosix <|
+                                            Time.posixToMillis (Mensam.Time.toPosix model.timezone timestampBegin)
+                                                + (Mensam.Time.unHour duration * 60 * 60 * 1000)
+                            in
+                            (Mensam.Time.unTimestamp timestampEndNew).time
+                        }
+            }
 
 
 type MessageEffect

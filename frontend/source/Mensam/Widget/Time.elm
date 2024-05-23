@@ -14,6 +14,11 @@ type Model
         }
 
 
+unModel : Model -> { selected : Mensam.Time.Time }
+unModel (MkModel value) =
+    value
+
+
 type Message
     = SetHour Mensam.Time.Hour
     | SetMinute Mensam.Time.Minute
