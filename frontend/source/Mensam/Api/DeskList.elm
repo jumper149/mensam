@@ -17,6 +17,10 @@ import Url.Builder
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
     , space : Mensam.Space.Identifier
+    , timeWindow :
+        { start : Maybe Time.Posix
+        , end : Maybe Time.Posix
+        }
     }
 
 
@@ -128,6 +132,26 @@ encodeBody body =
           , Encode.object
                 [ ( "tag", Encode.string "identifier" )
                 , ( "value", Mensam.Space.identifierEncode body.space )
+                ]
+          )
+        , ( "time-window"
+          , Encode.object
+                [ ( "start"
+                  , case body.timeWindow.start of
+                        Nothing ->
+                            Encode.null
+
+                        Just time ->
+                            Iso8601.encode time
+                  )
+                , ( "end"
+                  , case body.timeWindow.end of
+                        Nothing ->
+                            Encode.null
+
+                        Just time ->
+                            Iso8601.encode time
+                  )
                 ]
           )
         ]

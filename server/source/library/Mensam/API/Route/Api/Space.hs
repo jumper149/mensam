@@ -316,7 +316,8 @@ data Routes route = Routes
       route
         :- Summary "List Desks"
           :> Description
-              "List desks.\n"
+              "List desks.\n\
+              \Use the time-window to restrict the reservations in the result to overlapping time frames.\n"
           :> "desk"
           :> "list"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -647,8 +648,7 @@ newtype ResponseDeskEdit = MkResponseDeskEdit
 type RequestDeskList :: Type
 data RequestDeskList = MkRequestDeskList
   { requestDeskListSpace :: NameOrIdentifier NameSpace IdentifierSpace
-  , requestDeskListTimeBegin :: Maybe T.UTCTime
-  , requestDeskListTimeEnd :: Maybe T.UTCTime
+  , requestDeskListTimeWindow :: IntervalUnbounded T.UTCTime
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

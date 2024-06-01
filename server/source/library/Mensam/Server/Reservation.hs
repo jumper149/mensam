@@ -46,23 +46,20 @@ reservationGet identifier = do
 reservationList ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierDesk ->
-  -- | minimum timestamp begin
-  Maybe T.UTCTime ->
-  -- | maximum timestamp end
-  Maybe T.UTCTime ->
+  IntervalUnbounded T.UTCTime ->
   SeldaTransactionT m [Reservation]
-reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd = do
-  lift $ logDebug $ "Looking up desk's reservations: " <> T.pack (show (deskIdentifier, maybeTimestampBegin, maybeTimestampEnd))
+reservationList deskIdentifier timestampIntervalUnbounded = do
+  lift $ logDebug $ "Looking up desk's reservations: " <> T.pack (show (deskIdentifier, timestampIntervalUnbounded))
   dbReservations <- Selda.query $ do
     dbReservation <- Selda.select tableReservation
     Selda.restrict $ dbReservation Selda.! #dbReservation_desk Selda..== Selda.literal (Selda.toId @DbDesk $ unIdentifierDesk deskIdentifier)
-    case maybeTimestampBegin of
-      Nothing -> pure ()
-      Just timestampBegin ->
+    case intervalUnboundedStart timestampIntervalUnbounded of
+      NothingUnboundedLow -> pure ()
+      JustUnboundedLow timestampBegin ->
         Selda.restrict $ dbReservation Selda.! #dbReservation_time_end Selda..> Selda.literal timestampBegin
-    case maybeTimestampEnd of
-      Nothing -> pure ()
-      Just timestampEnd ->
+    case intervalUnboundedEnd timestampIntervalUnbounded of
+      NothingUnboundedHigh -> pure ()
+      JustUnboundedHigh timestampEnd ->
         Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..< Selda.literal timestampEnd
     pure dbReservation
   lift $ logInfo "Looked up desk's reservations successfully."
@@ -91,24 +88,21 @@ reservationList deskIdentifier maybeTimestampBegin maybeTimestampEnd = do
 reservationListUser ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
-  -- | minimum timestamp begin
-  Maybe T.UTCTime ->
-  -- | maximum timestamp end
-  Maybe T.UTCTime ->
+  IntervalUnbounded T.UTCTime ->
   SeldaTransactionT m [Reservation]
-reservationListUser userIdentifier maybeTimestampBegin maybeTimestampEnd = do
-  lift $ logDebug $ "Looking up user's reservations: " <> T.pack (show (userIdentifier, maybeTimestampBegin, maybeTimestampEnd))
+reservationListUser userIdentifier timestampIntervalUnbounded = do
+  lift $ logDebug $ "Looking up user's reservations: " <> T.pack (show (userIdentifier, timestampIntervalUnbounded))
   dbReservations <- Selda.query $ do
     dbReservation <- Selda.select tableReservation
     Selda.restrict $ dbReservation Selda.! #dbReservation_user Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
     -- TODO: Improve overlapping behaviour (OR instead of AND?).
-    case maybeTimestampBegin of
-      Nothing -> pure ()
-      Just timestampBegin ->
+    case intervalUnboundedStart timestampIntervalUnbounded of
+      NothingUnboundedLow -> pure ()
+      JustUnboundedLow timestampBegin ->
         Selda.restrict $ dbReservation Selda.! #dbReservation_time_end Selda..> Selda.literal timestampBegin
-    case maybeTimestampEnd of
-      Nothing -> pure ()
-      Just timestampEnd ->
+    case intervalUnboundedEnd timestampIntervalUnbounded of
+      NothingUnboundedHigh -> pure ()
+      JustUnboundedHigh timestampEnd ->
         Selda.restrict $ dbReservation Selda.! #dbReservation_time_begin Selda..< Selda.literal timestampEnd
     pure dbReservation
   lift $ logInfo "Looked up user's reservations successfully."
@@ -144,7 +138,7 @@ reservationCreate deskIdentifier userIdentifier timestampInterval = do
   let
     start = intervalStart $ unIntervalNonDegenerate timestampInterval
     end = intervalEnd $ unIntervalNonDegenerate timestampInterval
-  reservations <- reservationList deskIdentifier (Just start) (Just end)
+  reservations <- reservationList deskIdentifier undefined -- TODO: fromBoundedInterval
   case filter ((== MkStatusReservationPlanned) . reservationStatus) reservations of
     _ : _ -> do
       lift $ logWarn "Desk is already reserved."

@@ -651,7 +651,7 @@ editDesk args =
 
 listDesks : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
 listDesks jwt spaceId =
-    Mensam.Api.DeskList.request { jwt = jwt, space = spaceId } <|
+    Mensam.Api.DeskList.request { jwt = jwt, space = spaceId, timeWindow = { start = Nothing, end = Nothing } } <|
         \result ->
             case result of
                 Ok (Mensam.Api.DeskList.Success value) ->

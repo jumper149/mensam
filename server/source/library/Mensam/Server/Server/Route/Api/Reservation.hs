@@ -142,7 +142,7 @@ listReservations auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to list a user's reservations: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        reservations <- reservationListUser (userAuthenticatedId authenticated) (requestReservationListTimeBegin request) (requestReservationListTimeEnd request)
+        reservations <- reservationListUser (userAuthenticatedId authenticated) (requestReservationListTimeWindow request)
         for reservations $ \reservation -> do
           desk <- deskGetFromId $ reservationDesk reservation
           space <- spaceGetFromId $ deskSpace desk

@@ -1,6 +1,7 @@
 module Mensam.Client.UI where
 
 import Mensam.API.Aeson
+import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space
 import Mensam.API.Order
 import Mensam.API.Route.Api.Reservation qualified as Route.Reservation
@@ -130,8 +131,7 @@ handleEvent chan = \case
                     (DataJWTWithSession jwt)
                     ( Route.Space.MkRequestDeskList
                         { Route.Space.requestDeskListSpace = Identifier $ spaceId space
-                        , Route.Space.requestDeskListTimeBegin = Nothing
-                        , Route.Space.requestDeskListTimeEnd = Nothing
+                        , Route.Space.requestDeskListTimeWindow = unbounded
                         }
                     )
             case result of

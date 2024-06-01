@@ -1283,7 +1283,7 @@ spaceLeave jwt spaceId =
 
 deskList : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
 deskList jwt model =
-    Mensam.Api.DeskList.request { jwt = jwt, space = model.space } <|
+    Mensam.Api.DeskList.request { jwt = jwt, space = model.space, timeWindow = { start = Nothing, end = Nothing } } <|
         \result ->
             case result of
                 Ok (Mensam.Api.DeskList.Success value) ->

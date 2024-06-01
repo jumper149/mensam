@@ -110,8 +110,7 @@ f = do
   let requestDeskList =
         Route.Space.MkRequestDeskList
           { Route.Space.requestDeskListSpace = Name spacename
-          , Route.Space.requestDeskListTimeBegin = Nothing
-          , Route.Space.requestDeskListTimeEnd = Nothing
+          , Route.Space.requestDeskListTimeWindow = unbounded
           }
   resultDeskList <- endpointDeskList (DataJWTWithSession nextToken) requestDeskList
   liftIO $ print resultDeskList

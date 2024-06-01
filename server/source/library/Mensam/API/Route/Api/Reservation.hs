@@ -61,7 +61,8 @@ data Routes route = Routes
       route
         :- Summary "List Reservations"
           :> Description
-              "View all of your desk reservations.\n"
+              "View all of your desk reservations.\n\
+              \Use the time-window to restrict the result to overlapping reservations.\n"
           :> "list"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationList
@@ -114,9 +115,8 @@ newtype ResponseReservationCancel = MkResponseReservationCancel
     via A.CustomJSON (JSONSettings "MkResponse" "responseReservationCancel") ResponseReservationCancel
 
 type RequestReservationList :: Type
-data RequestReservationList = MkRequestReservationList
-  { requestReservationListTimeBegin :: Maybe T.UTCTime
-  , requestReservationListTimeEnd :: Maybe T.UTCTime
+newtype RequestReservationList = MkRequestReservationList
+  { requestReservationListTimeWindow :: IntervalUnbounded T.UTCTime
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

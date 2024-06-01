@@ -647,28 +647,32 @@ reservationList : { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
 reservationList argument =
     Mensam.Api.ReservationList.request
         { jwt = argument.jwt
-        , timeBegin =
-            Mensam.Time.toPosix argument.model.timezone <|
-                Mensam.Time.MkTimestamp
-                    { date = argument.model.modelDateBegin
-                    , time =
-                        Mensam.Time.MkTime
-                            { hour = Mensam.Time.MkHour 0
-                            , minute = Mensam.Time.MkMinute 0
-                            , second = Mensam.Time.MkSecond 0
+        , timeWindow =
+            { start =
+                Just <|
+                    Mensam.Time.toPosix argument.model.timezone <|
+                        Mensam.Time.MkTimestamp
+                            { date = argument.model.modelDateBegin
+                            , time =
+                                Mensam.Time.MkTime
+                                    { hour = Mensam.Time.MkHour 0
+                                    , minute = Mensam.Time.MkMinute 0
+                                    , second = Mensam.Time.MkSecond 0
+                                    }
                             }
-                    }
-        , timeEnd =
-            Mensam.Time.toPosix argument.model.timezone <|
-                Mensam.Time.MkTimestamp
-                    { date = argument.model.modelDateEnd
-                    , time =
-                        Mensam.Time.MkTime
-                            { hour = Mensam.Time.MkHour 23
-                            , minute = Mensam.Time.MkMinute 59
-                            , second = Mensam.Time.MkSecond 59
+            , end =
+                Just <|
+                    Mensam.Time.toPosix argument.model.timezone <|
+                        Mensam.Time.MkTimestamp
+                            { date = argument.model.modelDateEnd
+                            , time =
+                                Mensam.Time.MkTime
+                                    { hour = Mensam.Time.MkHour 23
+                                    , minute = Mensam.Time.MkMinute 59
+                                    , second = Mensam.Time.MkSecond 59
+                                    }
                             }
-                    }
+            }
         }
     <|
         \result ->

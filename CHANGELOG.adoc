@@ -1,5 +1,8 @@
 = Changelog
 
+* API
+  ** Use stricter `time-window` field for `/desk/list` and `/reservation/list` requests.
+
 == `0.7.1.0`
 
 * Frontend

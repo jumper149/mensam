@@ -683,8 +683,7 @@ listDesks auth eitherRequest =
           reservations <-
             reservationList
               (deskId desk)
-              (requestDeskListTimeBegin request)
-              (requestDeskListTimeEnd request)
+              (requestDeskListTimeWindow request)
           pure
             MkDeskWithInfo
               { deskWithInfoDesk = desk
