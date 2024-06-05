@@ -556,9 +556,9 @@ deskTimetable model =
                                 , Element.padding 10
                                 ]
                                 [ Element.paragraph
-                                    [ Element.Font.size 12
-                                    ]
-                                    [ Element.text <| Mensam.Desk.identifierToString x.desk.id
+                                    (Element.Font.size 12 :: Mensam.Element.Font.font (Mensam.Element.Font.Condensed { weight = Mensam.Element.Font.Regular400, italic = True }))
+                                    [ Element.text "#"
+                                    , Element.text <| Mensam.Desk.identifierToString x.desk.id
                                     ]
                                 , Element.paragraph
                                     [ Element.Font.size 16
