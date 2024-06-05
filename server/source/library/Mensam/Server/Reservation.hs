@@ -138,7 +138,7 @@ reservationCreate deskIdentifier userIdentifier timestampInterval = do
   let
     start = intervalStart $ unIntervalNonDegenerate timestampInterval
     end = intervalEnd $ unIntervalNonDegenerate timestampInterval
-  reservations <- reservationList deskIdentifier undefined -- TODO: fromBoundedInterval
+  reservations <- reservationList deskIdentifier $ mkIntervalUnboundedFromBounded $ mkIntervalFromNonDegenerate timestampInterval
   case filter ((== MkStatusReservationPlanned) . reservationStatus) reservations of
     _ : _ -> do
       lift $ logWarn "Desk is already reserved."

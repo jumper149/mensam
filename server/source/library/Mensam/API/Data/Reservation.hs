@@ -60,6 +60,9 @@ mkInterval intervalStart intervalEnd =
     then Just MkIntervalUnsafe {intervalStart, intervalEnd}
     else Nothing
 
+mkIntervalFromNonDegenerate :: IntervalNonDegenerate a -> Interval a
+mkIntervalFromNonDegenerate = unIntervalNonDegenerate
+
 intervalIsDegenerate :: Ord a => Interval a -> Bool
 intervalIsDegenerate interval = intervalStart interval == intervalEnd interval
 
@@ -110,6 +113,13 @@ mkIntervalUnbounded intervalUnboundedStart intervalUnboundedEnd =
   if MkMaybeUnboundedLow intervalUnboundedStart <= MkMaybeUnboundedHigh intervalUnboundedEnd
     then Just MkIntervalUnboundedUnsafe {intervalUnboundedStart, intervalUnboundedEnd}
     else Nothing
+
+mkIntervalUnboundedFromBounded :: Interval a -> IntervalUnbounded a
+mkIntervalUnboundedFromBounded interval =
+  MkIntervalUnboundedUnsafe
+    { intervalUnboundedStart = JustUnboundedLow $ intervalStart interval
+    , intervalUnboundedEnd = JustUnboundedHigh $ intervalEnd interval
+    }
 
 unbounded :: IntervalUnbounded a
 unbounded =
