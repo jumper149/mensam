@@ -1,5 +1,9 @@
 = Changelog
 
+== `0.7.1.1`
+
+* Frontend
+  ** Set default end time when creating reservations.
 * API
   ** Use stricter `time-window` field for `/desk/list` and `/reservation/list` requests.
 
