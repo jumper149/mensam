@@ -15,6 +15,11 @@
         version = "1.0.5";
       };
 
+      "elm/file" = {
+        sha256 = "1rljcb41dl97myidyjih2yliyzddkr2m7n74x7gg46rcw4jl0ny8";
+        version = "1.0.5";
+      };
+
       "elm/html" = {
         sha256 = "1n3gpzmpqqdsldys4ipgyl1zacn0kbpc3g4v3hdpiyfjlgh8bf3k";
         version = "1.0.0";
@@ -78,11 +83,6 @@
       "elm/bytes" = {
         sha256 = "02ywbf52akvxclpxwj9n04jydajcbsbcbsnjs53yjc5lwck3abwj";
         version = "1.0.8";
-      };
-
-      "elm/file" = {
-        sha256 = "1rljcb41dl97myidyjih2yliyzddkr2m7n74x7gg46rcw4jl0ny8";
-        version = "1.0.5";
       };
 
       "elm/parser" = {

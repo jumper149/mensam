@@ -58,9 +58,11 @@ common dependencies
     , hashable
     , http-client
     , http-client-tls
+    , http-media
     , http-types
     , insert-ordered-containers
     , jose
+    , JuicyPixels
     , lens
     , microlens-platform
     , mime-mail
@@ -82,6 +84,9 @@ common dependencies
     , servant-blaze
     , servant-client
     , servant-client-core
+    , servant-multipart
+    , servant-multipart-api
+    , servant-multipart-client
     , servant-openapi3
     , servant-rawm
     , servant-rawm-client
@@ -182,6 +187,7 @@ library
     , Mensam.Server.Database.Schema
     , Mensam.Server.Database.Space
     , Mensam.Server.Environment
+    , Mensam.Server.Jpeg
     , Mensam.Server.OpenApi
     , Mensam.Server.Reservation
     , Mensam.Server.Secrets
@@ -206,8 +212,10 @@ library
     , Control.Monad.Logger.OrphanInstances
     , Data.Time.Zones.All.OrphanInstances
     , Deriving.Aeson.OrphanInstances
+    , Servant.API.ImageJpeg
     , Servant.Auth.OrphanInstances
     , Servant.Auth.JWT.WithSession
+    , Servant.Multipart.OrphanInstances
     , System.Posix.Signals.Patterns
     , Text.Email.OrphanInstances
     , Text.Email.Text

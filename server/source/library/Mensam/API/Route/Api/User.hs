@@ -13,6 +13,7 @@ import Data.Time qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
 import Servant.API hiding (BasicAuth)
+import Servant.API.ImageJpeg
 import Servant.Auth
 import Servant.Auth.JWT.WithSession
 import Text.Email.Parser
@@ -77,6 +78,23 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 200 ResponsePasswordChange
               , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 500 ()
+              ]
+  , routePicture ::
+      route
+        :- Summary "Change Profile Picture"
+          :> Description
+              "Upload a new profile picture.\n\
+              \This overwrites any old profile picture.\n"
+          :> "picture"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[ImageJpeg] ImageJpegBytes
+          :> UVerb
+              PUT
+              '[JSON]
+              [ WithStatus 200 (StaticText "Uploaded profile picture.")
+              , WithStatus 400 ErrorParseBodyJpeg
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
@@ -244,3 +262,10 @@ data ResponseProfile = MkResponseProfile
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseProfile") ResponseProfile
+
+type ErrorParseBodyJpeg :: Type
+newtype ErrorParseBodyJpeg = MkErrorParseBodyJpeg
+  { errorParseBodyJpegError :: String
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving (A.FromJSON, A.ToJSON) via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJpeg") ErrorParseBodyJpeg

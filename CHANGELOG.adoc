@@ -1,5 +1,10 @@
 = Changelog
 
+* Database
+  ** Add new column `picture_jpeg` to the `user` table.
+* API
+  ** Add `/picture` route to change your user profile picture.
+
 == `0.7.1.1`
 
 * Frontend

@@ -348,6 +348,14 @@ migrations =
             \WHERE space_role_permission.permission = 'edit_space'\n\
             \ON CONFLICT DO NOTHING"
       }
+  , MkMigration
+      { migrationId = Selda.toId 13
+      , migrationName = "addUserProfilePicture"
+      , migrationWork = do
+          Selda.Unsafe.rawStm
+            "ALTER TABLE user\n\
+            \ADD COLUMN picture_jpeg BLOB"
+      }
   ]
 
 createDatabase ::

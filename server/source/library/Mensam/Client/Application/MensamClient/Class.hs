@@ -17,6 +17,7 @@ import Control.Monad.Trans.Elevator
 import Data.Kind
 import Data.Proxy
 import Servant.API
+import Servant.API.ImageJpeg
 import Servant.Client
 import Servant.RawM.Client ()
 
@@ -84,6 +85,17 @@ endpointPasswordChange ::
     ( Union
         '[ WithStatus 200 Route.Api.User.ResponsePasswordChange
          , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 500 ()
+         ]
+    )
+endpointPicture ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  ImageJpegBytes ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 (StaticText "Uploaded profile picture.")
+         , WithStatus 400 Route.Api.User.ErrorParseBodyJpeg
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
          ]
@@ -366,6 +378,7 @@ Route.Api.Routes
       , Route.Api.User.routeLogout = endpointLogout
       , Route.Api.User.routeRegister = endpointRegister
       , Route.Api.User.routePasswordChange = endpointPasswordChange
+      , Route.Api.User.routePicture = endpointPicture
       , Route.Api.User.routeConfirmationRequest = endpointConfirmationRequest
       , Route.Api.User.routeConfirm = endpointConfirm
       , Route.Api.User.routeProfile = endpointProfile

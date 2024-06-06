@@ -8,6 +8,7 @@ import Mensam.API.Data.User.Username
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Database.Extra qualified as Selda
 import Mensam.Server.Database.Schema
+import Mensam.Server.Jpeg
 
 import Control.Monad.Catch
 import Control.Monad.IO.Class
@@ -15,6 +16,7 @@ import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Data.Aeson qualified as A
 import Data.Aeson.Text qualified as A
+import Data.ByteString.Lazy qualified as BL
 import Data.Kind
 import Data.Password.Bcrypt
 import Data.Text qualified as T
@@ -146,6 +148,7 @@ userCreate username password emailAddress emailAddressVisible = do
                 then MkDbEmailVisibility_visible
                 else MkDbEmailVisibility_hidden
           , dbUser_email_validated = False
+          , dbUser_picture_jpeg = Nothing
           }
   lift $ logDebug "Inserting user into database."
   dbUserId <- Selda.insertWithPK tableUser [dbUser]
@@ -171,6 +174,19 @@ userSetPassword identifier password = do
     (#dbUser_id `Selda.is` Selda.toId @DbUser (unIdentifierUser identifier))
     (`Selda.with` [#dbUser_password_hash Selda.:= Selda.literal (unPasswordHash passwordHash)])
   lift $ logInfo "Set new password successfully."
+
+userSetPicture ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierUser ->
+  ByteStringJpeg ->
+  SeldaTransactionT m ()
+userSetPicture identifier picture = do
+  lift $ logDebug "Set new profile picture."
+  Selda.updateOne
+    tableUser
+    (#dbUser_id `Selda.is` Selda.toId @DbUser (unIdentifierUser identifier))
+    (`Selda.with` [#dbUser_picture_jpeg Selda.:= Selda.literal (Just $ BL.toStrict $ unByteStringJpeg picture)])
+  lift $ logInfo "Set new profile picture successfully."
 
 type SessionValidity :: Type
 data SessionValidity

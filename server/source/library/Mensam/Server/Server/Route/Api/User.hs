@@ -13,6 +13,7 @@ import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Application.SeldaPool.Servant
 import Mensam.Server.Configuration
 import Mensam.Server.Configuration.BaseUrl
+import Mensam.Server.Jpeg
 import Mensam.Server.Secrets
 import Mensam.Server.Server.Auth
 import Mensam.Server.User
@@ -27,6 +28,7 @@ import Data.Text.Encoding qualified as T
 import Data.Text.Lazy qualified as TL
 import Data.Time qualified as T
 import Servant hiding (BasicAuthResult (..))
+import Servant.API.ImageJpeg
 import Servant.Auth.Server
 import Servant.Server.Generic
 import Text.Blaze.Html.Renderer.Text qualified as T
@@ -42,6 +44,7 @@ handler =
     , routeLogout = logout
     , routeRegister = register
     , routePasswordChange = passwordChange
+    , routePicture = pictureUpload
     , routeConfirmationRequest = confirmationRequest
     , routeConfirm = confirm
     , routeProfile = profile
@@ -222,6 +225,30 @@ passwordChange auth eitherRequest =
         logInfo "Changed user password successfully."
         respond $ WithStatus @200 MkResponsePasswordChange {responsePasswordChangeUnit = ()}
 
+pictureUpload ::
+  ( MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 (StaticText "Uploaded profile picture.")) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJpeg) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either String ImageJpegBytes ->
+  m (Union responses)
+pictureUpload auth eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBodyJpeg eitherRequest $ \request -> do
+      logInfo "Changing profile picture."
+      seldaResult <-
+        runSeldaTransactionT $
+          userSetPicture
+            (userAuthenticatedId authenticated)
+            (jpegConvert request)
+      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
+        logInfo "Changed profile picture successfully."
+        respond $ WithStatus @200 $ MkStaticText @"Uploaded profile picture."
+
 confirmationRequest ::
   ( MonadConfigured m
   , MonadEmail m
@@ -367,3 +394,16 @@ handleBadRequestBody parsedRequestBody handler' =
   case parsedRequestBody of
     Right a -> handler' a
     Left err -> respond $ WithStatus @400 $ MkErrorParseBodyJson err
+
+handleBadRequestBodyJpeg ::
+  ( MonadLogger m
+  , IsMember (WithStatus 400 ErrorParseBodyJpeg) responses
+  ) =>
+  Either String a ->
+  (a -> m (Union responses)) ->
+  m (Union responses)
+handleBadRequestBodyJpeg parsedRequestBody handler' =
+  -- TODO: Rename arguments `handler'` to `handler`
+  case parsedRequestBody of
+    Right a -> handler' a
+    Left err -> respond $ WithStatus @400 $ MkErrorParseBodyJpeg err
