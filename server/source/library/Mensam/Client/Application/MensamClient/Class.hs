@@ -89,7 +89,7 @@ endpointPasswordChange ::
          , WithStatus 500 ()
          ]
     )
-endpointPicture ::
+endpointPictureUpload ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   ImageJpegBytes ->
   ClientM
@@ -378,7 +378,7 @@ Route.Api.Routes
       , Route.Api.User.routeLogout = endpointLogout
       , Route.Api.User.routeRegister = endpointRegister
       , Route.Api.User.routePasswordChange = endpointPasswordChange
-      , Route.Api.User.routePicture = endpointPicture
+      , Route.Api.User.routePictureUpload = endpointPictureUpload
       , Route.Api.User.routeConfirmationRequest = endpointConfirmationRequest
       , Route.Api.User.routeConfirm = endpointConfirm
       , Route.Api.User.routeProfile = endpointProfile

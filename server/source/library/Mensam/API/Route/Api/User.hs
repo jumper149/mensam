@@ -81,7 +81,7 @@ data Routes route = Routes
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
-  , routePicture ::
+  , routePictureUpload ::
       route
         :- Summary "Change Profile Picture"
           :> Description
