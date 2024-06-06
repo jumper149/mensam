@@ -84,9 +84,6 @@ common dependencies
     , servant-blaze
     , servant-client
     , servant-client-core
-    , servant-multipart
-    , servant-multipart-api
-    , servant-multipart-client
     , servant-openapi3
     , servant-rawm
     , servant-rawm-client
@@ -215,7 +212,6 @@ library
     , Servant.API.ImageJpeg
     , Servant.Auth.OrphanInstances
     , Servant.Auth.JWT.WithSession
-    , Servant.Multipart.OrphanInstances
     , System.Posix.Signals.Patterns
     , Text.Email.OrphanInstances
     , Text.Email.Text
