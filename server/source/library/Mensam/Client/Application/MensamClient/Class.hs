@@ -100,6 +100,10 @@ endpointPictureUpload ::
          , WithStatus 500 ()
          ]
     )
+endpointPictureDownload ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  IdentifierUser ->
+  ClientM ImageJpegBytes
 endpointConfirmationRequest ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   ClientM
@@ -379,6 +383,7 @@ Route.Api.Routes
       , Route.Api.User.routeRegister = endpointRegister
       , Route.Api.User.routePasswordChange = endpointPasswordChange
       , Route.Api.User.routePictureUpload = endpointPictureUpload
+      , Route.Api.User.routePictureDownload = endpointPictureDownload
       , Route.Api.User.routeConfirmationRequest = endpointConfirmationRequest
       , Route.Api.User.routeConfirm = endpointConfirm
       , Route.Api.User.routeProfile = endpointProfile

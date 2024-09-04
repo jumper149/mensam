@@ -188,6 +188,19 @@ userSetPicture identifier picture = do
     (`Selda.with` [#dbUser_picture_jpeg Selda.:= Selda.literal (Just $ BL.toStrict $ unByteStringJpeg picture)])
   lift $ logInfo "Set new profile picture successfully."
 
+userGetPicture ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierUser ->
+  SeldaTransactionT m (Maybe ByteStringJpeg)
+userGetPicture identifier = do
+  lift $ logDebug "Get profile picture."
+  picture <- Selda.queryOne $ do
+    user <- Selda.select tableUser
+    Selda.restrict $ user Selda.! #dbUser_id Selda..== Selda.literal (Selda.toId @DbUser $ unIdentifierUser identifier)
+    pure $ user Selda.! #dbUser_picture_jpeg
+  lift $ logInfo "Got profile picture successfully."
+  pure $ MkByteStringJpegUnsafe . BL.fromStrict <$> picture
+
 type SessionValidity :: Type
 data SessionValidity
   = SessionValid
@@ -203,7 +216,7 @@ userSessionValidate identifier = do
   maybeSession :: Maybe DbSession <- Selda.queryUnique $ do
     session <- Selda.select tableSession
     Selda.restrict $ session Selda.! #dbSession_id Selda..== Selda.literal (Selda.toId @DbSession $ unIdentifierSession identifier)
-    return session
+    pure session
   case maybeSession of
     Nothing -> do
       lift $ logInfo "Session validation failed. Session does not exist."

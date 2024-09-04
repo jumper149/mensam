@@ -10,6 +10,7 @@ import Data.Text qualified as T
 import Data.Time qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
+import Servant.API qualified as Servant
 import Text.Email.OrphanInstances ()
 
 type UserAuthenticated :: Type
@@ -26,6 +27,7 @@ type IdentifierUser :: Type
 newtype IdentifierUser = MkIdentifierUser {unIdentifierUser :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
+  deriving newtype (Servant.FromHttpApiData, Servant.ToHttpApiData)
 
 type Session :: Type
 data Session = MkSession

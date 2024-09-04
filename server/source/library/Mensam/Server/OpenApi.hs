@@ -142,6 +142,7 @@ deriving via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth in
 deriving newtype instance ToSchema ErrorBearerAuth
 deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBodyJson instance ToSchema ErrorParseBodyJson
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
+deriving newtype instance ToParamSchema IdentifierUser
 deriving newtype instance ToSchema IdentifierUser
 deriving newtype instance ToSchema ConfirmationSecret
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space

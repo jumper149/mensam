@@ -98,6 +98,15 @@ data Routes route = Routes
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
+  , routePictureDownload ::
+      route
+        :- Summary "View Profile Picture"
+          :> Description
+              "View a profile picture.\n"
+          :> "picture"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> QueryParam' '[Lenient, Required] "user" IdentifierUser
+          :> Get '[ImageJpeg] ImageJpegBytes -- TODO: Use multiple returned mimetypes.
   , routeConfirmationRequest ::
       route
         :- Summary "Request Email Address Confirmation"
