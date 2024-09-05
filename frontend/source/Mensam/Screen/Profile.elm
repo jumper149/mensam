@@ -2,9 +2,14 @@ module Mensam.Screen.Profile exposing (..)
 
 import Element
 import Element.Border
+import Element.Events
 import Element.Font
+import File
+import File.Select
+import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
+import Mensam.Api.PictureUpload
 import Mensam.Api.Profile
 import Mensam.Auth.Bearer
 import Mensam.Element.Screen
@@ -13,7 +18,8 @@ import Mensam.User
 
 
 type alias Model =
-    { id : Mensam.User.Identifier
+    { self : Bool
+    , id : Mensam.User.Identifier
     , name : Mensam.User.Name
     , email : Maybe Mensam.User.Email
     , emailVerified : Bool
@@ -21,9 +27,10 @@ type alias Model =
     }
 
 
-init : { id : Mensam.User.Identifier } -> Model
+init : { self : Bool, id : Mensam.User.Identifier } -> Model
 init value =
-    { id = value.id
+    { self = value.self
+    , id = value.id
     , name = Mensam.User.MkNameUnsafe ""
     , email = Nothing
     , emailVerified = False
@@ -61,11 +68,21 @@ element model =
                         ]
                     , Element.el [ Element.padding 10 ] <|
                         Element.image
-                            [ Element.width <| Element.px 180
-                            , Element.height <| Element.px 180
-                            , Element.Border.rounded 30
-                            , Element.clip
-                            ]
+                            ([ Element.width <| Element.px 180
+                             , Element.height <| Element.px 180
+                             , Element.Border.rounded 30
+                             , Element.clip
+                             ]
+                                ++ (if model.self then
+                                        [ Element.Events.onClick <| MessageEffect UploadProfilePictureRequested
+                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                                        ]
+
+                                    else
+                                        []
+                                   )
+                            )
                             { src = "../api/picture?user=" ++ Mensam.User.identifierToString model.id
                             , description = "Profile picture."
                             }
@@ -149,6 +166,9 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Refresh
+    | UploadProfilePictureRequested
+    | UploadProfilePictureUpload File.File
+    | UploadProfilePictureSuccess
 
 
 onEnter : msg -> Element.Attribute msg
@@ -208,4 +228,42 @@ profile jwt userId =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to request profile" <|
+                                Mensam.Error.http error
+
+
+selectProfilePictureToUpload : Cmd Message
+selectProfilePictureToUpload =
+    File.Select.file [ "image/jpeg" ] <| \file -> MessageEffect <| UploadProfilePictureUpload file
+
+
+uploadProfilePicture : Mensam.Auth.Bearer.Jwt -> File.File -> Cmd Message
+uploadProfilePicture jwt file =
+    Mensam.Api.PictureUpload.request
+        { jwt = jwt
+        , picture = file
+        }
+    <|
+        \response ->
+            case response of
+                Ok Mensam.Api.PictureUpload.Success ->
+                    MessageEffect UploadProfilePictureSuccess
+
+                Ok (Mensam.Api.PictureUpload.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload profile picture" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.PictureUpload.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload profile picture" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload profile picture" <|
                                 Mensam.Error.http error

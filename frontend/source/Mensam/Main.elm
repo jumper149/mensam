@@ -283,7 +283,25 @@ routeToModelUpdate route (MkModel model) =
                     ]
                 )
             <|
-                MkModel { model | screen = ScreenProfile <| Mensam.Screen.Profile.init { id = identifier } }
+                MkModel
+                    { model
+                        | screen =
+                            ScreenProfile <|
+                                Mensam.Screen.Profile.init
+                                    { id = identifier
+                                    , self =
+                                        case model.authenticated of
+                                            Mensam.Auth.SignedOut ->
+                                                False
+
+                                            Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication auth) ->
+                                                if auth.user.id == identifier then
+                                                    True
+
+                                                else
+                                                    False
+                                    }
+                    }
 
         RouteUserSettings ->
             case model.authenticated of
@@ -400,6 +418,7 @@ type Message
     = EmptyMessage
     | Messages (List Message)
     | Raw (Model -> ( Model, Cmd Message ))
+    | Refresh
     | FollowLink Browser.UrlRequest
     | ChangedUrl Url.Url
     | InitModel { url : Url.Url }
@@ -453,6 +472,9 @@ update message (MkModel model) =
 
         Raw f ->
             f <| MkModel model
+
+        Refresh ->
+            ( MkModel model, Browser.Navigation.reload )
 
         FollowLink urlRequest ->
             case urlRequest of
@@ -1744,6 +1766,39 @@ update message (MkModel model) =
 
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Profile.UploadProfilePictureRequested ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication _) ->
+                            case model.screen of
+                                ScreenProfile _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.selectProfilePictureToUpload
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Profile.UploadProfilePictureUpload file ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenProfile _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.uploadProfilePicture jwt file
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Profile.UploadProfilePictureSuccess ->
+                    update Refresh <| MkModel model
 
         MessageProfile (Mensam.Screen.Profile.Messages ms) ->
             case model.screen of

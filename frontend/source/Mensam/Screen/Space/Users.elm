@@ -2,6 +2,7 @@ module Mensam.Screen.Space.Users exposing (..)
 
 import Element
 import Element.Background
+import Element.Border
 import Element.Events
 import Element.Font
 import Html.Attributes
@@ -114,9 +115,56 @@ element model =
                                 Element.el
                                     [ Element.height <| Element.px 40
                                     , Element.padding 10
+                                    , Element.clip
                                     ]
                         in
                         [ { header =
+                                Element.el
+                                    [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                    ]
+                                <|
+                                    cell <|
+                                        Element.none
+                          , width = Element.px 40
+                          , view =
+                                \n user ->
+                                    Element.el
+                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                        , Element.Events.onClick <| MessagePure <| ChooseUser user.user
+                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                        , let
+                                            alpha =
+                                                case model.selected of
+                                                    Nothing ->
+                                                        0.2
+
+                                                    Just m ->
+                                                        if m == n then
+                                                            0.4
+
+                                                        else
+                                                            0.2
+                                          in
+                                          Element.Background.color (Element.rgba 0 0 0 alpha)
+                                        ]
+                                    <|
+                                        Element.el
+                                            [ Element.padding 5
+                                            , Element.height <| Element.px 40
+                                            ]
+                                        <|
+                                            Element.image
+                                                [ Element.width <| Element.px 30
+                                                , Element.height <| Element.px 30
+                                                , Element.Border.rounded 5
+                                                , Element.clip
+                                                ]
+                                                { src = "../../api/picture?user=" ++ Mensam.User.identifierToString user.user
+                                                , description = "Profile picture."
+                                                }
+                          }
+                        , { header =
                                 Element.el
                                     [ Element.Background.color (Element.rgba 0 0 0 0.3)
                                     ]

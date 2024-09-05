@@ -1,4 +1,4 @@
-module Mensam.Api.Picture exposing (..)
+module Mensam.Api.PictureUpload exposing (..)
 
 import File
 import Http
