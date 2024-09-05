@@ -104,7 +104,6 @@ data Routes route = Routes
           :> Description
               "View a profile picture.\n"
           :> "picture"
-          :> Auth '[JWTWithSession] UserAuthenticated
           :> QueryParam' '[Lenient, Required] "user" IdentifierUser
           :> Get '[ImageJpeg] ImageJpegBytes -- TODO: Use multiple returned mimetypes.
   , routeConfirmationRequest ::

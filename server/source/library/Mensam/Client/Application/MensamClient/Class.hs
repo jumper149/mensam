@@ -101,7 +101,6 @@ endpointPictureUpload ::
          ]
     )
 endpointPictureDownload ::
-  AuthData '[Servant.Auth.JWTWithSession] ->
   IdentifierUser ->
   ClientM ImageJpegBytes
 endpointConfirmationRequest ::

@@ -252,43 +252,44 @@ pictureUpload auth eitherRequest =
         respond $ WithStatus @200 $ MkStaticText @"Uploaded profile picture."
 
 -- TODO: Validate JPEG!
+-- TODO: Doesn't check authentication.
 pictureDownload ::
-  ( MonadLogger m
+  ( MonadConfigured m
+  , MonadIO m
+  , MonadLogger m
   , MonadSeldaPool m
   ) =>
-  AuthResult UserAuthenticated ->
   Either T.Text IdentifierUser ->
   m ImageJpegBytes
-pictureDownload auth eitherQueryParamIdentifierUser = do
+pictureDownload eitherQueryParamIdentifierUser = do
   handledResult <- do
-    handleAuthBearer auth $ \authenticated ->
-      case eitherQueryParamIdentifierUser of
-        Left err -> do
-          logInfo "Unable to parse user identifier."
-          respond $ WithStatus @400 err -- TODO: Handle with proper type for error. `ErrorBadQueryParam`
-        Right identifierUser -> do
-          logDebug $ "User " <> T.pack (show $ userAuthenticatedId authenticated) <> " is requesting a profile picture from " <> T.pack (show identifierUser)
-          seldaResult <-
-            runSeldaTransactionT $
-              userGetPicture identifierUser
-          handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \maybePicture -> do
-            logInfo "Checked out profile picture successfully."
-            case maybePicture of
-              Nothing -> do
-                logInfo "No profile picture set for this user."
-                respond $ WithStatus @404 ()
-              Just picture -> do
-                logInfo "Answering with profile picture."
-                respond $ WithStatus @200 $ MkImageJpegBytes . unByteStringJpeg $ picture
+    case eitherQueryParamIdentifierUser of
+      Left err -> do
+        logInfo "Unable to parse user identifier."
+        respond $ WithStatus @400 err -- TODO: Handle with proper type for error. `ErrorBadQueryParam`
+      Right identifierUser -> do
+        logDebug $ "Requesting a profile picture from " <> T.pack (show identifierUser)
+        seldaResult <-
+          runSeldaTransactionT $
+            userGetPicture identifierUser
+        handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \maybePicture -> do
+          logInfo "Checked out profile picture successfully."
+          case maybePicture of
+            Nothing -> do
+              logInfo "No profile picture set for this user. Returning default picture."
+              defaultProfilePictureFilePath <- (<> "/default-profile-picture.jpeg") . configDirectoryStatic <$> configuration
+              picture <- liftIO $ B.readFile defaultProfilePictureFilePath
+              respond $ WithStatus @200 $ MkImageJpegBytes . B.fromStrict $ picture
+            Just picture -> do
+              logInfo "Answering with profile picture."
+              respond $ WithStatus @200 $ MkImageJpegBytes . unByteStringJpeg $ picture
   logDebug $ "Handling multi-mimetype response manually: " <> T.pack (show handledResult) -- TODO: Logging pictures right now.
   -- TODO: Add all these HTTP statuses to the API definition. Requires different output types.
-  case handledResult :: Union [WithStatus 500 (), WithStatus 404 (), WithStatus 401 ErrorBearerAuth, WithStatus 400 T.Text, WithStatus 200 ImageJpegBytes] of
+  case handledResult :: Union [WithStatus 500 (), WithStatus 400 T.Text, WithStatus 200 ImageJpegBytes] of
     SOP.Z (SOP.I (WithStatus ())) -> undefined
-    SOP.S (SOP.Z (SOP.I (WithStatus ()))) -> undefined
-    SOP.S (SOP.S (SOP.Z (SOP.I (WithStatus errorBearerAuth)))) -> error $ show errorBearerAuth
-    SOP.S (SOP.S (SOP.S (SOP.Z (SOP.I (WithStatus errorBadQueryParam))))) -> error $ show errorBadQueryParam
-    SOP.S (SOP.S (SOP.S (SOP.S (SOP.Z (SOP.I (WithStatus result)))))) -> pure result
-    SOP.S (SOP.S (SOP.S (SOP.S (SOP.S impossibleCase)))) -> case impossibleCase of {}
+    SOP.S (SOP.Z (SOP.I (WithStatus errorBadQueryParam))) -> error $ show errorBadQueryParam
+    SOP.S (SOP.S (SOP.Z (SOP.I (WithStatus result)))) -> pure result
+    SOP.S (SOP.S (SOP.S impossibleCase)) -> case impossibleCase of {}
 
 confirmationRequest ::
   ( MonadConfigured m

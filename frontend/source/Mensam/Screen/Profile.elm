@@ -1,6 +1,7 @@
 module Mensam.Screen.Profile exposing (..)
 
 import Element
+import Element.Border
 import Element.Font
 import Html.Events
 import Json.Decode as Decode
@@ -58,6 +59,16 @@ element model =
                           <|
                             Element.text "User Profile"
                         ]
+                    , Element.el [ Element.padding 10 ] <|
+                        Element.image
+                            [ Element.width <| Element.px 180
+                            , Element.height <| Element.px 180
+                            , Element.Border.rounded 30
+                            , Element.clip
+                            ]
+                            { src = "../api/picture?user=" ++ Mensam.User.identifierToString model.id
+                            , description = "Profile picture."
+                            }
                     , Element.row
                         [ Element.width Element.fill
                         , Element.height <| Element.px 45
