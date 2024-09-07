@@ -13,7 +13,7 @@
   ** [ ] Send email on successful reservations.
   ** [ ] `/space/view` route should return 404 when there is no such space.
   ** [ ] File uploads.
-    *** [ ] Profile pictures.
+    *** [x] Profile pictures.
     *** [ ] Space pictures.
     *** [ ] Desk pictures.
   ** [ ] Simplify names.
