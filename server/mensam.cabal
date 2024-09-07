@@ -63,6 +63,7 @@ common dependencies
     , insert-ordered-containers
     , jose
     , JuicyPixels
+    , JuicyPixels-extra
     , lens
     , microlens-platform
     , mime-mail

@@ -253,8 +253,9 @@ uploadProfilePicture jwt file =
                         ReportError <|
                             Mensam.Error.message "Failed to upload profile picture" <|
                                 Mensam.Error.message "Bad request body" <|
-                                    Mensam.Error.message error <|
-                                        Mensam.Error.undefined
+                                    Mensam.Error.message "Make sure to use JPEG" <|
+                                        Mensam.Error.message error <|
+                                            Mensam.Error.undefined
 
                 Ok (Mensam.Api.PictureUpload.ErrorAuth error) ->
                     MessageEffect <|

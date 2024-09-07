@@ -242,16 +242,21 @@ pictureUpload auth eitherRequest =
   handleAuthBearer auth $ \authenticated ->
     handleBadRequestBodyJpeg eitherRequest $ \request -> do
       logInfo "Changing profile picture."
-      seldaResult <-
-        runSeldaTransactionT $
-          userSetPicture
-            (userAuthenticatedId authenticated)
-            (jpegConvert request)
-      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
-        logInfo "Changed profile picture successfully."
-        respond $ WithStatus @200 $ MkStaticText @"Uploaded profile picture."
+      case jpegConvertProfilePicture request of
+        Left err -> do
+          logWarn $ "Failed to resize picture: " <> T.pack (show err)
+          respond $ WithStatus @400 $ MkErrorParseBodyJpeg "Unable to read picture."
+        Right picture -> do
+          logInfo "Successfully verified and potentially resized picture."
+          seldaResult <-
+            runSeldaTransactionT $
+              userSetPicture
+                (userAuthenticatedId authenticated)
+                picture
+          handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
+            logInfo "Changed profile picture successfully."
+            respond $ WithStatus @200 $ MkStaticText @"Uploaded profile picture."
 
--- TODO: Validate JPEG!
 -- TODO: Doesn't check authentication.
 pictureDownload ::
   ( MonadConfigured m
