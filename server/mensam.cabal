@@ -194,6 +194,8 @@ library
     , Mensam.Server.Server.Err404
     , Mensam.Server.Server.FileServer
     , Mensam.Server.Server.Handler
+    , Mensam.Server.Server.Handler.Profiler
+    , Mensam.Server.Server.Handler.Profiler.Class
     , Mensam.Server.Server.Handler.RequestHash
     , Mensam.Server.Server.Route
     , Mensam.Server.Server.Route.Api

@@ -40,7 +40,7 @@ type WrappedAPI = RequestHash :> API
 type ContextList :: [Type]
 type ContextList = '[BasicAuthCfg, CookieSettings, JWTSettings]
 
-hoistServerRunHandlerT :: MonadLogger m => ServerT API (HandlerT m) -> ServerT WrappedAPI m
+hoistServerRunHandlerT :: (MonadIO m, MonadLogger m) => ServerT API (HandlerT m) -> ServerT WrappedAPI m
 hoistServerRunHandlerT handler randomHash = hoistServerWithContext (Proxy @API) (Proxy @ContextList) (runHandlerT randomHash) handler
 
 server :: forall m. (MonadConfigured m, MonadEmail m, MonadLogger m, MonadMask m, MonadSecret m, MonadSeldaPool m, MonadUnliftIO m) => m ()

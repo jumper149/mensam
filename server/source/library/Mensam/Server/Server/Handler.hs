@@ -6,6 +6,7 @@ import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Email.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
+import Mensam.Server.Server.Handler.Profiler
 import Mensam.Server.Server.Handler.RequestHash
 
 import Control.Monad.Base
@@ -22,6 +23,7 @@ type Transformers :: Stack
 type Transformers =
   NilT
     :.|> RequestHashT
+    :.|> ProfilerT
 
 type HandlerT :: (Type -> Type) -> Type -> Type
 newtype HandlerT m a = HandlerT {unHandlerT :: StackT Transformers m a}
@@ -36,10 +38,13 @@ newtype HandlerT m a = HandlerT {unHandlerT :: StackT Transformers m a}
   deriving newtype (MonadSeldaPool)
   deriving newtype (MonadEmail)
 
-runHandlerT :: MonadLogger m => Hash -> HandlerT m a -> m a
-runHandlerT randomHash = runStackT runTransformers . unHandlerT
- where
-  runTransformers =
-    RunNilT
-      :..> runRequestHashT randomHash
-        . (logInfo "Starting HTTP request handler." >>)
+runHandlerT :: (MonadIO m, MonadLogger m) => Hash -> HandlerT m a -> m a
+runHandlerT randomHash handler = do
+  logInfo "Starting HTTP request handler."
+
+  let runTransformers =
+        RunNilT
+          :..> runRequestHashT randomHash
+          :..> runProfilerT
+
+  runStackT runTransformers $ unHandlerT handler
