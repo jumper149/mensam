@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.8.0.0`
+
 * Frontend
   ** Profile pictures are displayed on profiles and can be edited in your settings.
 * Database
