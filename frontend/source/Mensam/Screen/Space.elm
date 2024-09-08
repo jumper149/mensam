@@ -250,11 +250,7 @@ element model =
                             deskTimetable model
 
                         TabRoom ->
-                            Element.el
-                                [ Element.width Element.fill
-                                , Element.height Element.fill
-                                ]
-                                Element.none
+                            deskRoom model
                     ]
                 , Element.row
                     [ Element.width Element.fill
@@ -975,6 +971,23 @@ timeToSeconds time =
                   )
               )
           )
+
+
+deskRoom : Model -> Element.Element Message
+deskRoom _ =
+    Element.el
+        [ Element.width Element.fill
+        , Element.height Element.fill
+        , Element.Border.width 1
+        , Element.Background.color Mensam.Element.Color.dark.white
+        ]
+    <|
+        Element.el
+            [ Element.centerX
+            , Element.centerY
+            ]
+        <|
+            Element.text "Work in Progress"
 
 
 type Message
