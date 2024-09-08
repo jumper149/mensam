@@ -16,6 +16,7 @@ import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Desk
 import Mensam.Element.Button
+import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
@@ -80,7 +81,13 @@ type alias Model =
     , modelDateEnd : Mensam.Widget.Date.Model
     , modelTimeEnd : Mensam.Widget.Time.Model
     , globalDatePickerVisible : Bool
+    , tabView : TabView
     }
+
+
+type TabView
+    = TabTimetable
+    | TabRoom
 
 
 type PopupModel
@@ -155,6 +162,7 @@ init args =
                     }
             }
     , globalDatePickerVisible = False
+    , tabView = TabTimetable
     }
 
 
@@ -232,7 +240,22 @@ element model =
                                             , message = Just <| MessageEffect OpenPageToDesks
                                             }
                     ]
-                , deskTimetable model
+                , Element.column
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    ]
+                    [ elementTabs model.tabView
+                    , case model.tabView of
+                        TabTimetable ->
+                            deskTimetable model
+
+                        TabRoom ->
+                            Element.el
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                ]
+                                Element.none
+                    ]
                 , Element.row
                     [ Element.width Element.fill
                     , Element.padding 10
@@ -506,6 +529,69 @@ element model =
                             ]
         , closePopup = MessagePure ClosePopup
         }
+
+
+elementTabs : TabView -> Element.Element Message
+elementTabs tabSelected =
+    Element.el
+        [ Element.paddingEach
+            { bottom = 0
+            , left = 8
+            , top = 10
+            , right = 8
+            }
+        , Element.height <| Element.px 42
+        , Element.alignRight
+        , Element.Border.widthEach
+            { bottom = 1
+            , left = 0
+            , top = 0
+            , right = 0
+            }
+        ]
+    <|
+        Element.row
+            [ Element.spacing 8
+            , Element.height Element.fill
+            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+            ]
+        <|
+            let
+                elementTab tab title =
+                    Element.el
+                        [ Element.height <| Element.fill
+                        , Element.mouseOver
+                            [ Element.Background.color <| Element.rgba 1 1 1 0.78
+                            , Element.Font.color Mensam.Element.Color.dark.black
+                            ]
+                        , Element.Background.color
+                            (if tab == tabSelected then
+                                Element.rgba 1 1 1 0.63
+
+                             else
+                                Element.rgba 1 1 1 0.39
+                            )
+                        , Element.Font.color
+                            (if tab == tabSelected then
+                                Mensam.Element.Color.dark.black
+
+                             else
+                                Mensam.Element.Color.bright.black
+                            )
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        , Element.Events.onClick <| MessagePure <| SetTabView tab
+                        ]
+                    <|
+                        Element.el
+                            [ Element.centerY
+                            , Element.padding 5
+                            ]
+                        <|
+                            Element.text title
+            in
+            [ elementTab TabTimetable "Timetable"
+            , elementTab TabRoom "Room"
+            ]
 
 
 deskTimetable : Model -> Element.Element Message
@@ -969,6 +1055,7 @@ type MessagePure
     | SetDateEndOneAfterDateBegin
     | ResetDateBeginToSelection
     | ResetDateEndToSelection
+    | SetTabView TabView
 
 
 applyPureMessages : List MessagePure -> Model -> Model
@@ -1332,6 +1419,9 @@ updatePure message model =
 
         ResetDateEndToSelection ->
             { model | modelDateEnd = resetDateToSelection model.modelDateEnd }
+
+        SetTabView tab ->
+            { model | tabView = tab }
 
 
 type MessageEffect
