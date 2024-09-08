@@ -304,7 +304,7 @@ element model =
                                 Element.text "Delete Profile Picture"
                             , Element.paragraph
                                 []
-                                [ Element.text "Are you sure you want to delete your profile picture"
+                                [ Element.text "Are you sure you want to delete your profile picture?"
                                 ]
                             , Element.row
                                 [ Element.width Element.fill
