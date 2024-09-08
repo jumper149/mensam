@@ -5,9 +5,19 @@
         version = "1.0.1";
       };
 
+      "chelovek0v/bbase64" = {
+        sha256 = "01fj6lf2xpc3byw89zivh11i6kl5bimlsdjd6m3gsi1v88nfj17d";
+        version = "1.0.1";
+      };
+
       "elm/browser" = {
         sha256 = "0nagb9ajacxbbg985r4k9h0jadqpp0gp84nm94kcgbr5sf8i9x13";
         version = "1.0.2";
+      };
+
+      "elm/bytes" = {
+        sha256 = "02ywbf52akvxclpxwj9n04jydajcbsbcbsnjs53yjc5lwck3abwj";
+        version = "1.0.8";
       };
 
       "elm/core" = {
@@ -78,11 +88,6 @@
       "zwilias/elm-rosetree" = {
         sha256 = "03ki3c3bfipnxzdk969j46qjvx7k2mfasg2pavhvbll3fnb7jqdi";
         version = "1.5.0";
-      };
-
-      "elm/bytes" = {
-        sha256 = "02ywbf52akvxclpxwj9n04jydajcbsbcbsnjs53yjc5lwck3abwj";
-        version = "1.0.8";
       };
 
       "elm/parser" = {

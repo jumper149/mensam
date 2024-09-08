@@ -46,6 +46,7 @@ handler =
     , routeRegister = register
     , routePasswordChange = passwordChange
     , routePictureUpload = pictureUpload
+    , routePictureDelete = pictureDelete
     , routePictureDownload = pictureDownload
     , routeConfirmationRequest = confirmationRequest
     , routeConfirm = confirm
@@ -250,12 +251,29 @@ pictureUpload auth eitherRequest =
           logInfo "Successfully verified and potentially resized picture."
           seldaResult <-
             runSeldaTransactionT $
-              userSetPicture
-                (userAuthenticatedId authenticated)
-                picture
+              userSetPicture (userAuthenticatedId authenticated) (Just picture)
           handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
             logInfo "Changed profile picture successfully."
             respond $ WithStatus @200 $ MkStaticText @"Uploaded profile picture."
+
+pictureDelete ::
+  ( MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 (StaticText "Deleted profile picture.")) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  m (Union responses)
+pictureDelete auth =
+  handleAuthBearer auth $ \authenticated -> do
+    logInfo "Deleting profile picture."
+    seldaResult <-
+      runSeldaTransactionT $
+        userSetPicture (userAuthenticatedId authenticated) Nothing
+    handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \() -> do
+      logInfo "Deleted profile picture successfully."
+      respond $ WithStatus @200 $ MkStaticText @"Deleted profile picture."
 
 -- TODO: Doesn't check authentication.
 pictureDownload ::

@@ -1,12 +1,18 @@
 module Mensam.Screen.UserSettings exposing (..)
 
 import Element
+import Element.Border
 import Element.Font
 import Element.Input
+import File
+import File.Select
 import Html.Events
 import Json.Decode as Decode
 import Mensam.Api.ConfirmationRequest
 import Mensam.Api.PasswordChange
+import Mensam.Api.PictureDelete
+import Mensam.Api.PictureDownload
+import Mensam.Api.PictureUpload
 import Mensam.Api.Profile
 import Mensam.Auth.Bearer
 import Mensam.Element.Button
@@ -14,11 +20,13 @@ import Mensam.Element.Color
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.User
+import Url.Builder
 
 
 type alias Model =
     { id : Mensam.User.Identifier
     , name : Mensam.User.Name
+    , profilePictureUrl : String
     , email : Maybe Mensam.User.Email
     , emailVerified : Bool
     , popup : Maybe PopupModel
@@ -30,12 +38,19 @@ type PopupModel
         { newPassword : String
         , hint : List String
         }
+    | PopupDeleteProfilePicture
 
 
 init : { id : Mensam.User.Identifier } -> Model
 init value =
     { id = value.id
     , name = Mensam.User.MkNameUnsafe ""
+    , profilePictureUrl =
+        Url.Builder.absolute
+            [ "static"
+            , "default-profile-picture.jpeg"
+            ]
+            []
     , email = Nothing
     , emailVerified = True
     , popup = Nothing
@@ -97,6 +112,42 @@ element model =
                           <|
                             Element.text "Username:"
                         , Element.el [] <| Element.text <| Mensam.User.nameToString model.name
+                        ]
+                    , Element.row
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 220
+                        , Element.padding 10
+                        , Element.spacing 30
+                        ]
+                        [ Element.el
+                            [ Element.alignLeft
+                            , Element.centerY
+                            , Element.padding 10
+                            ]
+                          <|
+                            Element.image
+                                [ Element.width <| Element.px 180
+                                , Element.height <| Element.px 180
+                                , Element.Border.rounded 30
+                                , Element.clip
+                                ]
+                                { src = model.profilePictureUrl
+                                , description = "Profile picture."
+                                }
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.alignRight, Element.centerY ]
+                                , color = Mensam.Element.Button.Red
+                                , label = Element.text "Delete Profile Picture"
+                                , message = Just <| MessagePure OpenDialogToDeleteProfilePicture
+                                }
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.alignRight, Element.centerY ]
+                                , color = Mensam.Element.Button.Yellow
+                                , label = Element.text "Upload new Profile Picture"
+                                , message = Just <| MessageEffect UploadProfilePictureRequested
+                                }
                         ]
                     , Element.row
                         [ Element.width Element.fill
@@ -230,6 +281,45 @@ element model =
                                         }
                                 ]
                             ]
+
+                Just PopupDeleteProfilePicture ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Delete Profile Picture"
+                            , Element.paragraph
+                                []
+                                [ Element.text "Are you sure you want to delete your profile picture"
+                                ]
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = []
+                                        , color = Mensam.Element.Button.Yellow
+                                        , label = Element.text "Go back"
+                                        , message = Just <| MessagePure <| ClosePopup
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Blue
+                                        , label = Element.text "Delete Profile Picture"
+                                        , message = Just <| MessageEffect DeleteProfilePictureRequest
+                                        }
+                                ]
+                            ]
         , closePopup = MessagePure ClosePopup
         }
 
@@ -256,6 +346,8 @@ type Message
 
 type MessagePure
     = SetName Mensam.User.Name
+    | OpenDialogToDeleteProfilePicture
+    | SetProfilePicture { url : String }
     | SetEmail (Maybe Mensam.User.Email)
     | SetEmailVerified Bool
     | OpenDialogToChangePassword
@@ -269,6 +361,12 @@ updatePure message model =
     case message of
         SetName name ->
             { model | name = name }
+
+        OpenDialogToDeleteProfilePicture ->
+            { model | popup = Just PopupDeleteProfilePicture }
+
+        SetProfilePicture picture ->
+            { model | profilePictureUrl = picture.url }
 
         SetEmail email ->
             { model | email = email }
@@ -288,6 +386,9 @@ updatePure message model =
 
                         Just (PopupChangePassword popupModel) ->
                             Just <| PopupChangePassword { popupModel | newPassword = newPassword }
+
+                        Just PopupDeleteProfilePicture ->
+                            Nothing
             }
 
         SetPasswordHint err ->
@@ -319,6 +420,9 @@ updatePure message model =
                                                     , String.fromList Mensam.User.passwordValidSymbols
                                                     ]
                                     }
+
+                        Just PopupDeleteProfilePicture ->
+                            Nothing
             }
 
         ClosePopup ->
@@ -330,6 +434,10 @@ type MessageEffect
     | Refresh
     | SubmitNewPassword { newPassword : Mensam.User.Password }
     | SubmitConfirmationRequest
+    | UploadProfilePictureRequested
+    | UploadProfilePictureUpload File.File
+    | DeleteProfilePictureRequest
+    | DownloadProfilePictureRequest
 
 
 onEnter : msg -> Element.Attribute msg
@@ -449,3 +557,89 @@ confirmationRequest args =
                         ReportError <|
                             Mensam.Error.message "Failed to perform confirmation request" <|
                                 Mensam.Error.http error
+
+
+selectProfilePictureToUpload : Cmd Message
+selectProfilePictureToUpload =
+    File.Select.file [ "image/jpeg" ] <| \file -> MessageEffect <| UploadProfilePictureUpload file
+
+
+downloadProfilePicture : Mensam.User.Identifier -> Cmd Message
+downloadProfilePicture user =
+    Mensam.Api.PictureDownload.request
+        { user = user
+        }
+    <|
+        \response ->
+            case response of
+                Ok (Mensam.Api.PictureDownload.Success picture) ->
+                    MessagePure <| SetProfilePicture picture
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to download profile picture" <|
+                                Mensam.Error.http error
+
+
+uploadProfilePicture : Mensam.Auth.Bearer.Jwt -> File.File -> Cmd Message
+uploadProfilePicture jwt file =
+    Mensam.Api.PictureUpload.request
+        { jwt = jwt
+        , picture = file
+        }
+    <|
+        \response ->
+            case response of
+                Ok Mensam.Api.PictureUpload.Success ->
+                    MessageEffect DownloadProfilePictureRequest
+
+                Ok (Mensam.Api.PictureUpload.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload profile picture" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message "Make sure to use JPEG" <|
+                                        Mensam.Error.message error <|
+                                            Mensam.Error.undefined
+
+                Ok (Mensam.Api.PictureUpload.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload profile picture" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload profile picture" <|
+                                Mensam.Error.message "Try reducing the file size before uploading" <|
+                                    Mensam.Error.http error
+
+
+deleteProfilePicture : Mensam.Auth.Bearer.Jwt -> Cmd Message
+deleteProfilePicture jwt =
+    Mensam.Api.PictureDelete.request
+        { jwt = jwt
+        }
+    <|
+        \response ->
+            case response of
+                Ok Mensam.Api.PictureDelete.Success ->
+                    Messages
+                        [ MessagePure ClosePopup
+                        , MessageEffect DownloadProfilePictureRequest
+                        ]
+
+                Ok (Mensam.Api.PictureDelete.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload profile picture" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload profile picture" <|
+                                Mensam.Error.message "Try reducing the file size before uploading" <|
+                                    Mensam.Error.http error

@@ -1,17 +1,17 @@
 module Mensam.Screen.Profile exposing (..)
 
 import Element
+import Element.Background
 import Element.Border
 import Element.Events
 import Element.Font
-import File
-import File.Select
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
-import Mensam.Api.PictureUpload
 import Mensam.Api.Profile
 import Mensam.Auth.Bearer
+import Mensam.Element.Color
+import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.User
@@ -65,24 +65,38 @@ element model =
                             ]
                           <|
                             Element.text "User Profile"
+                        , if model.self then
+                            Element.el
+                                [ Element.alignRight
+                                , Element.padding 7
+                                , Element.Background.color Mensam.Element.Color.bright.yellow
+                                , Element.Font.color Mensam.Element.Color.dark.black
+                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                                , Element.Events.onClick <| MessageEffect OpenPageUserSettings
+                                ]
+                            <|
+                                Element.el
+                                    [ Element.centerX
+                                    , Element.centerY
+                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                    , Element.Font.size 15
+                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                    ]
+                                <|
+                                    Element.text "Settings"
+
+                          else
+                            Element.none
                         ]
                     , Element.el [ Element.padding 10 ] <|
                         Element.image
-                            ([ Element.width <| Element.px 180
-                             , Element.height <| Element.px 180
-                             , Element.Border.rounded 30
-                             , Element.clip
-                             ]
-                                ++ (if model.self then
-                                        [ Element.Events.onClick <| MessageEffect UploadProfilePictureRequested
-                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                                        ]
-
-                                    else
-                                        []
-                                   )
-                            )
+                            [ Element.width <| Element.px 180
+                            , Element.height <| Element.px 180
+                            , Element.Border.rounded 30
+                            , Element.clip
+                            ]
                             { src = "../api/picture?user=" ++ Mensam.User.identifierToString model.id
                             , description = "Profile picture."
                             }
@@ -166,9 +180,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Refresh
-    | UploadProfilePictureRequested
-    | UploadProfilePictureUpload File.File
-    | UploadProfilePictureSuccess
+    | OpenPageUserSettings
 
 
 onEnter : msg -> Element.Attribute msg
@@ -229,43 +241,3 @@ profile jwt userId =
                         ReportError <|
                             Mensam.Error.message "Failed to request profile" <|
                                 Mensam.Error.http error
-
-
-selectProfilePictureToUpload : Cmd Message
-selectProfilePictureToUpload =
-    File.Select.file [ "image/jpeg" ] <| \file -> MessageEffect <| UploadProfilePictureUpload file
-
-
-uploadProfilePicture : Mensam.Auth.Bearer.Jwt -> File.File -> Cmd Message
-uploadProfilePicture jwt file =
-    Mensam.Api.PictureUpload.request
-        { jwt = jwt
-        , picture = file
-        }
-    <|
-        \response ->
-            case response of
-                Ok Mensam.Api.PictureUpload.Success ->
-                    MessageEffect UploadProfilePictureSuccess
-
-                Ok (Mensam.Api.PictureUpload.ErrorBody error) ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Failed to upload profile picture" <|
-                                Mensam.Error.message "Bad request body" <|
-                                    Mensam.Error.message "Make sure to use JPEG" <|
-                                        Mensam.Error.message error <|
-                                            Mensam.Error.undefined
-
-                Ok (Mensam.Api.PictureUpload.ErrorAuth error) ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Failed to upload profile picture" <|
-                                Mensam.Auth.Bearer.error error
-
-                Err error ->
-                    MessageEffect <|
-                        ReportError <|
-                            Mensam.Error.message "Failed to upload profile picture" <|
-                                Mensam.Error.message "Try reducing the file size before uploading" <|
-                                    Mensam.Error.http error

@@ -98,6 +98,20 @@ data Routes route = Routes
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 500 ()
               ]
+  , routePictureDelete ::
+      route
+        :- Summary "Delete Profile Picture"
+          :> Description
+              "Delete your current profile picture.\n"
+          :> "picture"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> UVerb
+              DELETE
+              '[JSON]
+              [ WithStatus 200 (StaticText "Deleted profile picture.")
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 500 ()
+              ]
   , routePictureDownload ::
       route
         :- Summary "View Profile Picture"

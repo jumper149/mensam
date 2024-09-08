@@ -100,6 +100,15 @@ endpointPictureUpload ::
          , WithStatus 500 ()
          ]
     )
+endpointPictureDelete ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 (StaticText "Deleted profile picture.")
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 500 ()
+         ]
+    )
 endpointPictureDownload ::
   IdentifierUser ->
   ClientM ImageJpegBytes
@@ -382,6 +391,7 @@ Route.Api.Routes
       , Route.Api.User.routeRegister = endpointRegister
       , Route.Api.User.routePasswordChange = endpointPasswordChange
       , Route.Api.User.routePictureUpload = endpointPictureUpload
+      , Route.Api.User.routePictureDelete = endpointPictureDelete
       , Route.Api.User.routePictureDownload = endpointPictureDownload
       , Route.Api.User.routeConfirmationRequest = endpointConfirmationRequest
       , Route.Api.User.routeConfirm = endpointConfirm

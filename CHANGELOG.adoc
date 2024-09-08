@@ -1,11 +1,14 @@
 = Changelog
 
+* Frontend
+  ** Profile pictures are displayed on profiles and can be edited in your settings.
 * Database
   ** Add new column `picture_jpeg` to the `user` table.
 * API
   ** Add `/picture` route to change your user profile picture.
     *** Use GET to download profile pictures.
     *** Use PUT to upload a new profile picture replacing your old one.
+    *** Use DELETE to delete your current profile picture.
 
 == `0.7.1.1`
 

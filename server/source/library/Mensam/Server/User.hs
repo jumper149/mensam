@@ -178,14 +178,14 @@ userSetPassword identifier password = do
 userSetPicture ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
-  ByteStringJpeg ->
+  Maybe ByteStringJpeg ->
   SeldaTransactionT m ()
 userSetPicture identifier picture = do
   lift $ logDebug "Set new profile picture."
   Selda.updateOne
     tableUser
     (#dbUser_id `Selda.is` Selda.toId @DbUser (unIdentifierUser identifier))
-    (`Selda.with` [#dbUser_picture_jpeg Selda.:= Selda.literal (Just $ BL.toStrict $ unByteStringJpeg picture)])
+    (`Selda.with` [#dbUser_picture_jpeg Selda.:= Selda.literal (BL.toStrict . unByteStringJpeg <$> picture)])
   lift $ logInfo "Set new profile picture successfully."
 
 userGetPicture ::

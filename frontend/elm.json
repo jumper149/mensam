@@ -7,7 +7,9 @@
     "dependencies": {
         "direct": {
             "bellroy/elm-email": "1.0.1",
+            "chelovek0v/bbase64": "1.0.1",
             "elm/browser": "1.0.2",
+            "elm/bytes": "1.0.8",
             "elm/core": "1.0.5",
             "elm/file": "1.0.5",
             "elm/html": "1.0.0",
@@ -24,7 +26,6 @@
             "zwilias/elm-rosetree": "1.5.0"
         },
         "indirect": {
-            "elm/bytes": "1.0.8",
             "elm/parser": "1.1.0",
             "elm/regex": "1.0.0",
             "elm/virtual-dom": "1.0.3",
