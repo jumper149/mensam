@@ -4,12 +4,14 @@ import Base64.Encode
 import Bytes
 import Http
 import Http.Extra
+import Mensam.Auth.Bearer
 import Mensam.User
 import Url.Builder
 
 
 type alias Request =
-    { user : Mensam.User.Identifier
+    { jwt : Mensam.Auth.Bearer.Jwt
+    , user : Mensam.User.Identifier
     }
 
 
@@ -21,7 +23,9 @@ request : Request -> (Result Http.Error Response -> a) -> Cmd a
 request body handleResult =
     Http.request
         { method = "GET"
-        , headers = []
+        , headers =
+            [ Mensam.Auth.Bearer.authorizationHeader body.jwt
+            ]
         , url =
             Url.Builder.absolute
                 [ "api"

@@ -564,10 +564,11 @@ selectProfilePictureToUpload =
     File.Select.file [ "image/jpeg" ] <| \file -> MessageEffect <| UploadProfilePictureUpload file
 
 
-downloadProfilePicture : Mensam.User.Identifier -> Cmd Message
-downloadProfilePicture user =
+downloadProfilePicture : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+downloadProfilePicture jwt user =
     Mensam.Api.PictureDownload.request
-        { user = user
+        { jwt = jwt
+        , user = user
         }
     <|
         \response ->

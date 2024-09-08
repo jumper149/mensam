@@ -1839,14 +1839,19 @@ update message (MkModel model) =
                                     update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.UserSettings.DownloadProfilePictureRequest ->
-                    case model.screen of
-                        ScreenUserSettings screenModel ->
-                            ( MkModel model
-                            , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.downloadProfilePicture screenModel.id
-                            )
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
 
-                        _ ->
-                            update (ReportError errorScreen) <| MkModel model
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenUserSettings screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.downloadProfilePicture jwt screenModel.id
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.UserSettings.UploadProfilePictureRequested ->
                     case model.authenticated of
