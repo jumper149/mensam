@@ -2,6 +2,7 @@ module Mensam.Element.Footer exposing (..)
 
 import Element
 import Element.Background
+import Element.Events
 import Element.Font
 import Html.Attributes
 import Mensam.Element.Color
@@ -13,7 +14,11 @@ type alias Content =
     }
 
 
-element : Content -> Element.Element msg
+type Message
+    = ClickedSomewhere
+
+
+element : Content -> Element.Element Message
 element content =
     Element.el
         [ Element.width Element.fill
@@ -24,6 +29,7 @@ element content =
         , Element.Font.size 17
         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
         , Element.clip
+        , Element.Events.onClick ClickedSomewhere
         ]
     <|
         Element.row
@@ -34,7 +40,7 @@ element content =
             ]
 
 
-elementSource : Content -> Element.Element msg
+elementSource : Content -> Element.Element Message
 elementSource content =
     Element.newTabLink
         [ Element.centerX

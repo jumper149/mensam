@@ -8,6 +8,7 @@ import Element.Font
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
+import Mensam.Api.PictureDownload
 import Mensam.Api.Profile
 import Mensam.Auth.Bearer
 import Mensam.Element.Color
@@ -16,7 +17,6 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.User
 import Url.Builder
-import Mensam.Api.PictureDownload
 
 
 type alias Model =

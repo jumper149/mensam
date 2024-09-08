@@ -28,6 +28,7 @@ type alias Content =
 type Message
     = ClickMensam
     | ClickHamburger
+    | ClickOutsideOfHamburger
     | SignIn
     | ClickErrors
 
@@ -49,11 +50,27 @@ element content =
             , Element.height Element.fill
             , Element.behindContent <| elementTitle content.title
             ]
-            [ elementMensam
-            , elementStatus content.httpStatus
-            , elementErrors content.errors content.unfoldErrors
+            [ Element.row
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Events.onClick ClickOutsideOfHamburger
+                ]
+                [ elementMensam
+                , elementStatus content.httpStatus
+                , elementFillCenter
+                , elementErrors content.errors content.unfoldErrors
+                ]
             , elementHamburger content.unfoldHamburgerDropDown content.authenticated
             ]
+
+
+elementFillCenter : Element.Element Message
+elementFillCenter =
+    Element.el
+        [ Element.height Element.fill
+        , Element.width Element.fill
+        ]
+        Element.none
 
 
 elementMensam : Element.Element Message
@@ -242,7 +259,7 @@ elementTitle maybeTitle =
                     Element.text text
 
 
-elementStatus : Http.Extra.Status -> Element.Element msg
+elementStatus : Http.Extra.Status -> Element.Element Message
 elementStatus status =
     case status of
         Http.Extra.Done ->
@@ -251,26 +268,32 @@ elementStatus status =
         Http.Extra.Loading ->
             Element.el
                 [ Element.width <| Element.px 30
-                , Element.spacingXY 5 0
+                , Element.height <| Element.fill
+                , Element.alignLeft
+                , Element.Events.onClick ClickOutsideOfHamburger
                 ]
             <|
-                Element.html <|
-                    Svg.svg
-                        [ Svg.Attributes.viewBox "0 0 30 20"
-                        , Svg.Attributes.width "100%"
-                        ]
-                    <|
-                        [ Svg.circle
-                            [ Svg.Attributes.cy "10"
-                            , Svg.Attributes.r "2"
-                            , Svg.Attributes.fill "rgba(255,255,255,0.4)"
+                Element.el
+                    [ Element.centerY
+                    ]
+                <|
+                    Element.html <|
+                        Svg.svg
+                            [ Svg.Attributes.viewBox "0 0 30 20"
+                            , Svg.Attributes.width "100%"
                             ]
-                            [ Svg.animate
-                                [ Svg.Attributes.attributeName "cx"
-                                , Svg.Attributes.values "10;20;10"
-                                , Svg.Attributes.dur "1s"
-                                , Svg.Attributes.repeatCount "indefinite"
+                        <|
+                            [ Svg.circle
+                                [ Svg.Attributes.cy "10"
+                                , Svg.Attributes.r "2"
+                                , Svg.Attributes.fill "rgba(255,255,255,0.4)"
                                 ]
-                                []
+                                [ Svg.animate
+                                    [ Svg.Attributes.attributeName "cx"
+                                    , Svg.Attributes.values "10;20;10"
+                                    , Svg.Attributes.dur "1s"
+                                    , Svg.Attributes.repeatCount "indefinite"
+                                    ]
+                                    []
+                                ]
                             ]
-                        ]

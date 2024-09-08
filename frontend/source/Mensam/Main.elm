@@ -2001,6 +2001,9 @@ headerMessage (MkModel model) message =
             else
                 ViewHamburgerMenu
 
+        Mensam.Element.Header.ClickOutsideOfHamburger ->
+            HideHamburgerMenu
+
         Mensam.Element.Header.SignIn ->
             SetUrl <| RouteLogin Nothing
 
@@ -2069,6 +2072,13 @@ headerContent (MkModel model) =
                 Just "Confirm Email"
     , httpStatus = model.httpStatus
     }
+
+
+footerMessage : Model -> Mensam.Element.Footer.Message -> Message
+footerMessage (MkModel _) message =
+    case message of
+        Mensam.Element.Footer.ClickedSomewhere ->
+            HideHamburgerMenu
 
 
 footerContent : Mensam.Element.Footer.Content
@@ -2182,7 +2192,7 @@ view (MkModel model) =
 
                     ScreenConfirm screenModel ->
                         Mensam.Element.screen MessageConfirm <| Mensam.Screen.Confirm.element screenModel
-            , Mensam.Element.Footer.element <| footerContent
+            , Element.map (footerMessage <| MkModel model) <| Mensam.Element.Footer.element <| footerContent
             ]
 
 
