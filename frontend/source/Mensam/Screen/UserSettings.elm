@@ -134,20 +134,27 @@ element model =
                                 { src = model.profilePictureUrl
                                 , description = "Profile picture."
                                 }
-                        , Mensam.Element.Button.button <|
-                            Mensam.Element.Button.MkButton
-                                { attributes = [ Element.alignRight, Element.centerY ]
-                                , color = Mensam.Element.Button.Red
-                                , label = Element.text "Delete Profile Picture"
-                                , message = Just <| MessagePure OpenDialogToDeleteProfilePicture
-                                }
-                        , Mensam.Element.Button.button <|
-                            Mensam.Element.Button.MkButton
-                                { attributes = [ Element.alignRight, Element.centerY ]
-                                , color = Mensam.Element.Button.Yellow
-                                , label = Element.text "Upload new Profile Picture"
-                                , message = Just <| MessageEffect UploadProfilePictureRequested
-                                }
+                        , Element.column
+                            [ Element.padding 10
+                            , Element.spacing 30
+                            , Element.alignRight
+                            , Element.centerY
+                            ]
+                            [ Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = []
+                                    , color = Mensam.Element.Button.Yellow
+                                    , label = Element.text "Upload Pic"
+                                    , message = Just <| MessageEffect UploadProfilePictureRequested
+                                    }
+                            , Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = []
+                                    , color = Mensam.Element.Button.Red
+                                    , label = Element.text "Delete Pic"
+                                    , message = Just <| MessagePure OpenDialogToDeleteProfilePicture
+                                    }
+                            ]
                         ]
                     , Element.row
                         [ Element.width Element.fill
