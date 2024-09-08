@@ -15,12 +15,15 @@ import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.User
+import Url.Builder
+import Mensam.Api.PictureDownload
 
 
 type alias Model =
     { self : Bool
     , id : Mensam.User.Identifier
     , name : Mensam.User.Name
+    , profilePictureUrl : String
     , email : Maybe Mensam.User.Email
     , emailVerified : Bool
     , popup : ()
@@ -32,6 +35,12 @@ init value =
     { self = value.self
     , id = value.id
     , name = Mensam.User.MkNameUnsafe ""
+    , profilePictureUrl =
+        Url.Builder.absolute
+            [ "static"
+            , "default-profile-picture.jpeg"
+            ]
+            []
     , email = Nothing
     , emailVerified = False
     , popup = ()
@@ -97,7 +106,7 @@ element model =
                             , Element.Border.rounded 30
                             , Element.clip
                             ]
-                            { src = "../api/picture?user=" ++ Mensam.User.identifierToString model.id
+                            { src = model.profilePictureUrl
                             , description = "Profile picture."
                             }
                     , Element.row
@@ -156,6 +165,7 @@ type Message
 
 type MessagePure
     = SetName Mensam.User.Name
+    | SetProfilePicture { url : String }
     | SetEmail (Maybe Mensam.User.Email)
     | SetEmailVerified Bool
     | ClosePopup
@@ -166,6 +176,9 @@ updatePure message model =
     case message of
         SetName name ->
             { model | name = name }
+
+        SetProfilePicture picture ->
+            { model | profilePictureUrl = picture.url }
 
         SetEmail email ->
             { model | email = email }
@@ -180,6 +193,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | Refresh
+    | RefreshProfilePicture
     | OpenPageUserSettings
 
 
@@ -240,4 +254,23 @@ profile jwt userId =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to request profile" <|
+                                Mensam.Error.http error
+
+
+downloadProfilePicture : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+downloadProfilePicture jwt user =
+    Mensam.Api.PictureDownload.request
+        { jwt = jwt
+        , user = user
+        }
+    <|
+        \response ->
+            case response of
+                Ok (Mensam.Api.PictureDownload.Success picture) ->
+                    MessagePure <| SetProfilePicture picture
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to download profile picture" <|
                                 Mensam.Error.http error

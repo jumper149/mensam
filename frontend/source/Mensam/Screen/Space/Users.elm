@@ -1,5 +1,6 @@
 module Mensam.Screen.Space.Users exposing (..)
 
+import Dict
 import Element
 import Element.Background
 import Element.Border
@@ -7,6 +8,7 @@ import Element.Events
 import Element.Font
 import Html.Attributes
 import List.Extra
+import Mensam.Api.PictureDownload
 import Mensam.Api.Profile
 import Mensam.Api.SpaceKick
 import Mensam.Api.SpaceUserRole
@@ -19,6 +21,7 @@ import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.User
+import Url.Builder
 
 
 type alias Model =
@@ -33,13 +36,15 @@ type alias Model =
             }
     , owner : Mensam.User.Identifier
     , users :
-        List
+        Dict.Dict
+            Int
             { user : Mensam.User.Identifier
             , role : Mensam.Space.Role.Identifier
             , info :
                 Maybe
                     { name : Mensam.User.Name
                     }
+            , profilePictureUrl : String
             }
     , selected : Maybe Int
     , popup : Maybe PopupModel
@@ -57,13 +62,18 @@ type PopupModel
         }
 
 
+usersKey : Mensam.User.Identifier -> Int
+usersKey (Mensam.User.MkIdentifierUnsafe n) =
+    n
+
+
 init : { id : Mensam.Space.Identifier } -> Model
 init args =
     { spaceId = args.id
     , spaceName = Mensam.Space.MkName ""
     , roles = []
     , owner = Mensam.User.MkIdentifierUnsafe -1
-    , users = []
+    , users = Dict.empty
     , selected = Nothing
     , popup = Nothing
     }
@@ -108,7 +118,7 @@ element model =
                     , Element.clipY
                     , Element.scrollbarY
                     ]
-                    { data = model.users
+                    { data = Dict.values model.users
                     , columns =
                         let
                             cell =
@@ -160,7 +170,7 @@ element model =
                                                 , Element.Border.rounded 5
                                                 , Element.clip
                                                 ]
-                                                { src = "../../api/picture?user=" ++ Mensam.User.identifierToString user.user
+                                                { src = user.profilePictureUrl
                                                 , description = "Profile picture."
                                                 }
                           }
@@ -353,7 +363,7 @@ element model =
                                 [ Element.el [] <| Element.text "User:"
                                 , Element.el [] <|
                                     Element.text <|
-                                        case List.Extra.find (\user -> user.user == popupModel.user) model.users of
+                                        case Dict.get (usersKey popupModel.user) model.users of
                                             Nothing ->
                                                 ""
 
@@ -528,7 +538,7 @@ element model =
                                 [ Element.el [] <| Element.text "User:"
                                 , Element.el [] <|
                                     Element.text <|
-                                        case List.Extra.find (\user -> user.user == popupModel.user) model.users of
+                                        case Dict.get (usersKey popupModel.user) model.users of
                                             Nothing ->
                                                 ""
 
@@ -597,6 +607,10 @@ type MessagePure
             { name : Mensam.User.Name
             }
         }
+    | SetUserProfilePicture
+        { id : Mensam.User.Identifier
+        , picture : { url : String }
+        }
     | SetRoles
         (List
             { id : Mensam.Space.Role.Identifier
@@ -623,19 +637,40 @@ updatePure message model =
             { model | spaceName = name }
 
         SetUserIds users ->
-            { model | users = List.map (\user -> { user = user.user, role = user.role, info = Nothing }) users }
+            { model
+                | users =
+                    Dict.fromList <|
+                        List.map
+                            (\user ->
+                                ( usersKey user.user
+                                , { user = user.user
+                                  , role = user.role
+                                  , info = Nothing
+                                  , profilePictureUrl =
+                                        Url.Builder.absolute
+                                            [ "static"
+                                            , "default-profile-picture.jpeg"
+                                            ]
+                                            []
+                                  }
+                                )
+                            )
+                            users
+            }
 
         SetUserInfo userWithInfo ->
             { model
                 | users =
-                    List.filterMap
-                        (\user ->
-                            if user.user == userWithInfo.id then
-                                Just { user | info = Just userWithInfo.info }
+                    Dict.update (usersKey userWithInfo.id)
+                        (Maybe.map (\user -> { user | info = Just userWithInfo.info }))
+                        model.users
+            }
 
-                            else
-                                Just user
-                        )
+        SetUserProfilePicture userWithPicture ->
+            { model
+                | users =
+                    Dict.update (usersKey userWithPicture.id)
+                        (Maybe.map (\user -> { user | profilePictureUrl = userWithPicture.picture.url }))
                         model.users
             }
 
@@ -690,6 +725,7 @@ type MessageEffect
     = ReportError Mensam.Error.Error
     | Refresh
     | GetProfile Mensam.User.Identifier
+    | GetProfilePicture Mensam.User.Identifier
     | SubmitEditUser { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }
     | SubmitKickUser { user : Mensam.User.Identifier }
     | ReturnToSpace
@@ -708,7 +744,10 @@ spaceView jwt id =
                         , MessagePure <| SetSpaceName view.name
                         , MessagePure <| SetOwner view.owner
                         ]
-                            ++ List.map (\user -> MessageEffect <| GetProfile user.user) view.users
+                            ++ List.map (\user -> MessageEffect <| GetProfilePicture user.user)
+                                view.users
+                            ++ List.map (\user -> MessageEffect <| GetProfile user.user)
+                                view.users
 
                 Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
@@ -763,6 +802,25 @@ profile jwt userId =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to request profile" <|
+                                Mensam.Error.http error
+
+
+profilePicture : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+profilePicture jwt userId =
+    Mensam.Api.PictureDownload.request
+        { jwt = jwt
+        , user = userId
+        }
+    <|
+        \response ->
+            case response of
+                Ok (Mensam.Api.PictureDownload.Success picture) ->
+                    MessagePure <| SetUserProfilePicture { id = userId, picture = picture }
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to request profile picture" <|
                                 Mensam.Error.http error
 
 

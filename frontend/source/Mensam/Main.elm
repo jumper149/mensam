@@ -280,6 +280,7 @@ routeToModelUpdate route (MkModel model) =
             update
                 (Messages
                     [ MessageProfile <| Mensam.Screen.Profile.MessageEffect Mensam.Screen.Profile.Refresh
+                    , MessageProfile <| Mensam.Screen.Profile.MessageEffect Mensam.Screen.Profile.RefreshProfilePicture
                     ]
                 )
             <|
@@ -1608,6 +1609,22 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
+                Mensam.Screen.Space.Users.GetProfilePicture userId ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceUsers _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceUsers <|
+                                        Mensam.Screen.Space.Users.profilePicture jwt userId
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
                 Mensam.Screen.Space.Users.SubmitEditUser args ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
@@ -1759,6 +1776,21 @@ update message (MkModel model) =
                                 ScreenProfile screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.profile jwt screenModel.id
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Profile.RefreshProfilePicture ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenProfile screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.downloadProfilePicture jwt screenModel.id
                                     )
 
                                 _ ->
