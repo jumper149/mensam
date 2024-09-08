@@ -267,4 +267,5 @@ uploadProfilePicture jwt file =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to upload profile picture" <|
-                                Mensam.Error.http error
+                                Mensam.Error.message "Try reducing the file size before uploading" <|
+                                    Mensam.Error.http error

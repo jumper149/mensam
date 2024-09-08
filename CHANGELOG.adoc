@@ -4,6 +4,8 @@
   ** Add new column `picture_jpeg` to the `user` table.
 * API
   ** Add `/picture` route to change your user profile picture.
+    *** Use GET to download profile pictures.
+    *** Use PUT to upload a new profile picture replacing your old one.
 
 == `0.7.1.1`
 

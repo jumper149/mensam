@@ -31,8 +31,8 @@ type Error
 
 error : Error -> Mensam.Error.Error
 error err =
-    Mensam.Error.message "Try signing in again" <|
-        Mensam.Error.message "Bearer authentication failed" <|
+    Mensam.Error.message "Bearer authentication failed" <|
+        Mensam.Error.message "Try signing in again" <|
             case err of
                 ErrorIndefinite ->
                     Mensam.Error.undefined
