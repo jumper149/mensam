@@ -321,7 +321,7 @@ element model =
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
-                                        , color = Mensam.Element.Button.Blue
+                                        , color = Mensam.Element.Button.Red
                                         , label = Element.text "Delete Profile Picture"
                                         , message = Just <| MessageEffect DeleteProfilePictureRequest
                                         }
