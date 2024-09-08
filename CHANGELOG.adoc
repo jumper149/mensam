@@ -1,5 +1,8 @@
 = Changelog
 
+* Frontend
+  ** Allow dragging to select a timespan for a reservation.
+
 == `0.8.0.0`
 
 * Frontend

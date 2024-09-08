@@ -24,7 +24,7 @@ import Mensam.Reservation
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
-import Mensam.Widget.Date
+import Mensam.Widget.Date exposing (resetDateToSelection)
 import Mensam.Widget.Time
 import Svg
 import Svg.Attributes
@@ -70,6 +70,11 @@ type alias Model =
                     }
             }
     , selected : Maybe Int
+    , mouseDragging :
+        Maybe
+            { start : Mensam.Time.Hour
+            , end : Mensam.Time.Hour
+            }
     , modelDateBegin : Mensam.Widget.Date.Model
     , modelTimeBegin : Mensam.Widget.Time.Model
     , modelDateEnd : Mensam.Widget.Date.Model
@@ -110,6 +115,7 @@ init args =
     , popup = Nothing
     , desks = []
     , selected = Nothing
+    , mouseDragging = Nothing
     , modelDateBegin =
         let
             date =
@@ -525,7 +531,7 @@ deskTimetable model =
                             , Element.height <| Element.px 60
                             , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
                             , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                            , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk }
+                            , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = False }
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , let
                                 alpha =
@@ -575,7 +581,11 @@ deskTimetable model =
                             [ Element.width Element.fill
                             , Element.height <| Element.px 60
                             , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                            , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                            , Element.Events.onMouseLeave <|
+                                Messages
+                                    [ MessagePure <| SetSelected Nothing
+                                    , MessagePure AbortMouseDragging
+                                    ]
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , let
                                 alpha =
@@ -618,24 +628,66 @@ deskTimetable model =
                                 let
                                     rowPiece piece =
                                         Element.el
-                                            [ Element.width Element.fill
-                                            , Element.height Element.fill
-                                            , Element.Events.onClick <|
+                                            ([ Element.width Element.fill
+                                             , Element.height Element.fill
+                                             , Element.Events.onMouseDown <|
+                                                MessagePure <|
+                                                    StartMouseDragging <|
+                                                        Mensam.Time.MkHour piece.hour
+                                             , Element.Events.onMouseEnter <|
+                                                MessagePure <|
+                                                    KeepMouseDragging <|
+                                                        Mensam.Time.MkHour piece.hour
+                                             , Element.Events.onMouseUp <|
                                                 Messages
-                                                    [ MessagePure <| MessageTimeBegin <| Mensam.Widget.Time.SetHour <| Mensam.Time.MkHour piece.hour
-                                                    , MessagePure <| MessageTimeBegin <| Mensam.Widget.Time.SetMinute <| Mensam.Time.MkMinute 0
-                                                    , MessagePure <| SetTimeEndFromDuration <| Mensam.Time.MkHour 1
-                                                    , MessagePure <| SetDateEndFromDuration <| Mensam.Time.MkHour 1
-                                                    , MessagePure <| ViewDetailed <| Just { desk = x.desk }
+                                                    [ MessagePure <|
+                                                        KeepMouseDragging <|
+                                                            Mensam.Time.MkHour piece.hour
+                                                    , MessagePure SetTimeFromMouseDragging
+                                                    , MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = True }
+                                                    , MessagePure AbortMouseDragging
                                                     ]
-                                            , Element.mouseOver
+                                             , Element.mouseOver
                                                 [ Element.Background.color (Element.rgba 0 1 0 0.1)
                                                 ]
-                                            ]
+                                             ]
+                                                ++ (case model.mouseDragging of
+                                                        Nothing ->
+                                                            []
+
+                                                        Just interval ->
+                                                            let
+                                                                orderedInterval =
+                                                                    if Mensam.Time.unHour interval.start <= Mensam.Time.unHour interval.end then
+                                                                        { begin = interval.start, end = interval.end }
+
+                                                                    else
+                                                                        { begin = interval.end, end = interval.start }
+                                                            in
+                                                            if
+                                                                piece.hour
+                                                                    >= Mensam.Time.unHour orderedInterval.begin
+                                                                    && piece.hour
+                                                                    <= Mensam.Time.unHour orderedInterval.end
+                                                                    && (case model.selected of
+                                                                            Nothing ->
+                                                                                False
+
+                                                                            Just m ->
+                                                                                n == m
+                                                                       )
+                                                            then
+                                                                [ Element.Background.color (Element.rgba 0 1 0 0.05)
+                                                                ]
+
+                                                            else
+                                                                []
+                                                   )
+                                            )
                                         <|
                                             Element.el
                                                 [ Element.width Element.fill
-                                                , Element.height <| Element.px piece.height
+                                                , Element.height <| Element.px piece.indicatorHeight
                                                 , Element.alignTop
                                                 , Element.Font.size 8
                                                 , Element.paddingEach
@@ -660,30 +712,30 @@ deskTimetable model =
                                                     ]
                                 in
                                 List.map rowPiece
-                                    [ { hour = 0, height = 40 }
-                                    , { hour = 1, height = 12 }
-                                    , { hour = 2, height = 12 }
-                                    , { hour = 3, height = 18 }
-                                    , { hour = 4, height = 12 }
-                                    , { hour = 5, height = 12 }
-                                    , { hour = 6, height = 25 }
-                                    , { hour = 7, height = 12 }
-                                    , { hour = 8, height = 12 }
-                                    , { hour = 9, height = 18 }
-                                    , { hour = 10, height = 12 }
-                                    , { hour = 11, height = 12 }
-                                    , { hour = 12, height = 40 }
-                                    , { hour = 13, height = 12 }
-                                    , { hour = 14, height = 12 }
-                                    , { hour = 15, height = 18 }
-                                    , { hour = 16, height = 12 }
-                                    , { hour = 17, height = 12 }
-                                    , { hour = 18, height = 25 }
-                                    , { hour = 19, height = 12 }
-                                    , { hour = 20, height = 12 }
-                                    , { hour = 21, height = 18 }
-                                    , { hour = 22, height = 12 }
-                                    , { hour = 23, height = 12 }
+                                    [ { hour = 0, indicatorHeight = 40 }
+                                    , { hour = 1, indicatorHeight = 12 }
+                                    , { hour = 2, indicatorHeight = 12 }
+                                    , { hour = 3, indicatorHeight = 18 }
+                                    , { hour = 4, indicatorHeight = 12 }
+                                    , { hour = 5, indicatorHeight = 12 }
+                                    , { hour = 6, indicatorHeight = 25 }
+                                    , { hour = 7, indicatorHeight = 12 }
+                                    , { hour = 8, indicatorHeight = 12 }
+                                    , { hour = 9, indicatorHeight = 18 }
+                                    , { hour = 10, indicatorHeight = 12 }
+                                    , { hour = 11, indicatorHeight = 12 }
+                                    , { hour = 12, indicatorHeight = 40 }
+                                    , { hour = 13, indicatorHeight = 12 }
+                                    , { hour = 14, indicatorHeight = 12 }
+                                    , { hour = 15, indicatorHeight = 18 }
+                                    , { hour = 16, indicatorHeight = 12 }
+                                    , { hour = 17, indicatorHeight = 12 }
+                                    , { hour = 18, indicatorHeight = 25 }
+                                    , { hour = 19, indicatorHeight = 12 }
+                                    , { hour = 20, indicatorHeight = 12 }
+                                    , { hour = 21, indicatorHeight = 18 }
+                                    , { hour = 22, indicatorHeight = 12 }
+                                    , { hour = 23, indicatorHeight = 12 }
                                     ]
               }
             ]
@@ -885,6 +937,10 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
+    | StartMouseDragging Mensam.Time.Hour
+    | KeepMouseDragging Mensam.Time.Hour
+    | AbortMouseDragging
+    | SetTimeFromMouseDragging
     | ClosePopup
     | OpenDialogToLeave
     | CloseDialogToLeave
@@ -895,6 +951,7 @@ type MessagePure
                 , name : Mensam.Desk.Name
                 , space : Mensam.Space.Identifier
                 }
+            , dontViewUnlessMouseIsStillDragging : Bool
             }
         )
     | ViewDateBeginPicker
@@ -909,6 +966,19 @@ type MessagePure
     | SetDateEndToDateBegin
     | SetDateEndFromDuration Mensam.Time.Hour
     | SetTimeEndFromDuration Mensam.Time.Hour
+    | SetDateEndOneAfterDateBegin
+    | ResetDateBeginToSelection
+    | ResetDateEndToSelection
+
+
+applyPureMessages : List MessagePure -> Model -> Model
+applyPureMessages messages model =
+    case messages of
+        [] ->
+            model
+
+        m :: ms ->
+            applyPureMessages ms <| updatePure m model
 
 
 updatePure : MessagePure -> Model -> Model
@@ -931,6 +1001,58 @@ updatePure message model =
         SetSelected selection ->
             { model | selected = selection }
 
+        StartMouseDragging hour ->
+            { model | mouseDragging = Just { start = hour, end = hour } }
+
+        KeepMouseDragging hour ->
+            { model
+                | mouseDragging =
+                    case model.mouseDragging of
+                        Nothing ->
+                            Nothing
+
+                        Just interval ->
+                            Just { interval | end = hour }
+            }
+
+        AbortMouseDragging ->
+            { model | mouseDragging = Nothing }
+
+        SetTimeFromMouseDragging ->
+            case model.mouseDragging of
+                Nothing ->
+                    model
+
+                Just interval ->
+                    let
+                        orderedInterval =
+                            if Mensam.Time.unHour interval.start <= Mensam.Time.unHour interval.end then
+                                { begin = interval.start, end = interval.end }
+
+                            else
+                                { begin = interval.end, end = interval.start }
+
+                        fixedBoundsInterval =
+                            { begin = orderedInterval.begin
+                            , end = Mensam.Time.MkHour <| modBy 24 <| Mensam.Time.unHour orderedInterval.end + 1
+                            }
+
+                        messages =
+                            [ MessageTimeBegin <| Mensam.Widget.Time.SetHour fixedBoundsInterval.begin
+                            , MessageTimeBegin <| Mensam.Widget.Time.SetMinute <| Mensam.Time.MkMinute 0
+                            , MessageTimeEnd <| Mensam.Widget.Time.SetHour <| fixedBoundsInterval.end
+                            , MessageTimeEnd <| Mensam.Widget.Time.SetMinute <| Mensam.Time.MkMinute 0
+                            ]
+                                ++ (if Mensam.Time.unHour fixedBoundsInterval.end < Mensam.Time.unHour orderedInterval.end then
+                                        [ SetDateEndOneAfterDateBegin ]
+
+                                    else
+                                        []
+                                   )
+                                ++ [ ResetDateBeginToSelection, ResetDateEndToSelection ]
+                    in
+                    applyPureMessages messages model
+
         ClosePopup ->
             { model | popup = Nothing }
 
@@ -944,7 +1066,19 @@ updatePure message model =
             { model | popup = Nothing }
 
         ViewDetailed (Just data) ->
-            { model | popup = Just <| PopupReservation { desk = data.desk, pickerVisibility = PickerInvisible } }
+            { model
+                | popup =
+                    if data.dontViewUnlessMouseIsStillDragging then
+                        case model.mouseDragging of
+                            Nothing ->
+                                Nothing
+
+                            Just _ ->
+                                Just <| PopupReservation { desk = data.desk, pickerVisibility = PickerInvisible }
+
+                    else
+                        Just <| PopupReservation { desk = data.desk, pickerVisibility = PickerInvisible }
+            }
 
         ViewDateBeginPicker ->
             { model
@@ -1179,6 +1313,25 @@ updatePure message model =
                             (Mensam.Time.unTimestamp timestampEndNew).time
                         }
             }
+
+        SetDateEndOneAfterDateBegin ->
+            { model
+                | modelDateEnd =
+                    let
+                        oldModel =
+                            Mensam.Widget.Date.unModel model.modelDateEnd
+                    in
+                    Mensam.Widget.Date.MkModel
+                        { oldModel
+                            | selected = Mensam.Time.nextDay (Mensam.Widget.Date.unModel model.modelDateBegin).selected
+                        }
+            }
+
+        ResetDateBeginToSelection ->
+            { model | modelDateBegin = resetDateToSelection model.modelDateBegin }
+
+        ResetDateEndToSelection ->
+            { model | modelDateEnd = resetDateToSelection model.modelDateEnd }
 
 
 type MessageEffect

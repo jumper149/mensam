@@ -267,6 +267,15 @@ updateDatePreviousMonth (MkModel model) =
             MkModel { model | month = Mensam.Time.MkMonth Time.Nov }
 
 
+resetDateToSelection : Model -> Model
+resetDateToSelection (MkModel model) =
+    MkModel
+        { model
+            | year = (Mensam.Time.unDate model.selected).year
+            , month = (Mensam.Time.unDate model.selected).month
+        }
+
+
 elementPickDate : Model -> Element.Element Message
 elementPickDate (MkModel model) =
     Element.column

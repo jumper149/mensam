@@ -456,3 +456,78 @@ timeToString (MkTime time) =
 timestampToString : Timestamp -> String
 timestampToString (MkTimestamp timestamp) =
     dateToString timestamp.date ++ " " ++ timeToString timestamp.time
+
+
+nextMonth : Month -> Month
+nextMonth (MkMonth month) =
+    MkMonth <|
+        case month of
+            Time.Jan ->
+                Time.Feb
+
+            Time.Feb ->
+                Time.Mar
+
+            Time.Mar ->
+                Time.Apr
+
+            Time.Apr ->
+                Time.May
+
+            Time.May ->
+                Time.Jun
+
+            Time.Jun ->
+                Time.Jul
+
+            Time.Jul ->
+                Time.Aug
+
+            Time.Aug ->
+                Time.Sep
+
+            Time.Sep ->
+                Time.Oct
+
+            Time.Oct ->
+                Time.Nov
+
+            Time.Nov ->
+                Time.Dec
+
+            Time.Dec ->
+                Time.Jan
+
+
+nextDay : Date -> Date
+nextDay (MkDate date) =
+    let
+        lastDayOfMonth =
+            daysInMonth date.year date.month
+
+        isLastDayOfMonth =
+            unDay date.day == lastDayOfMonth
+
+        isLastDayOfYear =
+            isLastDayOfMonth && unMonth date.month == Time.Dec
+    in
+    MkDate
+        { year =
+            if isLastDayOfYear then
+                MkYear <| unYear date.year + 1
+
+            else
+                date.year
+        , month =
+            if isLastDayOfMonth then
+                nextMonth date.month
+
+            else
+                date.month
+        , day =
+            if isLastDayOfMonth then
+                MkDay 1
+
+            else
+                MkDay <| unDay date.day + 1
+        }
