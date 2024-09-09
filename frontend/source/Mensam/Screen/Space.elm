@@ -4,7 +4,9 @@ import Element
 import Element.Background
 import Element.Border
 import Element.Events
+import Element.Events.Pointer
 import Element.Font
+import Element.Window
 import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
@@ -82,6 +84,7 @@ type alias Model =
     , modelTimeEnd : Mensam.Widget.Time.Model
     , globalDatePickerVisible : Bool
     , tabView : TabView
+    , window : Element.Window.Model
     }
 
 
@@ -163,6 +166,7 @@ init args =
             }
     , globalDatePickerVisible = False
     , tabView = TabTimetable
+    , window = Element.Window.init Element.Window.defaultConfig { position = { x = 150, y = 150 } }
     }
 
 
@@ -529,29 +533,23 @@ element model =
 
 elementTabs : TabView -> Element.Element Message
 elementTabs tabSelected =
-    Element.el
+    Element.row
         [ Element.paddingEach
             { bottom = 0
             , left = 8
             , top = 10
             , right = 8
             }
+        , Element.width Element.fill
         , Element.height <| Element.px 42
-        , Element.alignRight
-        , Element.Border.widthEach
-            { bottom = 1
-            , left = 0
-            , top = 0
-            , right = 0
-            }
         ]
-    <|
-        Element.row
+        [ Element.row
             [ Element.spacing 8
             , Element.height Element.fill
             , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+            , Element.alignRight
             ]
-        <|
+          <|
             let
                 elementTab tab title =
                     Element.el
@@ -588,6 +586,7 @@ elementTabs tabSelected =
             [ elementTab TabTimetable "Timetable"
             , elementTab TabRoom "Room"
             ]
+        ]
 
 
 deskTimetable : Model -> Element.Element Message
@@ -611,8 +610,8 @@ deskTimetable model =
                         Element.el
                             [ Element.width Element.fill
                             , Element.height <| Element.px 60
-                            , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                            , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
+                            , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                            , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
                             , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = False }
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , let
@@ -662,12 +661,13 @@ deskTimetable model =
                         Element.el
                             [ Element.width Element.fill
                             , Element.height <| Element.px 60
-                            , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                            , Element.Events.onMouseLeave <|
-                                Messages
-                                    [ MessagePure <| SetSelected Nothing
-                                    , MessagePure AbortMouseDragging
-                                    ]
+                            , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                            , Element.Events.Pointer.onLeave <|
+                                \_ ->
+                                    Messages
+                                        [ MessagePure <| SetSelected Nothing
+                                        , MessagePure AbortMouseDragging
+                                        ]
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , let
                                 alpha =
@@ -712,23 +712,26 @@ deskTimetable model =
                                         Element.el
                                             ([ Element.width Element.fill
                                              , Element.height Element.fill
-                                             , Element.Events.onMouseDown <|
-                                                MessagePure <|
-                                                    StartMouseDragging <|
-                                                        Mensam.Time.MkHour piece.hour
-                                             , Element.Events.onMouseEnter <|
-                                                MessagePure <|
-                                                    KeepMouseDragging <|
-                                                        Mensam.Time.MkHour piece.hour
-                                             , Element.Events.onMouseUp <|
-                                                Messages
-                                                    [ MessagePure <|
+                                             , Element.Events.Pointer.onDown <|
+                                                \_ ->
+                                                    MessagePure <|
+                                                        StartMouseDragging <|
+                                                            Mensam.Time.MkHour piece.hour
+                                             , Element.Events.Pointer.onEnter <|
+                                                \_ ->
+                                                    MessagePure <|
                                                         KeepMouseDragging <|
                                                             Mensam.Time.MkHour piece.hour
-                                                    , MessagePure SetTimeFromMouseDragging
-                                                    , MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = True }
-                                                    , MessagePure AbortMouseDragging
-                                                    ]
+                                             , Element.Events.Pointer.onUp <|
+                                                \_ ->
+                                                    Messages
+                                                        [ MessagePure <|
+                                                            KeepMouseDragging <|
+                                                                Mensam.Time.MkHour piece.hour
+                                                        , MessagePure SetTimeFromMouseDragging
+                                                        , MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = True }
+                                                        , MessagePure AbortMouseDragging
+                                                        ]
                                              , Element.mouseOver
                                                 [ Element.Background.color (Element.rgba 0 1 0 0.1)
                                                 ]
@@ -974,20 +977,33 @@ timeToSeconds time =
 
 
 deskRoom : Model -> Element.Element Message
-deskRoom _ =
+deskRoom model =
     Element.el
         [ Element.width Element.fill
         , Element.height Element.fill
+        , Element.clip
         , Element.Border.width 1
         , Element.Background.color Mensam.Element.Color.dark.white
         ]
     <|
-        Element.el
-            [ Element.centerX
-            , Element.centerY
-            ]
+        Element.Window.view model.window
+            { viewportAttributes = []
+            , contentAttributes =
+                [ Element.width <| Element.px 800
+                , Element.height <| Element.px 800
+                , Element.Window.onDown <| MessagePure << MessageWindow
+                , Element.Window.onMove <| MessagePure << MessageWindow
+                , Element.Window.onUp <| MessagePure << MessageWindow
+                , Element.Border.width 2
+                ]
+            }
         <|
-            Element.text "Work in Progress"
+            Element.el
+                [ Element.centerX
+                , Element.centerY
+                ]
+            <|
+                Element.text "Work in Progress"
 
 
 type Message
@@ -1069,6 +1085,7 @@ type MessagePure
     | ResetDateBeginToSelection
     | ResetDateEndToSelection
     | SetTabView TabView
+    | MessageWindow Element.Window.Message
 
 
 applyPureMessages : List MessagePure -> Model -> Model
@@ -1435,6 +1452,9 @@ updatePure message model =
 
         SetTabView tab ->
             { model | tabView = tab }
+
+        MessageWindow messageWindow ->
+            { model | window = Element.Window.update messageWindow model.window }
 
 
 type MessageEffect

@@ -75,6 +75,11 @@
         version = "1.1.8";
       };
 
+      "mpizenberg/elm-pointer-events" = {
+        sha256 = "0vdqgz9pz0b2ib2vvqkfz08hj7qz5m0zccvm2l4nv3hazdjnkl80";
+        version = "5.0.0";
+      };
+
       "rtfeldman/elm-iso8601-date-strings" = {
         sha256 = "1ah491kgyicgvy1c9myylqvhzb7ya9kgmn0hcsv23ymvqgaf6b1a";
         version = "1.1.4";
