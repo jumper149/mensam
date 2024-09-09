@@ -27,7 +27,7 @@ import Mensam.Reservation
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
-import Mensam.Widget.Date exposing (resetDateToSelection)
+import Mensam.Widget.Date
 import Mensam.Widget.Time
 import Svg
 import Svg.Attributes
@@ -293,27 +293,60 @@ element model =
 
                           else
                             Element.none
-                        , Mensam.Element.Button.button <|
-                            Mensam.Element.Button.MkButton
-                                { attributes = [ Element.width Element.fill ]
-                                , color = Mensam.Element.Button.Blue
-                                , label =
-                                    let
-                                        date =
-                                            case model.modelDateBegin of
-                                                Mensam.Widget.Date.MkModel { selected } ->
-                                                    Mensam.Time.unDate selected
-                                    in
-                                    Element.text <|
-                                        String.concat
-                                            [ Mensam.Time.yearToString date.year
-                                            , ", "
-                                            , Mensam.Time.monthToString date.month
-                                            , " "
-                                            , Mensam.Time.dayToString date.day
-                                            ]
-                                , message = Just <| MessagePure <| ViewDateGlobalPicker <| not model.globalDatePickerVisible
-                                }
+                        , Element.row
+                            [ Element.width <| Element.maximum 320 <| Element.fill
+                            , Element.height Element.shrink
+                            , Element.centerX
+                            , Element.spacing 10
+                            ]
+                            [ Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = []
+                                    , color = Mensam.Element.Button.Blue
+                                    , label = Element.text "<"
+                                    , message =
+                                        Just <|
+                                            Messages
+                                                [ MessagePure PreviousDay
+                                                , MessagePure ResetDateBeginToSelection
+                                                , MessagePure ResetDateBeginToSelection
+                                                ]
+                                    }
+                            , Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = [ Element.width Element.fill ]
+                                    , color = Mensam.Element.Button.Blue
+                                    , label =
+                                        let
+                                            date =
+                                                case model.modelDateBegin of
+                                                    Mensam.Widget.Date.MkModel { selected } ->
+                                                        Mensam.Time.unDate selected
+                                        in
+                                        Element.text <|
+                                            String.concat
+                                                [ Mensam.Time.yearToString date.year
+                                                , ", "
+                                                , Mensam.Time.monthToString date.month
+                                                , " "
+                                                , Mensam.Time.dayToString date.day
+                                                ]
+                                    , message = Just <| MessagePure <| ViewDateGlobalPicker <| not model.globalDatePickerVisible
+                                    }
+                            , Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = []
+                                    , color = Mensam.Element.Button.Blue
+                                    , label = Element.text ">"
+                                    , message =
+                                        Just <|
+                                            Messages
+                                                [ MessagePure NextDay
+                                                , MessagePure ResetDateBeginToSelection
+                                                , MessagePure ResetDateBeginToSelection
+                                                ]
+                                    }
+                            ]
                         ]
                     ]
                 ]
@@ -1082,6 +1115,8 @@ type MessagePure
     | SetDateEndFromDuration Mensam.Time.Hour
     | SetTimeEndFromDuration Mensam.Time.Hour
     | SetDateEndOneAfterDateBegin
+    | PreviousDay
+    | NextDay
     | ResetDateBeginToSelection
     | ResetDateEndToSelection
     | SetTabView TabView
@@ -1444,11 +1479,47 @@ updatePure message model =
                         }
             }
 
+        PreviousDay ->
+            { model
+                | modelDateBegin =
+                    case model.modelDateBegin of
+                        Mensam.Widget.Date.MkModel widgetModel ->
+                            Mensam.Widget.Date.MkModel
+                                { widgetModel
+                                    | selected = Mensam.Time.previousDay widgetModel.selected
+                                }
+                , modelDateEnd =
+                    case model.modelDateBegin of
+                        Mensam.Widget.Date.MkModel widgetModel ->
+                            Mensam.Widget.Date.MkModel
+                                { widgetModel
+                                    | selected = Mensam.Time.previousDay widgetModel.selected
+                                }
+            }
+
+        NextDay ->
+            { model
+                | modelDateBegin =
+                    case model.modelDateBegin of
+                        Mensam.Widget.Date.MkModel widgetModel ->
+                            Mensam.Widget.Date.MkModel
+                                { widgetModel
+                                    | selected = Mensam.Time.nextDay widgetModel.selected
+                                }
+                , modelDateEnd =
+                    case model.modelDateBegin of
+                        Mensam.Widget.Date.MkModel widgetModel ->
+                            Mensam.Widget.Date.MkModel
+                                { widgetModel
+                                    | selected = Mensam.Time.nextDay widgetModel.selected
+                                }
+            }
+
         ResetDateBeginToSelection ->
-            { model | modelDateBegin = resetDateToSelection model.modelDateBegin }
+            { model | modelDateBegin = Mensam.Widget.Date.resetDateToSelection model.modelDateBegin }
 
         ResetDateEndToSelection ->
-            { model | modelDateEnd = resetDateToSelection model.modelDateEnd }
+            { model | modelDateEnd = Mensam.Widget.Date.resetDateToSelection model.modelDateEnd }
 
         SetTabView tab ->
             { model | tabView = tab }
