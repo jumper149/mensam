@@ -1,11 +1,14 @@
 module Mensam.Screen.UserSettings exposing (..)
 
 import Element
+import Element.Background
 import Element.Border
+import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import File
 import File.Select
+import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
 import Mensam.Api.ConfirmationRequest
@@ -17,6 +20,7 @@ import Mensam.Api.Profile
 import Mensam.Auth.Bearer
 import Mensam.Element.Button
 import Mensam.Element.Color
+import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.User
@@ -84,6 +88,26 @@ element model =
                             ]
                           <|
                             Element.text "User Settings"
+                        , Element.el
+                            [ Element.alignRight
+                            , Element.padding 7
+                            , Element.Background.color Mensam.Element.Color.bright.yellow
+                            , Element.Font.color Mensam.Element.Color.dark.black
+                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                            , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| OpenPageUserProfile { id = model.id }
+                            ]
+                          <|
+                            Element.el
+                                [ Element.centerX
+                                , Element.centerY
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                , Element.Font.size 15
+                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                                ]
+                            <|
+                                Element.text "Public Profile"
                         ]
                     , Element.row
                         [ Element.width Element.fill
@@ -445,6 +469,7 @@ type MessageEffect
     | UploadProfilePictureUpload File.File
     | DeleteProfilePictureRequest
     | DownloadProfilePictureRequest
+    | OpenPageUserProfile { id : Mensam.User.Identifier }
 
 
 onEnter : msg -> Element.Attribute msg

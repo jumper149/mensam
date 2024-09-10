@@ -1930,6 +1930,9 @@ update message (MkModel model) =
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
 
+                Mensam.Screen.UserSettings.OpenPageUserProfile user ->
+                    update (SetUrl <| RouteProfile user.id) <| MkModel model
+
         MessageUserSettings (Mensam.Screen.UserSettings.Messages ms) ->
             case model.screen of
                 ScreenUserSettings _ ->
