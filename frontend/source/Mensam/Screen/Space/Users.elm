@@ -504,7 +504,7 @@ element model =
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
-                                        , color = Mensam.Element.Button.Yellow
+                                        , color = Mensam.Element.Button.Blue
                                         , label = Element.text "Change Role"
                                         , message =
                                             case popupModel.role of
