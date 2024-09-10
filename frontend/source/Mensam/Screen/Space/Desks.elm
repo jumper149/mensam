@@ -2,7 +2,7 @@ module Mensam.Screen.Space.Desks exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import Html.Attributes
@@ -128,9 +128,9 @@ element model =
                           , view =
                                 \n desk ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseDesk { id = desk.id, name = desk.name }
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseDesk { id = desk.id, name = desk.name }
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -169,9 +169,9 @@ element model =
                           , view =
                                 \n desk ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseDesk { id = desk.id, name = desk.name }
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseDesk { id = desk.id, name = desk.name }
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -315,7 +315,7 @@ element model =
                                     , Element.Font.color Mensam.Element.Color.dark.black
                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                                    , Element.Events.onClick <| MessagePure <| OpenDialogToDeleteDesk popupModel.id
+                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| OpenDialogToDeleteDesk popupModel.id
                                     ]
                                   <|
                                     Element.el

@@ -2,7 +2,7 @@ module Mensam.Screen.Space.Roles exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import Html.Attributes
@@ -129,9 +129,9 @@ element model =
                           , view =
                                 \n role ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessageEffect <| ChooseRole role.id
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| ChooseRole role.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -170,9 +170,9 @@ element model =
                           , view =
                                 \n role ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessageEffect <| ChooseRole role.id
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| ChooseRole role.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -211,9 +211,9 @@ element model =
                           , view =
                                 \n role ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessageEffect <| ChooseRole role.id
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| ChooseRole role.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -252,9 +252,9 @@ element model =
                           , view =
                                 \n role ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessageEffect <| ChooseRole role.id
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| ChooseRole role.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =

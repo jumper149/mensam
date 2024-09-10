@@ -2,7 +2,7 @@ module Mensam.Element.Dropdown exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import Mensam.Auth
@@ -121,7 +121,7 @@ dropdownWrapper content insideElement =
                     [ Element.width Element.fill
                     , Element.height Element.fill
                     , Element.alignLeft
-                    , Element.Events.onClick CloseDropdown
+                    , Element.Events.Pointer.onClick <| \_ -> CloseDropdown
                     ]
                     []
                 , Element.column
@@ -137,7 +137,7 @@ dropdownWrapper content insideElement =
                 [ Element.width Element.fill
                 , Element.height Element.fill
                 , Element.alignBottom
-                , Element.Events.onClick CloseDropdown
+                , Element.Events.Pointer.onClick <| \_ -> CloseDropdown
                 ]
                 []
             ]

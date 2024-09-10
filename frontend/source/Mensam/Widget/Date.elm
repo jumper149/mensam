@@ -2,7 +2,7 @@ module Mensam.Widget.Date exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Html.Attributes
 import Mensam.Time
 import Mensam.Widget.Month
@@ -151,7 +151,7 @@ elementPickDay (MkModel model) =
                             , Element.mouseOver
                                 [ Element.Background.color <| Element.rgba 1 1 1 0.1
                                 ]
-                            , Element.Events.onClick <| ClickDay day
+                            , Element.Events.Pointer.onClick <| \_ -> ClickDay day
                             ]
                         <|
                             Element.el

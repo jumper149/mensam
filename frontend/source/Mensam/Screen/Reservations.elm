@@ -2,7 +2,7 @@ module Mensam.Screen.Reservations exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
 import Html.Events
@@ -223,9 +223,9 @@ element model =
                                     Element.el
                                         (case entry.reservation.status of
                                             Mensam.Reservation.MkStatusPlanned ->
-                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                                , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                                , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
+                                                [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                                , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                                , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseReservation entry.reservation.id
                                                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                                 , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                 , let
@@ -245,7 +245,7 @@ element model =
                                                 ]
 
                                             Mensam.Reservation.MkStatusCancelled ->
-                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                                [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
                                                 , Element.Background.color (Element.rgba 1 0 0 0.2)
                                                 , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                 ]
@@ -298,9 +298,9 @@ element model =
                                     Element.el
                                         (case entry.reservation.status of
                                             Mensam.Reservation.MkStatusPlanned ->
-                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                                , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                                , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
+                                                [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                                , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                                , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseReservation entry.reservation.id
                                                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                                 , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                 , let
@@ -320,7 +320,7 @@ element model =
                                                 ]
 
                                             Mensam.Reservation.MkStatusCancelled ->
-                                                [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
+                                                [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
                                                 , Element.Background.color (Element.rgba 1 0 0 0.2)
                                                 , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                 ]

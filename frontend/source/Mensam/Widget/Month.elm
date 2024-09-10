@@ -2,7 +2,7 @@ module Mensam.Widget.Month exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Html.Attributes
 import Mensam.Time
 
@@ -39,7 +39,7 @@ elementPickMonth (MkModel model) =
                 , Element.mouseOver
                     [ Element.Background.color <| Element.rgba 1 1 1 0.1
                     ]
-                , Element.Events.onClick PreviousMonth
+                , Element.Events.Pointer.onClick <| \_ -> PreviousMonth
                 ]
               <|
                 Element.el
@@ -69,7 +69,7 @@ elementPickMonth (MkModel model) =
                 , Element.mouseOver
                     [ Element.Background.color <| Element.rgba 1 1 1 0.1
                     ]
-                , Element.Events.onClick NextMonth
+                , Element.Events.Pointer.onClick <| \_ -> NextMonth
                 ]
               <|
                 Element.el

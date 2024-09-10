@@ -2,7 +2,7 @@ module Mensam.Screen.Space.Role exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import Html.Attributes
@@ -472,9 +472,9 @@ element model =
                                       , view =
                                             \n role ->
                                                 Element.el
-                                                    [ Element.Events.onMouseLeave <| MessagePure <| DeleteRoleSetSelected Nothing
-                                                    , Element.Events.onMouseEnter <| MessagePure <| DeleteRoleSetSelected <| Just n
-                                                    , Element.Events.onClick <| MessagePure <| DeleteRoleChooseRole <| Just role.id
+                                                    [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| DeleteRoleSetSelected Nothing
+                                                    , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| DeleteRoleSetSelected <| Just n
+                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| DeleteRoleChooseRole <| Just role.id
                                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                                     , let
                                                         alpha =

@@ -2,7 +2,7 @@ module Mensam.Screen.Space.Join exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import Html.Attributes
@@ -101,7 +101,7 @@ element model =
                                         , Element.mouseOver
                                             [ Element.Background.color <| Element.rgba 0 0 0 0.3
                                             ]
-                                        , Element.Events.onClick <| MessagePure <| SetRoleToJoin role.id
+                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| SetRoleToJoin role.id
                                         ]
                                     <|
                                         Element.el

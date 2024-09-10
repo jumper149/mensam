@@ -4,7 +4,7 @@ import Dict
 import Element
 import Element.Background
 import Element.Border
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
 import List.Extra
@@ -139,9 +139,9 @@ element model =
                           , view =
                                 \n user ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseUser user.user
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseUser user.user
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -188,9 +188,9 @@ element model =
                           , view =
                                 \n user ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseUser user.user
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseUser user.user
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -229,9 +229,9 @@ element model =
                           , view =
                                 \n user ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseUser user.user
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseUser user.user
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -275,9 +275,9 @@ element model =
                           , view =
                                 \n user ->
                                     Element.el
-                                        [ Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onClick <| MessagePure <| ChooseUser user.user
+                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseUser user.user
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -411,9 +411,9 @@ element model =
                                       , view =
                                             \n role ->
                                                 Element.el
-                                                    [ Element.Events.onMouseLeave <| MessagePure <| SetSelectedRole Nothing
-                                                    , Element.Events.onMouseEnter <| MessagePure <| SetSelectedRole <| Just n
-                                                    , Element.Events.onClick <| MessagePure <| ChooseNewRole role.id
+                                                    [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedRole Nothing
+                                                    , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedRole <| Just n
+                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseNewRole role.id
                                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                                     , let
                                                         alpha =
@@ -456,9 +456,9 @@ element model =
                                       , view =
                                             \n role ->
                                                 Element.el
-                                                    [ Element.Events.onMouseLeave <| MessagePure <| SetSelectedRole Nothing
-                                                    , Element.Events.onMouseEnter <| MessagePure <| SetSelectedRole <| Just n
-                                                    , Element.Events.onClick <| MessagePure <| ChooseNewRole role.id
+                                                    [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedRole Nothing
+                                                    , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedRole <| Just n
+                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseNewRole role.id
                                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                                     , let
                                                         alpha =

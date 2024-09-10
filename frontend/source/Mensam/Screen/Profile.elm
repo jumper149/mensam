@@ -3,7 +3,7 @@ module Mensam.Screen.Profile exposing (..)
 import Element
 import Element.Background
 import Element.Border
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
 import Html.Events
@@ -83,7 +83,7 @@ element model =
                                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                 , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                 , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                , Element.Events.onClick <| MessageEffect OpenPageUserSettings
+                                , Element.Events.Pointer.onClick <| \_ -> MessageEffect OpenPageUserSettings
                                 ]
                             <|
                                 Element.el

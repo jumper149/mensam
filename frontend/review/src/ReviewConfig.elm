@@ -1,5 +1,7 @@
 module ReviewConfig exposing (config)
 
+import ForbidSpecificModuleImports
+import ForbidSpecificImports
 import NoBooleanCase
 import NoConfusingPrefixOperator
 import NoDeprecated
@@ -27,7 +29,14 @@ import Review.Rule exposing (Rule)
 
 config : List Rule
 config =
-    [ NoBooleanCase.rule
+    [ ForbidSpecificImports.rule []
+    , ForbidSpecificModuleImports.rule
+        [ ( "Mensam"
+          , [ "Element.Events"
+            ]
+          )
+        ]
+    , NoBooleanCase.rule
     , NoConfusingPrefixOperator.rule
     , NoDeprecated.rule NoDeprecated.defaults
     , NoDuplicatePorts.rule

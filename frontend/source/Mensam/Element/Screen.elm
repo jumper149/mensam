@@ -2,7 +2,7 @@ module Mensam.Element.Screen exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Mensam.Element.Color
 import Mensam.Element.Font
@@ -38,7 +38,7 @@ element screen =
                             [ Element.width Element.fill
                             , Element.height <| Element.px 30
                             , Element.alignTop
-                            , Element.Events.onClick screen.closePopup
+                            , Element.Events.Pointer.onClick <| \_ -> screen.closePopup
                             ]
                             []
                         , Element.row
@@ -51,7 +51,7 @@ element screen =
                                 [ Element.width Element.fill
                                 , Element.height Element.fill
                                 , Element.alignLeft
-                                , Element.Events.onClick screen.closePopup
+                                , Element.Events.Pointer.onClick <| \_ -> screen.closePopup
                                 ]
                                 []
                             , Element.column
@@ -66,7 +66,7 @@ element screen =
                                 [ Element.width Element.fill
                                 , Element.height Element.fill
                                 , Element.alignRight
-                                , Element.Events.onClick screen.closePopup
+                                , Element.Events.Pointer.onClick <| \_ -> screen.closePopup
                                 ]
                                 []
                             ]
@@ -74,7 +74,7 @@ element screen =
                             [ Element.width Element.fill
                             , Element.height Element.fill
                             , Element.alignBottom
-                            , Element.Events.onClick screen.closePopup
+                            , Element.Events.Pointer.onClick <| \_ -> screen.closePopup
                             ]
                             []
                         ]

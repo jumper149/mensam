@@ -2,7 +2,7 @@ module Mensam.Element.Header exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import Html.Attributes
@@ -53,7 +53,7 @@ element content =
             [ Element.row
                 [ Element.width Element.fill
                 , Element.height Element.fill
-                , Element.Events.onClick ClickOutsideOfHamburger
+                , Element.Events.Pointer.onClick <| \_ -> ClickOutsideOfHamburger
                 ]
                 [ elementMensam
                 , elementStatus content.httpStatus
@@ -86,7 +86,7 @@ elementMensam =
         , Element.Font.color Mensam.Element.Color.bright.yellow
         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
         , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
-        , Element.Events.onClick ClickMensam
+        , Element.Events.Pointer.onClick <| \_ -> ClickMensam
         ]
     <|
         Element.el
@@ -196,7 +196,7 @@ elementErrors errors unfoldErrors =
                         else
                             Element.rgba 1 1 1 0.1
                     ]
-                , Element.Events.onClick ClickErrors
+                , Element.Events.Pointer.onClick <| \_ -> ClickErrors
                 , Element.below <|
                     if unfoldErrors then
                         Element.column
@@ -270,7 +270,7 @@ elementStatus status =
                 [ Element.width <| Element.px 30
                 , Element.height <| Element.fill
                 , Element.alignLeft
-                , Element.Events.onClick ClickOutsideOfHamburger
+                , Element.Events.Pointer.onClick <| \_ -> ClickOutsideOfHamburger
                 ]
             <|
                 Element.el

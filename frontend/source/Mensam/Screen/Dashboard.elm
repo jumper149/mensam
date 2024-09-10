@@ -2,7 +2,7 @@ module Mensam.Screen.Dashboard exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
 import Html.Events
@@ -128,7 +128,7 @@ element model =
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                             , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                            , Element.Events.onClick <| MessageEffect OpenPageToBrowseSpaces
+                            , Element.Events.Pointer.onClick <| \_ -> MessageEffect OpenPageToBrowseSpaces
                             ]
                           <|
                             Element.el
@@ -164,9 +164,9 @@ element model =
                               , view =
                                     \n (Mensam.Space.MkSpace space) ->
                                         Element.el
-                                            [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedSpace <| Just n
-                                            , Element.Events.onMouseLeave <| MessagePure <| SetSelectedSpace Nothing
-                                            , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
+                                            [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedSpace <| Just n
+                                            , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedSpace Nothing
+                                            , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| ChooseSpace space.id
                                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                             , let
                                                 alpha =
@@ -220,7 +220,7 @@ element model =
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                             , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                            , Element.Events.onClick <| MessageEffect OpenPageToViewReservations
+                            , Element.Events.Pointer.onClick <| \_ -> MessageEffect OpenPageToViewReservations
                             ]
                           <|
                             Element.el
@@ -258,9 +258,9 @@ element model =
                                         Element.el
                                             (case entry.reservation.status of
                                                 Mensam.Reservation.MkStatusPlanned ->
-                                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
-                                                    , Element.Events.onMouseLeave <| MessagePure <| SetSelectedReservation Nothing
-                                                    , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
+                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedReservation <| Just n
+                                                    , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedReservation Nothing
+                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseReservation entry.reservation.id
                                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     , let
@@ -280,7 +280,7 @@ element model =
                                                     ]
 
                                                 Mensam.Reservation.MkStatusCancelled ->
-                                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
+                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedReservation <| Just n
                                                     , Element.Background.color (Element.rgba 1 0 0 0.2)
                                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     ]
@@ -324,9 +324,9 @@ element model =
                                         Element.el
                                             (case entry.reservation.status of
                                                 Mensam.Reservation.MkStatusPlanned ->
-                                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
-                                                    , Element.Events.onMouseLeave <| MessagePure <| SetSelectedReservation Nothing
-                                                    , Element.Events.onClick <| MessagePure <| ChooseReservation entry.reservation.id
+                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedReservation <| Just n
+                                                    , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedReservation Nothing
+                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseReservation entry.reservation.id
                                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     , let
@@ -346,7 +346,7 @@ element model =
                                                     ]
 
                                                 Mensam.Reservation.MkStatusCancelled ->
-                                                    [ Element.Events.onMouseEnter <| MessagePure <| SetSelectedReservation <| Just n
+                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedReservation <| Just n
                                                     , Element.Background.color (Element.rgba 1 0 0 0.2)
                                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     ]

@@ -2,7 +2,7 @@ module Mensam.Screen.Spaces exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import Html.Attributes
@@ -67,7 +67,7 @@ element model =
                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                         , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                        , Element.Events.onClick <| MessagePure OpenDialogToCreate
+                        , Element.Events.Pointer.onClick <| \_ -> MessagePure OpenDialogToCreate
                         ]
                       <|
                         Element.el
@@ -112,9 +112,9 @@ element model =
                           , view =
                                 \n (Mensam.Space.MkSpace space) ->
                                     Element.el
-                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
+                                        [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| ChooseSpace space.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -153,9 +153,9 @@ element model =
                           , view =
                                 \n (Mensam.Space.MkSpace space) ->
                                     Element.el
-                                        [ Element.Events.onMouseEnter <| MessagePure <| SetSelected <| Just n
-                                        , Element.Events.onMouseLeave <| MessagePure <| SetSelected Nothing
-                                        , Element.Events.onClick <| MessageEffect <| ChooseSpace space.id
+                                        [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
+                                        , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
+                                        , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| ChooseSpace space.id
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =

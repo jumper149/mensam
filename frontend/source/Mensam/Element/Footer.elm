@@ -2,7 +2,7 @@ module Mensam.Element.Footer exposing (..)
 
 import Element
 import Element.Background
-import Element.Events
+import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
 import Mensam.Element.Color
@@ -29,7 +29,7 @@ element content =
         , Element.Font.size 17
         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
         , Element.clip
-        , Element.Events.onClick ClickedSomewhere
+        , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
         ]
     <|
         Element.row

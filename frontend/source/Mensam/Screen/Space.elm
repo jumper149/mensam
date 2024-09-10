@@ -3,7 +3,6 @@ module Mensam.Screen.Space exposing (..)
 import Element
 import Element.Background
 import Element.Border
-import Element.Events
 import Element.Events.Pointer
 import Element.Font
 import Element.Window
@@ -606,7 +605,7 @@ elementTabs tabSelected =
                                 Mensam.Element.Color.bright.black
                             )
                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                        , Element.Events.onClick <| MessagePure <| SetTabView tab
+                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| SetTabView tab
                         ]
                     <|
                         Element.el
@@ -645,7 +644,7 @@ deskTimetable model =
                             , Element.height <| Element.px 60
                             , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
                             , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
-                            , Element.Events.onClick <| MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = False }
+                            , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = False }
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , let
                                 alpha =
