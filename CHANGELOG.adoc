@@ -1,5 +1,10 @@
 = Changelog
 
+== `0.8.2.0`
+
+* Frontend
+  ** Use modern pointer events instead of mouse events for better mobile support.
+
 == `0.8.1.0`
 
 * Frontend
