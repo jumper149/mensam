@@ -1,5 +1,10 @@
 = Changelog
 
+== `0.8.3.0`
+
+* Frontend
+  ** Use `touch-action` CSS property for proper touch support on mobile.
+
 == `0.8.2.0`
 
 * Frontend
