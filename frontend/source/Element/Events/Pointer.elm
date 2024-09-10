@@ -1,4 +1,4 @@
-module Element.Events.Pointer exposing (onClick, onDown, onEnter, onLeave, onMove, onUp)
+module Element.Events.Pointer exposing (Event, onClick, onDown, onEnter, onLeave, onMove, onUp)
 
 import Element
 import Html.Events.Extra.Mouse
