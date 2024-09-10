@@ -1,18 +1,14 @@
 module Mensam.Screen.Profile exposing (..)
 
 import Element
-import Element.Background
 import Element.Border
-import Element.Events.Pointer
 import Element.Font
-import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
 import Mensam.Api.PictureDownload
 import Mensam.Api.Profile
 import Mensam.Auth.Bearer
-import Mensam.Element.Color
-import Mensam.Element.Font
+import Mensam.Element.Button
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.User
@@ -75,26 +71,14 @@ element model =
                           <|
                             Element.text "User Profile"
                         , if model.self then
-                            Element.el
-                                [ Element.alignRight
-                                , Element.padding 7
-                                , Element.Background.color Mensam.Element.Color.bright.yellow
-                                , Element.Font.color Mensam.Element.Color.dark.black
-                                , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                                , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                                , Element.Events.Pointer.onClick <| \_ -> MessageEffect OpenPageUserSettings
-                                ]
-                            <|
-                                Element.el
-                                    [ Element.centerX
-                                    , Element.centerY
-                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                    , Element.Font.size 15
-                                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                    ]
-                                <|
-                                    Element.text "Settings"
+                            Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = [ Element.alignRight ]
+                                    , color = Mensam.Element.Button.Gray
+                                    , label = Element.text "Settings"
+                                    , message = Just <| MessageEffect OpenPageUserSettings
+                                    , size = Mensam.Element.Button.Small
+                                    }
 
                           else
                             Element.none

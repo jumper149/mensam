@@ -14,7 +14,6 @@ import Mensam.Api.SpaceList
 import Mensam.Auth.Bearer
 import Mensam.Desk
 import Mensam.Element.Button
-import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
@@ -120,26 +119,14 @@ element model =
                             ]
                           <|
                             Element.text "Your Spaces"
-                        , Element.el
-                            [ Element.alignRight
-                            , Element.padding 7
-                            , Element.Background.color Mensam.Element.Color.bright.yellow
-                            , Element.Font.color Mensam.Element.Color.dark.black
-                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                            , Element.Events.Pointer.onClick <| \_ -> MessageEffect OpenPageToBrowseSpaces
-                            ]
-                          <|
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.Font.size 15
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "Browse"
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.alignRight ]
+                                , color = Mensam.Element.Button.Yellow
+                                , label = Element.text "Browse"
+                                , message = Just <| MessageEffect OpenPageToBrowseSpaces
+                                , size = Mensam.Element.Button.Small
+                                }
                         ]
                     , Element.indexedTable
                         [ Element.width Element.fill
@@ -212,26 +199,14 @@ element model =
                             ]
                           <|
                             Element.text "Upcoming Reservations"
-                        , Element.el
-                            [ Element.alignRight
-                            , Element.padding 7
-                            , Element.Background.color Mensam.Element.Color.bright.yellow
-                            , Element.Font.color Mensam.Element.Color.dark.black
-                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                            , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
-                            , Element.Events.Pointer.onClick <| \_ -> MessageEffect OpenPageToViewReservations
-                            ]
-                          <|
-                            Element.el
-                                [ Element.centerX
-                                , Element.centerY
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.Font.size 15
-                                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                                ]
-                            <|
-                                Element.text "More"
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.alignRight ]
+                                , color = Mensam.Element.Button.Yellow
+                                , label = Element.text "More"
+                                , message = Just <| MessageEffect OpenPageToViewReservations
+                                , size = Mensam.Element.Button.Small
+                                }
                         ]
                     , Element.indexedTable
                         [ Element.width Element.fill
