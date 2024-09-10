@@ -59,6 +59,7 @@ element model =
                             , color = Mensam.Element.Button.Yellow
                             , label = Element.text "Submit Confirmation"
                             , message = Just <| MessageEffect <| SubmitConfirm model.secret
+                            , size = Mensam.Element.Button.Medium
                             }
                     ]
                 ]

@@ -191,6 +191,7 @@ element model =
                                     , color = Mensam.Element.Button.Yellow
                                     , label = Element.text "Join"
                                     , message = Just <| MessageEffect OpenPageToJoin
+                                    , size = Mensam.Element.Button.Medium
                                     }
 
                         Just _ ->
@@ -200,6 +201,7 @@ element model =
                                     , color = Mensam.Element.Button.Red
                                     , label = Element.text "Leave"
                                     , message = Just <| MessagePure OpenDialogToLeave
+                                    , size = Mensam.Element.Button.Medium
                                     }
                     , case model.yourRole of
                         Nothing ->
@@ -217,6 +219,7 @@ element model =
                                             , color = Mensam.Element.Button.Yellow
                                             , label = Element.text "Settings"
                                             , message = Just <| MessageEffect OpenPageToSettings
+                                            , size = Mensam.Element.Button.Medium
                                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
@@ -224,6 +227,7 @@ element model =
                             , color = Mensam.Element.Button.Yellow
                             , label = Element.text "Users"
                             , message = Just <| MessageEffect OpenPageToUsers
+                            , size = Mensam.Element.Button.Medium
                             }
                     , case model.yourRole of
                         Nothing ->
@@ -241,6 +245,7 @@ element model =
                                             , color = Mensam.Element.Button.Yellow
                                             , label = Element.text "Desks"
                                             , message = Just <| MessageEffect OpenPageToDesks
+                                            , size = Mensam.Element.Button.Medium
                                             }
                     ]
                 , Element.column
@@ -310,6 +315,7 @@ element model =
                                                 , MessagePure ResetDateBeginToSelection
                                                 , MessagePure ResetDateBeginToSelection
                                                 ]
+                                    , size = Mensam.Element.Button.Medium
                                     }
                             , Mensam.Element.Button.button <|
                                 Mensam.Element.Button.MkButton
@@ -331,6 +337,7 @@ element model =
                                                 , Mensam.Time.dayToString date.day
                                                 ]
                                     , message = Just <| MessagePure <| ViewDateGlobalPicker <| not model.globalDatePickerVisible
+                                    , size = Mensam.Element.Button.Medium
                                     }
                             , Mensam.Element.Button.button <|
                                 Mensam.Element.Button.MkButton
@@ -344,6 +351,7 @@ element model =
                                                 , MessagePure ResetDateBeginToSelection
                                                 , MessagePure ResetDateBeginToSelection
                                                 ]
+                                    , size = Mensam.Element.Button.Medium
                                     }
                             ]
                         ]
@@ -391,6 +399,7 @@ element model =
                                                     , Mensam.Time.dayToString date.day
                                                     ]
                                         , message = Just <| MessagePure ViewDateBeginPicker
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -405,6 +414,7 @@ element model =
                                             in
                                             Element.text <| Mensam.Time.timeToString time
                                         , message = Just <| MessagePure ViewTimeBeginPicker
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             , Element.el
@@ -475,6 +485,7 @@ element model =
                                                     , Mensam.Time.dayToString date.day
                                                     ]
                                         , message = Just <| MessagePure ViewDateEndPicker
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -489,6 +500,7 @@ element model =
                                             in
                                             Element.text <| Mensam.Time.timeToString time
                                         , message = Just <| MessagePure ViewTimeEndPicker
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             , Element.row
@@ -502,6 +514,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| ViewDetailed Nothing
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -509,6 +522,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Submit"
                                         , message = Just <| MessageEffect <| SubmitReservation
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]
@@ -549,6 +563,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure CloseDialogToLeave
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -556,6 +571,7 @@ element model =
                                         , color = Mensam.Element.Button.Red
                                         , label = Element.text "Abandon space"
                                         , message = Just <| MessageEffect SubmitLeave
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]

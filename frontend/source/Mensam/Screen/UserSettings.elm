@@ -170,6 +170,7 @@ element model =
                                     , color = Mensam.Element.Button.Yellow
                                     , label = Element.text "Upload Pic"
                                     , message = Just <| MessageEffect UploadProfilePictureRequested
+                                    , size = Mensam.Element.Button.Medium
                                     }
                             , Mensam.Element.Button.button <|
                                 Mensam.Element.Button.MkButton
@@ -177,6 +178,7 @@ element model =
                                     , color = Mensam.Element.Button.Red
                                     , label = Element.text "Delete Pic"
                                     , message = Just <| MessagePure OpenDialogToDeleteProfilePicture
+                                    , size = Mensam.Element.Button.Medium
                                     }
                             ]
                         ]
@@ -198,6 +200,7 @@ element model =
                                 , color = Mensam.Element.Button.Yellow
                                 , label = Element.text "Change Password"
                                 , message = Just <| MessagePure OpenDialogToChangePassword
+                                , size = Mensam.Element.Button.Medium
                                 }
                         ]
                     , Element.row
@@ -248,6 +251,7 @@ element model =
                                     , color = Mensam.Element.Button.Yellow
                                     , label = Element.text "Confirm Email Address"
                                     , message = Just <| MessageEffect SubmitConfirmationRequest
+                                    , size = Mensam.Element.Button.Medium
                                     }
                         ]
                     ]
@@ -302,6 +306,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Go back"
                                         , message = Just <| MessagePure <| ClosePopup
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -309,6 +314,7 @@ element model =
                                         , color = Mensam.Element.Button.Blue
                                         , label = Element.text "Submit new Password"
                                         , message = Just <| submitNewPasswordMessage popupModel
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]
@@ -341,6 +347,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Go back"
                                         , message = Just <| MessagePure <| ClosePopup
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -348,6 +355,7 @@ element model =
                                         , color = Mensam.Element.Button.Red
                                         , label = Element.text "Delete Profile Picture"
                                         , message = Just <| MessageEffect DeleteProfilePictureRequest
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]

@@ -87,6 +87,7 @@ element model =
                             , color = Mensam.Element.Button.Yellow
                             , label = Element.text "New Desk"
                             , message = Just <| MessagePure OpenDialogToCreateDesk
+                            , size = Mensam.Element.Button.Medium
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
@@ -94,6 +95,7 @@ element model =
                             , color = Mensam.Element.Button.Gray
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
+                            , size = Mensam.Element.Button.Medium
                             }
                     ]
                 , Element.indexedTable
@@ -236,6 +238,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToCreateDesk
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -243,6 +246,7 @@ element model =
                                         , color = Mensam.Element.Button.Blue
                                         , label = Element.text "Create Desk"
                                         , message = Just <| MessageEffect <| SubmitCreateDesk popupModel
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]
@@ -271,6 +275,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToDeleteDesk
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -278,6 +283,7 @@ element model =
                                         , color = Mensam.Element.Button.Red
                                         , label = Element.text "Delete Desk"
                                         , message = Just <| MessageEffect <| SubmitDeleteDesk { id = popupModel.id }
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]
@@ -342,6 +348,7 @@ element model =
                                                 , color = Mensam.Element.Button.Yellow
                                                 , label = Element.text "Edit Name"
                                                 , message = Just <| MessagePure <| EditDeskEnterName <| Just popupModel.oldName
+                                                , size = Mensam.Element.Button.Medium
                                                 }
 
                                     Just name ->
@@ -364,6 +371,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToEditDesk
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -377,6 +385,7 @@ element model =
                                                         { id = popupModel.id
                                                         , name = popupModel.newName
                                                         }
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]

@@ -88,6 +88,7 @@ element model =
                             , color = Mensam.Element.Button.Yellow
                             , label = Element.text "New Role"
                             , message = Just <| MessagePure OpenDialogToCreateRole
+                            , size = Mensam.Element.Button.Medium
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
@@ -95,6 +96,7 @@ element model =
                             , color = Mensam.Element.Button.Gray
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpaceSettings
+                            , size = Mensam.Element.Button.Medium
                             }
                     ]
                 , Element.indexedTable
@@ -315,6 +317,7 @@ element model =
                                 , Element.height <| Element.px 160
                                 , Element.alignRight
                                 ]
+                                -- TODO: Use `Mensam.Element.Button.button`.
                                 [ Element.Input.button
                                     [ if popupModel.accessibility == Mensam.Space.Role.MkAccessibilityInaccessible then
                                         Element.Background.color Mensam.Element.Color.bright.green
@@ -486,6 +489,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure CloseDialogToCreateRole
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -493,6 +497,7 @@ element model =
                                         , color = Mensam.Element.Button.Blue
                                         , label = Element.text "Create Role"
                                         , message = Just <| MessageEffect <| SubmitCreateRole popupModel
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]

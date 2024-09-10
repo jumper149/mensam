@@ -175,6 +175,7 @@ element model =
 
                                             Just _ ->
                                                 Just <| MessageEffect <| SubmitJoin
+                                    , size = Mensam.Element.Button.Medium
                                     }
                             ]
                         ]

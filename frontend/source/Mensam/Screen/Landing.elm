@@ -62,6 +62,7 @@ element () =
                             , color = Mensam.Element.Button.Yellow
                             , label = Element.text "Sign up"
                             , message = Just <| MessageEffect Register
+                            , size = Mensam.Element.Button.Medium
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
@@ -69,6 +70,7 @@ element () =
                             , color = Mensam.Element.Button.Yellow
                             , label = Element.text "Sign in"
                             , message = Just <| MessageEffect Login
+                            , size = Mensam.Element.Button.Medium
                             }
                     ]
             ]

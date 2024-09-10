@@ -227,6 +227,7 @@ element model =
                                             , color = Mensam.Element.Button.Yellow
                                             , label = Element.text "Abort"
                                             , message = Just <| MessagePure <| CloseDialogToCreate
+                                            , size = Mensam.Element.Button.Medium
                                             }
                                     , Mensam.Element.Button.button <|
                                         Mensam.Element.Button.MkButton
@@ -234,6 +235,7 @@ element model =
                                             , color = Mensam.Element.Button.Yellow
                                             , label = Element.text "Submit"
                                             , message = Just <| MessageEffect <| SubmitCreate formData
+                                            , size = Mensam.Element.Button.Medium
                                             }
                                     ]
                                 ]

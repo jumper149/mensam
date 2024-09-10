@@ -514,6 +514,7 @@ element model =
                                                 , color = Mensam.Element.Button.Yellow
                                                 , label = Element.text "Go back"
                                                 , message = Just <| MessagePure <| ClosePopup
+                                                , size = Mensam.Element.Button.Medium
                                                 }
                                         , Mensam.Element.Button.button <|
                                             Mensam.Element.Button.MkButton
@@ -521,6 +522,7 @@ element model =
                                                 , color = Mensam.Element.Button.Red
                                                 , label = Element.text "Cancel Reservation"
                                                 , message = Just <| MessageEffect <| CancelReservation reservationId
+                                                , size = Mensam.Element.Button.Medium
                                                 }
                                         ]
                                     ]

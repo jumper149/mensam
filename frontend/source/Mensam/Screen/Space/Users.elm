@@ -107,6 +107,7 @@ element model =
                             , color = Mensam.Element.Button.Gray
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
+                            , size = Mensam.Element.Button.Medium
                             }
                     ]
                 , Element.indexedTable
@@ -346,6 +347,7 @@ element model =
                                         , color = Mensam.Element.Button.Red
                                         , label = Element.text "Kick User"
                                         , message = Just <| MessagePure <| OpenDialogToKick popupModel.user
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -353,6 +355,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Profile"
                                         , message = Just <| MessageEffect <| OpenPageToProfile popupModel.user
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             , Element.row
@@ -500,6 +503,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToEditUser
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -513,6 +517,7 @@ element model =
 
                                                 Just role ->
                                                     Just <| MessageEffect <| SubmitEditUser { user = popupModel.user, role = role }
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]
@@ -573,6 +578,7 @@ element model =
                                         , color = Mensam.Element.Button.Yellow
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToKick
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
@@ -580,6 +586,7 @@ element model =
                                         , color = Mensam.Element.Button.Red
                                         , label = Element.text "Kick User"
                                         , message = Just <| MessageEffect <| SubmitKickUser { user = popupModel.user }
+                                        , size = Mensam.Element.Button.Medium
                                         }
                                 ]
                             ]

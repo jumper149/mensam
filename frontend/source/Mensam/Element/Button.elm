@@ -11,11 +11,17 @@ import Mensam.Element.Font
 
 type Button msg
     = MkButton
-        { color : Color
+        { size : Size
+        , color : Color
         , label : Element.Element Never
         , message : Maybe msg
         , attributes : List (Element.Attribute msg)
         }
+
+
+type Size
+    = Small
+    | Medium
 
 
 type Color
@@ -29,7 +35,13 @@ type Color
 button : Button msg -> Element.Element msg
 button (MkButton buttonData) =
     Element.Input.button
-        ([ Element.padding 10
+        ([ Element.padding <|
+            case buttonData.size of
+                Small ->
+                    7
+
+                Medium ->
+                    10
          , Element.Background.color <|
             case buttonData.color of
                 Yellow ->
@@ -105,7 +117,13 @@ button (MkButton buttonData) =
                 [ Element.centerX
                 , Element.centerY
                 , Element.Font.family [ Mensam.Element.Font.condensed ]
-                , Element.Font.size 17
+                , Element.Font.size <|
+                    case buttonData.size of
+                        Small ->
+                            15
+
+                        Medium ->
+                            17
                 , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                 ]
             <|

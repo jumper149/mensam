@@ -106,6 +106,7 @@ element model =
                         , color = Mensam.Element.Button.Yellow
                         , label = Element.text "Sign up"
                         , message = Just <| submitRegisterMessage model
+                        , size = Mensam.Element.Button.Medium
                         }
                 ]
             ]

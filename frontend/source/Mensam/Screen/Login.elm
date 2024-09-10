@@ -89,6 +89,7 @@ element model =
                         , color = Mensam.Element.Button.Yellow
                         , label = Element.text "Sign in"
                         , message = Just <| MessageEffect SubmitLogin
+                        , size = Mensam.Element.Button.Medium
                         }
                 , Element.el [ Element.height <| Element.px 10 ] Element.none
                 , Mensam.Element.Button.button <|
@@ -97,6 +98,7 @@ element model =
                         , color = Mensam.Element.Button.Transparent
                         , label = Element.text "Register"
                         , message = Just <| MessageEffect Register
+                        , size = Mensam.Element.Button.Medium
                         }
                 ]
             ]

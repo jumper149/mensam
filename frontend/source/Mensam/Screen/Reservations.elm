@@ -151,6 +151,7 @@ element model =
                                                 ]
                                     ]
                             , message = Just <| MessagePure ViewDateBeginPicker
+                            , size = Mensam.Element.Button.Medium
                             }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
@@ -187,6 +188,7 @@ element model =
                                                 ]
                                     ]
                             , message = Just <| MessagePure ViewDateEndPicker
+                            , size = Mensam.Element.Button.Medium
                             }
                     ]
                 , Element.indexedTable
@@ -411,6 +413,7 @@ element model =
                                     , color = Mensam.Element.Button.Yellow
                                     , label = Element.text "Set date boundary"
                                     , message = Just <| MessageEffect SetDateRange
+                                    , size = Mensam.Element.Button.Medium
                                     }
                             ]
 
@@ -538,6 +541,7 @@ element model =
                                                 , color = Mensam.Element.Button.Yellow
                                                 , label = Element.text "Go back"
                                                 , message = Just <| MessagePure ClosePopup
+                                                , size = Mensam.Element.Button.Medium
                                                 }
                                         , Mensam.Element.Button.button <|
                                             Mensam.Element.Button.MkButton
@@ -545,6 +549,7 @@ element model =
                                                 , color = Mensam.Element.Button.Red
                                                 , label = Element.text "Cancel reservation"
                                                 , message = Just <| MessageEffect <| CancelReservation reservationId
+                                                , size = Mensam.Element.Button.Medium
                                                 }
                                         ]
                                     ]
