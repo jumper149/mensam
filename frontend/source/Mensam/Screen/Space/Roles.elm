@@ -72,7 +72,7 @@ element model =
                     [ Element.width Element.fill
                     , Element.height <| Element.px 70
                     , Element.padding 10
-                    , Element.spacing 20
+                    , Element.spacing 10
                     ]
                     [ Element.el
                         [ Element.Font.size 30
@@ -92,7 +92,7 @@ element model =
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
-                            , color = Mensam.Element.Button.Yellow
+                            , color = Mensam.Element.Button.Gray
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpaceSettings
                             }

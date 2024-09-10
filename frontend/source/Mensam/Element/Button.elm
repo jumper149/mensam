@@ -22,6 +22,7 @@ type Color
     = Yellow
     | Blue
     | Red
+    | Gray
     | Transparent
 
 
@@ -40,6 +41,9 @@ button (MkButton buttonData) =
                 Red ->
                     Mensam.Element.Color.bright.red
 
+                Gray ->
+                    Mensam.Element.Color.dark.white
+
                 Transparent ->
                     Mensam.Element.Color.transparent
          , Element.Font.color <|
@@ -51,6 +55,9 @@ button (MkButton buttonData) =
                     Mensam.Element.Color.dark.black
 
                 Red ->
+                    Mensam.Element.Color.dark.black
+
+                Gray ->
                     Mensam.Element.Color.dark.black
 
                 Transparent ->
@@ -67,6 +74,9 @@ button (MkButton buttonData) =
                     Red ->
                         Mensam.Element.Color.bright.white
 
+                    Gray ->
+                        Mensam.Element.Color.bright.white
+
                     Transparent ->
                         Mensam.Element.Color.transparent
             , Element.Font.color <|
@@ -78,6 +88,9 @@ button (MkButton buttonData) =
                         Mensam.Element.Color.dark.black
 
                     Red ->
+                        Mensam.Element.Color.dark.black
+
+                    Gray ->
                         Mensam.Element.Color.dark.black
 
                     Transparent ->

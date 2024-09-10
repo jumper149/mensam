@@ -95,7 +95,7 @@ element model =
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
-                            , color = Mensam.Element.Button.Yellow
+                            , color = Mensam.Element.Button.Gray
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
                             }
@@ -268,7 +268,7 @@ element model =
                     [ Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = []
-                            , color = Mensam.Element.Button.Yellow
+                            , color = Mensam.Element.Button.Gray
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
                             }
