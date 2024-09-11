@@ -23,6 +23,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.NameOrIdentifier
 import Mensam.Reservation
+import Mensam.Room
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
@@ -1053,7 +1054,7 @@ deskRoom model =
                 , Element.centerY
                 ]
             <|
-                Element.text "Work in Progress"
+                Mensam.Room.drawRoom Mensam.Room.example
 
 
 type Message

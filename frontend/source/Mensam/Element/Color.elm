@@ -1,31 +1,32 @@
 module Mensam.Element.Color exposing (..)
 
 import Element
+import Mensam.Color
 
 
 dark : AnsiIso6429
 dark =
-    { black = Element.rgb255 40 42 46
-    , red = Element.rgb255 165 66 66
-    , green = Element.rgb255 140 148 64
-    , yellow = Element.rgb255 222 147 95
-    , blue = Element.rgb255 95 129 157
-    , magenta = Element.rgb255 133 103 143
-    , cyan = Element.rgb255 94 141 135
-    , white = Element.rgb255 112 120 128
+    { black = toElementColor Mensam.Color.dark.black
+    , red = toElementColor Mensam.Color.dark.red
+    , green = toElementColor Mensam.Color.dark.green
+    , yellow = toElementColor Mensam.Color.dark.yellow
+    , blue = toElementColor Mensam.Color.dark.blue
+    , magenta = toElementColor Mensam.Color.dark.magenta
+    , cyan = toElementColor Mensam.Color.dark.cyan
+    , white = toElementColor Mensam.Color.dark.white
     }
 
 
 bright : AnsiIso6429
 bright =
-    { black = Element.rgb255 55 59 65
-    , red = Element.rgb255 204 102 102
-    , green = Element.rgb255 181 189 104
-    , yellow = Element.rgb255 240 198 116
-    , blue = Element.rgb255 129 162 190
-    , magenta = Element.rgb255 178 148 187
-    , cyan = Element.rgb255 138 190 183
-    , white = Element.rgb255 197 200 198
+    { black = toElementColor Mensam.Color.bright.black
+    , red = toElementColor Mensam.Color.bright.red
+    , green = toElementColor Mensam.Color.bright.green
+    , yellow = toElementColor Mensam.Color.bright.yellow
+    , blue = toElementColor Mensam.Color.bright.blue
+    , magenta = toElementColor Mensam.Color.bright.magenta
+    , cyan = toElementColor Mensam.Color.bright.cyan
+    , white = toElementColor Mensam.Color.bright.white
     }
 
 
@@ -44,3 +45,8 @@ type alias AnsiIso6429 =
 transparent : Element.Color
 transparent =
     Element.rgba255 0 0 0 0
+
+
+toElementColor : Mensam.Color.Color -> Element.Color
+toElementColor color =
+    Element.rgb255 color.r color.g color.b
