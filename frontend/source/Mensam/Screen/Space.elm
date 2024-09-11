@@ -717,7 +717,7 @@ deskTimetable model =
                                         , MessagePure AbortMouseDragging
                                         ]
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                            , Element.htmlAttribute <| Html.Attributes.style "touch-action" "none"
+                            , Element.htmlAttribute <| Html.Attributes.style "touch-action" "pan-y pinch-zoom"
                             , let
                                 alpha =
                                     case model.selected of
@@ -1044,7 +1044,7 @@ deskRoom model =
                 , Element.Window.onMove <| MessagePure << MessageWindow
                 , Element.Window.onUp <| MessagePure << MessageWindow
                 , Element.Border.width 2
-                , Element.htmlAttribute <| Html.Attributes.style "touch-action" "none"
+                , Element.htmlAttribute <| Html.Attributes.style "touch-action" "pinch-zoom"
                 ]
             }
         <|
