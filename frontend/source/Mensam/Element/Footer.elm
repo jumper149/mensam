@@ -20,7 +20,7 @@ type Message
 
 element : Content -> Element.Element Message
 element content =
-    Element.el
+    Element.row
         [ Element.width Element.fill
         , Element.height <| Element.px 45
         , Element.Background.color <| Element.rgba 1 1 1 0.1
@@ -29,15 +29,40 @@ element content =
         , Element.Font.size 17
         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
         , Element.clip
-        , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
         ]
-    <|
-        Element.row
+        [ Element.el
             [ Element.width Element.fill
             , Element.height Element.fill
+            , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+            , Element.alignLeft
             ]
-            [ elementSource content
+            Element.none
+        , Element.column
+            [ Element.height Element.fill ]
+            [ Element.el
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+                , Element.alignTop
+                ]
+                Element.none
+            , elementSource content
+            , Element.el
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+                , Element.alignBottom
+                ]
+                Element.none
             ]
+        , Element.el
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+            , Element.alignRight
+            ]
+            Element.none
+        ]
 
 
 elementSource : Content -> Element.Element Message
