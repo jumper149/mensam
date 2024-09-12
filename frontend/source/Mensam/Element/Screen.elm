@@ -4,6 +4,7 @@ import Element
 import Element.Background
 import Element.Events.Pointer
 import Element.Font
+import Html.Attributes
 import Mensam.Element.Color
 import Mensam.Element.Font
 
@@ -39,6 +40,7 @@ element screen =
                             , Element.height <| Element.px 30
                             , Element.alignTop
                             , Element.Events.Pointer.onClick <| \_ -> screen.closePopup
+                            , Element.htmlAttribute <| Html.Attributes.style "filter" "blur(0)"
                             ]
                             []
                         , Element.row
@@ -80,4 +82,18 @@ element screen =
                         ]
         ]
     <|
-        screen.main
+        Element.el
+            ([ Element.width Element.fill
+             , Element.height Element.fill
+             ]
+                ++ (case screen.popup of
+                        Nothing ->
+                            []
+
+                        Just _ ->
+                            [ Element.htmlAttribute <| Html.Attributes.style "filter" "blur(2px)"
+                            ]
+                   )
+            )
+        <|
+            screen.main
