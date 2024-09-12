@@ -580,16 +580,20 @@ element model =
                               <|
                                 Element.text "Leave Space"
                             , Element.paragraph
-                                []
-                                [ Element.text "Are you sure you want to leave this space?"
+                                [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
                                 ]
-                            , Element.paragraph
-                                []
                                 [ Element.text "When leaving a space you lose all permissions you had for this space."
                                 ]
                             , Element.paragraph
-                                []
+                                [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                ]
                                 [ Element.text "Your reservations will remain untouched."
+                                ]
+                            , Element.paragraph
+                                [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                , Element.alignBottom
+                                ]
+                                [ Element.text "Are you sure you want to leave this space?"
                                 ]
                             , Element.row
                                 [ Element.width Element.fill

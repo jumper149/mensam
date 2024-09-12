@@ -379,7 +379,8 @@ element model =
                                                         Mensam.User.nameToString info.name
                                 ]
                             , Element.paragraph
-                                []
+                                [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                ]
                                 [ Element.text "Choose a new role for this user."
                                 ]
                             , Element.indexedTable
