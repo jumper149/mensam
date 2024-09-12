@@ -166,7 +166,7 @@ init args =
             }
     , globalDatePickerVisible = False
     , tabView = TabTimetable
-    , window = Element.Window.init Element.Window.defaultConfig { position = { x = 150, y = 150 } }
+    , window = Element.Window.init Element.Window.defaultConfig { position = { x = 183.5, y = 250 } }
     }
 
 
@@ -1039,8 +1039,8 @@ deskRoom model =
         Element.Window.view model.window
             { viewportAttributes = []
             , contentAttributes =
-                [ Element.width <| Element.px 800
-                , Element.height <| Element.px 800
+                [ Element.width <| Element.px 10000
+                , Element.height <| Element.px 10000
                 , Element.Window.onDown <| MessagePure << MessageWindow
                 , Element.Window.onMove <| MessagePure << MessageWindow
                 , Element.Window.onUp <| MessagePure << MessageWindow

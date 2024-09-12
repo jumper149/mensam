@@ -76,8 +76,6 @@ view model { viewportAttributes, contentAttributes } content =
     Element.el
         ([ Element.htmlAttribute <| HA.style "overflow" "hidden"
          , Element.htmlAttribute <| HA.style "box-sizing" "border-box"
-         , Element.htmlAttribute <| HA.style "width" "100vw"
-         , Element.htmlAttribute <| HA.style "height" "100vh"
          ]
             ++ viewportAttributes
         )

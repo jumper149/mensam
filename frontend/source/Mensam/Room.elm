@@ -216,7 +216,7 @@ drawInstruction instruction =
 example : Room
 example =
     MkRoom
-        { dimensions = { minX = -500, minY = -500, maxX = 500, maxY = 500 }
+        { dimensions = { minX = -5000, minY = -5000, maxX = 5000, maxY = 5000 }
         , drawingInstructions =
             let
                 studentTable x y dir =
