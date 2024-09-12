@@ -1054,7 +1054,13 @@ deskRoom model =
                 , Element.centerY
                 ]
             <|
-                Mensam.Room.drawRoom Mensam.Room.example
+                Mensam.Room.drawRoom <|
+                    Mensam.Room.example
+                        -- TODO: Add useful messages.
+                        { onClickTable = Messages []
+                        , onEnterTable = Messages []
+                        , onLeaveTable = Messages []
+                        }
 
 
 type Message

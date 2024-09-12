@@ -4,16 +4,22 @@ import Element
 import Mensam.Svg.Color
 import Svg
 import Svg.Attributes
+import Svg.Events
 
 
-type Room
+type Room msg
     = MkRoom
         { dimensions : { minX : Int, minY : Int, maxX : Int, maxY : Int }
-        , drawingInstructions : List DrawingInstructions
+        , drawingInstructions : List (DrawingInstructions msg)
+        , messages :
+            { onClickTable : msg
+            , onEnterTable : msg
+            , onLeaveTable : msg
+            }
         }
 
 
-type DrawingInstructions
+type DrawingInstructions msg
     = DrawGrid { spacing : Distance }
     | DrawTable
         { position : Position
@@ -70,7 +76,7 @@ directionGetDegrees (MkDirection direction) =
     -direction.degrees
 
 
-drawRoom : Room -> Element.Element msg
+drawRoom : Room msg -> Element.Element msg
 drawRoom (MkRoom room) =
     Element.html <|
         Svg.svg
@@ -94,11 +100,12 @@ drawRoom (MkRoom room) =
                     ]
             ]
         <|
-            List.concatMap drawInstruction room.drawingInstructions
+            List.concatMap (drawInstruction room.messages) <|
+                room.drawingInstructions
 
 
-drawInstruction : DrawingInstructions -> List (Svg.Svg msg)
-drawInstruction instruction =
+drawInstruction : { onClickTable : msg, onEnterTable : msg, onLeaveTable : msg } -> DrawingInstructions msg -> List (Svg.Svg msg)
+drawInstruction messages instruction =
     case instruction of
         DrawGrid { spacing } ->
             let
@@ -207,14 +214,17 @@ drawInstruction instruction =
                     , Svg.Attributes.width <| String.fromFloat <| distanceGet size.width
                     , Svg.Attributes.height <| String.fromFloat <| distanceGet size.depth
                     , Svg.Attributes.fill Mensam.Svg.Color.bright.white
+                    , Svg.Events.onClick messages.onClickTable
+                    , Svg.Events.onMouseOver messages.onEnterTable
+                    , Svg.Events.onMouseOut messages.onLeaveTable
                     ]
                     []
                 ]
             ]
 
 
-example : Room
-example =
+example : { onClickTable : msg, onEnterTable : msg, onLeaveTable : msg } -> Room msg
+example messages =
     MkRoom
         { dimensions = { minX = -5000, minY = -5000, maxX = 5000, maxY = 5000 }
         , drawingInstructions =
@@ -239,4 +249,5 @@ example =
                 , size = { width = MkDistance 200, depth = MkDistance 90 }
                 }
             ]
+        , messages = messages
         }
