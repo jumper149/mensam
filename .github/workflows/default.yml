@@ -6,11 +6,11 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - name: "Set up GitHub Actions"
-      uses: actions/checkout@v4.1.1
+      uses: actions/checkout@v4.1.7
     - name: "Set up Nix"
-      uses: cachix/install-nix-action@v26
+      uses: cachix/install-nix-action@v27
     - name: "Set up Cachix"
-      uses: cachix/cachix-action@v14
+      uses: cachix/cachix-action@v15
       with:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         name: jumper149-mensam
@@ -26,11 +26,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: "Set up GitHub Actions"
-      uses: actions/checkout@v4.1.1
+      uses: actions/checkout@v4.1.7
     - name: "Set up Nix"
-      uses: cachix/install-nix-action@v26
+      uses: cachix/install-nix-action@v27
     - name: "Set up Cachix"
-      uses: cachix/cachix-action@v14
+      uses: cachix/cachix-action@v15
       with:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         name: jumper149-mensam
@@ -47,11 +47,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: "Set up GitHub Actions"
-      uses: actions/checkout@v4.1.1
+      uses: actions/checkout@v4.1.7
     - name: "Set up Nix"
-      uses: cachix/install-nix-action@v26
+      uses: cachix/install-nix-action@v27
     - name: "Set up Cachix"
-      uses: cachix/cachix-action@v14
+      uses: cachix/cachix-action@v15
       with:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         name: jumper149-mensam
