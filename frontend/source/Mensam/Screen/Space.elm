@@ -1052,6 +1052,22 @@ deskRoom model =
             Element.el
                 [ Element.centerX
                 , Element.centerY
+                , Element.inFront <|
+                    Element.el
+                        ([ Element.centerX
+                         , Element.centerY
+                         , Element.Font.color Mensam.Element.Color.dark.green
+                         , Element.Font.size 30
+                         , Element.Font.glow Mensam.Element.Color.dark.black 5
+                         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                         , Element.htmlAttribute <| Html.Attributes.style "transform" "rotate(-30deg)"
+                         ]
+                            ++ (Mensam.Element.Font.font <|
+                                    Mensam.Element.Font.SansSerif { weight = Mensam.Element.Font.Bold700, italic = True }
+                               )
+                        )
+                    <|
+                        Element.text "Work in Progress"
                 ]
             <|
                 Mensam.Room.drawRoom <|
