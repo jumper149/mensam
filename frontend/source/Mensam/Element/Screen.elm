@@ -59,7 +59,7 @@ element screen =
                                 , Element.width <| Element.minimum 300 <| Element.maximum 330 <| Element.fill
                                 , Element.height Element.fill
                                 , Element.centerX
-                                , Element.paddingXY 30 30
+                                , Element.paddingXY 25 25
                                 ]
                                 [ popup ]
                             , Element.column
