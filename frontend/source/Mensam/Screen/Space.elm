@@ -1073,7 +1073,7 @@ deskRoom model =
                 Mensam.Room.drawRoom <|
                     Mensam.Room.example
                         -- TODO: Add useful messages.
-                        { onClickTable = Messages []
+                        { onClickTable = MessagePure <| SetTabView TabTimetable
                         , onEnterTable = Messages []
                         , onLeaveTable = Messages []
                         }
