@@ -14,23 +14,40 @@ type Room
 
 
 type DrawingInstructions
-    = DrawTable { position : Position, direction : Direction }
+    = DrawGrid { spacing : Distance }
+    | DrawTable
+        { position : Position
+        , direction : Direction
+        , size :
+            { width : Distance
+            , depth : Distance
+            }
+        }
 
 
 {-| A point on a 2D grid.
 -}
 type Position
-    = MkPosition { x : Int, y : Int }
+    = MkPosition { x : Float, y : Float }
 
 
-getX : Position -> Int
-getX (MkPosition position) =
+positionGetX : Position -> Float
+positionGetX (MkPosition position) =
     position.x
 
 
-getY : Position -> Int
-getY (MkPosition position) =
+positionGetY : Position -> Float
+positionGetY (MkPosition position) =
     position.y
+
+
+type Distance
+    = MkDistance Float
+
+
+distanceGet : Distance -> Float
+distanceGet (MkDistance distance) =
+    distance
 
 
 {-| A direction on a 2D grid.
@@ -48,12 +65,17 @@ type Direction
     = MkDirection { degrees : Int }
 
 
+directionGetDegrees : Direction -> Int
+directionGetDegrees (MkDirection direction) =
+    -direction.degrees
+
+
 drawRoom : Room -> Element.Element msg
 drawRoom (MkRoom room) =
     Element.html <|
         Svg.svg
-            [ Svg.Attributes.width "100"
-            , Svg.Attributes.height "100"
+            [ Svg.Attributes.width <| String.fromInt <| room.dimensions.maxX - room.dimensions.minX
+            , Svg.Attributes.height <| String.fromInt <| room.dimensions.maxY - room.dimensions.minY
             , Svg.Attributes.viewBox <|
                 String.concat
                     [ String.fromInt room.dimensions.minX
@@ -64,6 +86,12 @@ drawRoom (MkRoom room) =
                     , " "
                     , String.fromInt <| room.dimensions.maxY - room.dimensions.minY
                     ]
+            , Svg.Attributes.transform <|
+                String.concat
+                    [ "scale(0.5)"
+                    , " "
+                    , "scale(1,-1)"
+                    ]
             ]
         <|
             List.concatMap drawInstruction room.drawingInstructions
@@ -72,25 +100,143 @@ drawRoom (MkRoom room) =
 drawInstruction : DrawingInstructions -> List (Svg.Svg msg)
 drawInstruction instruction =
     case instruction of
-        DrawTable { position, direction } ->
-            [ Svg.rect
-                [ Svg.Attributes.x <| String.fromInt <| getX position
-                , Svg.Attributes.y <| String.fromInt <| getY position
-                , Svg.Attributes.width "10"
-                , Svg.Attributes.height "5"
-                , Svg.Attributes.fill Mensam.Svg.Color.bright.white
-                ]
+        DrawGrid { spacing } ->
+            let
+                smallSpacing =
+                    String.fromFloat <| distanceGet spacing
+
+                largeSpacing =
+                    String.fromFloat <| 10 * distanceGet spacing
+            in
+            [ Svg.g
                 []
+                [ Svg.defs
+                    []
+                    [ Svg.pattern
+                        [ Svg.Attributes.id "smallGrid"
+                        , Svg.Attributes.width smallSpacing
+                        , Svg.Attributes.height smallSpacing
+                        , Svg.Attributes.patternUnits "userSpaceOnUse"
+                        ]
+                        [ Svg.path
+                            [ Svg.Attributes.d <| "M " ++ smallSpacing ++ " 0 L 0 0 0 " ++ smallSpacing
+                            , Svg.Attributes.fill "none"
+                            , Svg.Attributes.stroke Mensam.Svg.Color.dark.black
+                            , Svg.Attributes.strokeWidth "0.5"
+                            ]
+                            []
+                        ]
+                    , Svg.pattern
+                        [ Svg.Attributes.id "largeGrid"
+                        , Svg.Attributes.width largeSpacing
+                        , Svg.Attributes.height largeSpacing
+                        , Svg.Attributes.patternUnits "userSpaceOnUse"
+                        ]
+                        [ Svg.rect
+                            [ Svg.Attributes.width largeSpacing
+                            , Svg.Attributes.height largeSpacing
+                            , Svg.Attributes.fill "url(#smallGrid)"
+                            ]
+                            []
+                        , Svg.path
+                            [ Svg.Attributes.d <| "M " ++ largeSpacing ++ " 0 L 0 0 0 " ++ largeSpacing
+                            , Svg.Attributes.fill "none"
+                            , Svg.Attributes.stroke Mensam.Svg.Color.dark.black
+                            , Svg.Attributes.strokeWidth "1"
+                            ]
+                            []
+                        ]
+                    ]
+                , Svg.rect
+                    [ Svg.Attributes.width "100%"
+                    , Svg.Attributes.height "100%"
+                    , Svg.Attributes.fill "url(#largeGrid)"
+                    , Svg.Attributes.transform "rotate(0)"
+                    ]
+                    []
+                , Svg.rect
+                    [ Svg.Attributes.width "100%"
+                    , Svg.Attributes.height "100%"
+                    , Svg.Attributes.fill "url(#largeGrid)"
+                    , Svg.Attributes.transform "rotate(90)"
+                    ]
+                    []
+                , Svg.rect
+                    [ Svg.Attributes.width "100%"
+                    , Svg.Attributes.height "100%"
+                    , Svg.Attributes.fill "url(#largeGrid)"
+                    , Svg.Attributes.transform "rotate(180)"
+                    ]
+                    []
+                , Svg.rect
+                    [ Svg.Attributes.width "100%"
+                    , Svg.Attributes.height "100%"
+                    , Svg.Attributes.fill "url(#largeGrid)"
+                    , Svg.Attributes.transform "rotate(270)"
+                    ]
+                    []
+                ]
+            ]
+
+        DrawTable { position, direction, size } ->
+            [ Svg.g
+                [ Svg.Attributes.transform <|
+                    String.concat
+                        [ "translate("
+                        , String.fromFloat <| positionGetX position
+                        , ","
+                        , String.fromFloat <| positionGetY position
+                        , ")"
+                        , " "
+                        , "rotate("
+                        , String.fromInt <| directionGetDegrees direction
+                        , ")"
+                        ]
+                ]
+                [ Svg.rect
+                    [ Svg.Attributes.x "-25"
+                    , Svg.Attributes.y <| String.fromFloat <| -(10 + 30 + distanceGet size.depth / 2)
+                    , Svg.Attributes.width "50"
+                    , Svg.Attributes.height "30"
+                    , Svg.Attributes.fill Mensam.Svg.Color.bright.white
+                    ]
+                    []
+                , Svg.rect
+                    [ Svg.Attributes.x <| String.fromFloat <| 0 - distanceGet size.width / 2
+                    , Svg.Attributes.y <| String.fromFloat <| 0 - distanceGet size.depth / 2
+                    , Svg.Attributes.width <| String.fromFloat <| distanceGet size.width
+                    , Svg.Attributes.height <| String.fromFloat <| distanceGet size.depth
+                    , Svg.Attributes.fill Mensam.Svg.Color.bright.white
+                    ]
+                    []
+                ]
             ]
 
 
 example : Room
 example =
     MkRoom
-        { dimensions = { minX = -50, minY = -50, maxX = 50, maxY = 50 }
+        { dimensions = { minX = -500, minY = -500, maxX = 500, maxY = 500 }
         , drawingInstructions =
-            [ DrawTable { position = MkPosition { x = 0, y = 0 }, direction = MkDirection { degrees = 0 } }
-            , DrawTable { position = MkPosition { x = 20, y = 0 }, direction = MkDirection { degrees = 90 } }
-            , DrawTable { position = MkPosition { x = 20, y = -20 }, direction = MkDirection { degrees = 90 } }
+            let
+                studentTable x y dir =
+                    DrawTable
+                        { position = MkPosition { x = x, y = y }
+                        , direction = MkDirection { degrees = dir }
+                        , size = { width = MkDistance 160, depth = MkDistance 90 }
+                        }
+            in
+            [ DrawGrid { spacing = MkDistance 10 }
+            , studentTable -100 -300 10
+            , studentTable 100 -300 -4
+            , studentTable -100 -100 -5
+            , studentTable 100 -100 0
+            , studentTable -100 100 3
+            , studentTable 100 100 -2
+            , DrawTable
+                { position = MkPosition { x = 0, y = 300 }
+                , direction = MkDirection { degrees = 180 }
+                , size = { width = MkDistance 200, depth = MkDistance 90 }
+                }
             ]
         }
