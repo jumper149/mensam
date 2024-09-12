@@ -133,8 +133,8 @@
         servant = prev.fetchFromGitHub {
           owner  = "haskell-servant";
           repo   = "servant";
-          rev    = "ef4b38a342469ba2a73b6a4aec07c915a43bd2f3";
-          sha256 = "sha256-J8Yp+Q9N160Q2kuYxMzFUNwue7l0nRSVe6inO4kNyFI=";
+          rev    = "v0.20.2";
+          sha256 = "sha256-OW5R6RYRZ3i+xSKUILPDPNjt+yB8YJKlrIQ5TW3N3ho=";
         };
       };
     in {
