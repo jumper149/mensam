@@ -2,6 +2,7 @@ module Mensam.Server.Configuration.Email where
 
 import Mensam.API.Aeson
 
+import Control.DeepSeq
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.Word
@@ -19,6 +20,7 @@ data EmailConfig = MkEmailConfig
   , emailTls :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (NFData)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "Mk" "email") EmailConfig

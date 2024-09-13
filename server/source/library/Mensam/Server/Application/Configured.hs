@@ -7,6 +7,7 @@ import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Environment.Class
 import Mensam.Server.Configuration
 
+import Control.DeepSeq
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
@@ -39,4 +40,4 @@ runAppConfiguredT tma = do
   maybeConfig <- acquireConfig
   case maybeConfig of
     Nothing -> error "No configuration."
-    Just config -> runConfiguredT tma config
+    Just config -> runConfiguredT tma $ force config

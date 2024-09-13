@@ -51,6 +51,7 @@ common dependencies
     , bytestring
     , brick
     , containers
+    , deepseq
     , deriving-aeson
     , deriving-trans
     , email-validate

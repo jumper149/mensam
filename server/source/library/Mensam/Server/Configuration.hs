@@ -5,6 +5,7 @@ import Mensam.Server.Configuration.BaseUrl
 import Mensam.Server.Configuration.Email
 import Mensam.Server.Configuration.SQLite
 
+import Control.DeepSeq
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.List.NonEmpty qualified as NE
@@ -25,6 +26,7 @@ data Configuration = Configuration
   , configAuth :: AuthConfig
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (NFData)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "" "config") Configuration
@@ -34,6 +36,7 @@ newtype AuthConfig = AuthConfig
   { authTimeoutSeconds :: Maybe Integer
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (NFData)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "" "auth") AuthConfig
@@ -44,6 +47,7 @@ data FontConfig = FontConfig
   , fontPreload :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (NFData)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "" "font") FontConfig

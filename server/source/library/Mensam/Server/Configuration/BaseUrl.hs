@@ -2,6 +2,7 @@ module Mensam.Server.Configuration.BaseUrl where
 
 import Mensam.API.Aeson
 
+import Control.DeepSeq
 import Data.Aeson qualified as A
 import Data.Kind
 import Data.Text qualified as T
@@ -24,6 +25,7 @@ data BaseUrl = BaseUrl
   , baseUrlPath :: [T.Text]
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (NFData)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "" "baseUrl") BaseUrl
@@ -38,6 +40,7 @@ data BaseUrlAuthority = BaseUrlAuthority
   , baseUrlAuthorityPort :: Maybe Word16
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (NFData)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "BaseUrl" "baseUrlAuthority") BaseUrlAuthority
