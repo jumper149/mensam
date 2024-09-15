@@ -35,6 +35,7 @@
         description = "Mensam";
         environment = {
           MENSAM_CONFIG_FILE = "/etc/mensam.json";
+          MENSAM_LOG_COLOR = "False";
           MENSAM_LOG_FILE = "/var/log/mensam/access.log";
           MENSAM_LOG_LEVEL = "LevelInfo";
         } // config.services.mensam.environment;

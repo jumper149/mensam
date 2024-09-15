@@ -23,17 +23,17 @@ acquireEnvironment = do
 
   (environment, unconsumedEnv) <- flip runStateT env . descend $ do
     configFile <- lookupEnvironmentVariable SEnvVarConfigFile
+    logColor <- lookupEnvironmentVariable SEnvVarLogColor
     logFile <- lookupEnvironmentVariable SEnvVarLogFile
     logLevel <- lookupEnvironmentVariable SEnvVarLogLevel
-    logColor <- lookupEnvironmentVariable SEnvVarLogColor
 
     let
       environment :: SEnvVar envVar -> Const (EnvVarValue envVar) envVar
       environment = \case
         SEnvVarConfigFile -> configFile
+        SEnvVarLogColor -> logColor
         SEnvVarLogFile -> logFile
         SEnvVarLogLevel -> logLevel
-        SEnvVarLogColor -> logColor
 
     pure $ MkEnvironment $ getConst . environment
 
