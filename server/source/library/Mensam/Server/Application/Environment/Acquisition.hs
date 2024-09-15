@@ -25,6 +25,7 @@ acquireEnvironment = do
     configFile <- lookupEnvironmentVariable SEnvVarConfigFile
     logFile <- lookupEnvironmentVariable SEnvVarLogFile
     logLevel <- lookupEnvironmentVariable SEnvVarLogLevel
+    logColor <- lookupEnvironmentVariable SEnvVarLogColor
 
     let
       environment :: SEnvVar envVar -> Const (EnvVarValue envVar) envVar
@@ -32,6 +33,7 @@ acquireEnvironment = do
         SEnvVarConfigFile -> configFile
         SEnvVarLogFile -> logFile
         SEnvVarLogLevel -> logLevel
+        SEnvVarLogColor -> logColor
 
     pure $ MkEnvironment $ getConst . environment
 
