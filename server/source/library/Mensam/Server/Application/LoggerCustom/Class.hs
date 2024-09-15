@@ -31,42 +31,46 @@ deriving via
     ) =>
     MonadLoggerCustom (ComposeT t1 t2 m)
 
-wrapLogStrWithFontEffects :: Bool -> FontEffects -> LogStr -> LogStr
-wrapLogStrWithFontEffects colorCapability fontEffects str =
-  if colorCapability
-    then
-      fold
-        [ "\ESC[0m"
-        , "\ESC[" <> fontEffectsRendered <> "m"
-        , str
-        , "\ESC[0m"
-        ]
-    else str
- where
-  fontEffectsRendered = toLogStr $ fold $ L.intersperse ";" $ show <$> 0 : unFontEffects fontEffects
+withoutFontEffects :: LogStr -> LogStrWithFontEffects
+withoutFontEffects logStr = MkLogStrWithFontEffectsUnsafe [Left logStr]
+
+withFontEffects :: FontEffects -> LogStr -> LogStrWithFontEffects
+withFontEffects fontEffects logStr = MkLogStrWithFontEffectsUnsafe [Right (logStr, fontEffects)]
 
 type LogStrWithFontEffects :: Type
-newtype LogStrWithFontEffects = MkLogStrWithFontEffects {unLogStrWithFontEffects :: [Either LogStr (LogStr, FontEffects)]}
+newtype LogStrWithFontEffects = MkLogStrWithFontEffectsUnsafe {unLogStrWithFontEffects :: [Either LogStr (LogStr, FontEffects)]}
   deriving stock (Eq, Show)
   deriving newtype (Semigroup, Monoid)
 
 instance IsString LogStrWithFontEffects where
-  fromString = MkLogStrWithFontEffects . (: []) . Left . toLogStr
+  fromString = MkLogStrWithFontEffectsUnsafe . (: []) . Left . toLogStr
 
 type FontEffects :: Type
 newtype FontEffects = MkFontEffects {unFontEffects :: [Int]}
   deriving stock (Eq, Generic, Ord, Read, Show)
 
-renderLogStrWithFontEffects :: Bool -> LogStrWithFontEffects -> LogStr
-renderLogStrWithFontEffects colorCapability = \case
-  MkLogStrWithFontEffects [] -> ""
-  MkLogStrWithFontEffects (part : parts) ->
+renderLogStrWithFontEffectsUnsafe :: Bool -> LogStrWithFontEffects -> LogStr
+renderLogStrWithFontEffectsUnsafe colorCapability = \case
+  MkLogStrWithFontEffectsUnsafe [] -> ""
+  MkLogStrWithFontEffectsUnsafe (part : parts) ->
     let
       renderedPart =
         case part of
           Left logStr -> logStr
           Right (logStr, fontEffects) ->
-            wrapLogStrWithFontEffects colorCapability fontEffects logStr
-      renderedParts = renderLogStrWithFontEffects colorCapability $ MkLogStrWithFontEffects parts
+            if colorCapability
+              then wrapLogStrWithFontEffects fontEffects logStr
+              else logStr
+      renderedParts = renderLogStrWithFontEffectsUnsafe colorCapability $ MkLogStrWithFontEffectsUnsafe parts
      in
       renderedPart <> renderedParts
+ where
+  wrapLogStrWithFontEffects :: FontEffects -> LogStr -> LogStr
+  wrapLogStrWithFontEffects fontEffects str =
+    fold
+      [ "\ESC[" <> fontEffectsRendered <> "m"
+      , str
+      , "\ESC[0m"
+      ]
+   where
+    fontEffectsRendered = toLogStr $ fold $ L.intersperse ";" $ show <$> 0 : unFontEffects fontEffects

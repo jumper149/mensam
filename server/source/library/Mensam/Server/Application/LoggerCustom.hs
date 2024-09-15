@@ -34,8 +34,13 @@ instance MonadIO m => MonadLogger (CustomLoggingT m) where
     time <- lift $ liftIO T.getCurrentTime
     let timeInfo = T.iso8601Show time
     logColorCapability <- colorfulLogCapability
-    let timeLogStr = wrapLogStrWithFontEffects logColorCapability (MkFontEffects [2, 94]) $ "@{" <> toLogStr timeInfo <> "} "
-    CustomLoggingT . monadLoggerLog loc logSource logLevel $ timeLogStr <> toLogStr logStr
+    CustomLoggingT . monadLoggerLog loc logSource logLevel $
+      renderLogStrWithFontEffectsUnsafe logColorCapability $
+        fold
+          [ withFontEffects (MkFontEffects [2, 94]) $ "@{" <> toLogStr timeInfo <> "}"
+          , " "
+          , withoutFontEffects $ toLogStr logStr
+          ]
 
 deriving via
   CustomLoggingT ((t2 :: (Type -> Type) -> Type -> Type) m)
@@ -79,13 +84,14 @@ runCustomLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . wi
   logStr :: Loc -> LogSource -> LogLevel -> LogStr -> LogStr
   logStr loc src lvl msg =
     (<> "\n") $
-      fold $
-        L.intersperse " " $
-          M.catMaybes
-            [ Just $ wrapLogStrWithFontEffects configuredLogColor (levelColor lvl) $ levelLogStr lvl src
-            , Just $ wrapLogStrWithFontEffects configuredLogColor (MkFontEffects []) msg
-            , wrapLogStrWithFontEffects configuredLogColor (MkFontEffects [2, 34]) <$> locLogStr loc
-            ]
+      renderLogStrWithFontEffectsUnsafe configuredLogColor $
+        fold $
+          L.intersperse " " $
+            M.catMaybes
+              [ Just $ withFontEffects (levelColor lvl) $ levelLogStr lvl src
+              , Just $ withoutFontEffects msg
+              , withFontEffects (MkFontEffects [2, 34]) <$> locLogStr loc
+              ]
   levelLogStr :: LogLevel -> LogSource -> LogStr
   levelLogStr level source =
     fold
