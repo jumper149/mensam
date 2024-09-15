@@ -7,10 +7,12 @@ import Mensam.Server.Application.Environment.Class
 import Control.Monad.Catch
 import Control.Monad.Logger.CallStack
 import Control.Monad.Logger.OrphanInstances ()
+import Control.Monad.Reader.Class
 import Control.Monad.Trans
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Control
 import Control.Monad.Trans.Control.Identity
+import Control.Monad.Trans.Reader qualified as T
 import Data.ByteString.Char8 qualified as B
 import Data.Foldable
 import Data.Kind
@@ -22,7 +24,7 @@ import Data.Time.Format.ISO8601 qualified as T
 import System.IO
 
 type TimedLoggingT :: (Type -> Type) -> Type -> Type
-newtype TimedLoggingT m a = TimedLoggingT {unTimedLoggingT :: LoggingT m a}
+newtype TimedLoggingT m a = TimedLoggingT {unTimedLoggingT :: ComposeT (T.ReaderT Bool) LoggingT m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
 
@@ -30,8 +32,21 @@ instance MonadIO m => MonadLogger (TimedLoggingT m) where
   monadLoggerLog loc logSource logLevel logStr = do
     time <- lift $ liftIO T.getCurrentTime
     let timeInfo = T.iso8601Show time
-    TimedLoggingT . monadLoggerLog loc logSource logLevel . toLogStr $
-      "@{" <> B.pack timeInfo <> "} " <> fromLogStr (toLogStr logStr)
+    logColor <- TimedLoggingT ask
+    let
+      wrapWithFontEffects :: LogStr -> LogStr -> LogStr
+      wrapWithFontEffects fontEffects str =
+        if logColor
+          then
+            fold
+              [ "\ESC[0m"
+              , "\ESC[" <> fontEffects <> "m"
+              , str
+              , "\ESC[0m"
+              ]
+          else str
+    let timeLogStr = wrapWithFontEffects "2;94" $ "@{" <> toLogStr timeInfo <> "} "
+    TimedLoggingT . monadLoggerLog loc logSource logLevel $ timeLogStr <> toLogStr logStr
 
 deriving via
   TimedLoggingT ((t2 :: (Type -> Type) -> Type -> Type) m)
@@ -47,7 +62,7 @@ runTimedLoggingT ::
   Bool ->
   TimedLoggingT m a ->
   m a
-runTimedLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . withFilter . unTimedLoggingT
+runTimedLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . withFilter . (`T.runReaderT` configuredLogColor) . deComposeT . unTimedLoggingT
  where
   run = maybe runStdoutLoggingTCustom runFileLoggingTCustom maybeFilePath
   withFilter = filterLogger $ \_src lvl -> lvl >= configuredLogLevel
@@ -72,7 +87,7 @@ runTimedLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . wit
           M.catMaybes
             [ Just $ wrapWithFontEffects (levelColor lvl) $ levelLogStr lvl src
             , Just $ wrapWithFontEffects "0" msg
-            , wrapWithFontEffects "34" <$> locLogStr loc
+            , wrapWithFontEffects "2;34" <$> locLogStr loc
             ]
   levelLogStr :: LogLevel -> LogSource -> LogStr
   levelLogStr level source =
@@ -118,7 +133,7 @@ runTimedLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . wit
       else str
   levelColor :: LogLevel -> LogStr
   levelColor = \case
-    LevelDebug -> "34"
+    LevelDebug -> "36"
     LevelInfo -> "32"
     LevelWarn -> "33"
     LevelError -> "31"

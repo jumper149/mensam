@@ -1,5 +1,8 @@
 = Changelog
 
+* Backend
+  ** Add new environment variable `MENSAM_LOG_COLOR` for colorful log messages.
+
 == `0.9.0.0`
 
 * Updated dependencies.
