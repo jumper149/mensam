@@ -23,16 +23,16 @@ import Data.Time qualified as T
 import Data.Time.Format.ISO8601 qualified as T
 import System.IO
 
-type TimedLoggingT :: (Type -> Type) -> Type -> Type
-newtype TimedLoggingT m a = TimedLoggingT {unTimedLoggingT :: ComposeT (T.ReaderT Bool) LoggingT m a}
+type CustomLoggingT :: (Type -> Type) -> Type -> Type
+newtype CustomLoggingT m a = CustomLoggingT {unCustomLoggingT :: ComposeT (T.ReaderT Bool) LoggingT m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
 
-instance MonadIO m => MonadLogger (TimedLoggingT m) where
+instance MonadIO m => MonadLogger (CustomLoggingT m) where
   monadLoggerLog loc logSource logLevel logStr = do
     time <- lift $ liftIO T.getCurrentTime
     let timeInfo = T.iso8601Show time
-    logColor <- TimedLoggingT ask
+    logColor <- CustomLoggingT ask
     let
       wrapWithFontEffects :: LogStr -> LogStr -> LogStr
       wrapWithFontEffects fontEffects str =
@@ -46,23 +46,23 @@ instance MonadIO m => MonadLogger (TimedLoggingT m) where
               ]
           else str
     let timeLogStr = wrapWithFontEffects "2;94" $ "@{" <> toLogStr timeInfo <> "} "
-    TimedLoggingT . monadLoggerLog loc logSource logLevel $ timeLogStr <> toLogStr logStr
+    CustomLoggingT . monadLoggerLog loc logSource logLevel $ timeLogStr <> toLogStr logStr
 
 deriving via
-  TimedLoggingT ((t2 :: (Type -> Type) -> Type -> Type) m)
+  CustomLoggingT ((t2 :: (Type -> Type) -> Type -> Type) m)
   instance
-    MonadIO (t2 m) => MonadLogger (ComposeT TimedLoggingT t2 m)
+    MonadIO (t2 m) => MonadLogger (ComposeT CustomLoggingT t2 m)
 
-runTimedLoggingT ::
+runCustomLoggingT ::
   forall m a.
   (MonadIO m, MonadMask m) =>
   Maybe FilePath ->
   LogLevel ->
   -- | color
   Bool ->
-  TimedLoggingT m a ->
+  CustomLoggingT m a ->
   m a
-runTimedLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . withFilter . (`T.runReaderT` configuredLogColor) . deComposeT . unTimedLoggingT
+runCustomLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . withFilter . (`T.runReaderT` configuredLogColor) . deComposeT . unCustomLoggingT
  where
   run = maybe runStdoutLoggingTCustom runFileLoggingTCustom maybeFilePath
   withFilter = filterLogger $ \_src lvl -> lvl >= configuredLogLevel
@@ -139,12 +139,12 @@ runTimedLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . wit
     LevelError -> "31"
     LevelOther _ -> "35"
 
-runAppTimedLoggingT :: (MonadEnvironment m, MonadIO m, MonadMask m) => TimedLoggingT m a -> m a
-runAppTimedLoggingT tma = do
+runAppCustomLoggingT :: (MonadEnvironment m, MonadIO m, MonadMask m) => CustomLoggingT m a -> m a
+runAppCustomLoggingT tma = do
   maybeLogFile <- environmentVariable $ EnvVar @"MENSAM_LOG_FILE"
   logLevel <- environmentVariable $ EnvVar @"MENSAM_LOG_LEVEL"
   logColor <- environmentVariable $ EnvVar @"MENSAM_LOG_COLOR"
-  runTimedLoggingT maybeLogFile logLevel logColor tma
+  runCustomLoggingT maybeLogFile logLevel logColor tma
 
 logLine ::
   MonadLogger m =>

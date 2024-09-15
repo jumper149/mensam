@@ -29,7 +29,7 @@ type Transformers :: Stack
 type Transformers =
   NilT
     :.|> EnvironmentT
-    :.|> TimedLoggingT
+    :.|> CustomLoggingT
     :.|> ConfiguredT
     :.|> SeldaPoolT
     :.|> SecretT
@@ -60,7 +60,7 @@ runApplicationT app = do
   let runTransformers =
         RunNilT
           :..> runEnvironmentT env
-          :..> runAppTimedLoggingT
+          :..> runAppCustomLoggingT
             . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
           :..> runSeldaPoolT
