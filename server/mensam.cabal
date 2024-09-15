@@ -170,7 +170,8 @@ library
     , Mensam.Server.Application.Environment
     , Mensam.Server.Application.Environment.Acquisition
     , Mensam.Server.Application.Environment.Class
-    , Mensam.Server.Application.Logging
+    , Mensam.Server.Application.LoggerCustom
+    , Mensam.Server.Application.LoggerCustom.Class
     , Mensam.Server.Application.Secret
     , Mensam.Server.Application.Secret.Class
     , Mensam.Server.Application.SeldaPool

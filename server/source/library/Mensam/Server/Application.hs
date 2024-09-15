@@ -8,7 +8,8 @@ import Mensam.Server.Application.Email
 import Mensam.Server.Application.Email.Class
 import Mensam.Server.Application.Environment
 import Mensam.Server.Application.Environment.Acquisition
-import Mensam.Server.Application.Logging
+import Mensam.Server.Application.LoggerCustom
+import Mensam.Server.Application.LoggerCustom.Class
 import Mensam.Server.Application.Secret
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool
@@ -42,7 +43,7 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadBase b, MonadBaseControl b, MonadBaseControlIdentity b)
   deriving newtype (MonadIO, MonadUnliftIO)
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
-  deriving newtype (MonadLogger)
+  deriving newtype (MonadLogger, MonadLoggerCustom)
   deriving newtype (MonadConfigured)
   deriving newtype (MonadSeldaPool)
   deriving newtype (MonadSecret)

@@ -1,8 +1,9 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module Mensam.Server.Application.Logging where
+module Mensam.Server.Application.LoggerCustom where
 
 import Mensam.Server.Application.Environment.Class
+import Mensam.Server.Application.LoggerCustom.Class
 
 import Control.Monad.Catch
 import Control.Monad.Logger.CallStack
@@ -32,7 +33,7 @@ instance MonadIO m => MonadLogger (CustomLoggingT m) where
   monadLoggerLog loc logSource logLevel logStr = do
     time <- lift $ liftIO T.getCurrentTime
     let timeInfo = T.iso8601Show time
-    logColor <- CustomLoggingT ask
+    logColor <- colorfulLogCapability
     let
       wrapWithFontEffects :: LogStr -> LogStr -> LogStr
       wrapWithFontEffects fontEffects str =
@@ -52,6 +53,14 @@ deriving via
   CustomLoggingT ((t2 :: (Type -> Type) -> Type -> Type) m)
   instance
     MonadIO (t2 m) => MonadLogger (ComposeT CustomLoggingT t2 m)
+
+instance MonadIO m => MonadLoggerCustom (CustomLoggingT m) where
+  colorfulLogCapability = CustomLoggingT ask
+
+deriving via
+  CustomLoggingT ((t2 :: (Type -> Type) -> Type -> Type) m)
+  instance
+    MonadIO (t2 m) => MonadLoggerCustom (ComposeT CustomLoggingT t2 m)
 
 runCustomLoggingT ::
   forall m a.
