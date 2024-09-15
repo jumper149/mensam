@@ -33,20 +33,8 @@ instance MonadIO m => MonadLogger (CustomLoggingT m) where
   monadLoggerLog loc logSource logLevel logStr = do
     time <- lift $ liftIO T.getCurrentTime
     let timeInfo = T.iso8601Show time
-    logColor <- colorfulLogCapability
-    let
-      wrapWithFontEffects :: LogStr -> LogStr -> LogStr
-      wrapWithFontEffects fontEffects str =
-        if logColor
-          then
-            fold
-              [ "\ESC[0m"
-              , "\ESC[" <> fontEffects <> "m"
-              , str
-              , "\ESC[0m"
-              ]
-          else str
-    let timeLogStr = wrapWithFontEffects "2;94" $ "@{" <> toLogStr timeInfo <> "} "
+    logColorCapability <- colorfulLogCapability
+    let timeLogStr = wrapLogStrWithFontEffects logColorCapability (MkFontEffects [2, 94]) $ "@{" <> toLogStr timeInfo <> "} "
     CustomLoggingT . monadLoggerLog loc logSource logLevel $ timeLogStr <> toLogStr logStr
 
 deriving via
@@ -94,9 +82,9 @@ runCustomLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . wi
       fold $
         L.intersperse " " $
           M.catMaybes
-            [ Just $ wrapWithFontEffects (levelColor lvl) $ levelLogStr lvl src
-            , Just $ wrapWithFontEffects "0" msg
-            , wrapWithFontEffects "2;34" <$> locLogStr loc
+            [ Just $ wrapLogStrWithFontEffects configuredLogColor (levelColor lvl) $ levelLogStr lvl src
+            , Just $ wrapLogStrWithFontEffects configuredLogColor (MkFontEffects []) msg
+            , wrapLogStrWithFontEffects configuredLogColor (MkFontEffects [2, 34]) <$> locLogStr loc
             ]
   levelLogStr :: LogLevel -> LogSource -> LogStr
   levelLogStr level source =
@@ -129,24 +117,13 @@ runCustomLoggingT maybeFilePath configuredLogLevel configuredLogColor = run . wi
                     ]
             , ")"
             ]
-  wrapWithFontEffects :: LogStr -> LogStr -> LogStr
-  wrapWithFontEffects fontEffects str =
-    if configuredLogColor
-      then
-        fold
-          [ "\ESC[0m"
-          , "\ESC[" <> fontEffects <> "m"
-          , str
-          , "\ESC[0m"
-          ]
-      else str
-  levelColor :: LogLevel -> LogStr
+  levelColor :: LogLevel -> FontEffects
   levelColor = \case
-    LevelDebug -> "36"
-    LevelInfo -> "32"
-    LevelWarn -> "33"
-    LevelError -> "31"
-    LevelOther _ -> "35"
+    LevelDebug -> MkFontEffects [36]
+    LevelInfo -> MkFontEffects [32]
+    LevelWarn -> MkFontEffects [33]
+    LevelError -> MkFontEffects [31]
+    LevelOther _ -> MkFontEffects [35]
 
 runAppCustomLoggingT :: (MonadEnvironment m, MonadIO m, MonadMask m) => CustomLoggingT m a -> m a
 runAppCustomLoggingT tma = do
