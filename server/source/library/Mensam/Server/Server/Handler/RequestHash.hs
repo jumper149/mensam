@@ -2,13 +2,15 @@
 
 module Mensam.Server.Server.Handler.RequestHash where
 
+import Mensam.Server.Application.LoggerCustom.Class
+
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Control
 import Control.Monad.Trans.Control.Identity
 import Control.Monad.Trans.Reader
-import Data.ByteString.Char8 qualified as B
+import Data.Foldable
 import Data.Hashable qualified
 import Data.Kind
 import Network.Wai
@@ -35,17 +37,22 @@ newtype RequestHashT m a = RequestHashT {unRequestHashT :: ReaderT Hash m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
 
-instance MonadLogger m => MonadLogger (RequestHashT m) where
+instance MonadLoggerCustom m => MonadLogger (RequestHashT m) where
   monadLoggerLog loc logSource logLevel logStr = do
-    reqHash <- RequestHashT ask
-    let reqInfo = "#[" <> show reqHash <> "]"
+    reqHash <- toLogStr . show <$> RequestHashT ask
+    logColorCapability <- lift colorfulLogCapability
     lift . monadLoggerLog loc logSource logLevel . toLogStr $
-      B.pack reqInfo <> " " <> fromLogStr (toLogStr logStr)
+      renderLogStrWithFontEffectsUnsafe logColorCapability $
+        fold
+          [ withFontEffects (MkFontEffects [2, 33]) $ "#[" <> reqHash <> "]"
+          , " "
+          , withoutFontEffects $ toLogStr logStr
+          ]
 
 deriving via
   RequestHashT ((t2 :: (Type -> Type) -> Type -> Type) m)
   instance
-    MonadLogger (t2 m) => MonadLogger (ComposeT RequestHashT t2 m)
+    MonadLoggerCustom (t2 m) => MonadLogger (ComposeT RequestHashT t2 m)
 
 runRequestHashT :: Hash -> RequestHashT m a -> m a
 runRequestHashT reqHash = flip runReaderT reqHash . unRequestHashT

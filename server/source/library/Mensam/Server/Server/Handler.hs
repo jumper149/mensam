@@ -4,6 +4,7 @@ module Mensam.Server.Server.Handler where
 
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Email.Class
+import Mensam.Server.Application.LoggerCustom.Class
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Server.Handler.Profiler
@@ -32,13 +33,13 @@ newtype HandlerT m a = HandlerT {unHandlerT :: StackT Transformers m a}
   deriving newtype (MonadBase b, MonadBaseControl b, MonadBaseControlIdentity b)
   deriving newtype (MonadIO, MonadUnliftIO)
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
-  deriving newtype (MonadLogger)
+  deriving newtype (MonadLogger, MonadLoggerCustom)
   deriving newtype (MonadConfigured)
   deriving newtype (MonadSecret)
   deriving newtype (MonadSeldaPool)
   deriving newtype (MonadEmail)
 
-runHandlerT :: (MonadIO m, MonadLogger m) => Hash -> HandlerT m a -> m a
+runHandlerT :: (MonadIO m, MonadLoggerCustom m) => Hash -> HandlerT m a -> m a
 runHandlerT randomHash handler = do
   logInfo "Starting HTTP request handler."
 
