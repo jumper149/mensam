@@ -7,6 +7,7 @@ import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Server.Route.Api qualified
 import Mensam.Server.Server.Route.Frontend qualified
+import Mensam.Server.Server.Route.Haddock qualified
 import Mensam.Server.Server.Route.OpenApi qualified
 import Mensam.Server.Server.Route.Static qualified
 
@@ -22,5 +23,6 @@ routes =
     { routeApi = Mensam.Server.Server.Route.Api.handler
     , routeOpenApi = Mensam.Server.Server.Route.OpenApi.handler
     , routeStatic = Mensam.Server.Server.Route.Static.handler
+    , routeHaddock = Mensam.Server.Server.Route.Haddock.handler
     , routeFrontend = Mensam.Server.Server.Route.Frontend.handler
     }
