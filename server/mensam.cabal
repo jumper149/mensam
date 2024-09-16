@@ -33,12 +33,19 @@ common language
     -Wno-unticked-promoted-constructors
   if flag(cabal2nix)
     ghc-options:
+      -O2
       -Werror
   else
     ghc-options:
       -fdefer-typed-holes
+        -- ^ Recognize typed holes.
+      -funclutter-valid-hole-fits
+        -- ^ Reduce verbosity of typed holes.
       -fwrite-ide-info
         -- ^ Generate data for 'weeder'.
+      -O0
+      -Wtyped-holes
+        -- ^ Turn typed holes into warnings instead of errors.
 
 common dependencies
   build-depends:
@@ -172,6 +179,8 @@ library
     , Mensam.Server.Application.Environment.Class
     , Mensam.Server.Application.LoggerCustom
     , Mensam.Server.Application.LoggerCustom.Class
+    , Mensam.Server.Application.Options
+    , Mensam.Server.Application.Options.Class
     , Mensam.Server.Application.Secret
     , Mensam.Server.Application.Secret.Class
     , Mensam.Server.Application.SeldaPool

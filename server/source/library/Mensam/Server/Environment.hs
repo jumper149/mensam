@@ -48,5 +48,15 @@ envVarDefault = \case
   SEnvVarLogFile -> Nothing
   SEnvVarLogLevel -> LevelDebug
 
+envVarHelp :: [String]
+envVarHelp = singleEnvVarHelp <$> [minBound .. maxBound]
+ where
+  singleEnvVarHelp :: EnvVar -> String
+  singleEnvVarHelp = \case
+    EnvVarConfigFile -> "MENSAM_CONFIG_FILE=[FILEPATH] (filepath to a JSON configuration file)"
+    EnvVarLogColor -> "MENSAM_LOG_COLOR=[True|False] (toggle the color of the log)"
+    EnvVarLogFile -> "MENSAM_LOG_FILE=[FILEPATH] (filepath where the log will get dumped)"
+    EnvVarLogLevel -> "MENSAM_LOG_LEVEL=[LevelDebug|LevelInfo|LevelWarn|LevelError] (set log verbosity)"
+
 type Environment :: Type
 newtype Environment = MkEnvironment {getEnvironment :: forall envVar. SEnvVar envVar -> EnvVarValue envVar}
