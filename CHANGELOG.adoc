@@ -1,5 +1,9 @@
 = Changelog
 
+== `0.9.1.0`
+
+* Frontend
+  ** Fix link in footer.
 * Backend
   ** Add new environment variable `MENSAM_LOG_COLOR` for colorful log messages.
 

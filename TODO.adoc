@@ -49,12 +49,12 @@
       **** [x] Add text based time.
       **** [x] Don't select seconds. Just `hh:mm`.
       **** [ ] Don't show seconds on button? Just `hh:mm`.
-      **** [ ] Automatically set upper/lower bound when entering negative time interval.
+      **** [x] Automatically set upper/lower bound when entering negative time interval.
       **** [ ] Grey out "Submit" button when the entered time span is already booked/not possible.
       **** [x] Better default time when opening the dialog to create a reservation.
   ** Auto-login after registration doesn't fetch user data.
   ** Improve touch interfaces.
-    *** [ ] Reservation time picker doesn't work on mobile when swiping.
+    *** [x] Reservation time picker doesn't work on mobile when swiping.
     *** [ ] Room desk picker activates click when dragging a desk with mouse.
 
 * Wording and explanation.
