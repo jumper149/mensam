@@ -33,7 +33,7 @@ common language
     -Wno-unticked-promoted-constructors
   if flag(cabal2nix)
     ghc-options:
-      -O2
+      -O1
       -Werror
   else
     ghc-options:
