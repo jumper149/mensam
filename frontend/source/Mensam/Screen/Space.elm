@@ -1,5 +1,6 @@
 module Mensam.Screen.Space exposing (..)
 
+import Browser.Dom
 import Element
 import Element.Background
 import Element.Border
@@ -31,6 +32,7 @@ import Mensam.Widget.Date
 import Mensam.Widget.Time
 import Svg
 import Svg.Attributes
+import Task
 import Time
 
 
@@ -85,6 +87,8 @@ type alias Model =
     , globalDatePickerVisible : Bool
     , tabView : TabView
     , window : Element.Window.Model
+    , timetablePointer : Maybe Element.Events.Pointer.Event
+    , timetablePointerRegionDimensions : Maybe { width : Float, height : Float }
     }
 
 
@@ -167,6 +171,8 @@ init args =
     , globalDatePickerVisible = False
     , tabView = TabTimetable
     , window = Element.Window.init Element.Window.defaultConfig { position = { x = 183.5, y = 250 } }
+    , timetablePointer = Nothing
+    , timetablePointerRegionDimensions = Nothing
     }
 
 
@@ -761,6 +767,41 @@ deskTimetable model =
                                         ]
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , Element.htmlAttribute <| Html.Attributes.style "touch-action" "pan-y pinch-zoom"
+                            , Element.inFront <|
+                                let
+                                    elementId =
+                                        "timetableRegion" ++ String.fromInt n
+                                in
+                                Element.el
+                                    [ Element.width Element.fill
+                                    , Element.height Element.fill
+                                    , Element.Background.color Mensam.Element.Color.transparent
+                                    , Element.Events.Pointer.onEnter <| \_ -> MessageEffect <| GetSelectorRegionWidth elementId
+                                    , Element.Events.Pointer.onMove <|
+                                        \e ->
+                                            Messages
+                                                [ MessagePure <| SetTimetablePointer e
+                                                , MessagePure <| SetMouseDraggingKeepFromPointer
+                                                ]
+                                    , Element.Events.Pointer.onDown <|
+                                        \e ->
+                                            Messages
+                                                [ MessagePure <| SetTimetablePointer e
+                                                , MessagePure <| SetMouseDraggingStartFromPointer
+                                                ]
+                                    , Element.Events.Pointer.onUp <|
+                                        \e ->
+                                            Messages
+                                                [ MessagePure <| SetTimetablePointer e
+                                                , MessagePure <| SetMouseDraggingKeepFromPointer
+                                                , MessagePure SetTimeFromMouseDragging
+                                                , MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = True }
+                                                , MessagePure AbortMouseDragging
+                                                ]
+                                    , Element.htmlAttribute <| Html.Attributes.id <| elementId
+                                    ]
+                                <|
+                                    Element.none
                             , let
                                 alpha =
                                     case model.selected of
@@ -1203,6 +1244,10 @@ type MessagePure
     | ResetDateEndToSelection
     | SetTabView TabView
     | MessageWindow Element.Window.Message
+    | SetTimetablePointer Element.Events.Pointer.Event
+    | SetSelectorRegionDimensions { width : Float, height : Float }
+    | SetMouseDraggingStartFromPointer
+    | SetMouseDraggingKeepFromPointer
 
 
 applyPureMessages : List MessagePure -> Model -> Model
@@ -1609,9 +1654,58 @@ updatePure message model =
         MessageWindow messageWindow ->
             { model | window = Element.Window.update messageWindow model.window }
 
+        SetTimetablePointer event ->
+            { model | timetablePointer = Just event }
+
+        SetSelectorRegionDimensions dimensions ->
+            { model | timetablePointerRegionDimensions = Just dimensions }
+
+        SetMouseDraggingStartFromPointer ->
+            { model
+                | mouseDragging =
+                    case model.mouseDragging of
+                        Just x ->
+                            Just x
+
+                        Nothing ->
+                            case ( model.timetablePointer, model.timetablePointerRegionDimensions ) of
+                                ( Just pointer, Just dimensions ) ->
+                                    Just <|
+                                        let
+                                            hour =
+                                                calculateHour pointer dimensions
+                                        in
+                                        { start = hour, end = hour }
+
+                                _ ->
+                                    Nothing
+            }
+
+        SetMouseDraggingKeepFromPointer ->
+            { model
+                | mouseDragging =
+                    case model.mouseDragging of
+                        Just x ->
+                            case ( model.timetablePointer, model.timetablePointerRegionDimensions ) of
+                                ( Just pointer, Just dimensions ) ->
+                                    Just <|
+                                        let
+                                            hour =
+                                                calculateHour pointer dimensions
+                                        in
+                                        { start = x.start, end = hour }
+
+                                _ ->
+                                    Just x
+
+                        Nothing ->
+                            Nothing
+            }
+
 
 type MessageEffect
     = ReportError Mensam.Error.Error
+    | GetSelectorRegionWidth String
     | RefreshSpace
     | RefreshDesks
     | OpenPageToJoin
@@ -1806,3 +1900,32 @@ reservationCreate jwt model { desk } =
                         ReportError <|
                             Mensam.Error.message "Reservation request failed" <|
                                 Mensam.Error.http error
+
+
+getSelectorRegionDimensionsTask : String -> Task.Task Browser.Dom.Error Message
+getSelectorRegionDimensionsTask elementId =
+    Task.map (\e -> MessagePure <| SetSelectorRegionDimensions { width = e.element.width, height = e.element.height }) <|
+        Browser.Dom.getElement elementId
+
+
+getSelectorRegionDimensionsCmd : String -> Cmd.Cmd Message
+getSelectorRegionDimensionsCmd elementId =
+    Task.attempt
+        (\result ->
+            case result of
+                Ok m ->
+                    m
+
+                Err (Browser.Dom.NotFound _) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to get dimensions of timetable in HTML" <|
+                                Mensam.Error.undefined
+        )
+    <|
+        getSelectorRegionDimensionsTask elementId
+
+
+calculateHour : Element.Events.Pointer.Event -> { width : Float, height : Float } -> Mensam.Time.Hour
+calculateHour event dimensions =
+    Mensam.Time.MkHour <| floor <| 24 * event.offsetPos.x / dimensions.width

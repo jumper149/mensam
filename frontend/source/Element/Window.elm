@@ -93,11 +93,6 @@ view model { viewportAttributes, contentAttributes } content =
 -- Internal state
 
 
-{-| Opaque internal state.
-
-Values inside can be accessed with [getters](#getters) e.g. [`getScale`](PanZoom#getScale).
-
--}
 type State
     = State
         { position : Coordinate -- Position in viewport coordinate system

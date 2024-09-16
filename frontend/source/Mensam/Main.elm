@@ -998,6 +998,16 @@ update message (MkModel model) =
                 Mensam.Screen.Space.ReportError err ->
                     update (ReportError err) <| MkModel model
 
+                Mensam.Screen.Space.GetSelectorRegionWidth elementId ->
+                    case model.screen of
+                        ScreenSpace _ ->
+                            ( MkModel model
+                            , Cmd.map MessageSpace <| Mensam.Screen.Space.getSelectorRegionDimensionsCmd elementId
+                            )
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
                 Mensam.Screen.Space.RefreshSpace ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
