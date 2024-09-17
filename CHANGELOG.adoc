@@ -1,5 +1,10 @@
 = Changelog
 
+== `0.9.1.1`
+
+* Frontend
+  ** Fix reservation time selection on touch.
+
 == `0.9.1.0`
 
 * Frontend
