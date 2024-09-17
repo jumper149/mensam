@@ -845,33 +845,20 @@ deskTimetable model =
                                         Element.el
                                             ([ Element.width Element.fill
                                              , Element.height Element.fill
-                                             , Element.Events.Pointer.onDown <|
-                                                \_ ->
-                                                    MessagePure <|
-                                                        StartSelectionDragging <|
-                                                            Mensam.Time.MkHour piece.hour
-                                             , Element.Events.Pointer.onEnter <|
-                                                \_ ->
-                                                    MessagePure <|
-                                                        KeepSelectionDragging <|
-                                                            Mensam.Time.MkHour piece.hour
-                                             , Element.Events.Pointer.onUp <|
-                                                \_ ->
-                                                    Messages
-                                                        [ MessagePure <|
-                                                            KeepSelectionDragging <|
-                                                                Mensam.Time.MkHour piece.hour
-                                                        , MessagePure SetTimeFromSelectionDragging
-                                                        , MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = True }
-                                                        , MessagePure AbortSelectionDragging
-                                                        ]
-                                             , Element.mouseOver
-                                                [ Element.Background.color (Element.rgba 0 1 0 0.1)
-                                                ]
                                              ]
                                                 ++ (case model.selectionDragging of
                                                         Nothing ->
-                                                            []
+                                                            case ( model.timetablePointer, model.timetablePointerRegionDimensions ) of
+                                                                ( Just ptr, Just dim ) ->
+                                                                    if calculateHour ptr dim == Mensam.Time.MkHour piece.hour && model.selected == Just n then
+                                                                        [ Element.Background.color (Element.rgba 0 1 0 0.05)
+                                                                        ]
+
+                                                                    else
+                                                                        []
+
+                                                                _ ->
+                                                                    []
 
                                                         Just interval ->
                                                             let
