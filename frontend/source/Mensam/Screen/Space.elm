@@ -75,7 +75,7 @@ type alias Model =
                     }
             }
     , selected : Maybe Int
-    , mouseDragging :
+    , selectionDragging :
         Maybe
             { start : Mensam.Time.Hour
             , end : Mensam.Time.Hour
@@ -129,7 +129,7 @@ init args =
     , popup = Nothing
     , desks = []
     , selected = Nothing
-    , mouseDragging = Nothing
+    , selectionDragging = Nothing
     , modelDateBegin =
         let
             date =
@@ -763,7 +763,7 @@ deskTimetable model =
                                 \_ ->
                                     Messages
                                         [ MessagePure <| SetSelected Nothing
-                                        , MessagePure AbortMouseDragging
+                                        , MessagePure AbortSelectionDragging
                                         ]
                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                             , Element.htmlAttribute <| Html.Attributes.style "touch-action" "pan-y pinch-zoom"
@@ -781,22 +781,22 @@ deskTimetable model =
                                         \e ->
                                             Messages
                                                 [ MessagePure <| SetTimetablePointer e
-                                                , MessagePure <| SetMouseDraggingKeepFromPointer
+                                                , MessagePure <| SetSelectionDraggingKeepFromPointer
                                                 ]
                                     , Element.Events.Pointer.onDown <|
                                         \e ->
                                             Messages
                                                 [ MessagePure <| SetTimetablePointer e
-                                                , MessagePure <| SetMouseDraggingStartFromPointer
+                                                , MessagePure <| SetSelectionDraggingStartFromPointer
                                                 ]
                                     , Element.Events.Pointer.onUp <|
                                         \e ->
                                             Messages
                                                 [ MessagePure <| SetTimetablePointer e
-                                                , MessagePure <| SetMouseDraggingKeepFromPointer
-                                                , MessagePure SetTimeFromMouseDragging
+                                                , MessagePure <| SetSelectionDraggingKeepFromPointer
+                                                , MessagePure SetTimeFromSelectionDragging
                                                 , MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = True }
-                                                , MessagePure AbortMouseDragging
+                                                , MessagePure AbortSelectionDragging
                                                 ]
                                     , Element.htmlAttribute <| Html.Attributes.id <| elementId
                                     ]
@@ -848,28 +848,28 @@ deskTimetable model =
                                              , Element.Events.Pointer.onDown <|
                                                 \_ ->
                                                     MessagePure <|
-                                                        StartMouseDragging <|
+                                                        StartSelectionDragging <|
                                                             Mensam.Time.MkHour piece.hour
                                              , Element.Events.Pointer.onEnter <|
                                                 \_ ->
                                                     MessagePure <|
-                                                        KeepMouseDragging <|
+                                                        KeepSelectionDragging <|
                                                             Mensam.Time.MkHour piece.hour
                                              , Element.Events.Pointer.onUp <|
                                                 \_ ->
                                                     Messages
                                                         [ MessagePure <|
-                                                            KeepMouseDragging <|
+                                                            KeepSelectionDragging <|
                                                                 Mensam.Time.MkHour piece.hour
-                                                        , MessagePure SetTimeFromMouseDragging
+                                                        , MessagePure SetTimeFromSelectionDragging
                                                         , MessagePure <| ViewDetailed <| Just { desk = x.desk, dontViewUnlessMouseIsStillDragging = True }
-                                                        , MessagePure AbortMouseDragging
+                                                        , MessagePure AbortSelectionDragging
                                                         ]
                                              , Element.mouseOver
                                                 [ Element.Background.color (Element.rgba 0 1 0 0.1)
                                                 ]
                                              ]
-                                                ++ (case model.mouseDragging of
+                                                ++ (case model.selectionDragging of
                                                         Nothing ->
                                                             []
 
@@ -1208,10 +1208,10 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
-    | StartMouseDragging Mensam.Time.Hour
-    | KeepMouseDragging Mensam.Time.Hour
-    | AbortMouseDragging
-    | SetTimeFromMouseDragging
+    | StartSelectionDragging Mensam.Time.Hour
+    | KeepSelectionDragging Mensam.Time.Hour
+    | AbortSelectionDragging
+    | SetTimeFromSelectionDragging
     | ClosePopup
     | OpenDialogToLeave
     | CloseDialogToLeave
@@ -1246,8 +1246,8 @@ type MessagePure
     | MessageWindow Element.Window.Message
     | SetTimetablePointer Element.Events.Pointer.Event
     | SetSelectorRegionDimensions { width : Float, height : Float }
-    | SetMouseDraggingStartFromPointer
-    | SetMouseDraggingKeepFromPointer
+    | SetSelectionDraggingStartFromPointer
+    | SetSelectionDraggingKeepFromPointer
 
 
 applyPureMessages : List MessagePure -> Model -> Model
@@ -1280,13 +1280,13 @@ updatePure message model =
         SetSelected selection ->
             { model | selected = selection }
 
-        StartMouseDragging hour ->
-            { model | mouseDragging = Just { start = hour, end = hour } }
+        StartSelectionDragging hour ->
+            { model | selectionDragging = Just { start = hour, end = hour } }
 
-        KeepMouseDragging hour ->
+        KeepSelectionDragging hour ->
             { model
-                | mouseDragging =
-                    case model.mouseDragging of
+                | selectionDragging =
+                    case model.selectionDragging of
                         Nothing ->
                             Nothing
 
@@ -1294,11 +1294,11 @@ updatePure message model =
                             Just { interval | end = hour }
             }
 
-        AbortMouseDragging ->
-            { model | mouseDragging = Nothing }
+        AbortSelectionDragging ->
+            { model | selectionDragging = Nothing }
 
-        SetTimeFromMouseDragging ->
-            case model.mouseDragging of
+        SetTimeFromSelectionDragging ->
+            case model.selectionDragging of
                 Nothing ->
                     model
 
@@ -1348,7 +1348,7 @@ updatePure message model =
             { model
                 | popup =
                     if data.dontViewUnlessMouseIsStillDragging then
-                        case model.mouseDragging of
+                        case model.selectionDragging of
                             Nothing ->
                                 Nothing
 
@@ -1660,10 +1660,10 @@ updatePure message model =
         SetSelectorRegionDimensions dimensions ->
             { model | timetablePointerRegionDimensions = Just dimensions }
 
-        SetMouseDraggingStartFromPointer ->
+        SetSelectionDraggingStartFromPointer ->
             { model
-                | mouseDragging =
-                    case model.mouseDragging of
+                | selectionDragging =
+                    case model.selectionDragging of
                         Just x ->
                             Just x
 
@@ -1681,10 +1681,10 @@ updatePure message model =
                                     Nothing
             }
 
-        SetMouseDraggingKeepFromPointer ->
+        SetSelectionDraggingKeepFromPointer ->
             { model
-                | mouseDragging =
-                    case model.mouseDragging of
+                | selectionDragging =
+                    case model.selectionDragging of
                         Just x ->
                             case ( model.timetablePointer, model.timetablePointerRegionDimensions ) of
                                 ( Just pointer, Just dimensions ) ->
