@@ -1797,7 +1797,11 @@ deskList jwt model =
         \result ->
             case result of
                 Ok (Mensam.Api.DeskList.Success value) ->
-                    MessagePure <| SetDesks value.desks
+                    Messages [ MessagePure <| SetDesks value.desks
+                             , case value.desks of
+                                 [] -> Messages []
+                                 _ -> MessageEffect <| GetSelectorRegionWidth "timetableRegion0" -- TODO: Hardcoded HTML id.
+                    ]
 
                 Ok (Mensam.Api.DeskList.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
