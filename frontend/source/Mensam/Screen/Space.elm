@@ -1195,8 +1195,6 @@ type MessagePure
             }
         )
     | SetSelected (Maybe Int)
-    | StartSelectionDragging Mensam.Time.Hour
-    | KeepSelectionDragging Mensam.Time.Hour
     | AbortSelectionDragging
     | SetTimeFromSelectionDragging
     | ClosePopup
@@ -1222,8 +1220,6 @@ type MessagePure
     | MessageTimeEnd Mensam.Widget.Time.Message
     | ViewDateGlobalPicker Bool
     | SetDateEndToDateBegin
-    | SetDateEndFromDuration Mensam.Time.Hour
-    | SetTimeEndFromDuration Mensam.Time.Hour
     | SetDateEndOneAfterDateBegin
     | PreviousDay
     | NextDay
@@ -1266,20 +1262,6 @@ updatePure message model =
 
         SetSelected selection ->
             { model | selected = selection }
-
-        StartSelectionDragging hour ->
-            { model | selectionDragging = Just { start = hour, end = hour } }
-
-        KeepSelectionDragging hour ->
-            { model
-                | selectionDragging =
-                    case model.selectionDragging of
-                        Nothing ->
-                            Nothing
-
-                        Just interval ->
-                            Just { interval | end = hour }
-            }
 
         AbortSelectionDragging ->
             { model | selectionDragging = Nothing }
@@ -1531,54 +1513,6 @@ updatePure message model =
 
         SetDateEndToDateBegin ->
             { model | modelDateEnd = model.modelDateBegin }
-
-        SetDateEndFromDuration duration ->
-            { model
-                | modelDateEnd =
-                    let
-                        timestampBegin =
-                            Mensam.Time.MkTimestamp
-                                { date = (Mensam.Widget.Date.unModel model.modelDateBegin).selected
-                                , time = (Mensam.Widget.Time.unModel model.modelTimeBegin).selected
-                                }
-
-                        timestampEndNew =
-                            Mensam.Time.fromPosix model.timezone <|
-                                Time.millisToPosix <|
-                                    Time.posixToMillis (Mensam.Time.toPosix model.timezone timestampBegin)
-                                        + (Mensam.Time.unHour duration * 60 * 60 * 1000)
-                    in
-                    Mensam.Widget.Date.MkModel
-                        { year =
-                            (Mensam.Time.unDate (Mensam.Time.unTimestamp timestampEndNew).date).year
-                        , month =
-                            (Mensam.Time.unDate (Mensam.Time.unTimestamp timestampEndNew).date).month
-                        , selected =
-                            (Mensam.Time.unTimestamp timestampEndNew).date
-                        }
-            }
-
-        SetTimeEndFromDuration duration ->
-            { model
-                | modelTimeEnd =
-                    Mensam.Widget.Time.MkModel
-                        { selected =
-                            let
-                                timestampBegin =
-                                    Mensam.Time.MkTimestamp
-                                        { date = (Mensam.Widget.Date.unModel model.modelDateBegin).selected
-                                        , time = (Mensam.Widget.Time.unModel model.modelTimeBegin).selected
-                                        }
-
-                                timestampEndNew =
-                                    Mensam.Time.fromPosix model.timezone <|
-                                        Time.millisToPosix <|
-                                            Time.posixToMillis (Mensam.Time.toPosix model.timezone timestampBegin)
-                                                + (Mensam.Time.unHour duration * 60 * 60 * 1000)
-                            in
-                            (Mensam.Time.unTimestamp timestampEndNew).time
-                        }
-            }
 
         SetDateEndOneAfterDateBegin ->
             { model
