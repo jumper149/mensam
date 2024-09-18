@@ -593,6 +593,7 @@ type RequestDeskCreate :: Type
 data RequestDeskCreate = MkRequestDeskCreate
   { requestDeskCreateName :: NameDesk
   , requestDeskCreateSpace :: NameOrIdentifier NameSpace IdentifierSpace
+  , requestDeskCreateLocation :: Maybe LocationDesk
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -630,6 +631,7 @@ type RequestDeskEdit :: Type
 data RequestDeskEdit = MkRequestDeskEdit
   { requestDeskEditId :: IdentifierDesk
   , requestDeskEditName :: Updatable NameDesk
+  , requestDeskEditLocation :: Updatable (Maybe LocationDesk)
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

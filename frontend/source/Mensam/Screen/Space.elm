@@ -63,6 +63,7 @@ type alias Model =
                 { id : Mensam.Desk.Identifier
                 , name : Mensam.Desk.Name
                 , space : Mensam.Space.Identifier
+                , location : Maybe Mensam.Desk.Location
                 }
             , reservations :
                 List
@@ -104,6 +105,7 @@ type PopupModel
             { id : Mensam.Desk.Identifier
             , name : Mensam.Desk.Name
             , space : Mensam.Space.Identifier
+            , location : Maybe Mensam.Desk.Location
             }
         , pickerVisibility : PickerVisibility
         }
@@ -1182,6 +1184,7 @@ type MessagePure
                 { id : Mensam.Desk.Identifier
                 , name : Mensam.Desk.Name
                 , space : Mensam.Space.Identifier
+                , location : Maybe Mensam.Desk.Location
                 }
             , reservations :
                 List
@@ -1206,6 +1209,7 @@ type MessagePure
                 { id : Mensam.Desk.Identifier
                 , name : Mensam.Desk.Name
                 , space : Mensam.Space.Identifier
+                , location : Maybe Mensam.Desk.Location
                 }
             , dontViewUnlessMouseIsStillDragging : Bool
             }
@@ -1731,11 +1735,16 @@ deskList jwt model =
         \result ->
             case result of
                 Ok (Mensam.Api.DeskList.Success value) ->
-                    Messages [ MessagePure <| SetDesks value.desks
-                             , case value.desks of
-                                 [] -> Messages []
-                                 _ -> MessageEffect <| GetSelectorRegionWidth "timetableRegion0" -- TODO: Hardcoded HTML id.
-                    ]
+                    Messages
+                        [ MessagePure <| SetDesks value.desks
+                        , case value.desks of
+                            [] ->
+                                Messages []
+
+                            _ ->
+                                -- TODO: Hardcoded HTML id.
+                                MessageEffect <| GetSelectorRegionWidth "timetableRegion0"
+                        ]
 
                 Ok (Mensam.Api.DeskList.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission

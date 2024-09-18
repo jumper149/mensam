@@ -356,6 +356,26 @@ migrations =
             "ALTER TABLE user\n\
             \ADD COLUMN picture_jpeg BLOB"
       }
+  , MkMigration
+      { migrationId = Selda.toId 14
+      , migrationName = "addDeskLocation"
+      , migrationWork = do
+          Selda.Unsafe.rawStm
+            "ALTER TABLE desk\n\
+            \ADD COLUMN position_x DOUBLE PRECISION"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE desk\n\
+            \ADD COLUMN position_y DOUBLE PRECISION"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE desk\n\
+            \ADD COLUMN direction DOUBLE PRECISION"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE desk\n\
+            \ADD COLUMN size_width DOUBLE PRECISION"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE desk\n\
+            \ADD COLUMN size_depth DOUBLE PRECISION"
+      }
   ]
 
 createDatabase ::

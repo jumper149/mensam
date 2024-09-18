@@ -241,6 +241,11 @@ data DbDesk = MkDbDesk
   { dbDesk_id :: ~(Selda.ID DbDesk)
   , dbDesk_space :: Selda.ID DbSpace
   , dbDesk_name :: Selda.Text
+  , dbDesk_position_x :: Maybe Double
+  , dbDesk_position_y :: Maybe Double
+  , dbDesk_direction :: Maybe Double
+  , dbDesk_size_width :: Maybe Double
+  , dbDesk_size_depth :: Maybe Double
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.Relational, Selda.SqlRow)

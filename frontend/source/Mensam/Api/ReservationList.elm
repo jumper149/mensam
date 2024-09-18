@@ -31,6 +31,7 @@ type Response
                 { desk :
                     { id : Mensam.Desk.Identifier
                     , name : Mensam.Desk.Name
+                    , location : Maybe Mensam.Desk.Location
                     }
                 , reservation :
                     { id : Mensam.Reservation.Identifier
@@ -154,6 +155,7 @@ decodeBody200 :
                 { desk :
                     { id : Mensam.Desk.Identifier
                     , name : Mensam.Desk.Name
+                    , location : Maybe Mensam.Desk.Location
                     }
                 , reservation :
                     { id : Mensam.Reservation.Identifier
@@ -181,6 +183,7 @@ decodeBody200 =
                         { desk =
                             { id = desk.id
                             , name = desk.name
+                            , location = desk.location
                             }
                         , reservation =
                             { id = reservation.id
@@ -200,10 +203,11 @@ decodeBody200 =
                         }
                     )
                     (Decode.field "desk" <|
-                        Decode.map3 (\id name space -> { id = id, name = name, space = space })
+                        Decode.map4 (\id name space location -> { id = id, name = name, space = space, location = location })
                             (Decode.field "id" Mensam.Desk.identifierDecoder)
                             (Decode.field "name" Mensam.Desk.nameDecoder)
                             (Decode.field "space" Mensam.Space.identifierDecoder)
+                            (Decode.field "location" <| Decode.nullable Mensam.Desk.locationDecoder)
                     )
                     (Decode.field "reservation" <|
                         Decode.map6 (\id desk status timeBegin timeEnd user -> { id = id, desk = desk, status = status, timeBegin = timeBegin, timeEnd = timeEnd, user = user })

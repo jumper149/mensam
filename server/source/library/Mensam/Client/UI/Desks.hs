@@ -202,6 +202,7 @@ desksHandleEvent event = do
               Route.Space.MkRequestDeskCreate
                 { Route.Space.requestDeskCreateName = MkNameDesk $ newDeskInfo ^. newDeskInfoName
                 , Route.Space.requestDeskCreateSpace = Identifier $ spaceId $ _screenStateDesksSpace s
+                , Route.Space.requestDeskCreateLocation = Nothing
                 }
         _ -> lift $ zoom (screenStateDesksNewDeskForm . _Just) $ handleFormEvent event
 

@@ -15,6 +15,7 @@ type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
     , space : Mensam.Space.Identifier
     , name : Mensam.Desk.Name
+    , location : Maybe Mensam.Desk.Location
     }
 
 
@@ -125,6 +126,14 @@ encodeBody body =
                   , Mensam.Space.identifierEncode body.space
                   )
                 ]
+          )
+        , ( "location"
+          , case body.location of
+                Nothing ->
+                    Encode.null
+
+                Just location ->
+                    Mensam.Desk.locationEncode location
           )
         ]
 

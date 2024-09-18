@@ -31,6 +31,7 @@ type alias Model =
             { desk :
                 { id : Mensam.Desk.Identifier
                 , name : Mensam.Desk.Name
+                , location : Maybe Mensam.Desk.Location
                 }
             , reservation :
                 { id : Mensam.Reservation.Identifier
@@ -569,6 +570,7 @@ type MessagePure
             { desk :
                 { id : Mensam.Desk.Identifier
                 , name : Mensam.Desk.Name
+                , location : Maybe Mensam.Desk.Location
                 }
             , reservation :
                 { id : Mensam.Reservation.Identifier

@@ -532,6 +532,7 @@ createDesk :
     { jwt : Mensam.Auth.Bearer.Jwt
     , space : Mensam.Space.Identifier
     , name : Mensam.Desk.Name
+    , location : Maybe Mensam.Desk.Location
     }
     -> Cmd Message
 createDesk args =
@@ -539,6 +540,7 @@ createDesk args =
         { jwt = args.jwt
         , space = args.space
         , name = args.name
+        , location = args.location
         }
     <|
         \result ->
@@ -618,6 +620,7 @@ editDesk :
     { jwt : Mensam.Auth.Bearer.Jwt
     , id : Mensam.Desk.Identifier
     , name : Maybe Mensam.Desk.Name
+    , location : Maybe (Maybe Mensam.Desk.Location)
     }
     -> Cmd Message
 editDesk args =
@@ -625,6 +628,7 @@ editDesk args =
         { jwt = args.jwt
         , id = args.id
         , name = args.name
+        , location = args.location
         }
     <|
         \result ->

@@ -1,5 +1,19 @@
 = Changelog
 
+* API
+  ** Desks now have an optional position as metadata affecting some routes.
+    *** `/desk/create`
+    *** `/desk/edit`
+    *** `/desk/list`
+    *** `/reservation/list`
+* Database
+  ** Add optional location to `desk` table using multiple columns.
+    *** `position_x`
+    *** `position_y`
+    *** `direction`
+    *** `size_width`
+    *** `size_depth`
+
 == `0.9.1.1`
 
 * Frontend

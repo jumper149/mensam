@@ -15,6 +15,7 @@ data Desk = MkDesk
   { deskId :: IdentifierDesk
   , deskSpace :: IdentifierSpace
   , deskName :: NameDesk
+  , deskLocation :: Maybe LocationDesk
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -40,3 +41,44 @@ data DeskNameWithContext = MkDeskNameWithContext
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "Mk" "deskNameWithContext") DeskNameWithContext
+
+type LocationDesk :: Type
+data LocationDesk = MkLocationDesk
+  { locationDeskPosition :: PositionDesk
+  , locationDeskDirection :: DirectionDesk
+  , locationDeskSize :: SizeDesk
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "locationDesk") LocationDesk
+
+type PositionDesk :: Type
+newtype PositionDesk = MkPositionDesk {unPositionDesk :: Position}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
+
+type Position :: Type
+data Position = MkPosition
+  { positionX :: Double
+  , positionY :: Double
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "position") Position
+
+type DirectionDesk :: Type
+newtype DirectionDesk = MkDirectionDesk {unDirectionDesk :: Double}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
+
+type SizeDesk :: Type
+data SizeDesk = MkSizeDesk
+  { sizeDeskWidth :: Double
+  , sizeDeskDepth :: Double
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "sizeDesk") SizeDesk

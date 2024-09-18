@@ -32,6 +32,7 @@ type Response
                     { id : Mensam.Desk.Identifier
                     , name : Mensam.Desk.Name
                     , space : Mensam.Space.Identifier
+                    , location : Maybe Mensam.Desk.Location
                     }
                 , reservations :
                     List
@@ -165,6 +166,7 @@ decodeBody200 :
                     { id : Mensam.Desk.Identifier
                     , name : Mensam.Desk.Name
                     , space : Mensam.Space.Identifier
+                    , location : Maybe Mensam.Desk.Location
                     }
                 , reservations :
                     List
@@ -180,11 +182,12 @@ decodeBody200 :
 decodeBody200 =
     let
         decodeDesk =
-            Decode.map3
-                (\id name space -> { id = id, name = name, space = space })
+            Decode.map4
+                (\id name space location -> { id = id, name = name, space = space, location = location })
                 (Decode.field "id" Mensam.Desk.identifierDecoder)
                 (Decode.field "name" Mensam.Desk.nameDecoder)
                 (Decode.field "space" Mensam.Space.identifierDecoder)
+                (Decode.field "location" <| Decode.nullable Mensam.Desk.locationDecoder)
 
         decodeReservation =
             Decode.map6

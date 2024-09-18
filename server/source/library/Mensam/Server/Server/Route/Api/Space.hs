@@ -562,7 +562,7 @@ createDesk auth eitherRequest =
           SMkPermissionSpaceEditDesk
           (userAuthenticatedId authenticated)
           spaceIdentifier
-        deskCreate (requestDeskCreateName request) spaceIdentifier
+        deskCreate (requestDeskCreateName request) spaceIdentifier (requestDeskCreateLocation request)
       handleSeldaException
         (Proxy @SqlErrorMensamSpaceNotFound)
         (WithStatus @404 $ MkStaticText @"Space not found.")
@@ -638,6 +638,9 @@ editDesk auth eitherRequest =
         case requestDeskEditName request of
           Preserve -> pure ()
           Overwrite name -> deskNameSet (requestDeskEditId request) name
+        case requestDeskEditLocation request of
+          Preserve -> pure ()
+          Overwrite location -> deskLocationSet (requestDeskEditId request) location
       handleSeldaException
         (Proxy @SqlErrorMensamDeskNotFound)
         (WithStatus @404 $ MkStaticText @"Desk not found.")

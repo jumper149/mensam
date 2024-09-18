@@ -106,4 +106,36 @@ checkDatabase = void $ runSeldaTransactionT $ do
       [] -> lift $ logInfo "No users have roles from other spaces."
       _ : _ -> lift $ logError $ "There are unexpected role/space combinations in space users: " <> T.pack (show dbSpaceUsersWithWrongRoles)
 
+  do
+    lift $ logInfo "Checking that desk locations cover all parameters (position, direction and size)"
+    dbDesksWithBrokenLocations <- Selda.query $ do
+      dbDesk <- Selda.select tableDesk
+      dbDeskIdJoined <-
+        Selda.leftJoin
+          ( \dbDeskWithOrWithoutLocationId ->
+              dbDesk Selda.! #dbDesk_id Selda..== dbDeskWithOrWithoutLocationId
+          )
+          ( do
+              dbDeskWithOrWithoutLocation <- Selda.select tableDesk
+              Selda.restrict $
+                ( Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_position_x)
+                    Selda..&& Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_position_y)
+                    Selda..&& Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_direction)
+                    Selda..&& Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_size_width)
+                    Selda..&& Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_size_depth)
+                )
+                  Selda..|| ( Selda.not_ (Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_position_x))
+                                Selda..&& Selda.not_ (Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_position_y))
+                                Selda..&& Selda.not_ (Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_direction))
+                                Selda..&& Selda.not_ (Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_size_width))
+                                Selda..&& Selda.not_ (Selda.isNull (dbDeskWithOrWithoutLocation Selda.! #dbDesk_size_depth))
+                            )
+              pure $ dbDeskWithOrWithoutLocation Selda.! #dbDesk_id
+          )
+      Selda.restrict $ Selda.isNull dbDeskIdJoined
+      pure dbDesk
+    case dbDesksWithBrokenLocations of
+      [] -> lift $ logInfo "No desks have broken locations."
+      _ : _ -> lift $ logError $ "There are desks with broken locations: " <> T.pack (show dbDesksWithBrokenLocations)
+
   pure ()

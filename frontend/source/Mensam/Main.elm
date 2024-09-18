@@ -1510,6 +1510,7 @@ update message (MkModel model) =
                                             { jwt = jwt
                                             , space = screenModel.spaceId
                                             , name = args.name
+                                            , location = Nothing -- TODO: Should we set the location on creation?
                                             }
                                     )
 
@@ -1549,6 +1550,7 @@ update message (MkModel model) =
                                             { jwt = jwt
                                             , id = args.id
                                             , name = args.name
+                                            , location = Nothing -- TODO: Make locations editable.
                                             }
                                     )
 

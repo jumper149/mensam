@@ -93,6 +93,7 @@ f = do
         Route.Space.MkRequestDeskCreate
           { Route.Space.requestDeskCreateName = MkNameDesk "neptune"
           , Route.Space.requestDeskCreateSpace = Name spacename
+          , Route.Space.requestDeskCreateLocation = Nothing
           }
   resultDeskCreate <- endpointDeskCreate (DataJWTWithSession nextToken) requestDeskCreate
   liftIO $ print resultDeskCreate
@@ -102,6 +103,7 @@ f = do
         Route.Space.MkRequestDeskCreate
           { Route.Space.requestDeskCreateName = MkNameDesk "saturn"
           , Route.Space.requestDeskCreateSpace = Name spacename
+          , Route.Space.requestDeskCreateLocation = Nothing
           }
   resultDeskCreate2 <- endpointDeskCreate (DataJWTWithSession nextToken) requestDeskCreate2
   liftIO $ print resultDeskCreate2

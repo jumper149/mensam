@@ -710,6 +710,32 @@ deskGetFromId identifier = do
       { deskId = MkIdentifierDesk $ Selda.fromId $ dbDesk_id dbDesk
       , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space dbDesk
       , deskName = MkNameDesk $ dbDesk_name dbDesk
+      , deskLocation = do
+          x <- dbDesk_position_x dbDesk
+          y <- dbDesk_position_y dbDesk
+          direction <- dbDesk_direction dbDesk
+          width <- dbDesk_size_width dbDesk
+          depth <- dbDesk_size_depth dbDesk
+          pure
+            MkLocationDesk
+              { locationDeskPosition =
+                  MkPositionDesk
+                    { unPositionDesk =
+                        MkPosition
+                          { positionX = x
+                          , positionY = y
+                          }
+                    }
+              , locationDeskDirection =
+                  MkDirectionDesk
+                    { unDirectionDesk = direction
+                    }
+              , locationDeskSize =
+                  MkSizeDesk
+                    { sizeDeskWidth = width
+                    , sizeDeskDepth = depth
+                    }
+              }
       }
 
 type SqlErrorMensamDeskNotFound :: Type
@@ -739,11 +765,37 @@ deskList spaceIdentifier userIdentifier = do
     Selda.restrict $ dbDesk Selda.! #dbDesk_space Selda..== dbSpace Selda.! #dbSpace_id
     pure dbDesk
   lift $ logInfo "Looked up visible desks successfully."
-  let fromDbDesk desk =
+  let fromDbDesk dbDesk =
         MkDesk
-          { deskId = MkIdentifierDesk $ Selda.fromId @DbDesk $ dbDesk_id desk
-          , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space desk
-          , deskName = MkNameDesk $ dbDesk_name desk
+          { deskId = MkIdentifierDesk $ Selda.fromId @DbDesk $ dbDesk_id dbDesk
+          , deskSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbDesk_space dbDesk
+          , deskName = MkNameDesk $ dbDesk_name dbDesk
+          , deskLocation = do
+              x <- dbDesk_position_x dbDesk
+              y <- dbDesk_position_y dbDesk
+              direction <- dbDesk_direction dbDesk
+              width <- dbDesk_size_width dbDesk
+              depth <- dbDesk_size_depth dbDesk
+              pure
+                MkLocationDesk
+                  { locationDeskPosition =
+                      MkPositionDesk
+                        { unPositionDesk =
+                            MkPosition
+                              { positionX = x
+                              , positionY = y
+                              }
+                        }
+                  , locationDeskDirection =
+                      MkDirectionDesk
+                        { unDirectionDesk = direction
+                        }
+                  , locationDeskSize =
+                      MkSizeDesk
+                        { sizeDeskWidth = width
+                        , sizeDeskDepth = depth
+                        }
+                  }
           }
   pure $ fromDbDesk <$> dbDesks
 
@@ -751,14 +803,20 @@ deskCreate ::
   (MonadLogger m, MonadSeldaPool m) =>
   NameDesk ->
   IdentifierSpace ->
+  Maybe LocationDesk ->
   SeldaTransactionT m IdentifierDesk
-deskCreate deskName spaceIdentifier = do
+deskCreate deskName spaceIdentifier deskLocation = do
   lift $ logDebug "Creating desk."
   let dbDesk =
         MkDbDesk
           { dbDesk_id = Selda.def
           , dbDesk_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbDesk_name = unNameDesk deskName
+          , dbDesk_position_x = positionX . unPositionDesk . locationDeskPosition <$> deskLocation
+          , dbDesk_position_y = positionY . unPositionDesk . locationDeskPosition <$> deskLocation
+          , dbDesk_direction = unDirectionDesk . locationDeskDirection <$> deskLocation
+          , dbDesk_size_width = sizeDeskWidth . locationDeskSize <$> deskLocation
+          , dbDesk_size_depth = sizeDeskDepth . locationDeskSize <$> deskLocation
           }
   lift $ logDebug "Inserting desk into database."
   dbDeskId <- Selda.insertWithPK tableDesk [dbDesk]
@@ -791,6 +849,27 @@ deskNameSet identifier name = do
     (#dbDesk_id `Selda.is` Selda.toId @DbDesk (unIdentifierDesk identifier))
     (\rowDesk -> rowDesk `Selda.with` [#dbDesk_name Selda.:= Selda.literal (unNameDesk name)])
   lift $ logInfo "Set desk name successfully."
+
+deskLocationSet ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierDesk ->
+  Maybe LocationDesk ->
+  SeldaTransactionT m ()
+deskLocationSet identifier location = do
+  lift $ logDebug $ "Setting location " <> T.pack (show location) <> " of desk " <> T.pack (show identifier) <> "."
+  Selda.updateOne
+    tableDesk
+    (#dbDesk_id `Selda.is` Selda.toId @DbDesk (unIdentifierDesk identifier))
+    ( \rowDesk ->
+        rowDesk
+          `Selda.with` [ #dbDesk_position_x Selda.:= Selda.literal (positionX . unPositionDesk . locationDeskPosition <$> location)
+                       , #dbDesk_position_y Selda.:= Selda.literal (positionY . unPositionDesk . locationDeskPosition <$> location)
+                       , #dbDesk_direction Selda.:= Selda.literal (unDirectionDesk . locationDeskDirection <$> location)
+                       , #dbDesk_size_width Selda.:= Selda.literal (sizeDeskWidth . locationDeskSize <$> location)
+                       , #dbDesk_size_depth Selda.:= Selda.literal (sizeDeskDepth . locationDeskSize <$> location)
+                       ]
+    )
+  lift $ logInfo "Set desk location successfully."
 
 spaceVisibilityApiToDb :: VisibilitySpace -> DbSpaceVisibility
 spaceVisibilityApiToDb = \case

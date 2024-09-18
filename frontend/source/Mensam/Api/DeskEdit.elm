@@ -14,6 +14,7 @@ type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
     , id : Mensam.Desk.Identifier
     , name : Maybe Mensam.Desk.Name
+    , location : Maybe (Maybe Mensam.Desk.Location)
     }
 
 
@@ -126,6 +127,26 @@ encodeBody body =
                     Encode.object
                         [ ( "update", Encode.bool True )
                         , ( "value", Mensam.Desk.nameEncode name )
+                        ]
+          )
+        , ( "location"
+          , case body.location of
+                Nothing ->
+                    Encode.object
+                        [ ( "update", Encode.bool False )
+                        ]
+
+                Just maybeLocation ->
+                    Encode.object
+                        [ ( "update", Encode.bool True )
+                        , ( "value"
+                          , case maybeLocation of
+                                Nothing ->
+                                    Encode.null
+
+                                Just location ->
+                                    Mensam.Desk.locationEncode location
+                          )
                         ]
           )
         ]
