@@ -720,11 +720,8 @@ deskGetFromId identifier = do
             MkLocationDesk
               { locationDeskPosition =
                   MkPositionDesk
-                    { unPositionDesk =
-                        MkPosition
-                          { positionX = x
-                          , positionY = y
-                          }
+                    { positionDeskX = x
+                    , positionDeskY = y
                     }
               , locationDeskDirection =
                   MkDirectionDesk
@@ -780,11 +777,8 @@ deskList spaceIdentifier userIdentifier = do
                 MkLocationDesk
                   { locationDeskPosition =
                       MkPositionDesk
-                        { unPositionDesk =
-                            MkPosition
-                              { positionX = x
-                              , positionY = y
-                              }
+                        { positionDeskX = x
+                        , positionDeskY = y
                         }
                   , locationDeskDirection =
                       MkDirectionDesk
@@ -812,8 +806,8 @@ deskCreate deskName spaceIdentifier deskLocation = do
           { dbDesk_id = Selda.def
           , dbDesk_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbDesk_name = unNameDesk deskName
-          , dbDesk_position_x = positionX . unPositionDesk . locationDeskPosition <$> deskLocation
-          , dbDesk_position_y = positionY . unPositionDesk . locationDeskPosition <$> deskLocation
+          , dbDesk_position_x = positionDeskX . locationDeskPosition <$> deskLocation
+          , dbDesk_position_y = positionDeskY . locationDeskPosition <$> deskLocation
           , dbDesk_direction = unDirectionDesk . locationDeskDirection <$> deskLocation
           , dbDesk_size_width = sizeDeskWidth . locationDeskSize <$> deskLocation
           , dbDesk_size_depth = sizeDeskDepth . locationDeskSize <$> deskLocation
@@ -862,8 +856,8 @@ deskLocationSet identifier location = do
     (#dbDesk_id `Selda.is` Selda.toId @DbDesk (unIdentifierDesk identifier))
     ( \rowDesk ->
         rowDesk
-          `Selda.with` [ #dbDesk_position_x Selda.:= Selda.literal (positionX . unPositionDesk . locationDeskPosition <$> location)
-                       , #dbDesk_position_y Selda.:= Selda.literal (positionY . unPositionDesk . locationDeskPosition <$> location)
+          `Selda.with` [ #dbDesk_position_x Selda.:= Selda.literal (positionDeskX . locationDeskPosition <$> location)
+                       , #dbDesk_position_y Selda.:= Selda.literal (positionDeskY . locationDeskPosition <$> location)
                        , #dbDesk_direction Selda.:= Selda.literal (unDirectionDesk . locationDeskDirection <$> location)
                        , #dbDesk_size_width Selda.:= Selda.literal (sizeDeskWidth . locationDeskSize <$> location)
                        , #dbDesk_size_depth Selda.:= Selda.literal (sizeDeskDepth . locationDeskSize <$> location)

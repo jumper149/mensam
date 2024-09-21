@@ -160,8 +160,7 @@ deriving newtype instance ToSchema IdentifierDesk
 deriving newtype instance ToSchema NameDesk
 deriving via A.CustomJSON (JSONSettings "Mk" "deskNameWithContext") DeskNameWithContext instance ToSchema DeskNameWithContext
 deriving via A.CustomJSON (JSONSettings "Mk" "locationDesk") LocationDesk instance ToSchema LocationDesk
-deriving newtype instance ToSchema PositionDesk
-deriving via A.CustomJSON (JSONSettings "Mk" "position") Position instance ToSchema Position
+deriving via A.CustomJSON (JSONSettings "Mk" "positionDesk") PositionDesk instance ToSchema PositionDesk
 deriving newtype instance ToSchema DirectionDesk
 deriving via A.CustomJSON (JSONSettings "Mk" "sizeDesk") SizeDesk instance ToSchema SizeDesk
 deriving via A.CustomJSON (JSONSettings "Mk" "reservation") Reservation instance ToSchema Reservation

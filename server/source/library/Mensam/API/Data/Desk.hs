@@ -54,19 +54,14 @@ data LocationDesk = MkLocationDesk
     via A.CustomJSON (JSONSettings "Mk" "locationDesk") LocationDesk
 
 type PositionDesk :: Type
-newtype PositionDesk = MkPositionDesk {unPositionDesk :: Position}
-  deriving stock (Eq, Generic, Ord, Read, Show)
-  deriving newtype (A.FromJSON, A.ToJSON)
-
-type Position :: Type
-data Position = MkPosition
-  { positionX :: Double
-  , positionY :: Double
+data PositionDesk = MkPositionDesk
+  { positionDeskX :: Double
+  , positionDeskY :: Double
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "Mk" "position") Position
+    via A.CustomJSON (JSONSettings "Mk" "positionDesk") PositionDesk
 
 type DirectionDesk :: Type
 newtype DirectionDesk = MkDirectionDesk {unDirectionDesk :: Double}
