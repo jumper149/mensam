@@ -13,6 +13,8 @@
     *** `direction`
     *** `size_width`
     *** `size_depth`
+* Frontend
+  ** Improve visibility of reservations on timetable.
 
 == `0.9.1.1`
 
