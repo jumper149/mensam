@@ -1,6 +1,8 @@
 module Mensam.Room exposing (..)
 
 import Element
+import Mensam.Desk
+import Mensam.Space
 import Mensam.Svg.Color
 import Svg
 import Svg.Attributes
@@ -10,23 +12,36 @@ import Svg.Events
 type Room msg
     = MkRoom
         { dimensions : { minX : Int, minY : Int, maxX : Int, maxY : Int }
-        , drawingInstructions : List (DrawingInstructions msg)
+        , drawingInstructions : List (DrawingInstruction msg)
         , messages :
-            { onClickTable : msg
+            { onClickTable :
+                { id : Mensam.Desk.Identifier
+                , name : Mensam.Desk.Name
+                , space : Mensam.Space.Identifier
+                , location : Maybe Mensam.Desk.Location
+                }
+                -> msg
             , onEnterTable : msg
             , onLeaveTable : msg
             }
         }
 
 
-type DrawingInstructions msg
-    = DrawGrid { spacing : Distance }
+type DrawingInstruction msg
+    = DrawNothing
+    | DrawGrid { spacing : Distance }
     | DrawTable
         { position : Position
         , direction : Direction
         , size :
             { width : Distance
             , depth : Distance
+            }
+        , desk :
+            { id : Mensam.Desk.Identifier
+            , name : Mensam.Desk.Name
+            , space : Mensam.Space.Identifier
+            , location : Maybe Mensam.Desk.Location
             }
         }
 
@@ -68,10 +83,10 @@ Here are some example values to get an idea:
 
 -}
 type Direction
-    = MkDirection { degrees : Int }
+    = MkDirection { degrees : Float }
 
 
-directionGetDegrees : Direction -> Int
+directionGetDegrees : Direction -> Float
 directionGetDegrees (MkDirection direction) =
     -direction.degrees
 
@@ -104,9 +119,24 @@ drawRoom (MkRoom room) =
                 room.drawingInstructions
 
 
-drawInstruction : { onClickTable : msg, onEnterTable : msg, onLeaveTable : msg } -> DrawingInstructions msg -> List (Svg.Svg msg)
+drawInstruction :
+    { onClickTable :
+        { id : Mensam.Desk.Identifier
+        , name : Mensam.Desk.Name
+        , space : Mensam.Space.Identifier
+        , location : Maybe Mensam.Desk.Location
+        }
+        -> msg
+    , onEnterTable : msg
+    , onLeaveTable : msg
+    }
+    -> DrawingInstruction msg
+    -> List (Svg.Svg msg)
 drawInstruction messages instruction =
     case instruction of
+        DrawNothing ->
+            []
+
         DrawGrid { spacing } ->
             let
                 smallSpacing =
@@ -185,7 +215,7 @@ drawInstruction messages instruction =
                 ]
             ]
 
-        DrawTable { position, direction, size } ->
+        DrawTable { position, direction, size, desk } ->
             [ Svg.g
                 [ Svg.Attributes.transform <|
                     String.concat
@@ -196,7 +226,7 @@ drawInstruction messages instruction =
                         , ")"
                         , " "
                         , "rotate("
-                        , String.fromInt <| directionGetDegrees direction
+                        , String.fromFloat <| directionGetDegrees direction
                         , ")"
                         ]
                 ]
@@ -214,7 +244,7 @@ drawInstruction messages instruction =
                     , Svg.Attributes.width <| String.fromFloat <| distanceGet size.width
                     , Svg.Attributes.height <| String.fromFloat <| distanceGet size.depth
                     , Svg.Attributes.fill Mensam.Svg.Color.bright.white
-                    , Svg.Events.onClick messages.onClickTable
+                    , Svg.Events.onClick <| messages.onClickTable desk
                     , Svg.Events.onMouseOver messages.onEnterTable
                     , Svg.Events.onMouseOut messages.onLeaveTable
                     ]
@@ -223,31 +253,39 @@ drawInstruction messages instruction =
             ]
 
 
-example : { onClickTable : msg, onEnterTable : msg, onLeaveTable : msg } -> Room msg
-example messages =
-    MkRoom
-        { dimensions = { minX = -5000, minY = -5000, maxX = 5000, maxY = 5000 }
-        , drawingInstructions =
-            let
-                studentTable x y dir =
-                    DrawTable
-                        { position = MkPosition { x = x, y = y }
-                        , direction = MkDirection { degrees = dir }
-                        , size = { width = MkDistance 160, depth = MkDistance 90 }
-                        }
-            in
-            [ DrawGrid { spacing = MkDistance 10 }
-            , studentTable -100 -300 10
-            , studentTable 100 -300 -4
-            , studentTable -100 -100 -5
-            , studentTable 100 -100 0
-            , studentTable -100 100 3
-            , studentTable 100 100 -2
-            , DrawTable
-                { position = MkPosition { x = 0, y = 300 }
-                , direction = MkDirection { degrees = 180 }
-                , size = { width = MkDistance 200, depth = MkDistance 90 }
+instructGrid : DrawingInstruction msg
+instructGrid =
+    DrawGrid { spacing = MkDistance 10 }
+
+
+instructDesk :
+    { id : Mensam.Desk.Identifier
+    , name : Mensam.Desk.Name
+    , space : Mensam.Space.Identifier
+    , location : Maybe Mensam.Desk.Location
+    }
+    -> DrawingInstruction msg
+instructDesk desk =
+    case desk.location of
+        Nothing ->
+            DrawNothing
+
+        Just (Mensam.Desk.MkLocation location) ->
+            DrawTable
+                { position =
+                    case location.position of
+                        Mensam.Desk.MkPosition position ->
+                            MkPosition
+                                position
+                , direction =
+                    case location.direction of
+                        Mensam.Desk.MkDirection direction ->
+                            MkDirection direction
+                , size =
+                    case location.size of
+                        Mensam.Desk.MkSize size ->
+                            { width = MkDistance size.width
+                            , depth = MkDistance size.depth
+                            }
+                , desk = desk
                 }
-            ]
-        , messages = messages
-        }
