@@ -27,6 +27,7 @@ import Mensam.Reservation
 import Mensam.Room
 import Mensam.Space
 import Mensam.Space.Role
+import Mensam.Svg.Color
 import Mensam.Time
 import Mensam.Widget.Date
 import Mensam.Widget.Time
@@ -853,7 +854,7 @@ deskTimetable model =
                                                             case ( model.timetablePointer, model.timetablePointerRegionDimensions ) of
                                                                 ( Just ptr, Just dim ) ->
                                                                     if calculateHour ptr dim == Mensam.Time.MkHour piece.hour && model.selected == Just n then
-                                                                        [ Element.Background.color (Element.rgba 0 1 0 0.05)
+                                                                        [ Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque50
                                                                         ]
 
                                                                     else
@@ -884,7 +885,7 @@ deskTimetable model =
                                                                                 n == m
                                                                        )
                                                             then
-                                                                [ Element.Background.color (Element.rgba 0 1 0 0.05)
+                                                                [ Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque50
                                                                 ]
 
                                                             else
@@ -1080,8 +1081,8 @@ visualizeReservation timezone date reservation =
                     , Svg.Attributes.height "100%"
                     , Svg.Attributes.rx "0"
                     , Svg.Attributes.ry "0"
-                    , Svg.Attributes.fill "red"
-                    , Svg.Attributes.opacity "0.2"
+                    , Svg.Attributes.fill Mensam.Svg.Color.dark.red
+                    , Svg.Attributes.opacity "0.4"
                     ]
                     []
 
