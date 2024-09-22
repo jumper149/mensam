@@ -57,7 +57,7 @@ element screen =
                                 ]
                                 []
                             , Element.column
-                                [ Element.Background.color Mensam.Element.Color.bright.black
+                                [ Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100
                                 , Element.width <| Element.minimum 300 <| Element.maximum 330 <| Element.fill
                                 , Element.height Element.fill
                                 , Element.centerX

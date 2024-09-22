@@ -163,7 +163,7 @@ element model =
                             Just name ->
                                 Element.Input.text
                                     [ -- onEnter <| MessageEffect SubmitCreate
-                                      Element.Font.color Mensam.Element.Color.dark.black
+                                      Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                     ]
                                     { onChange = MessagePure << EnterName << Just << Mensam.Space.Role.MkName
                                     , text = Mensam.Space.Role.nameToString name
@@ -206,12 +206,12 @@ element model =
                                     -- TODO: Use `Mensam.Element.Button.button`.
                                     [ Element.Input.button
                                         [ if accessibilityAndPassword.accessibility == Mensam.Space.Role.MkAccessibilityInaccessible then
-                                            Element.Background.color Mensam.Element.Color.bright.green
+                                            Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
                                           else
-                                            Element.Background.color Mensam.Element.Color.bright.white
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.magenta ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                            Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.magenta Mensam.Element.Color.Opaque100 ]
+                                        , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                         , Element.width Element.fill
                                         , Element.paddingXY 10 8
                                         ]
@@ -232,12 +232,12 @@ element model =
                                         }
                                     , Element.Input.button
                                         [ if accessibilityAndPassword.accessibility == Mensam.Space.Role.MkAccessibilityJoinableWithPassword then
-                                            Element.Background.color Mensam.Element.Color.bright.green
+                                            Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
                                           else
-                                            Element.Background.color Mensam.Element.Color.bright.white
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.magenta ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                            Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.magenta Mensam.Element.Color.Opaque100 ]
+                                        , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                         , Element.width Element.fill
                                         , Element.paddingXY 10 8
                                         ]
@@ -258,12 +258,12 @@ element model =
                                         }
                                     , Element.Input.button
                                         [ if accessibilityAndPassword.accessibility == Mensam.Space.Role.MkAccessibilityJoinable then
-                                            Element.Background.color Mensam.Element.Color.bright.green
+                                            Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
                                           else
-                                            Element.Background.color Mensam.Element.Color.bright.white
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.magenta ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                            Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.magenta Mensam.Element.Color.Opaque100 ]
+                                        , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                         , Element.width Element.fill
                                         , Element.paddingXY 10 8
                                         ]
@@ -285,7 +285,7 @@ element model =
                                     , case accessibilityAndPassword.accessibility of
                                         Mensam.Space.Role.MkAccessibilityJoinableWithPassword ->
                                             Element.Input.text
-                                                [ Element.Font.color Mensam.Element.Color.dark.black
+                                                [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                                 ]
                                                 { onChange = MessagePure << EditRoleSetPassword << Just
                                                 , text = Maybe.withDefault "" accessibilityAndPassword.maybePassword

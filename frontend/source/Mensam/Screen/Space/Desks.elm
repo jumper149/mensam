@@ -220,7 +220,7 @@ element model =
                               <|
                                 Element.text "Create Desk"
                             , Element.Input.text
-                                [ Element.Font.color Mensam.Element.Color.dark.black
+                                [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                 ]
                                 { onChange = MessagePure << CreateDeskEnterName << Mensam.Desk.MkName
                                 , text = Mensam.Desk.nameToString popupModel.name
@@ -316,9 +316,9 @@ element model =
                                 , Element.el
                                     [ Element.alignRight
                                     , Element.padding 10
-                                    , Element.Background.color Mensam.Element.Color.bright.red
-                                    , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.white ]
-                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.Background.color <| Mensam.Element.Color.bright.red Mensam.Element.Color.Opaque100
+                                    , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100 ]
+                                    , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                     , Element.Events.Pointer.onClick <| \_ -> MessagePure <| OpenDialogToDeleteDesk popupModel.id
@@ -353,7 +353,7 @@ element model =
 
                                     Just name ->
                                         Element.Input.text
-                                            [ Element.Font.color Mensam.Element.Color.dark.black
+                                            [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                             ]
                                             { onChange = MessagePure << EditDeskEnterName << Just << Mensam.Desk.MkName
                                             , text = Mensam.Desk.nameToString name

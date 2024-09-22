@@ -4,6 +4,10 @@ import Element
 import Mensam.Color
 
 
+type alias Color =
+    Transparency -> Element.Color
+
+
 dark : AnsiIso6429
 dark =
     { black = toElementColor Mensam.Color.dark.black
@@ -30,23 +34,46 @@ bright =
     }
 
 
-type alias AnsiIso6429 =
-    { black : Element.Color
-    , red : Element.Color
-    , green : Element.Color
-    , yellow : Element.Color
-    , blue : Element.Color
-    , magenta : Element.Color
-    , cyan : Element.Color
-    , white : Element.Color
-    }
-
-
 transparent : Element.Color
 transparent =
     Element.rgba255 0 0 0 0
 
 
-toElementColor : Mensam.Color.Color -> Element.Color
-toElementColor color =
-    Element.rgb255 color.r color.g color.b
+type Transparency
+    = Opaque100
+    | Opaque50
+    | Opaque25
+    | Opaque10
+    | Opaque05
+
+
+type alias AnsiIso6429 =
+    { black : Color
+    , red : Color
+    , green : Color
+    , yellow : Color
+    , blue : Color
+    , magenta : Color
+    , cyan : Color
+    , white : Color
+    }
+
+
+toElementColor : Mensam.Color.Color -> Transparency -> Element.Color
+toElementColor color transparency =
+    Element.rgba255 color.r color.g color.b <|
+        case transparency of
+            Opaque100 ->
+                1
+
+            Opaque50 ->
+                0.5
+
+            Opaque25 ->
+                0.25
+
+            Opaque10 ->
+                0.1
+
+            Opaque05 ->
+                0.05

@@ -24,9 +24,12 @@ document element =
             }
             [ Element.Background.gradient
                 { angle = 0
-                , steps = [ Mensam.Element.Color.dark.yellow, Mensam.Element.Color.bright.yellow ]
+                , steps =
+                    [ Mensam.Element.Color.dark.yellow Mensam.Element.Color.Opaque100
+                    , Mensam.Element.Color.bright.yellow Mensam.Element.Color.Opaque100
+                    ]
                 }
-            , Element.Font.color Mensam.Element.Color.bright.white
+            , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
             , Element.Font.alignLeft
             , Element.Font.family [ Mensam.Element.Font.sansSerif ]
             , Element.Font.regular
@@ -40,7 +43,7 @@ document element =
                 , Element.htmlAttribute <| Html.Attributes.style "margin-right" "auto"
                 , Element.width Element.fill
                 , Element.height <| Element.minimum 750 Element.fill
-                , Element.Background.color Mensam.Element.Color.dark.black
+                , Element.Background.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                 ]
                 element
         ]

@@ -260,7 +260,7 @@ element model =
                                 Element.text "Change Password"
                             , Element.Input.newPassword
                                 [ onEnter <| submitNewPasswordMessage popupModel
-                                , Element.Font.color Mensam.Element.Color.dark.black
+                                , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                 ]
                                 { onChange = MessagePure << EnterNewPassword
                                 , text = popupModel.newPassword
@@ -273,7 +273,7 @@ element model =
                                 , Element.spacing 2
                                 , Element.paddingXY 5 0
                                 , Element.Font.size 14
-                                , Element.Font.color Mensam.Element.Color.bright.red
+                                , Element.Font.color <| Mensam.Element.Color.bright.red Mensam.Element.Color.Opaque100
                                 , Element.width Element.fill
                                 , Element.alignBottom
                                 ]

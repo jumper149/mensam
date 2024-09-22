@@ -18,7 +18,7 @@ init =
 element : Model -> Element.Element Message
 element () =
     Element.el
-        [ Element.Font.color Mensam.Element.Color.bright.white
+        [ Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
         , Element.Font.size 16
         , Element.width Element.fill
         , Element.height Element.fill
@@ -34,7 +34,7 @@ element () =
                 [ Element.Font.size 40
                 , Element.Font.extraLight
                 , Element.Font.italic
-                , Element.Font.color Mensam.Element.Color.bright.yellow
+                , Element.Font.color <| Mensam.Element.Color.bright.yellow Mensam.Element.Color.Opaque100
                 , Element.centerX
                 ]
               <|

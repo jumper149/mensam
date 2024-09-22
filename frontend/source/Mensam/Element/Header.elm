@@ -83,7 +83,7 @@ elementMensam =
         , Element.Font.size 25
         , Element.Font.extraLight
         , Element.Font.italic
-        , Element.Font.color Mensam.Element.Color.bright.yellow
+        , Element.Font.color <| Mensam.Element.Color.bright.yellow Mensam.Element.Color.Opaque100
         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
         , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
         , Element.Events.Pointer.onClick <| \_ -> ClickMensam
@@ -104,7 +104,7 @@ elementHamburger unfoldDropDownMenu authenticated =
         , Element.alignRight
         , Element.Background.color <|
             if unfoldDropDownMenu then
-                Mensam.Element.Color.bright.black
+                Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100
 
             else
                 Mensam.Element.Color.transparent
@@ -130,19 +130,19 @@ elementHamburger unfoldDropDownMenu authenticated =
                             [ Element.el
                                 [ Element.width Element.fill
                                 , Element.height <| Element.px 1
-                                , Element.Background.color Mensam.Element.Color.bright.white
+                                , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
                                 ]
                                 Element.none
                             , Element.el
                                 [ Element.width Element.fill
                                 , Element.height <| Element.px 1
-                                , Element.Background.color Mensam.Element.Color.bright.white
+                                , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
                                 ]
                                 Element.none
                             , Element.el
                                 [ Element.width Element.fill
                                 , Element.height <| Element.px 1
-                                , Element.Background.color Mensam.Element.Color.bright.white
+                                , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
                                 ]
                                 Element.none
                             ]
@@ -177,21 +177,21 @@ elementErrors errors unfoldErrors =
                 , Element.alignRight
                 , Element.Background.color <|
                     if unfoldErrors then
-                        Mensam.Element.Color.bright.black
+                        Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100
 
                     else
                         Element.rgba 1 1 1 0
                 , Element.Font.color <|
                     if unfoldErrors then
-                        Mensam.Element.Color.dark.red
+                        Mensam.Element.Color.dark.red Mensam.Element.Color.Opaque100
 
                     else
-                        Mensam.Element.Color.bright.red
+                        Mensam.Element.Color.bright.red Mensam.Element.Color.Opaque100
                 , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                 , Element.mouseOver
                     [ Element.Background.color <|
                         if unfoldErrors then
-                            Mensam.Element.Color.bright.white
+                            Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
 
                         else
                             Element.rgba 1 1 1 0.1
@@ -210,11 +210,11 @@ elementErrors errors unfoldErrors =
                                 , left = 12
                                 }
                             , Element.spacing 10
-                            , Element.Background.color Mensam.Element.Color.bright.black
-                            , Element.Font.color Mensam.Element.Color.bright.white
+                            , Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100
+                            , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
                             , Element.mouseOver
-                                [ Element.Background.color <| Mensam.Element.Color.bright.white
-                                , Element.Font.color <| Mensam.Element.Color.dark.black
+                                [ Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                 ]
                             ]
                         <|
@@ -247,7 +247,7 @@ elementTitle maybeTitle =
                 , Element.Font.size 17
                 , Element.Font.extraLight
                 , Element.Font.italic
-                , Element.Font.color Mensam.Element.Color.bright.white
+                , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
                 , Element.clip
                 ]
             <|

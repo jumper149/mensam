@@ -136,7 +136,7 @@ element model =
                             Just name ->
                                 Element.Input.text
                                     [ -- onEnter <| MessageEffect SubmitCreate
-                                      Element.Font.color Mensam.Element.Color.dark.black
+                                      Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                     ]
                                     { onChange = MessagePure << EnterName << Just << Mensam.Space.MkName
                                     , text = Mensam.Space.nameToString name
@@ -177,7 +177,7 @@ element model =
                             Just timezone ->
                                 Element.Input.text
                                     [ -- onEnter <| MessageEffect SubmitCreate
-                                      Element.Font.color Mensam.Element.Color.dark.black
+                                      Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                     ]
                                     { onChange = MessagePure << SetTimezone << Just << Mensam.Time.MkTimezoneIdentifier
                                     , text = Mensam.Time.unTimezoneIdentifier timezone
@@ -224,12 +224,12 @@ element model =
                                     -- TODO: Use `Mensam.Element.Button.button`.
                                     [ Element.Input.button
                                         [ if visibility == Mensam.Space.MkVisibilityVisible then
-                                            Element.Background.color Mensam.Element.Color.bright.green
+                                            Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
                                           else
-                                            Element.Background.color Mensam.Element.Color.bright.white
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.magenta ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                            Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.magenta Mensam.Element.Color.Opaque100 ]
+                                        , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                         , Element.width Element.fill
                                         , Element.padding 10
                                         ]
@@ -245,12 +245,12 @@ element model =
                                         }
                                     , Element.Input.button
                                         [ if visibility == Mensam.Space.MkVisibilityHidden then
-                                            Element.Background.color Mensam.Element.Color.bright.green
+                                            Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
                                           else
-                                            Element.Background.color Mensam.Element.Color.bright.white
-                                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.magenta ]
-                                        , Element.Font.color Mensam.Element.Color.dark.black
+                                            Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.magenta Mensam.Element.Color.Opaque100 ]
+                                        , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                         , Element.width Element.fill
                                         , Element.padding 10
                                         ]

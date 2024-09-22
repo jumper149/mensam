@@ -137,7 +137,7 @@ element model =
                           if roleSelectedPasswordRequired then
                             Element.Input.currentPassword
                                 [ onEnter <| MessageEffect <| SubmitJoin
-                                , Element.Font.color Mensam.Element.Color.dark.black
+                                , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                 ]
                                 { onChange =
                                     \str ->

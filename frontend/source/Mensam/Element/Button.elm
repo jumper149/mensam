@@ -45,68 +45,68 @@ button (MkButton buttonData) =
          , Element.Background.color <|
             case buttonData.color of
                 Yellow ->
-                    Mensam.Element.Color.bright.yellow
+                    Mensam.Element.Color.bright.yellow Mensam.Element.Color.Opaque100
 
                 Blue ->
-                    Mensam.Element.Color.bright.blue
+                    Mensam.Element.Color.bright.blue Mensam.Element.Color.Opaque100
 
                 Red ->
-                    Mensam.Element.Color.bright.red
+                    Mensam.Element.Color.bright.red Mensam.Element.Color.Opaque100
 
                 Gray ->
-                    Mensam.Element.Color.dark.white
+                    Mensam.Element.Color.dark.white Mensam.Element.Color.Opaque100
 
                 Transparent ->
                     Mensam.Element.Color.transparent
          , Element.Font.color <|
             case buttonData.color of
                 Yellow ->
-                    Mensam.Element.Color.dark.black
+                    Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
 
                 Blue ->
-                    Mensam.Element.Color.dark.black
+                    Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
 
                 Red ->
-                    Mensam.Element.Color.dark.black
+                    Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
 
                 Gray ->
-                    Mensam.Element.Color.dark.black
+                    Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
 
                 Transparent ->
-                    Mensam.Element.Color.bright.blue
+                    Mensam.Element.Color.bright.blue Mensam.Element.Color.Opaque100
          , Element.mouseOver
             [ Element.Background.color <|
                 case buttonData.color of
                     Yellow ->
-                        Mensam.Element.Color.bright.green
+                        Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
                     Blue ->
-                        Mensam.Element.Color.bright.green
+                        Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
                     Red ->
-                        Mensam.Element.Color.bright.white
+                        Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
 
                     Gray ->
-                        Mensam.Element.Color.bright.white
+                        Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
 
                     Transparent ->
                         Mensam.Element.Color.transparent
             , Element.Font.color <|
                 case buttonData.color of
                     Yellow ->
-                        Mensam.Element.Color.dark.black
+                        Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
 
                     Blue ->
-                        Mensam.Element.Color.dark.black
+                        Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
 
                     Red ->
-                        Mensam.Element.Color.dark.black
+                        Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
 
                     Gray ->
-                        Mensam.Element.Color.dark.black
+                        Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
 
                     Transparent ->
-                        Mensam.Element.Color.bright.green
+                        Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
             ]
          ]
             ++ buttonData.attributes

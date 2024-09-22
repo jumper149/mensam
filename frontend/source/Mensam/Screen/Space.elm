@@ -398,7 +398,7 @@ element model =
                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                     , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                     , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                    , Element.Font.color Mensam.Element.Color.bright.cyan
+                                    , Element.Font.color <| Mensam.Element.Color.bright.cyan Mensam.Element.Color.Opaque100
                                     ]
                                   <|
                                     Element.text "from"
@@ -502,7 +502,7 @@ element model =
                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                     , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
                                     , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                    , Element.Font.color Mensam.Element.Color.bright.cyan
+                                    , Element.Font.color <| Mensam.Element.Color.bright.cyan Mensam.Element.Color.Opaque100
                                     ]
                                   <|
                                     Element.text "to"
@@ -655,7 +655,7 @@ elementTabs tabSelected =
                         [ Element.height <| Element.fill
                         , Element.mouseOver
                             [ Element.Background.color <| Element.rgba 1 1 1 0.78
-                            , Element.Font.color Mensam.Element.Color.dark.black
+                            , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                             ]
                         , Element.Background.color
                             (if tab == tabSelected then
@@ -666,10 +666,10 @@ elementTabs tabSelected =
                             )
                         , Element.Font.color
                             (if tab == tabSelected then
-                                Mensam.Element.Color.dark.black
+                                Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
 
                              else
-                                Mensam.Element.Color.bright.black
+                                Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100
                             )
                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                         , Element.Events.Pointer.onClick <| \_ -> MessagePure <| SetTabView tab
@@ -1105,7 +1105,7 @@ deskRoom model =
         , Element.height Element.fill
         , Element.clip
         , Element.Border.width 1
-        , Element.Background.color Mensam.Element.Color.dark.white
+        , Element.Background.color <| Mensam.Element.Color.dark.white Mensam.Element.Color.Opaque100
         ]
     <|
         Element.Window.view model.window

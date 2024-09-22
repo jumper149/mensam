@@ -29,7 +29,7 @@ element : Model -> Element.Element Message
 element model =
     Element.el
         [ Element.Background.color (Element.rgba 1 1 1 0.1)
-        , Element.Font.color Mensam.Element.Color.bright.white
+        , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
         , Element.Font.size 16
         , Element.centerX
         , Element.centerY
@@ -47,7 +47,7 @@ element model =
                 Element.text "Sign in"
             , Element.Input.username
                 [ onEnter <| MessageEffect SubmitLogin
-                , Element.Font.color Mensam.Element.Color.dark.black
+                , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                 ]
                 { onChange = MessagePure << EnterUsername
                 , text = model.username
@@ -56,7 +56,7 @@ element model =
                 }
             , Element.Input.currentPassword
                 [ onEnter <| MessageEffect SubmitLogin
-                , Element.Font.color Mensam.Element.Color.dark.black
+                , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                 ]
                 { onChange = MessagePure << EnterPassword
                 , text = model.password
@@ -78,7 +78,7 @@ element model =
                     [ Element.height <| Element.px 14
                     , Element.paddingXY 5 0
                     , Element.Font.size 14
-                    , Element.Font.color Mensam.Element.Color.bright.red
+                    , Element.Font.color <| Mensam.Element.Color.bright.red Mensam.Element.Color.Opaque100
                     ]
                   <|
                     Element.text <|

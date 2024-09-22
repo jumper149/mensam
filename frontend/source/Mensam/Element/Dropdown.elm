@@ -49,11 +49,11 @@ element content =
                         , Element.alignTop
                         , Element.Font.italic
                         , Element.mouseOver
-                            [ Element.Font.color <| Mensam.Element.Color.bright.yellow
+                            [ Element.Font.color <| Mensam.Element.Color.bright.yellow Mensam.Element.Color.Opaque100
                             , Element.Font.shadow
                                 { offset = ( 0, 0 )
                                 , blur = 50
-                                , color = Mensam.Element.Color.bright.yellow
+                                , color = Mensam.Element.Color.bright.yellow Mensam.Element.Color.Opaque100
                                 }
                             ]
                         ]
@@ -125,7 +125,7 @@ dropdownWrapper content insideElement =
                     ]
                     []
                 , Element.column
-                    [ Element.Background.color Mensam.Element.Color.bright.black
+                    [ Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100
                     , Element.width <| Element.px 200
                     , Element.height Element.fill
                     , Element.alignRight

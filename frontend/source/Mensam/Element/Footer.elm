@@ -78,9 +78,9 @@ elementSource content =
                 , Element.Font.family [ Mensam.Element.Font.monospace ]
                 , Element.Font.regular
                 , Element.Font.size 14
-                , Element.Font.color Mensam.Element.Color.dark.blue
+                , Element.Font.color <| Mensam.Element.Color.dark.blue Mensam.Element.Color.Opaque100
                 , Element.mouseOver
-                    [ Element.Font.color Mensam.Element.Color.bright.blue
+                    [ Element.Font.color <| Mensam.Element.Color.bright.blue Mensam.Element.Color.Opaque100
                     ]
                 ]
             <|

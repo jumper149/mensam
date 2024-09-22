@@ -62,11 +62,11 @@ element model =
                     [ Element.el
                         [ Element.alignRight
                         , Element.padding 10
-                        , Element.Background.color Mensam.Element.Color.bright.yellow
-                        , Element.Font.color Mensam.Element.Color.dark.black
+                        , Element.Background.color <| Mensam.Element.Color.bright.yellow Mensam.Element.Color.Opaque100
+                        , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
-                        , Element.mouseOver [ Element.Background.color Mensam.Element.Color.bright.green ]
+                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100 ]
                         , Element.Events.Pointer.onClick <| \_ -> MessagePure OpenDialogToCreate
                         ]
                       <|
@@ -200,7 +200,7 @@ element model =
                                     Element.text "Create space"
                                 , Element.Input.text
                                     [ onEnter <| MessageEffect <| SubmitCreate formData
-                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                     ]
                                     { onChange = MessagePure << EnterSpaceName << Mensam.Space.MkName
                                     , text = Mensam.Space.nameToString formData.name
@@ -209,7 +209,7 @@ element model =
                                     }
                                 , Element.Input.text
                                     [ onEnter <| MessageEffect <| SubmitCreate formData
-                                    , Element.Font.color Mensam.Element.Color.dark.black
+                                    , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                     ]
                                     { onChange = MessagePure << EnterSpaceTimezone << Mensam.Time.MkTimezoneIdentifier
                                     , text = Mensam.Time.unTimezoneIdentifier formData.timezone
