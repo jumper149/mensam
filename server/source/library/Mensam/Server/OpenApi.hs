@@ -162,7 +162,49 @@ deriving via A.CustomJSON (JSONSettings "Mk" "deskNameWithContext") DeskNameWith
 deriving via A.CustomJSON (JSONSettings "Mk" "locationDesk") LocationDesk instance ToSchema LocationDesk
 deriving via A.CustomJSON (JSONSettings "Mk" "positionDesk") PositionDesk instance ToSchema PositionDesk
 deriving newtype instance ToSchema DirectionDesk
+instance ToSchema Direction where
+  declareNamedSchema Proxy =
+    declareNamedSchema (Proxy @Double)
+      >>= \x ->
+        pure $
+          x
+            & schema . description ?~ "Direction on a 2D plane given as the angle relativ to North using degrees. The angle `x` must satisfy `0 <= x < 360`."
 deriving via A.CustomJSON (JSONSettings "Mk" "sizeDesk") SizeDesk instance ToSchema SizeDesk
+instance ToSchema (ConstrainedDouble '[]) where
+  declareNamedSchema Proxy =
+    declareNamedSchema (Proxy @Double)
+      >>= \x ->
+        pure $
+          x
+            & schema . description ?~ "A constrained number:"
+instance (KnownNat n, ToSchema (ConstrainedDouble cs), Typeable cs) => ToSchema (ConstrainedDouble (MkConstraintDoubleGreaterEqual n : cs)) where
+  declareNamedSchema Proxy =
+    declareNamedSchema (Proxy @(ConstrainedDouble cs))
+      >>= \x ->
+        pure $
+          x
+            & schema . description %~ ((<> (" `n >= " <> T.pack (show (natVal (Proxy @n))) <> "`")) <$>)
+instance (KnownNat n, ToSchema (ConstrainedDouble cs), Typeable cs) => ToSchema (ConstrainedDouble (MkConstraintDoubleGreaterThan n : cs)) where
+  declareNamedSchema Proxy =
+    declareNamedSchema (Proxy @(ConstrainedDouble cs))
+      >>= \x ->
+        pure $
+          x
+            & schema . description %~ ((<> (" `n > " <> T.pack (show (natVal (Proxy @n))) <> "`")) <$>)
+instance (KnownNat n, ToSchema (ConstrainedDouble cs), Typeable cs) => ToSchema (ConstrainedDouble (MkConstraintDoubleLessEqual n : cs)) where
+  declareNamedSchema Proxy =
+    declareNamedSchema (Proxy @(ConstrainedDouble cs))
+      >>= \x ->
+        pure $
+          x
+            & schema . description %~ ((<> (" `n <= " <> T.pack (show (natVal (Proxy @n))) <> "`")) <$>)
+instance (KnownNat n, ToSchema (ConstrainedDouble cs), Typeable cs) => ToSchema (ConstrainedDouble (MkConstraintDoubleLessThan n : cs)) where
+  declareNamedSchema Proxy =
+    declareNamedSchema (Proxy @(ConstrainedDouble cs))
+      >>= \x ->
+        pure $
+          x
+            & schema . description %~ ((<> (" `n < " <> T.pack (show (natVal (Proxy @n))) <> "`")) <$>)
 deriving via A.CustomJSON (JSONSettings "Mk" "reservation") Reservation instance ToSchema Reservation
 deriving via A.CustomJSON (JSONSettings "MkStatusReservation" "") StatusReservation instance ToSchema StatusReservation
 deriving newtype instance ToSchema IdentifierReservation

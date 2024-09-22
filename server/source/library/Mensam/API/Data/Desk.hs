@@ -6,9 +6,11 @@ import Mensam.API.Data.Space
 import Data.Aeson qualified as A
 import Data.Int
 import Data.Kind
+import Data.Proxy
 import Data.Text qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
+import GHC.TypeLits
 
 type Desk :: Type
 data Desk = MkDesk
@@ -55,8 +57,8 @@ data LocationDesk = MkLocationDesk
 
 type PositionDesk :: Type
 data PositionDesk = MkPositionDesk
-  { positionDeskX :: Double
-  , positionDeskY :: Double
+  { positionDeskX :: ConstrainedDouble '[]
+  , positionDeskY :: ConstrainedDouble '[]
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -64,16 +66,82 @@ data PositionDesk = MkPositionDesk
     via A.CustomJSON (JSONSettings "Mk" "positionDesk") PositionDesk
 
 type DirectionDesk :: Type
-newtype DirectionDesk = MkDirectionDesk {unDirectionDesk :: Double}
+newtype DirectionDesk = MkDirectionDesk {unDirectionDesk :: Direction}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
 
 type SizeDesk :: Type
 data SizeDesk = MkSizeDesk
-  { sizeDeskWidth :: Double
-  , sizeDeskDepth :: Double
+  { sizeDeskWidth :: ConstrainedDouble '[MkConstraintDoubleGreaterEqual 30, MkConstraintDoubleLessEqual 600]
+  , sizeDeskDepth :: ConstrainedDouble '[MkConstraintDoubleGreaterEqual 30, MkConstraintDoubleLessEqual 600]
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "Mk" "sizeDesk") SizeDesk
+
+-- | Direction on a 2D plane given as the angle relativ to North.
+--
+-- [North]:   0
+-- [East]:   90
+-- [South]: 180
+-- [West]:  270
+type Direction :: Type
+newtype Direction = MkDirectionDegrees {unDirectionDegrees :: ConstrainedDouble '[MkConstraintDoubleGreaterEqual 0, MkConstraintDoubleLessThan 360]}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving newtype (A.FromJSON, A.ToJSON)
+
+type ConstrainedDouble :: [ConstraintDouble] -> Type
+newtype ConstrainedDouble constraints = MkConstrainedDoubleUnsafe {unConstrainedDouble :: Double}
+  deriving stock (Eq, Generic, Ord, Read, Show)
+
+instance A.FromJSON (ConstrainedDouble '[]) where
+  parseJSON val = do
+    parsedDouble <- A.parseJSON val
+    if parsedDouble < (1 / 0) && parsedDouble > (-1 / 0)
+      then pure MkConstrainedDoubleUnsafe {unConstrainedDouble = parsedDouble}
+      else fail "Parsing constrained double failed: Not a number"
+instance (A.FromJSON (ConstrainedDouble cs), KnownNat n) => A.FromJSON (ConstrainedDouble (MkConstraintDoubleGreaterEqual n : cs)) where
+  parseJSON val = do
+    parsedConstrainedDouble :: ConstrainedDouble cs <- A.parseJSON val
+    let
+      parsedDouble = unConstrainedDouble parsedConstrainedDouble
+      minGEDouble = fromInteger $ natVal (Proxy :: Proxy n)
+    if parsedDouble >= minGEDouble
+      then pure MkConstrainedDoubleUnsafe {unConstrainedDouble = parsedDouble}
+      else fail $ "Parsing constrained double failed: Expected n >= " ++ show minGEDouble
+instance (A.FromJSON (ConstrainedDouble cs), KnownNat n) => A.FromJSON (ConstrainedDouble (MkConstraintDoubleGreaterThan n : cs)) where
+  parseJSON val = do
+    parsedConstrainedDouble :: ConstrainedDouble cs <- A.parseJSON val
+    let
+      parsedDouble = unConstrainedDouble parsedConstrainedDouble
+      minGTDouble = fromInteger $ natVal (Proxy :: Proxy n)
+    if parsedDouble >= minGTDouble
+      then pure MkConstrainedDoubleUnsafe {unConstrainedDouble = parsedDouble}
+      else fail $ "Parsing constrained double failed: Expected n > " ++ show minGTDouble
+instance (A.FromJSON (ConstrainedDouble cs), KnownNat n) => A.FromJSON (ConstrainedDouble (MkConstraintDoubleLessEqual n : cs)) where
+  parseJSON val = do
+    parsedConstrainedDouble :: ConstrainedDouble cs <- A.parseJSON val
+    let
+      parsedDouble = unConstrainedDouble parsedConstrainedDouble
+      maxLEDouble = fromInteger $ natVal (Proxy :: Proxy n)
+    if parsedDouble <= maxLEDouble
+      then pure MkConstrainedDoubleUnsafe {unConstrainedDouble = parsedDouble}
+      else fail $ "Parsing constrained double failed: Expected n <= " ++ show maxLEDouble
+instance (A.FromJSON (ConstrainedDouble cs), KnownNat n) => A.FromJSON (ConstrainedDouble (MkConstraintDoubleLessThan n : cs)) where
+  parseJSON val = do
+    parsedConstrainedDouble :: ConstrainedDouble cs <- A.parseJSON val
+    let
+      parsedDouble = unConstrainedDouble parsedConstrainedDouble
+      maxLTDouble = fromInteger $ natVal (Proxy :: Proxy n)
+    if parsedDouble <= maxLTDouble
+      then pure MkConstrainedDoubleUnsafe {unConstrainedDouble = parsedDouble}
+      else fail $ "Parsing constrained double failed: Expected n < " ++ show maxLTDouble
+deriving newtype instance A.ToJSON (ConstrainedDouble cs)
+
+type ConstraintDouble :: Type
+type data ConstraintDouble
+  = MkConstraintDoubleGreaterEqual Natural
+  | MkConstraintDoubleGreaterThan Natural
+  | MkConstraintDoubleLessEqual Natural
+  | MkConstraintDoubleLessThan Natural
