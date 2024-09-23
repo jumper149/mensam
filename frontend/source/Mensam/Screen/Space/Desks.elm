@@ -14,7 +14,7 @@ import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Desk
 import Mensam.Element.Button
-import Mensam.Element.Color
+import Mensam.Element.Color exposing (Transparency(..))
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
@@ -426,7 +426,11 @@ element model =
                                                             , message = Just <| MessagePure <| EditDeskEnterLocation <| Just <| Nothing
                                                             , size = Mensam.Element.Button.Medium
                                                             }
-                                                    , Element.Input.slider []
+                                                    , Element.Input.slider
+                                                        [ Element.width Element.fill
+                                                        , Element.height <| Element.px 15
+                                                        , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque25
+                                                        ]
                                                         { onChange =
                                                             \newValue ->
                                                                 MessagePure <|
@@ -456,10 +460,19 @@ element model =
                                                             case location.position of
                                                                 Mensam.Desk.MkPosition position ->
                                                                     position.x
-                                                        , thumb = Element.Input.defaultThumb
+                                                        , thumb =
+                                                            Element.Input.thumb
+                                                                [ Element.width <| Element.px 20
+                                                                , Element.height <| Element.px 15
+                                                                , Element.Background.color <| Mensam.Element.Color.bright.yellow Opaque100
+                                                                ]
                                                         , step = Just 50
                                                         }
-                                                    , Element.Input.slider []
+                                                    , Element.Input.slider
+                                                        [ Element.width Element.fill
+                                                        , Element.height <| Element.px 15
+                                                        , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque25
+                                                        ]
                                                         { onChange =
                                                             \newValue ->
                                                                 MessagePure <|
@@ -489,10 +502,19 @@ element model =
                                                             case location.position of
                                                                 Mensam.Desk.MkPosition position ->
                                                                     position.y
-                                                        , thumb = Element.Input.defaultThumb
+                                                        , thumb =
+                                                            Element.Input.thumb
+                                                                [ Element.width <| Element.px 20
+                                                                , Element.height <| Element.px 15
+                                                                , Element.Background.color <| Mensam.Element.Color.bright.yellow Opaque100
+                                                                ]
                                                         , step = Just 50
                                                         }
-                                                    , Element.Input.slider []
+                                                    , Element.Input.slider
+                                                        [ Element.width Element.fill
+                                                        , Element.height <| Element.px 15
+                                                        , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque25
+                                                        ]
                                                         { onChange =
                                                             \newValue ->
                                                                 MessagePure <|
@@ -541,10 +563,19 @@ element model =
                                                             case location.direction of
                                                                 Mensam.Desk.MkDirection direction ->
                                                                     direction.degrees
-                                                        , thumb = Element.Input.defaultThumb
+                                                        , thumb =
+                                                            Element.Input.thumb
+                                                                [ Element.width <| Element.px 20
+                                                                , Element.height <| Element.px 15
+                                                                , Element.Background.color <| Mensam.Element.Color.bright.yellow Opaque100
+                                                                ]
                                                         , step = Just 10
                                                         }
-                                                    , Element.Input.slider []
+                                                    , Element.Input.slider
+                                                        [ Element.width Element.fill
+                                                        , Element.height <| Element.px 15
+                                                        , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque25
+                                                        ]
                                                         { onChange =
                                                             \newValue ->
                                                                 MessagePure <|
@@ -574,10 +605,19 @@ element model =
                                                             case location.size of
                                                                 Mensam.Desk.MkSize size ->
                                                                     size.width
-                                                        , thumb = Element.Input.defaultThumb
+                                                        , thumb =
+                                                            Element.Input.thumb
+                                                                [ Element.width <| Element.px 20
+                                                                , Element.height <| Element.px 15
+                                                                , Element.Background.color <| Mensam.Element.Color.bright.yellow Opaque100
+                                                                ]
                                                         , step = Just 5
                                                         }
-                                                    , Element.Input.slider []
+                                                    , Element.Input.slider
+                                                        [ Element.width Element.fill
+                                                        , Element.height <| Element.px 15
+                                                        , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque25
+                                                        ]
                                                         { onChange =
                                                             \newValue ->
                                                                 MessagePure <|
@@ -607,7 +647,12 @@ element model =
                                                             case location.size of
                                                                 Mensam.Desk.MkSize size ->
                                                                     size.depth
-                                                        , thumb = Element.Input.defaultThumb
+                                                        , thumb =
+                                                            Element.Input.thumb
+                                                                [ Element.width <| Element.px 20
+                                                                , Element.height <| Element.px 15
+                                                                , Element.Background.color <| Mensam.Element.Color.bright.yellow Opaque100
+                                                                ]
                                                         , step = Just 5
                                                         }
                                                     ]
