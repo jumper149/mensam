@@ -1550,7 +1550,7 @@ update message (MkModel model) =
                                             { jwt = jwt
                                             , id = args.id
                                             , name = args.name
-                                            , location = Nothing -- TODO: Make locations editable.
+                                            , location = args.location
                                             }
                                     )
 

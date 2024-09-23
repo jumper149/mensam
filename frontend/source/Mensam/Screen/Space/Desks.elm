@@ -29,6 +29,7 @@ type alias Model =
         List
             { id : Mensam.Desk.Identifier
             , name : Mensam.Desk.Name
+            , location : Maybe Mensam.Desk.Location
             }
     , selected : Maybe Int
     , popup : Maybe PopupModel
@@ -46,6 +47,8 @@ type PopupModel
         { id : Mensam.Desk.Identifier
         , oldName : Mensam.Desk.Name
         , newName : Maybe Mensam.Desk.Name
+        , oldLocation : Maybe Mensam.Desk.Location
+        , newLocation : Maybe (Maybe Mensam.Desk.Location)
         }
 
 
@@ -132,7 +135,7 @@ element model =
                                     Element.el
                                         [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
                                         , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
-                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseDesk { id = desk.id, name = desk.name }
+                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseDesk { id = desk.id, name = desk.name, location = desk.location }
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -173,7 +176,7 @@ element model =
                                     Element.el
                                         [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
                                         , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
-                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseDesk { id = desk.id, name = desk.name }
+                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseDesk { id = desk.id, name = desk.name, location = desk.location }
                                         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                         , let
                                             alpha =
@@ -360,6 +363,254 @@ element model =
                                             , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
                                             , label = Element.Input.labelHidden "Name"
                                             }
+                            , Element.el
+                                [ Element.paddingXY 30 5
+                                , Element.width Element.fill
+                                , Element.height <| Element.px 40
+                                ]
+                              <|
+                                case popupModel.newLocation of
+                                    Nothing ->
+                                        Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Yellow
+                                                , label = Element.text "Edit Location"
+                                                , message = Just <| MessagePure <| EditDeskEnterLocation <| Just popupModel.oldLocation
+                                                , size = Mensam.Element.Button.Medium
+                                                }
+
+                                    Just maybeLocation ->
+                                        case maybeLocation of
+                                            Nothing ->
+                                                Mensam.Element.Button.button <|
+                                                    Mensam.Element.Button.MkButton
+                                                        { attributes = [ Element.width Element.fill ]
+                                                        , color = Mensam.Element.Button.Blue
+                                                        , label = Element.text "Add Location"
+                                                        , message =
+                                                            Just <|
+                                                                MessagePure <|
+                                                                    EditDeskEnterLocation <|
+                                                                        Just <|
+                                                                            Just <|
+                                                                                Mensam.Desk.MkLocation
+                                                                                    { position =
+                                                                                        Mensam.Desk.MkPosition
+                                                                                            { x = 0
+                                                                                            , y = 0
+                                                                                            }
+                                                                                    , direction =
+                                                                                        Mensam.Desk.MkDirection
+                                                                                            { degrees = 0
+                                                                                            }
+                                                                                    , size =
+                                                                                        Mensam.Desk.MkSize
+                                                                                            { width = 120
+                                                                                            , depth = 90
+                                                                                            }
+                                                                                    }
+                                                        , size = Mensam.Element.Button.Medium
+                                                        }
+
+                                            Just (Mensam.Desk.MkLocation location) ->
+                                                Element.column
+                                                    [ Element.width Element.fill
+                                                    , Element.spacing 10
+                                                    ]
+                                                    [ Mensam.Element.Button.button <|
+                                                        Mensam.Element.Button.MkButton
+                                                            { attributes = [ Element.width Element.fill ]
+                                                            , color = Mensam.Element.Button.Red
+                                                            , label = Element.text "Remove Location"
+                                                            , message = Just <| MessagePure <| EditDeskEnterLocation <| Just <| Nothing
+                                                            , size = Mensam.Element.Button.Medium
+                                                            }
+                                                    , Element.Input.slider []
+                                                        { onChange =
+                                                            \newValue ->
+                                                                MessagePure <|
+                                                                    EditDeskEnterLocation <|
+                                                                        Just <|
+                                                                            Just <|
+                                                                                Mensam.Desk.MkLocation
+                                                                                    { location
+                                                                                        | position =
+                                                                                            case location.position of
+                                                                                                Mensam.Desk.MkPosition position ->
+                                                                                                    Mensam.Desk.MkPosition { position | x = newValue }
+                                                                                    }
+                                                        , label =
+                                                            Element.Input.labelAbove [] <|
+                                                                Element.text <|
+                                                                    String.concat
+                                                                        [ "Position X: "
+                                                                        , case location.position of
+                                                                            Mensam.Desk.MkPosition position ->
+                                                                                String.fromFloat (position.x / 100)
+                                                                        , "m"
+                                                                        ]
+                                                        , min = -1000
+                                                        , max = 1000
+                                                        , value =
+                                                            case location.position of
+                                                                Mensam.Desk.MkPosition position ->
+                                                                    position.x
+                                                        , thumb = Element.Input.defaultThumb
+                                                        , step = Just 50
+                                                        }
+                                                    , Element.Input.slider []
+                                                        { onChange =
+                                                            \newValue ->
+                                                                MessagePure <|
+                                                                    EditDeskEnterLocation <|
+                                                                        Just <|
+                                                                            Just <|
+                                                                                Mensam.Desk.MkLocation
+                                                                                    { location
+                                                                                        | position =
+                                                                                            case location.position of
+                                                                                                Mensam.Desk.MkPosition position ->
+                                                                                                    Mensam.Desk.MkPosition { position | y = newValue }
+                                                                                    }
+                                                        , label =
+                                                            Element.Input.labelAbove [] <|
+                                                                Element.text <|
+                                                                    String.concat
+                                                                        [ "Position Y: "
+                                                                        , case location.position of
+                                                                            Mensam.Desk.MkPosition position ->
+                                                                                String.fromFloat (position.y / 100)
+                                                                        , "m"
+                                                                        ]
+                                                        , min = -1000
+                                                        , max = 1000
+                                                        , value =
+                                                            case location.position of
+                                                                Mensam.Desk.MkPosition position ->
+                                                                    position.y
+                                                        , thumb = Element.Input.defaultThumb
+                                                        , step = Just 50
+                                                        }
+                                                    , Element.Input.slider []
+                                                        { onChange =
+                                                            \newValue ->
+                                                                MessagePure <|
+                                                                    EditDeskEnterLocation <|
+                                                                        Just <|
+                                                                            Just <|
+                                                                                Mensam.Desk.MkLocation
+                                                                                    { location
+                                                                                        | direction =
+                                                                                            case location.direction of
+                                                                                                Mensam.Desk.MkDirection direction ->
+                                                                                                    Mensam.Desk.MkDirection { direction | degrees = newValue }
+                                                                                    }
+                                                        , label =
+                                                            Element.Input.labelAbove [] <|
+                                                                Element.text <|
+                                                                    case location.direction of
+                                                                        Mensam.Desk.MkDirection direction ->
+                                                                            String.concat
+                                                                                [ "Direction: "
+                                                                                , String.fromFloat direction.degrees
+                                                                                , "°"
+                                                                                , " ("
+                                                                                , if direction.degrees >= 0 && direction.degrees < 45 then
+                                                                                    "North"
+
+                                                                                  else if direction.degrees >= 45 && direction.degrees < 135 then
+                                                                                    "East"
+
+                                                                                  else if direction.degrees >= 135 && direction.degrees < 225 then
+                                                                                    "South"
+
+                                                                                  else if direction.degrees >= 225 && direction.degrees < 315 then
+                                                                                    "West"
+
+                                                                                  else if direction.degrees >= 315 && direction.degrees < 360 then
+                                                                                    "North"
+
+                                                                                  else
+                                                                                    "???"
+                                                                                , ")"
+                                                                                ]
+                                                        , min = 0
+                                                        , max = 350
+                                                        , value =
+                                                            case location.direction of
+                                                                Mensam.Desk.MkDirection direction ->
+                                                                    direction.degrees
+                                                        , thumb = Element.Input.defaultThumb
+                                                        , step = Just 10
+                                                        }
+                                                    , Element.Input.slider []
+                                                        { onChange =
+                                                            \newValue ->
+                                                                MessagePure <|
+                                                                    EditDeskEnterLocation <|
+                                                                        Just <|
+                                                                            Just <|
+                                                                                Mensam.Desk.MkLocation
+                                                                                    { location
+                                                                                        | size =
+                                                                                            case location.size of
+                                                                                                Mensam.Desk.MkSize size ->
+                                                                                                    Mensam.Desk.MkSize { size | width = newValue }
+                                                                                    }
+                                                        , label =
+                                                            Element.Input.labelAbove [] <|
+                                                                Element.text <|
+                                                                    String.concat
+                                                                        [ "Width: "
+                                                                        , case location.size of
+                                                                            Mensam.Desk.MkSize size ->
+                                                                                String.fromFloat size.width
+                                                                        , "cm"
+                                                                        ]
+                                                        , min = 30
+                                                        , max = 600
+                                                        , value =
+                                                            case location.size of
+                                                                Mensam.Desk.MkSize size ->
+                                                                    size.width
+                                                        , thumb = Element.Input.defaultThumb
+                                                        , step = Just 5
+                                                        }
+                                                    , Element.Input.slider []
+                                                        { onChange =
+                                                            \newValue ->
+                                                                MessagePure <|
+                                                                    EditDeskEnterLocation <|
+                                                                        Just <|
+                                                                            Just <|
+                                                                                Mensam.Desk.MkLocation
+                                                                                    { location
+                                                                                        | size =
+                                                                                            case location.size of
+                                                                                                Mensam.Desk.MkSize size ->
+                                                                                                    Mensam.Desk.MkSize { size | depth = newValue }
+                                                                                    }
+                                                        , label =
+                                                            Element.Input.labelAbove [] <|
+                                                                Element.text <|
+                                                                    String.concat
+                                                                        [ "Depth: "
+                                                                        , case location.size of
+                                                                            Mensam.Desk.MkSize size ->
+                                                                                String.fromFloat size.depth
+                                                                        , "cm"
+                                                                        ]
+                                                        , min = 30
+                                                        , max = 600
+                                                        , value =
+                                                            case location.size of
+                                                                Mensam.Desk.MkSize size ->
+                                                                    size.depth
+                                                        , thumb = Element.Input.defaultThumb
+                                                        , step = Just 5
+                                                        }
+                                                    ]
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10
@@ -384,6 +635,7 @@ element model =
                                                     SubmitEditDesk
                                                         { id = popupModel.id
                                                         , name = popupModel.newName
+                                                        , location = popupModel.newLocation
                                                         }
                                         , size = Mensam.Element.Button.Medium
                                         }
@@ -405,18 +657,20 @@ type MessagePure
         (List
             { id : Mensam.Desk.Identifier
             , name : Mensam.Desk.Name
+            , location : Maybe Mensam.Desk.Location
             }
         )
     | SetSelected (Maybe Int)
     | ClosePopup
-    | ChooseDesk { id : Mensam.Desk.Identifier, name : Mensam.Desk.Name }
+    | ChooseDesk { id : Mensam.Desk.Identifier, name : Mensam.Desk.Name, location : Maybe Mensam.Desk.Location }
     | OpenDialogToCreateDesk
     | CreateDeskEnterName Mensam.Desk.Name
     | CloseDialogToCreateDesk
     | OpenDialogToDeleteDesk Mensam.Desk.Identifier
     | CloseDialogToDeleteDesk
-    | OpenDialogToEditDesk { id : Mensam.Desk.Identifier, name : Mensam.Desk.Name }
+    | OpenDialogToEditDesk { id : Mensam.Desk.Identifier, name : Mensam.Desk.Name, location : Maybe Mensam.Desk.Location }
     | EditDeskEnterName (Maybe Mensam.Desk.Name)
+    | EditDeskEnterLocation (Maybe (Maybe Mensam.Desk.Location))
     | CloseDialogToEditDesk
 
 
@@ -435,8 +689,8 @@ updatePure message model =
         ClosePopup ->
             { model | popup = Nothing }
 
-        ChooseDesk { id, name } ->
-            updatePure (OpenDialogToEditDesk { id = id, name = name }) model
+        ChooseDesk { id, name, location } ->
+            updatePure (OpenDialogToEditDesk { id = id, name = name, location = location }) model
 
         OpenDialogToCreateDesk ->
             { model | popup = Just <| PopupCreateDesk { name = Mensam.Desk.MkName "" } }
@@ -467,8 +721,8 @@ updatePure message model =
         CloseDialogToDeleteDesk ->
             { model | popup = Nothing }
 
-        OpenDialogToEditDesk { id, name } ->
-            { model | popup = Just <| PopupEditDesk { id = id, oldName = name, newName = Nothing } }
+        OpenDialogToEditDesk { id, name, location } ->
+            { model | popup = Just <| PopupEditDesk { id = id, oldName = name, newName = Nothing, oldLocation = location, newLocation = Nothing } }
 
         EditDeskEnterName name ->
             { model
@@ -487,6 +741,23 @@ updatePure message model =
                             Just <| PopupEditDesk { popupModel | newName = name }
             }
 
+        EditDeskEnterLocation location ->
+            { model
+                | popup =
+                    case model.popup of
+                        Nothing ->
+                            Nothing
+
+                        Just (PopupCreateDesk popupModel) ->
+                            Just <| PopupCreateDesk popupModel
+
+                        Just (PopupDeleteDesk popupModel) ->
+                            Just <| PopupDeleteDesk popupModel
+
+                        Just (PopupEditDesk popupModel) ->
+                            Just <| PopupEditDesk { popupModel | newLocation = location }
+            }
+
         CloseDialogToEditDesk ->
             { model | popup = Nothing }
 
@@ -496,7 +767,7 @@ type MessageEffect
     | RefreshSpace
     | RefreshDesks
     | SubmitCreateDesk { name : Mensam.Desk.Name }
-    | SubmitEditDesk { id : Mensam.Desk.Identifier, name : Maybe Mensam.Desk.Name }
+    | SubmitEditDesk { id : Mensam.Desk.Identifier, name : Maybe Mensam.Desk.Name, location : Maybe (Maybe Mensam.Desk.Location) }
     | SubmitDeleteDesk { id : Mensam.Desk.Identifier }
     | ReturnToSpace
 
@@ -669,7 +940,7 @@ listDesks jwt spaceId =
             case result of
                 Ok (Mensam.Api.DeskList.Success value) ->
                     Messages <|
-                        [ MessagePure <| SetDesks <| List.map (\x -> { id = x.desk.id, name = x.desk.name }) value.desks
+                        [ MessagePure <| SetDesks <| List.map (\x -> { id = x.desk.id, name = x.desk.name, location = x.desk.location }) value.desks
                         ]
 
                 Ok (Mensam.Api.DeskList.ErrorInsufficientPermission permission) ->
