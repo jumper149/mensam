@@ -20,6 +20,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
+import Mensam.User
 
 
 type alias Model =
@@ -829,9 +830,9 @@ type MessageEffect
     | ReturnToSpace
 
 
-spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
-spaceView jwt id =
-    Mensam.Api.SpaceView.request { jwt = jwt, id = id } <|
+spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView auth id =
+    Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->

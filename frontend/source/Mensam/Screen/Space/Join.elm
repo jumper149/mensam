@@ -20,6 +20,7 @@ import Mensam.NameOrIdentifier
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
+import Mensam.User
 
 
 type alias Model =
@@ -278,9 +279,9 @@ onEnter msg =
         )
 
 
-spaceView : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
-spaceView jwt model =
-    Mensam.Api.SpaceView.request { jwt = jwt, id = model.spaceId } <|
+spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
+spaceView auth model =
+    Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = model.spaceId } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->

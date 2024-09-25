@@ -15,6 +15,7 @@ import Url.Builder
 
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
+    , yourUserId : Mensam.User.Identifier
     , id : Mensam.Space.Identifier
     }
 
@@ -66,14 +67,14 @@ request body handleResult =
                 ]
                 []
         , body = Http.jsonBody <| encodeBody body
-        , expect = Http.expectStringResponse handleResult responseResult
+        , expect = Http.expectStringResponse handleResult <| responseResult { yourUserId = body.yourUserId }
         , timeout = Nothing
         , tracker = Http.Extra.tracker
         }
 
 
-responseResult : Http.Response String -> Result Http.Error Response
-responseResult httpResponse =
+responseResult : { yourUserId : Mensam.User.Identifier } -> Http.Response String -> Result Http.Error Response
+responseResult input httpResponse =
     case httpResponse of
         Http.BadUrl_ err ->
             Err <| Http.BadUrl err
@@ -116,7 +117,7 @@ responseResult httpResponse =
         Http.GoodStatus_ metadata body ->
             case metadata.statusCode of
                 200 ->
-                    case Decode.decodeString decodeBody200 body of
+                    case Decode.decodeString (decodeBody200 input) body of
                         Ok response ->
                             Ok <| Success response
 
@@ -137,33 +138,35 @@ encodeBody body =
 
 
 decodeBody200 :
-    Decode.Decoder
-        { id : Mensam.Space.Identifier
-        , name : Mensam.Space.Name
-        , roles :
-            List
-                { accessibility : Mensam.Space.Role.Accessibility
-                , id : Mensam.Space.Role.Identifier
-                , name : Mensam.Space.Role.Name
-                , permissions : Mensam.Space.Role.Permissions
-                }
-        , users :
-            List
-                { user : Mensam.User.Identifier
-                , role : Mensam.Space.Role.Identifier
-                }
-        , timezone : Mensam.Time.TimezoneIdentifier
-        , visibility : Mensam.Space.Visibility
-        , owner : Mensam.User.Identifier
-        , yourRole :
-            Maybe
-                { accessibility : Mensam.Space.Role.Accessibility
-                , id : Mensam.Space.Role.Identifier
-                , name : Mensam.Space.Role.Name
-                , permissions : Mensam.Space.Role.Permissions
-                }
-        }
-decodeBody200 =
+    { yourUserId : Mensam.User.Identifier }
+    ->
+        Decode.Decoder
+            { id : Mensam.Space.Identifier
+            , name : Mensam.Space.Name
+            , roles :
+                List
+                    { accessibility : Mensam.Space.Role.Accessibility
+                    , id : Mensam.Space.Role.Identifier
+                    , name : Mensam.Space.Role.Name
+                    , permissions : Mensam.Space.Role.Permissions
+                    }
+            , users :
+                List
+                    { user : Mensam.User.Identifier
+                    , role : Mensam.Space.Role.Identifier
+                    }
+            , timezone : Mensam.Time.TimezoneIdentifier
+            , visibility : Mensam.Space.Visibility
+            , owner : Mensam.User.Identifier
+            , yourRole :
+                Maybe
+                    { accessibility : Mensam.Space.Role.Accessibility
+                    , id : Mensam.Space.Role.Identifier
+                    , name : Mensam.Space.Role.Name
+                    , permissions : Mensam.Space.Role.Permissions
+                    }
+            }
+decodeBody200 input =
     Decode.andThen
         (\record ->
             case record.yourRole of
@@ -207,7 +210,16 @@ decodeBody200 =
                                     Just Nothing
 
                                 Just role ->
-                                    Just <| Just role
+                                    Just <|
+                                        Just <|
+                                            if owner == input.yourUserId then
+                                                { role
+                                                    | name = Mensam.Space.Role.MkName <| Mensam.Space.Role.nameToString role.name ++ " (Owner)"
+                                                    , permissions = Mensam.Space.Role.allPermissions
+                                                }
+
+                                            else
+                                                role
                 }
             )
             (Decode.field "id" Mensam.Space.identifierDecoder)

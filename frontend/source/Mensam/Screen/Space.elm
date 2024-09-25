@@ -29,6 +29,7 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Svg.Color
 import Mensam.Time
+import Mensam.User
 import Mensam.Widget.Date
 import Mensam.Widget.Time
 import Svg
@@ -1679,9 +1680,9 @@ onEnter msg =
         )
 
 
-spaceView : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
-spaceView jwt model =
-    Mensam.Api.SpaceView.request { jwt = jwt, id = model.space } <|
+spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
+spaceView auth model =
+    Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = model.space } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->

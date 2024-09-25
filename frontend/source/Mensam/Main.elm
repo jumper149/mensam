@@ -1042,11 +1042,11 @@ update message (MkModel model) =
 
                 Mensam.Screen.Space.RefreshSpace ->
                     case model.authenticated of
-                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpace screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.spaceView jwt screenModel
+                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.spaceView { jwt = jwt, yourUserId = user.id } screenModel
                                     )
 
                                 _ ->
@@ -1173,11 +1173,11 @@ update message (MkModel model) =
 
                 Mensam.Screen.Space.Join.RefreshSpace ->
                     case model.authenticated of
-                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceJoin screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceJoin <| Mensam.Screen.Space.Join.spaceView jwt screenModel
+                                    , Platform.Cmd.map MessageSpaceJoin <| Mensam.Screen.Space.Join.spaceView { jwt = jwt, yourUserId = user.id } screenModel
                                     )
 
                                 _ ->
@@ -1230,12 +1230,12 @@ update message (MkModel model) =
 
                 Mensam.Screen.Space.Roles.RefreshRoles ->
                     case model.authenticated of
-                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceRoles screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceRoles <|
-                                        Mensam.Screen.Space.Roles.spaceView jwt screenModel.spaceId
+                                        Mensam.Screen.Space.Roles.spaceView { jwt = jwt, yourUserId = user.id } screenModel.spaceId
                                     )
 
                                 _ ->
@@ -1306,12 +1306,12 @@ update message (MkModel model) =
 
                 Mensam.Screen.Space.Role.RefreshRole ->
                     case model.authenticated of
-                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceRole screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceRole <|
-                                        Mensam.Screen.Space.Role.spaceView jwt screenModel.space.id
+                                        Mensam.Screen.Space.Role.spaceView { jwt = jwt, yourUserId = user.id } screenModel.space.id
                                     )
 
                                 _ ->
@@ -1501,12 +1501,12 @@ update message (MkModel model) =
 
                 Mensam.Screen.Space.Desks.RefreshSpace ->
                     case model.authenticated of
-                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceDesks screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.spaceView jwt screenModel.spaceId
+                                        Mensam.Screen.Space.Desks.spaceView { jwt = jwt, yourUserId = user.id } screenModel.spaceId
                                     )
 
                                 _ ->
@@ -1623,12 +1623,12 @@ update message (MkModel model) =
 
                 Mensam.Screen.Space.Users.Refresh ->
                     case model.authenticated of
-                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceUsers screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.spaceView jwt screenModel.spaceId
+                                        Mensam.Screen.Space.Users.spaceView { jwt = jwt, yourUserId = user.id } screenModel.spaceId
                                     )
 
                                 _ ->

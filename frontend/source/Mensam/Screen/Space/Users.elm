@@ -27,6 +27,13 @@ import Url.Builder
 type alias Model =
     { spaceId : Mensam.Space.Identifier
     , spaceName : Mensam.Space.Name
+    , yourRole :
+        Maybe
+            { accessibility : Mensam.Space.Role.Accessibility
+            , id : Mensam.Space.Role.Identifier
+            , name : Mensam.Space.Role.Name
+            , permissions : Mensam.Space.Role.Permissions
+            }
     , roles :
         List
             { id : Mensam.Space.Role.Identifier
@@ -71,6 +78,7 @@ init : { id : Mensam.Space.Identifier } -> Model
 init args =
     { spaceId = args.id
     , spaceName = Mensam.Space.MkName ""
+    , yourRole = Nothing
     , roles = []
     , owner = Mensam.User.MkIdentifierUnsafe -1
     , users = Dict.empty
@@ -342,15 +350,24 @@ element model =
                                 [ Element.width Element.fill
                                 , Element.spacing 10
                                 ]
-                                [ Mensam.Element.Button.button <|
-                                    Mensam.Element.Button.MkButton
-                                        { attributes = [ Element.alignRight ]
-                                        , color = Mensam.Element.Button.Red
-                                        , enabled = True
-                                        , label = Element.text "Kick User"
-                                        , message = Just <| MessagePure <| OpenDialogToKick popupModel.user
-                                        , size = Mensam.Element.Button.Medium
-                                        }
+                                [ case model.yourRole of
+                                    Nothing ->
+                                        Element.none
+
+                                    Just yourRole ->
+                                        if Mensam.Space.Role.permissionCheck Mensam.Space.Role.MkPermissionEditUser yourRole.permissions then
+                                            Mensam.Element.Button.button <|
+                                                Mensam.Element.Button.MkButton
+                                                    { attributes = [ Element.alignRight ]
+                                                    , color = Mensam.Element.Button.Red
+                                                    , enabled = True
+                                                    , label = Element.text "Kick User"
+                                                    , message = Just <| MessagePure <| OpenDialogToKick popupModel.user
+                                                    , size = Mensam.Element.Button.Medium
+                                                    }
+
+                                        else
+                                            Element.none
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.alignRight ]
@@ -609,7 +626,24 @@ type Message
 
 
 type MessagePure
-    = SetSpaceName Mensam.Space.Name
+    = SetSpaceInfo
+        { name : Mensam.Space.Name
+        , yourRole :
+            Maybe
+                { accessibility : Mensam.Space.Role.Accessibility
+                , id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        , roles :
+            List
+                { id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , accessibility : Mensam.Space.Role.Accessibility
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        , owner : Mensam.User.Identifier
+        }
     | SetUserIds
         (List
             { user : Mensam.User.Identifier
@@ -626,15 +660,6 @@ type MessagePure
         { id : Mensam.User.Identifier
         , picture : { url : String }
         }
-    | SetRoles
-        (List
-            { id : Mensam.Space.Role.Identifier
-            , name : Mensam.Space.Role.Name
-            , accessibility : Mensam.Space.Role.Accessibility
-            , permissions : Mensam.Space.Role.Permissions
-            }
-        )
-    | SetOwner Mensam.User.Identifier
     | SetSelected (Maybe Int)
     | ClosePopup
     | ChooseUser Mensam.User.Identifier
@@ -648,8 +673,13 @@ type MessagePure
 updatePure : MessagePure -> Model -> Model
 updatePure message model =
     case message of
-        SetSpaceName name ->
-            { model | spaceName = name }
+        SetSpaceInfo info ->
+            { model
+                | spaceName = info.name
+                , yourRole = info.yourRole
+                , roles = info.roles
+                , owner = info.owner
+            }
 
         SetUserIds users ->
             { model
@@ -688,12 +718,6 @@ updatePure message model =
                         (Maybe.map (\user -> { user | profilePictureUrl = userWithPicture.picture.url }))
                         model.users
             }
-
-        SetRoles roles ->
-            { model | roles = roles }
-
-        SetOwner owner ->
-            { model | owner = owner }
 
         SetSelected n ->
             { model | selected = n }
@@ -747,17 +771,21 @@ type MessageEffect
     | OpenPageToProfile Mensam.User.Identifier
 
 
-spaceView : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
-spaceView jwt id =
-    Mensam.Api.SpaceView.request { jwt = jwt, id = id } <|
+spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView auth id =
+    Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->
                     Messages <|
-                        [ MessagePure <| SetUserIds view.users
-                        , MessagePure <| SetRoles view.roles
-                        , MessagePure <| SetSpaceName view.name
-                        , MessagePure <| SetOwner view.owner
+                        [ MessagePure <|
+                            SetSpaceInfo
+                                { name = view.name
+                                , yourRole = view.yourRole
+                                , roles = view.roles
+                                , owner = view.owner
+                                }
+                        , MessagePure <| SetUserIds view.users
                         ]
                             ++ List.map (\user -> MessageEffect <| GetProfilePicture user.user)
                                 view.users

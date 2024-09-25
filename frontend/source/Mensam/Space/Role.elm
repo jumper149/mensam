@@ -194,6 +194,24 @@ permissionsFromList =
     MkPermissions << Set.fromList << List.map permissionToInt
 
 
+permissionCheck : Permission -> Permissions -> Bool
+permissionCheck permissionToCheck (MkPermissions permissionsGiven) =
+    Set.member (permissionToInt permissionToCheck) permissionsGiven
+
+
+allPermissions : Permissions
+allPermissions =
+    permissionsFromList
+        [ MkPermissionViewSpace
+        , MkPermissionEditDesk
+        , MkPermissionEditUser
+        , MkPermissionEditRole
+        , MkPermissionEditSpace
+        , MkPermissionCreateReservation
+        , MkPermissionCancelReservation
+        ]
+
+
 permissionsEncoder : Permissions -> Encode.Value
 permissionsEncoder =
     Encode.list permissionEncode << permissionsToList
