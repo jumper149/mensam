@@ -23,6 +23,7 @@ import Mensam.Screen.Confirm
 import Mensam.Screen.Dashboard
 import Mensam.Screen.Landing
 import Mensam.Screen.Login
+import Mensam.Screen.PrivacyPolicy
 import Mensam.Screen.Profile
 import Mensam.Screen.Register
 import Mensam.Screen.Reservations
@@ -34,6 +35,7 @@ import Mensam.Screen.Space.Roles
 import Mensam.Screen.Space.Settings
 import Mensam.Screen.Space.Users
 import Mensam.Screen.Spaces
+import Mensam.Screen.TermsAndConditions
 import Mensam.Screen.UserSettings
 import Mensam.Space
 import Mensam.Space.Role
@@ -82,6 +84,8 @@ type Screen
     = ScreenLanding Mensam.Screen.Landing.Model
     | ScreenRegister Mensam.Screen.Register.Model
     | ScreenLogin Mensam.Screen.Login.Model
+    | ScreenTermsAndConditions Mensam.Screen.TermsAndConditions.Model
+    | ScreenPrivacyPolicy Mensam.Screen.PrivacyPolicy.Model
     | ScreenDashboard Mensam.Screen.Dashboard.Model
     | ScreenSpaces Mensam.Screen.Spaces.Model
     | ScreenSpace Mensam.Screen.Space.Model
@@ -101,6 +105,8 @@ type Route
     = RouteLanding
     | RouteLogin (Maybe Mensam.Screen.Login.Model)
     | RouteRegister
+    | RouteTermsAndConditions
+    | RoutePrivacyPolicy
     | RouteDashboard
     | RouteSpaces
     | RouteSpace Mensam.Space.Identifier
@@ -127,6 +133,12 @@ routeToUrl route =
 
         RouteRegister ->
             Url.Builder.absolute [ "register" ] []
+
+        RouteTermsAndConditions ->
+            Url.Builder.absolute [ "terms" ] []
+
+        RoutePrivacyPolicy ->
+            Url.Builder.absolute [ "privacy" ] []
 
         RouteDashboard ->
             Url.Builder.absolute [ "dashboard" ] []
@@ -193,6 +205,12 @@ routeToModelUpdate route (MkModel model) =
 
         RouteRegister ->
             update EmptyMessage <| MkModel { model | screen = ScreenRegister Mensam.Screen.Register.init }
+
+        RouteTermsAndConditions ->
+            update EmptyMessage <| MkModel { model | screen = ScreenTermsAndConditions Mensam.Screen.TermsAndConditions.init }
+
+        RoutePrivacyPolicy ->
+            update EmptyMessage <| MkModel { model | screen = ScreenPrivacyPolicy Mensam.Screen.PrivacyPolicy.init }
 
         RouteDashboard ->
             update
@@ -336,6 +354,8 @@ urlParser =
         , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
         , Url.Parser.map RouteConfirm <| Url.Parser.s "register" </> Url.Parser.s "confirm" </> Url.Parser.map Mensam.User.MkConfirmationSecret Url.Parser.string
         , Url.Parser.map RouteRegister <| Url.Parser.s "register"
+        , Url.Parser.map RouteTermsAndConditions <| Url.Parser.s "terms"
+        , Url.Parser.map RoutePrivacyPolicy <| Url.Parser.s "privacy"
         , Url.Parser.map RouteDashboard <| Url.Parser.s "dashboard"
         , Url.Parser.map RouteReservations <| Url.Parser.s "reservations"
         , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
@@ -436,6 +456,8 @@ type Message
     | SetHttpStatus Http.Extra.Status
     | MessageLanding Mensam.Screen.Landing.Message
     | MessageRegister Mensam.Screen.Register.Message
+    | MessageTermsAndConditions Mensam.Screen.TermsAndConditions.Message
+    | MessagePrivacyPolicy Mensam.Screen.PrivacyPolicy.Message
     | MessageLogin Mensam.Screen.Login.Message
     | MessageDashboard Mensam.Screen.Dashboard.Message
     | MessageSpaces Mensam.Screen.Spaces.Message
@@ -855,6 +877,16 @@ update message (MkModel model) =
                         )
                     <|
                         MkModel model
+
+        MessageTermsAndConditions (Mensam.Screen.TermsAndConditions.MessageEffect m) ->
+            case m of
+                Mensam.Screen.TermsAndConditions.AbsurdMessage absurd ->
+                    never absurd
+
+        MessagePrivacyPolicy (Mensam.Screen.PrivacyPolicy.MessageEffect m) ->
+            case m of
+                Mensam.Screen.PrivacyPolicy.AbsurdMessage absurd ->
+                    never absurd
 
         MessageDashboard (Mensam.Screen.Dashboard.MessagePure m) ->
             case model.screen of
@@ -2047,6 +2079,12 @@ headerContent (MkModel model) =
             ScreenLogin _ ->
                 Nothing
 
+            ScreenTermsAndConditions _ ->
+                Just "Terms and Conditions"
+
+            ScreenPrivacyPolicy _ ->
+                Just "Privacy Policy"
+
             ScreenDashboard _ ->
                 Just "Your Dashboard"
 
@@ -2168,6 +2206,12 @@ view (MkModel model) =
 
                     ScreenRegister screenModel ->
                         Mensam.Element.screen MessageRegister <| Mensam.Screen.Register.element screenModel
+
+                    ScreenTermsAndConditions screenModel ->
+                        Mensam.Element.screen MessageTermsAndConditions <| Mensam.Screen.TermsAndConditions.element screenModel
+
+                    ScreenPrivacyPolicy screenModel ->
+                        Mensam.Element.screen MessagePrivacyPolicy <| Mensam.Screen.PrivacyPolicy.element screenModel
 
                     ScreenDashboard screenModel ->
                         Mensam.Element.screen MessageDashboard <| Mensam.Screen.Dashboard.element screenModel

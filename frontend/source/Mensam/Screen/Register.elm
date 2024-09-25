@@ -18,6 +18,7 @@ type alias Model =
     , password : String
     , email : String
     , emailVisible : Bool
+    , readTermsAndConditions : Bool
     , hint : List String
     }
 
@@ -28,6 +29,7 @@ init =
     , password = ""
     , email = ""
     , emailVisible = False
+    , readTermsAndConditions = False
     , hint = []
     }
 
@@ -41,7 +43,7 @@ element model =
         , Element.centerX
         , Element.centerY
         , Element.width <| Element.px 300
-        , Element.height <| Element.px 440
+        , Element.height <| Element.px 500
         ]
     <|
         Element.column
@@ -83,6 +85,38 @@ element model =
                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Email"
                 , label = Element.Input.labelAbove [] <| Element.text "Email"
                 }
+            , Element.el
+                [ Element.width Element.fill
+                , Element.height <| Element.px 20
+                , Element.alignBottom
+                ]
+              <|
+                Element.Input.checkbox [ Element.centerY, Element.paddingXY 7 0 ]
+                    { onChange = MessagePure << ReadTermsAndConditions
+                    , icon = Element.Input.defaultCheckbox
+                    , checked = model.readTermsAndConditions
+                    , label =
+                        Element.Input.labelRight [ Element.width Element.fill ] <|
+                            Element.paragraph
+                                [ Element.width Element.fill
+                                , Element.Font.size 13
+                                ]
+                                [ Element.text "I've read the "
+                                , Element.newTabLink []
+                                    { url = "./terms"
+                                    , label =
+                                        Element.el
+                                            [ Element.Font.color <| Mensam.Element.Color.bright.blue Mensam.Element.Color.Opaque100
+                                            , Element.mouseOver
+                                                [ Element.Font.color <| Mensam.Element.Color.bright.cyan Mensam.Element.Color.Opaque100
+                                                ]
+                                            ]
+                                        <|
+                                            Element.text "terms and conditions"
+                                    }
+                                , Element.text "."
+                                ]
+                    }
             , Element.column
                 [ Element.width Element.fill
                 , Element.spacing 3
@@ -147,6 +181,7 @@ type MessagePure
     = EnterUsername String
     | EnterPassword String
     | EnterEmail String
+    | ReadTermsAndConditions Bool
     | SetHintNameNotAccepted Mensam.User.ErrorNameParse
     | SetHintPasswordNotAccepted Mensam.User.ErrorPasswordParse
     | SetHintEmailNotParsed
@@ -164,6 +199,9 @@ updatePure message model =
 
         EnterEmail email ->
             { model | email = email }
+
+        ReadTermsAndConditions read ->
+            { model | readTermsAndConditions = read }
 
         SetHintNameNotAccepted err ->
             { model
