@@ -121,6 +121,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Blue
+                            , enabled = True
                             , label =
                                 let
                                     date =
@@ -158,6 +159,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Blue
+                            , enabled = True
                             , label =
                                 let
                                     date =
@@ -412,6 +414,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.width Element.fill ]
                                     , color = Mensam.Element.Button.Yellow
+                                    , enabled = True
                                     , label = Element.text "Set date boundary"
                                     , message = Just <| MessageEffect SetDateRange
                                     , size = Mensam.Element.Button.Medium
@@ -540,6 +543,7 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Yellow
+                                                , enabled = True
                                                 , label = Element.text "Go back"
                                                 , message = Just <| MessagePure ClosePopup
                                                 , size = Mensam.Element.Button.Medium
@@ -548,6 +552,7 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Red
+                                                , enabled = True
                                                 , label = Element.text "Cancel reservation"
                                                 , message = Just <| MessageEffect <| CancelReservation reservationId
                                                 , size = Mensam.Element.Button.Medium

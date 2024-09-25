@@ -82,6 +82,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignLeft, Element.centerY ]
                             , color = Mensam.Element.Button.Red
+                            , enabled = True
                             , label = Element.text "Delete"
                             , message = Just <| MessagePure OpenDialogToDeleteSpace
                             , size = Mensam.Element.Button.Medium
@@ -90,6 +91,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , enabled = True
                             , label = Element.text "Roles"
                             , message = Just <| MessageEffect OpenPageToRoles
                             , size = Mensam.Element.Button.Medium
@@ -98,6 +100,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Gray
+                            , enabled = True
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
                             , size = Mensam.Element.Button.Medium
@@ -128,6 +131,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Edit Name"
                                         , message = Just <| MessagePure <| EnterName <| Just <| model.old.name
                                         , size = Mensam.Element.Button.Medium
@@ -169,6 +173,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Edit Timezone"
                                         , message = Just <| MessagePure <| SetTimezone <| Just model.old.timezone
                                         , size = Mensam.Element.Button.Medium
@@ -210,6 +215,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Edit Visibility"
                                         , message = Just <| MessagePure <| SetVisibility <| Just <| model.old.visibility
                                         , size = Mensam.Element.Button.Medium
@@ -276,6 +282,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = []
                             , color = Mensam.Element.Button.Gray
+                            , enabled = True
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
                             , size = Mensam.Element.Button.Medium
@@ -284,6 +291,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Blue
+                            , enabled = True
                             , label = Element.text "Apply Settings"
                             , message = Just <| MessageEffect SubmitSettings
                             , size = Mensam.Element.Button.Medium
@@ -325,6 +333,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure CloseDialogToDeleteSpace
                                         , size = Mensam.Element.Button.Medium
@@ -333,6 +342,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Red
+                                        , enabled = True
                                         , label = Element.text "Delete Space permanently"
                                         , message = Just <| MessageEffect SubmitDeleteSpace
                                         , size = Mensam.Element.Button.Medium

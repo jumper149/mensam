@@ -199,6 +199,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.alignRight, Element.centerY ]
                                     , color = Mensam.Element.Button.Yellow
+                                    , enabled = True
                                     , label = Element.text "Join"
                                     , message = Just <| MessageEffect OpenPageToJoin
                                     , size = Mensam.Element.Button.Medium
@@ -209,6 +210,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.alignRight, Element.centerY ]
                                     , color = Mensam.Element.Button.Red
+                                    , enabled = True
                                     , label = Element.text "Leave"
                                     , message = Just <| MessagePure OpenDialogToLeave
                                     , size = Mensam.Element.Button.Medium
@@ -227,6 +229,7 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.alignRight, Element.centerY ]
                                             , color = Mensam.Element.Button.Yellow
+                                            , enabled = True
                                             , label = Element.text "Settings"
                                             , message = Just <| MessageEffect OpenPageToSettings
                                             , size = Mensam.Element.Button.Medium
@@ -235,6 +238,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , enabled = True
                             , label = Element.text "Users"
                             , message = Just <| MessageEffect OpenPageToUsers
                             , size = Mensam.Element.Button.Medium
@@ -253,6 +257,7 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.alignRight, Element.centerY ]
                                             , color = Mensam.Element.Button.Yellow
+                                            , enabled = True
                                             , label = Element.text "Desks"
                                             , message = Just <| MessageEffect OpenPageToDesks
                                             , size = Mensam.Element.Button.Medium
@@ -317,6 +322,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = []
                                     , color = Mensam.Element.Button.Blue
+                                    , enabled = True
                                     , label = Element.text "<"
                                     , message =
                                         Just <|
@@ -331,6 +337,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.width Element.fill ]
                                     , color = Mensam.Element.Button.Blue
+                                    , enabled = True
                                     , label =
                                         let
                                             date =
@@ -353,6 +360,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = []
                                     , color = Mensam.Element.Button.Blue
+                                    , enabled = True
                                     , label = Element.text ">"
                                     , message =
                                         Just <|
@@ -411,6 +419,7 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.width Element.fill ]
                                             , color = Mensam.Element.Button.Blue
+                                            , enabled = True
                                             , label =
                                                 let
                                                     date =
@@ -433,6 +442,7 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.width Element.fill ]
                                             , color = Mensam.Element.Button.Blue
+                                            , enabled = True
                                             , label =
                                                 let
                                                     time =
@@ -516,6 +526,7 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.width Element.fill ]
                                             , color = Mensam.Element.Button.Blue
+                                            , enabled = True
                                             , label =
                                                 let
                                                     date =
@@ -538,6 +549,7 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.width Element.fill ]
                                             , color = Mensam.Element.Button.Blue
+                                            , enabled = True
                                             , label =
                                                 let
                                                     time =
@@ -560,6 +572,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| ViewDetailed Nothing
                                         , size = Mensam.Element.Button.Medium
@@ -568,6 +581,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Submit"
                                         , message = Just <| MessageEffect <| SubmitReservation
                                         , size = Mensam.Element.Button.Medium
@@ -613,6 +627,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure CloseDialogToLeave
                                         , size = Mensam.Element.Button.Medium
@@ -621,6 +636,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Red
+                                        , enabled = True
                                         , label = Element.text "Abandon space"
                                         , message = Just <| MessageEffect SubmitLeave
                                         , size = Mensam.Element.Button.Medium

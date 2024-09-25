@@ -105,6 +105,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Gray
+                            , enabled = True
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
                             , size = Mensam.Element.Button.Medium
@@ -345,6 +346,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.alignRight ]
                                         , color = Mensam.Element.Button.Red
+                                        , enabled = True
                                         , label = Element.text "Kick User"
                                         , message = Just <| MessagePure <| OpenDialogToKick popupModel.user
                                         , size = Mensam.Element.Button.Medium
@@ -353,6 +355,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.alignRight ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Profile"
                                         , message = Just <| MessageEffect <| OpenPageToProfile popupModel.user
                                         , size = Mensam.Element.Button.Medium
@@ -502,6 +505,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToEditUser
                                         , size = Mensam.Element.Button.Medium
@@ -510,6 +514,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
+                                        , enabled = True
                                         , label = Element.text "Change Role"
                                         , message =
                                             case popupModel.role of
@@ -577,6 +582,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToKick
                                         , size = Mensam.Element.Button.Medium
@@ -585,6 +591,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Red
+                                        , enabled = True
                                         , label = Element.text "Kick User"
                                         , message = Just <| MessageEffect <| SubmitKickUser { user = popupModel.user }
                                         , size = Mensam.Element.Button.Medium

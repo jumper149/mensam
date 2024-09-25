@@ -123,6 +123,7 @@ element model =
                         , Mensam.Element.Button.button <|
                             Mensam.Element.Button.MkButton
                                 { attributes = [ Element.alignRight ]
+                                , enabled = True
                                 , color = Mensam.Element.Button.Yellow
                                 , label = Element.text "Browse"
                                 , message = Just <| MessageEffect OpenPageToBrowseSpaces
@@ -204,6 +205,7 @@ element model =
                             Mensam.Element.Button.MkButton
                                 { attributes = [ Element.alignRight ]
                                 , color = Mensam.Element.Button.Yellow
+                                , enabled = True
                                 , label = Element.text "More"
                                 , message = Just <| MessageEffect OpenPageToViewReservations
                                 , size = Mensam.Element.Button.Small
@@ -488,6 +490,7 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Yellow
+                                                , enabled = True
                                                 , label = Element.text "Go back"
                                                 , message = Just <| MessagePure <| ClosePopup
                                                 , size = Mensam.Element.Button.Medium
@@ -496,6 +499,7 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Red
+                                                , enabled = True
                                                 , label = Element.text "Cancel Reservation"
                                                 , message = Just <| MessageEffect <| CancelReservation reservationId
                                                 , size = Mensam.Element.Button.Medium

@@ -60,6 +60,7 @@ element () =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Yellow
+                            , enabled = True
                             , label = Element.text "Sign up"
                             , message = Just <| MessageEffect Register
                             , size = Mensam.Element.Button.Medium
@@ -68,6 +69,7 @@ element () =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.width Element.fill ]
                             , color = Mensam.Element.Button.Yellow
+                            , enabled = True
                             , label = Element.text "Sign in"
                             , message = Just <| MessageEffect Login
                             , size = Mensam.Element.Button.Medium

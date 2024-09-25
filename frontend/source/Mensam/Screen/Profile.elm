@@ -75,6 +75,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.alignRight ]
                                     , color = Mensam.Element.Button.Gray
+                                    , enabled = True
                                     , label = Element.text "Settings"
                                     , message = Just <| MessageEffect OpenPageUserSettings
                                     , size = Mensam.Element.Button.Small

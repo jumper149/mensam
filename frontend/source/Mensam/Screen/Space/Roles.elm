@@ -86,6 +86,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , enabled = True
                             , label = Element.text "New Role"
                             , message = Just <| MessagePure OpenDialogToCreateRole
                             , size = Mensam.Element.Button.Medium
@@ -94,6 +95,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Gray
+                            , enabled = True
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpaceSettings
                             , size = Mensam.Element.Button.Medium
@@ -487,6 +489,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure CloseDialogToCreateRole
                                         , size = Mensam.Element.Button.Medium
@@ -495,6 +498,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
+                                        , enabled = True
                                         , label = Element.text "Create Role"
                                         , message = Just <| MessageEffect <| SubmitCreateRole popupModel
                                         , size = Mensam.Element.Button.Medium

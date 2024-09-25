@@ -138,6 +138,7 @@ element model =
                     Mensam.Element.Button.MkButton
                         { attributes = [ Element.width Element.fill, Element.alignBottom ]
                         , color = Mensam.Element.Button.Yellow
+                        , enabled = model.readTermsAndConditions
                         , label = Element.text "Sign up"
                         , message = Just <| submitRegisterMessage model
                         , size = Mensam.Element.Button.Medium

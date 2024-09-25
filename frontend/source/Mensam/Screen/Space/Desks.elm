@@ -88,6 +88,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
+                            , enabled = True
                             , label = Element.text "New Desk"
                             , message = Just <| MessagePure OpenDialogToCreateDesk
                             , size = Mensam.Element.Button.Medium
@@ -96,6 +97,7 @@ element model =
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Gray
+                            , enabled = True
                             , label = Element.text "Go back"
                             , message = Just <| MessageEffect ReturnToSpace
                             , size = Mensam.Element.Button.Medium
@@ -239,6 +241,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToCreateDesk
                                         , size = Mensam.Element.Button.Medium
@@ -247,6 +250,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
+                                        , enabled = True
                                         , label = Element.text "Create Desk"
                                         , message = Just <| MessageEffect <| SubmitCreateDesk popupModel
                                         , size = Mensam.Element.Button.Medium
@@ -276,6 +280,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToDeleteDesk
                                         , size = Mensam.Element.Button.Medium
@@ -284,6 +289,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Red
+                                        , enabled = True
                                         , label = Element.text "Delete Desk"
                                         , message = Just <| MessageEffect <| SubmitDeleteDesk { id = popupModel.id }
                                         , size = Mensam.Element.Button.Medium
@@ -349,6 +355,7 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Yellow
+                                                , enabled = True
                                                 , label = Element.text "Edit Name"
                                                 , message = Just <| MessagePure <| EditDeskEnterName <| Just popupModel.oldName
                                                 , size = Mensam.Element.Button.Medium
@@ -375,6 +382,7 @@ element model =
                                             Mensam.Element.Button.MkButton
                                                 { attributes = [ Element.width Element.fill ]
                                                 , color = Mensam.Element.Button.Yellow
+                                                , enabled = True
                                                 , label = Element.text "Edit Location"
                                                 , message = Just <| MessagePure <| EditDeskEnterLocation <| Just popupModel.oldLocation
                                                 , size = Mensam.Element.Button.Medium
@@ -387,6 +395,7 @@ element model =
                                                     Mensam.Element.Button.MkButton
                                                         { attributes = [ Element.width Element.fill ]
                                                         , color = Mensam.Element.Button.Blue
+                                                        , enabled = True
                                                         , label = Element.text "Add Location"
                                                         , message =
                                                             Just <|
@@ -422,6 +431,7 @@ element model =
                                                         Mensam.Element.Button.MkButton
                                                             { attributes = [ Element.width Element.fill ]
                                                             , color = Mensam.Element.Button.Red
+                                                            , enabled = True
                                                             , label = Element.text "Remove Location"
                                                             , message = Just <| MessagePure <| EditDeskEnterLocation <| Just <| Nothing
                                                             , size = Mensam.Element.Button.Medium
@@ -665,6 +675,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToEditDesk
                                         , size = Mensam.Element.Button.Medium
@@ -673,6 +684,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
+                                        , enabled = True
                                         , label = Element.text "Apply Changes"
                                         , message =
                                             Just <|

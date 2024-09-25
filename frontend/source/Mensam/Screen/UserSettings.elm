@@ -88,6 +88,7 @@ element model =
                             Mensam.Element.Button.MkButton
                                 { attributes = [ Element.alignRight ]
                                 , color = Mensam.Element.Button.Gray
+                                , enabled = True
                                 , label = Element.text "Public Profile"
                                 , message = Just <| MessageEffect <| OpenPageUserProfile { id = model.id }
                                 , size = Mensam.Element.Button.Small
@@ -152,6 +153,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = []
                                     , color = Mensam.Element.Button.Yellow
+                                    , enabled = True
                                     , label = Element.text "Upload Pic"
                                     , message = Just <| MessageEffect UploadProfilePictureRequested
                                     , size = Mensam.Element.Button.Medium
@@ -160,6 +162,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = []
                                     , color = Mensam.Element.Button.Red
+                                    , enabled = True
                                     , label = Element.text "Delete Pic"
                                     , message = Just <| MessagePure OpenDialogToDeleteProfilePicture
                                     , size = Mensam.Element.Button.Medium
@@ -182,6 +185,7 @@ element model =
                             Mensam.Element.Button.MkButton
                                 { attributes = [ Element.alignRight, Element.centerY ]
                                 , color = Mensam.Element.Button.Yellow
+                                , enabled = True
                                 , label = Element.text "Change Password"
                                 , message = Just <| MessagePure OpenDialogToChangePassword
                                 , size = Mensam.Element.Button.Medium
@@ -233,6 +237,7 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.alignRight, Element.centerY ]
                                     , color = Mensam.Element.Button.Yellow
+                                    , enabled = True
                                     , label = Element.text "Confirm Email Address"
                                     , message = Just <| MessageEffect SubmitConfirmationRequest
                                     , size = Mensam.Element.Button.Medium
@@ -288,6 +293,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = []
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Go back"
                                         , message = Just <| MessagePure <| ClosePopup
                                         , size = Mensam.Element.Button.Medium
@@ -296,6 +302,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Blue
+                                        , enabled = True
                                         , label = Element.text "Submit new Password"
                                         , message = Just <| submitNewPasswordMessage popupModel
                                         , size = Mensam.Element.Button.Medium
@@ -329,6 +336,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = []
                                         , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
                                         , label = Element.text "Go back"
                                         , message = Just <| MessagePure <| ClosePopup
                                         , size = Mensam.Element.Button.Medium
@@ -337,6 +345,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Red
+                                        , enabled = True
                                         , label = Element.text "Delete Profile Picture"
                                         , message = Just <| MessageEffect DeleteProfilePictureRequest
                                         , size = Mensam.Element.Button.Medium
