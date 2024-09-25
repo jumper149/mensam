@@ -398,151 +398,175 @@ element model =
                                                     Just info ->
                                                         Mensam.User.nameToString info.name
                                 ]
-                            , Element.paragraph
-                                [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
-                                ]
-                                [ Element.text "Choose a new role for this user."
-                                ]
-                            , Element.indexedTable
-                                [ Element.width Element.fill
-                                , Element.height Element.fill
-                                , Element.Background.color (Element.rgba 0 0 0 0.1)
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.Font.size 16
-                                , Element.clipY
-                                , Element.scrollbarY
-                                ]
-                                { data = model.roles
-                                , columns =
-                                    let
-                                        cell =
-                                            Element.el
-                                                [ Element.height <| Element.px 40
-                                                , Element.padding 10
-                                                ]
-                                    in
-                                    [ { header =
-                                            Element.el
-                                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                                ]
-                                            <|
-                                                cell <|
-                                                    Element.el
-                                                        []
-                                                    <|
-                                                        Element.text "ID"
-                                      , width = Element.px 40
-                                      , view =
-                                            \n role ->
-                                                Element.el
-                                                    [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedRole Nothing
-                                                    , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedRole <| Just n
-                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseNewRole role.id
-                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                                    , let
-                                                        alpha =
-                                                            case popupModel.selected of
-                                                                Nothing ->
-                                                                    0.2
-
-                                                                Just m ->
-                                                                    if m == n then
-                                                                        0.4
-
-                                                                    else
-                                                                        0.2
-                                                      in
-                                                      if popupModel.role == Just role.id then
-                                                        Element.Background.color (Element.rgba 0 0.2 0 alpha)
-
-                                                      else
-                                                        Element.Background.color (Element.rgba 0 0 0 alpha)
-                                                    ]
-                                                <|
-                                                    cell <|
-                                                        Element.el
-                                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                                        <|
-                                                            Element.text <|
-                                                                Mensam.Space.Role.identifierToString role.id
-                                      }
-                                    , { header =
-                                            Element.el
-                                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
-                                                ]
-                                            <|
-                                                cell <|
-                                                    Element.el
-                                                        []
-                                                    <|
-                                                        Element.text "Name"
-                                      , width = Element.fill
-                                      , view =
-                                            \n role ->
-                                                Element.el
-                                                    [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedRole Nothing
-                                                    , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedRole <| Just n
-                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseNewRole role.id
-                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                                    , let
-                                                        alpha =
-                                                            case popupModel.selected of
-                                                                Nothing ->
-                                                                    0.2
-
-                                                                Just m ->
-                                                                    if m == n then
-                                                                        0.4
-
-                                                                    else
-                                                                        0.2
-                                                      in
-                                                      if popupModel.role == Just role.id then
-                                                        Element.Background.color (Element.rgba 0 0.2 0 alpha)
-
-                                                      else
-                                                        Element.Background.color (Element.rgba 0 0 0 alpha)
-                                                    ]
-                                                <|
-                                                    cell <|
-                                                        Element.el
-                                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                                        <|
-                                                            Element.text <|
-                                                                Mensam.Space.Role.nameToString role.name
-                                      }
+                            , if Maybe.withDefault False <| Maybe.map (Mensam.Space.Role.permissionCheck Mensam.Space.Role.MkPermissionEditUser) <| Maybe.map (\yourRole -> yourRole.permissions) model.yourRole then
+                                Element.column
+                                    [ Element.spacing 20
+                                    , Element.width Element.fill
+                                    , Element.height Element.fill
                                     ]
-                                }
-                            , Element.row
-                                [ Element.width Element.fill
-                                , Element.spacing 10
-                                , Element.alignBottom
-                                ]
-                                [ Mensam.Element.Button.button <|
-                                    Mensam.Element.Button.MkButton
-                                        { attributes = [ Element.width Element.fill ]
-                                        , color = Mensam.Element.Button.Yellow
-                                        , enabled = True
-                                        , label = Element.text "Abort"
-                                        , message = Just <| MessagePure <| CloseDialogToEditUser
-                                        , size = Mensam.Element.Button.Medium
-                                        }
-                                , Mensam.Element.Button.button <|
-                                    Mensam.Element.Button.MkButton
-                                        { attributes = [ Element.width Element.fill ]
-                                        , color = Mensam.Element.Button.Blue
-                                        , enabled = True
-                                        , label = Element.text "Change Role"
-                                        , message =
-                                            case popupModel.role of
-                                                Nothing ->
-                                                    Nothing
+                                    [ Element.paragraph
+                                        [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                        ]
+                                        [ Element.text "Choose a new role for this user."
+                                        ]
+                                    , Element.indexedTable
+                                        [ Element.width Element.fill
+                                        , Element.height Element.fill
+                                        , Element.Background.color (Element.rgba 0 0 0 0.1)
+                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                        , Element.Font.size 16
+                                        , Element.clipY
+                                        , Element.scrollbarY
+                                        ]
+                                        { data = model.roles
+                                        , columns =
+                                            let
+                                                cell =
+                                                    Element.el
+                                                        [ Element.height <| Element.px 40
+                                                        , Element.padding 10
+                                                        ]
+                                            in
+                                            [ { header =
+                                                    Element.el
+                                                        [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                                        ]
+                                                    <|
+                                                        cell <|
+                                                            Element.el
+                                                                []
+                                                            <|
+                                                                Element.text "ID"
+                                              , width = Element.px 40
+                                              , view =
+                                                    \n role ->
+                                                        Element.el
+                                                            [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedRole Nothing
+                                                            , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedRole <| Just n
+                                                            , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseNewRole role.id
+                                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                            , let
+                                                                alpha =
+                                                                    case popupModel.selected of
+                                                                        Nothing ->
+                                                                            0.2
 
-                                                Just role ->
-                                                    Just <| MessageEffect <| SubmitEditUser { user = popupModel.user, role = role }
-                                        , size = Mensam.Element.Button.Medium
+                                                                        Just m ->
+                                                                            if m == n then
+                                                                                0.4
+
+                                                                            else
+                                                                                0.2
+                                                              in
+                                                              if popupModel.role == Just role.id then
+                                                                Element.Background.color (Element.rgba 0 0.2 0 alpha)
+
+                                                              else
+                                                                Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                            ]
+                                                        <|
+                                                            cell <|
+                                                                Element.el
+                                                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                                <|
+                                                                    Element.text <|
+                                                                        Mensam.Space.Role.identifierToString role.id
+                                              }
+                                            , { header =
+                                                    Element.el
+                                                        [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                                        ]
+                                                    <|
+                                                        cell <|
+                                                            Element.el
+                                                                []
+                                                            <|
+                                                                Element.text "Name"
+                                              , width = Element.fill
+                                              , view =
+                                                    \n role ->
+                                                        Element.el
+                                                            [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedRole Nothing
+                                                            , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedRole <| Just n
+                                                            , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseNewRole role.id
+                                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                            , let
+                                                                alpha =
+                                                                    case popupModel.selected of
+                                                                        Nothing ->
+                                                                            0.2
+
+                                                                        Just m ->
+                                                                            if m == n then
+                                                                                0.4
+
+                                                                            else
+                                                                                0.2
+                                                              in
+                                                              if popupModel.role == Just role.id then
+                                                                Element.Background.color (Element.rgba 0 0.2 0 alpha)
+
+                                                              else
+                                                                Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                            ]
+                                                        <|
+                                                            cell <|
+                                                                Element.el
+                                                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                                <|
+                                                                    Element.text <|
+                                                                        Mensam.Space.Role.nameToString role.name
+                                              }
+                                            ]
                                         }
-                                ]
+                                    , Element.row
+                                        [ Element.width Element.fill
+                                        , Element.spacing 10
+                                        , Element.alignBottom
+                                        ]
+                                        [ Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Yellow
+                                                , enabled = True
+                                                , label = Element.text "Abort"
+                                                , message = Just <| MessagePure <| CloseDialogToEditUser
+                                                , size = Mensam.Element.Button.Medium
+                                                }
+                                        , Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Blue
+                                                , enabled = True
+                                                , label = Element.text "Change Role"
+                                                , message =
+                                                    case popupModel.role of
+                                                        Nothing ->
+                                                            Nothing
+
+                                                        Just role ->
+                                                            Just <| MessageEffect <| SubmitEditUser { user = popupModel.user, role = role }
+                                                , size = Mensam.Element.Button.Medium
+                                                }
+                                        ]
+                                    ]
+
+                              else
+                                Element.row
+                                    [ Element.width Element.fill
+                                    , Element.spacing 10
+                                    , Element.alignBottom
+                                    ]
+                                    [ Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.width Element.fill ]
+                                            , color = Mensam.Element.Button.Gray
+                                            , enabled = True
+                                            , label = Element.text "Go back"
+                                            , message = Just <| MessagePure <| CloseDialogToEditUser
+                                            , size = Mensam.Element.Button.Medium
+                                            }
+                                    ]
                             ]
 
                 Just (PopupKickUser popupModel) ->
