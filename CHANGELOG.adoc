@@ -1,5 +1,11 @@
 = Changelog
 
+== `0.10.0.1`
+
+* Frontend
+  ** Add Terms and Conditions.
+  ** Add Privacy Policy.
+
 == `0.10.0.0`
 
 * Frontend
