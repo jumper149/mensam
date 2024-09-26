@@ -149,6 +149,6 @@
       ];
     };
 
-  checks.dockerImage = dockerImage.default;
+  checks.x86_64-linux.dockerImage = dockerImage.default;
 
 }
