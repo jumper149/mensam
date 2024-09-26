@@ -60,6 +60,65 @@
     finalOverlay = overlays.default;
   };
 
+  dockerImage.default =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    pkgs.dockerTools.buildImage {
+      name = "mensam-docker";
+      copyToRoot =
+        pkgs.buildEnv {
+          name = "mensam-docker-root";
+          pathsToLink = [
+            "/bin"
+            "/etc/mensam"
+            "/usr/share/mensam"
+            "/var/lib/mensam"
+            "/var/log/mensam"
+          ];
+          paths = [
+            pkgs.bash
+            pkgs.coreutils
+            (stdenv.mkDerivation {
+              name = "mensam-static-docker"; # TODO: Necessary to avoid segmentation fault.
+              dontUnpack = true;
+              buildPhase = ''
+                # Configuration
+                mkdir --parents build/etc/mensam
+
+                # Source documentation
+                mkdir --parents build/usr/share/mensam/haddock
+                cp --recursive ${self.subflakes.server.packages.x86_64-linux.package.doc}/share/doc/mensam-0/html/. build/usr/share/mensam/haddock
+
+                # Static files
+                mkdir --parents build/usr/share/mensam/static
+                cp --recursive ${self.subflakes.static.packages.x86_64-linux.default.outPath}/. build/usr/share/mensam/static
+
+                # Database
+                mkdir --parents build/var/lib/mensam
+
+                # Log
+                mkdir --parents build/var/log/mensam
+              '';
+              installPhase = ''
+                cp --recursive build $out
+              '';
+            })
+          ];
+      };
+      config = {
+        Cmd = [ "${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server" ];
+        Env = [
+          "MENSAM_CONFIG_FILE=/etc/mensam/mensam.json"
+          "MENSAM_LOG_COLOR=True"
+          "MENSAM_LOG_FILE=/var/log/mensam/mensam.log"
+          "MENSAM_LOG_LEVEL=LevelDebug"
+        ];
+        Volumes = {
+          "/var/lib/mensam" = { };
+          "/var/log/mensam" = { };
+        };
+      };
+    };
+
   checks.x86_64-linux.packageDefault = packages.x86_64-linux.default;
 
   checks.x86_64-linux.mensam-test =
@@ -89,5 +148,7 @@
         packages.x86_64-linux.mensam-test
       ];
     };
+
+  checks.dockerImage = dockerImage.default;
 
 }

@@ -11,7 +11,18 @@ Modify link:./deployment.json[`deployment.json`] and use the name of a configura
 echo "\"development\"" > deployment.json
 ----
 
+== Docker image
+
+You can use Docker to run Mensam anywhere.
+Use link:./configurations/docker.json[`docker.json`] as a template configuration.
+
+[source,bash]
+----
+docker run -p 8177:8177 -v ./final/configurations/docker.json:/etc/mensam/mensam.json mensam-docker:v0.0.0.0
+----
+
 == NixOS module
+
 You can simply host a server by enabling it in your NixOS configuration.
 
 [source,nix]
