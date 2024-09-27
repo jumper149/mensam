@@ -46,7 +46,7 @@ Mensam will deny overlapping reservations.
 
 You can host a server using Docker.
 Docker Images are available on https://hub.docker.com/r/jumper149/mensam[DockerHub].
-Use link:./configurations/docker.json[`docker.json`] as a template configuration.
+Use link:./final/configurations/docker.json[`docker.json`] as a template configuration.
 
 [source,bash]
 ----
