@@ -647,6 +647,7 @@ update message (MkModel model) =
                         Ok (Mensam.Api.Login.Success value) ->
                             Messages
                                 [ Auth <| SetSession value
+                                , Auth <| RefreshUserInfo
                                 , SetUrl RouteDashboard
                                 ]
 
