@@ -1,5 +1,10 @@
 = Changelog
 
+== `0.10.0.2`
+
+* Frontend
+  ** Fix updating user information after automatic login after registration.
+
 == `0.10.0.1`
 
 * Frontend
