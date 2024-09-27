@@ -42,9 +42,10 @@ Mensam will deny overlapping reservations.
 
 == Deployment
 
-=== Docker image
+=== Docker
 
 You can host a server using Docker.
+Docker Images are available on https://hub.docker.com/r/jumper149/mensam[DockerHub].
 Use link:./configurations/docker.json[`docker.json`] as a template configuration.
 
 [source,bash]
@@ -103,8 +104,6 @@ You can host a server by enabling it in your NixOS configuration.
   };
 }
 ----
-
-
 
 == Development
 
