@@ -40,6 +40,72 @@ After joining a __Space__ you can create a __Reservation__ for a __Desk__.
 You will be able to see other __Reservations__, so you can plan around them.
 Mensam will deny overlapping reservations.
 
+== Deployment
+
+=== Docker image
+
+You can host a server using Docker.
+Use link:./configurations/docker.json[`docker.json`] as a template configuration.
+
+[source,bash]
+----
+docker pull jumper149/mensam:v0.0.0.0
+docker run --publish 8080:8177 --volume ./final/configurations/docker.json:/etc/mensam/mensam.json mensam-docker:v0.0.0.0
+----
+
+This will use the default configuration file for Docker deployments and now you should be able to visit the web interface on http://localhost:8080.
+
+=== NixOS module
+
+You can host a server by enabling it in your NixOS configuration.
+
+[source,nix]
+----
+{ config, pkgs, lib, ... }:
+{
+  services.mensam = {
+    enable = true;
+    config = {
+      port = 8177;
+      email-config = {
+        hostname = "my-hostname.com";
+        username = "mensam@my-hostname.com";
+        password = "********";
+      };
+      base-url = {
+        scheme = "https";
+        authority = {
+          host = "mensam.my-hostname.com";
+          port= null;
+        };
+        path = [];
+      };
+    };
+    environment = {
+    };
+  };
+
+  services.nginx.enable = true;
+  services.nginx.recommendedGzipSettings = true;
+  services.nginx.virtualHosts."mensam.my-hostname.com" = {
+    forceSSL = true;
+    locations."/".proxyPass = "http://127.0.0.1:${toString config.services.mensam.config.port}";
+    locations."/".extraConfig = ''
+      add_header Cache-Control "no-store";
+    '';
+    extraConfig = ''
+      error_page 501 502 503 /fallback.html;
+      location = /fallback.html {
+        root ${pkgs.mensam.full.fallback.outPath};
+        add_header Cache-Control "no-store";
+      }
+    '';
+  };
+}
+----
+
+
+
 == Development
 
 Mensam is built with Nix.
