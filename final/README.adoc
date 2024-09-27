@@ -18,8 +18,11 @@ Use link:./configurations/docker.json[`docker.json`] as a template configuration
 
 [source,bash]
 ----
-docker run -p 8177:8177 -v ./final/configurations/docker.json:/etc/mensam/mensam.json mensam-docker:v0.0.0.0
+docker pull jumper149/mensam:v0.0.0.0
+docker run --publish 8080:8177 --volume ./final/configurations/docker.json:/etc/mensam/mensam.json mensam-docker:v0.0.0.0
 ----
+
+This will use the default configuration file for docker deployments and you can visit the web interface with your web browser on http://localhost:8080.
 
 == NixOS module
 

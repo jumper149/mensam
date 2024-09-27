@@ -17,7 +17,7 @@
   { "scheme": "http"
   , "authority":
     { "host": "localhost"
-    , "port": 8177
+    , "port": 8080
     }
   , "path": []
   }
