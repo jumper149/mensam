@@ -60,13 +60,14 @@
     finalOverlay = overlays.default;
   };
 
-  dockerImage.default =
+  dockerImages.default =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     pkgs.dockerTools.buildImage {
-      name = "mensam-docker";
+      name = "mensam";
+      tag = if self ? rev then self.rev else null;
       copyToRoot =
         pkgs.buildEnv {
-          name = "mensam-docker-root";
+          name = "mensam-root-docker";
           pathsToLink = [
             "/bin"
             "/etc/mensam"
@@ -145,6 +146,6 @@
       ];
     };
 
-  checks.x86_64-linux.dockerImage = dockerImage.default;
+  checks.x86_64-linux.dockerImage = dockerImages.default;
 
 }

@@ -42,6 +42,8 @@
 
     overlays.default = self.subflakes.final.overlays.default;
 
+    dockerImages.default = self.subflakes.final.dockerImages.default;
+
     nixosModules.default = self.subflakes.final.nixosModules.default;
 
     devShells.x86_64-linux.default =
