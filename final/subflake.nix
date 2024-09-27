@@ -94,9 +94,6 @@
 
                 # Database
                 mkdir --parents build/var/lib/mensam
-
-                # Log
-                mkdir --parents build/var/log/mensam
               '';
               installPhase = ''
                 cp --recursive build $out
@@ -109,12 +106,11 @@
         Env = [
           "MENSAM_CONFIG_FILE=/etc/mensam/mensam.json"
           "MENSAM_LOG_COLOR=True"
-          "MENSAM_LOG_FILE=/var/log/mensam/mensam.log"
+          #"MENSAM_LOG_FILE=" # Docker expects the log on StdOut.
           "MENSAM_LOG_LEVEL=LevelDebug"
         ];
         Volumes = {
           "/var/lib/mensam" = { };
-          "/var/log/mensam" = { };
         };
       };
     };
