@@ -37,7 +37,6 @@
     *** [x] Buttons
   ** [ ] Automatically add desks when creating a space.
     *** This could be achieved with a selector of how many desks you want and then adding default desks.
-  ** [x] Unified button to "Go back". Top left instead of "Mensam" text?
   ** [ ] Title in header will cut off titles that are too long. This looks broken. Maybe add "...".
   ** [ ] Error messages are shitty. These should popup immediately to tell the user something is wrong.
     *** Maybe we want non-error popups as well.
@@ -46,15 +45,6 @@
   ** [ ] Show more info for spaces in "Your Dashboard" and "Browse Spaces"
     *** [ ] City.
     *** more?
-  ** Creating reservations.
-    *** [x] Describe "from" and "to" when creating reservation.
-    *** [ ] Improve SVG time picker.
-      **** [x] Add text based time.
-      **** [x] Don't select seconds. Just `hh:mm`.
-      **** [x] Don't show seconds on button? Just `hh:mm`.
-      **** [x] Automatically set upper/lower bound when entering negative time interval.
-      **** [x] Grey out "Submit" button when the entered time span is already booked/not possible.
-      **** [x] Better default time when opening the dialog to create a reservation.
 
 * Wording and explanation.
   ** [ ] A space is just an environment for desks and not the desk itself.
