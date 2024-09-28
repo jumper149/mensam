@@ -1,5 +1,11 @@
 = Changelog
 
+== `0.10.0.3`
+
+* Frontend
+  ** Add Terms and Conditions and Privacy Policy to footer.
+  ** Improve responsiveness of reservation date/time picker.
+
 == `0.10.0.2`
 
 * Frontend
