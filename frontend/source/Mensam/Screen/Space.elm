@@ -592,7 +592,35 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
-                                        , enabled = True
+                                        , enabled =
+                                            let
+                                                clashes =
+                                                    reservationClashes
+                                                        { timezone = model.timezone
+                                                        , begin =
+                                                            Mensam.Time.MkTimestamp
+                                                                { date = (Mensam.Widget.Date.unModel model.modelDateBegin).selected
+                                                                , time = (Mensam.Widget.Time.unModel model.modelTimeBegin).selected
+                                                                }
+                                                        , end =
+                                                            Mensam.Time.MkTimestamp
+                                                                { date = (Mensam.Widget.Date.unModel model.modelDateEnd).selected
+                                                                , time = (Mensam.Widget.Time.unModel model.modelTimeEnd).selected
+                                                                }
+                                                        , reservations =
+                                                            List.concat <|
+                                                                List.filterMap
+                                                                    (\d ->
+                                                                        if d.desk.id == reservation.desk.id then
+                                                                            Just d.reservations
+
+                                                                        else
+                                                                            Nothing
+                                                                    )
+                                                                    model.desks
+                                                        }
+                                            in
+                                            not <| clashes.beginClashes || clashes.endClashes
                                         , label = Element.text "Submit"
                                         , message = Just <| MessageEffect <| SubmitReservation
                                         , size = Mensam.Element.Button.Medium
@@ -1895,3 +1923,67 @@ getSelectorRegionDimensionsCmd elementId =
 calculateHour : Element.Events.Pointer.Event -> { width : Float, height : Float } -> Mensam.Time.Hour
 calculateHour event dimensions =
     Mensam.Time.MkHour <| floor <| 24 * event.offsetPos.x / dimensions.width
+
+
+reservationClashes :
+    { timezone : Time.Zone
+    , begin : Mensam.Time.Timestamp
+    , end : Mensam.Time.Timestamp
+    , reservations :
+        List
+            { desk : Mensam.Desk.Identifier
+            , id : Mensam.Reservation.Identifier
+            , status : Mensam.Reservation.Status
+            , timeBegin : Time.Posix
+            , timeEnd : Time.Posix
+            , user : Int
+            }
+    }
+    ->
+        { beginClashes : Bool
+        , endClashes : Bool
+        }
+reservationClashes input =
+    let
+        beginPosix =
+            Mensam.Time.toPosix input.timezone input.begin
+
+        endPosix =
+            Mensam.Time.toPosix input.timezone input.end
+
+        isClashingAny =
+            List.any
+                (\reservation ->
+                    Time.posixToMillis reservation.timeBegin <= Time.posixToMillis endPosix && Time.posixToMillis reservation.timeEnd >= Time.posixToMillis beginPosix
+                )
+                input.reservations
+
+        isObviousClashingBegin =
+            List.any
+                (\reservation ->
+                    Time.posixToMillis reservation.timeBegin <= Time.posixToMillis beginPosix && Time.posixToMillis reservation.timeEnd >= Time.posixToMillis beginPosix
+                )
+                input.reservations
+
+        isObviousClashingEnd =
+            List.any
+                (\reservation ->
+                    Time.posixToMillis reservation.timeBegin <= Time.posixToMillis endPosix && Time.posixToMillis reservation.timeEnd >= Time.posixToMillis endPosix
+                )
+                input.reservations
+    in
+    case ( isClashingAny, isObviousClashingBegin, isObviousClashingEnd ) of
+        ( False, _, _ ) ->
+            { beginClashes = False, endClashes = False }
+
+        ( True, True, True ) ->
+            { beginClashes = True, endClashes = True }
+
+        ( True, True, False ) ->
+            { beginClashes = True, endClashes = False }
+
+        ( True, False, True ) ->
+            { beginClashes = False, endClashes = True }
+
+        ( True, False, False ) ->
+            { beginClashes = True, endClashes = True }
