@@ -46,6 +46,56 @@ element content =
                 , Element.alignTop
                 ]
                 Element.none
+            , elementTermsAndConditions
+            , Element.el
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+                , Element.alignBottom
+                ]
+                Element.none
+            ]
+        , Element.el
+            [ Element.width <| Element.px 12
+            , Element.height Element.fill
+            , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+            , Element.alignLeft
+            ]
+            Element.none
+        , Element.column
+            [ Element.height Element.fill ]
+            [ Element.el
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+                , Element.alignTop
+                ]
+                Element.none
+            , elementPrivacyPolicy
+            , Element.el
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+                , Element.alignBottom
+                ]
+                Element.none
+            ]
+        , Element.el
+            [ Element.width <| Element.px 12
+            , Element.height Element.fill
+            , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+            , Element.alignLeft
+            ]
+            Element.none
+        , Element.column
+            [ Element.height Element.fill ]
+            [ Element.el
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Events.Pointer.onClick <| \_ -> ClickedSomewhere
+                , Element.alignTop
+                ]
+                Element.none
             , elementSource content
             , Element.el
                 [ Element.width Element.fill
@@ -74,15 +124,76 @@ elementSource content =
         { url = content.sourceUrl
         , label =
             Element.el
-                [ Element.padding 3
-                , Element.Font.family [ Mensam.Element.Font.monospace ]
-                , Element.Font.regular
-                , Element.Font.size 14
-                , Element.Font.color <| Mensam.Element.Color.dark.blue Mensam.Element.Color.Opaque100
-                , Element.mouseOver
+                ([ Element.padding 3
+                 , Element.Font.size 14
+                 , Element.Font.color <| Mensam.Element.Color.dark.blue Mensam.Element.Color.Opaque100
+                 , Element.mouseOver
                     [ Element.Font.color <| Mensam.Element.Color.bright.blue Mensam.Element.Color.Opaque100
                     ]
-                ]
+                 ]
+                    ++ (Mensam.Element.Font.font <|
+                            Mensam.Element.Font.Condensed
+                                { weight = Mensam.Element.Font.Regular400
+                                , italic = False
+                                }
+                       )
+                )
             <|
                 Element.text "Source on GitHub"
+        }
+
+
+elementTermsAndConditions : Element.Element Message
+elementTermsAndConditions =
+    Element.newTabLink
+        [ Element.centerX
+        , Element.centerY
+        ]
+        { url = "/terms"
+        , label =
+            Element.el
+                ([ Element.padding 3
+                 , Element.Font.size 14
+                 , Element.Font.color <| Mensam.Element.Color.dark.blue Mensam.Element.Color.Opaque100
+                 , Element.mouseOver
+                    [ Element.Font.color <| Mensam.Element.Color.bright.blue Mensam.Element.Color.Opaque100
+                    ]
+                 ]
+                    ++ (Mensam.Element.Font.font <|
+                            Mensam.Element.Font.Condensed
+                                { weight = Mensam.Element.Font.Regular400
+                                , italic = False
+                                }
+                       )
+                )
+            <|
+                Element.text "Terms and Conditions"
+        }
+
+
+elementPrivacyPolicy : Element.Element Message
+elementPrivacyPolicy =
+    Element.newTabLink
+        [ Element.centerX
+        , Element.centerY
+        ]
+        { url = "/privacy"
+        , label =
+            Element.el
+                ([ Element.padding 3
+                 , Element.Font.size 14
+                 , Element.Font.color <| Mensam.Element.Color.dark.blue Mensam.Element.Color.Opaque100
+                 , Element.mouseOver
+                    [ Element.Font.color <| Mensam.Element.Color.bright.blue Mensam.Element.Color.Opaque100
+                    ]
+                 ]
+                    ++ (Mensam.Element.Font.font <|
+                            Mensam.Element.Font.Condensed
+                                { weight = Mensam.Element.Font.Regular400
+                                , italic = False
+                                }
+                       )
+                )
+            <|
+                Element.text "Privacy Policy"
         }
