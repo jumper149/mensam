@@ -14,3 +14,6 @@ cradle:
 
     - path: "source/executable/client/Main.hs"
       component: "mensam:exe:mensam-client"
+
+    - path: "source/test"
+      component: "mensam:test:mensam"

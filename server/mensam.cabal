@@ -276,3 +276,15 @@ executable mensam-client
     NoImplicitPrelude
   ghc-options:
     -threaded
+
+test-suite mensam
+  import:
+    , dependencies
+    , language
+  build-depends:
+    , mensam
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: source/test
+  ghc-options:
+    -Wno-unused-packages
