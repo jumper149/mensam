@@ -22,9 +22,9 @@ jobs:
     - name: "Load Docker Image"
       run: docker load --input result
     - name: "Set Docker Image Tag"
-      run: docker tag mensam:${GITHUB_SHA} mensam:${GITHUB_REF#refs/tags/}
+      run: docker tag mensam:${GITHUB_SHA} jumper149/mensam:${GITHUB_REF#refs/tags/}
     - name: "Push Docker Image to Docker Hub"
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mensam:${GITHUB_REF#refs/tags/}
+      run: docker push jumper149/mensam:${GITHUB_REF#refs/tags/}
 name: "Release"
 on:
   push:
