@@ -382,6 +382,33 @@ element model =
                     Nothing
 
                 Just (PopupReservation reservation) ->
+                    let
+                        clashes =
+                            reservationClashes
+                                { timezone = model.timezone
+                                , begin =
+                                    Mensam.Time.MkTimestamp
+                                        { date = (Mensam.Widget.Date.unModel model.modelDateBegin).selected
+                                        , time = (Mensam.Widget.Time.unModel model.modelTimeBegin).selected
+                                        }
+                                , end =
+                                    Mensam.Time.MkTimestamp
+                                        { date = (Mensam.Widget.Date.unModel model.modelDateEnd).selected
+                                        , time = (Mensam.Widget.Time.unModel model.modelTimeEnd).selected
+                                        }
+                                , reservations =
+                                    List.concat <|
+                                        List.filterMap
+                                            (\d ->
+                                                if d.desk.id == reservation.desk.id then
+                                                    Just d.reservations
+
+                                                else
+                                                    Nothing
+                                            )
+                                            model.desks
+                                }
+                    in
                     Just <|
                         Element.column
                             [ Element.spacing 17
@@ -442,7 +469,12 @@ element model =
                                     , Mensam.Element.Button.button <|
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.width Element.fill ]
-                                            , color = Mensam.Element.Button.Blue
+                                            , color =
+                                                if clashes.beginClashes then
+                                                    Mensam.Element.Button.Red
+
+                                                else
+                                                    Mensam.Element.Button.Blue
                                             , enabled = True
                                             , label =
                                                 let
@@ -554,7 +586,12 @@ element model =
                                     , Mensam.Element.Button.button <|
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.width Element.fill ]
-                                            , color = Mensam.Element.Button.Blue
+                                            , color =
+                                                if clashes.endClashes then
+                                                    Mensam.Element.Button.Red
+
+                                                else
+                                                    Mensam.Element.Button.Blue
                                             , enabled = True
                                             , label =
                                                 let
@@ -592,35 +629,7 @@ element model =
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
                                         , color = Mensam.Element.Button.Yellow
-                                        , enabled =
-                                            let
-                                                clashes =
-                                                    reservationClashes
-                                                        { timezone = model.timezone
-                                                        , begin =
-                                                            Mensam.Time.MkTimestamp
-                                                                { date = (Mensam.Widget.Date.unModel model.modelDateBegin).selected
-                                                                , time = (Mensam.Widget.Time.unModel model.modelTimeBegin).selected
-                                                                }
-                                                        , end =
-                                                            Mensam.Time.MkTimestamp
-                                                                { date = (Mensam.Widget.Date.unModel model.modelDateEnd).selected
-                                                                , time = (Mensam.Widget.Time.unModel model.modelTimeEnd).selected
-                                                                }
-                                                        , reservations =
-                                                            List.concat <|
-                                                                List.filterMap
-                                                                    (\d ->
-                                                                        if d.desk.id == reservation.desk.id then
-                                                                            Just d.reservations
-
-                                                                        else
-                                                                            Nothing
-                                                                    )
-                                                                    model.desks
-                                                        }
-                                            in
-                                            not <| clashes.beginClashes || clashes.endClashes
+                                        , enabled = not <| clashes.beginClashes || clashes.endClashes
                                         , label = Element.text "Submit"
                                         , message = Just <| MessageEffect <| SubmitReservation
                                         , size = Mensam.Element.Button.Medium
