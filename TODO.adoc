@@ -22,7 +22,12 @@
   ** [ ] Forbid creating reservations in the past. Maybe this should be configurable for each space (or role?).
 
 * Frontend.
-  ** [ ] Terms and Conditions check during registration.
+  ** [ ] Improve Dashboard UI.
+    *** [ ] Create space on dashboard.
+      **** When there are no space memberships there should be a big button to create a new space.
+  ** [ ] Improve user settings UI.
+  ** [ ] Add editor for room layout.
+  ** [ ] Improve look of user preview for users without `edit-user` permission.
   ** [ ] Add loading screen to HTML wrapper for frontend.
     *** This is harder than expected. Is it possible to start Elm from JS directly?
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
@@ -30,8 +35,6 @@
   ** [ ] Light/Dark mode.
   ** [ ] Factor out duplicate code (buttons, styling and so on).
     *** [x] Buttons
-  ** [ ] Create space on dashboard.
-    *** When there are no space memberships there should be a big button to create a new space.
   ** [ ] Automatically add desks when creating a space.
     *** This could be achieved with a selector of how many desks you want and then adding default desks.
   ** [x] Unified button to "Go back". Top left instead of "Mensam" text?
@@ -52,10 +55,6 @@
       **** [x] Automatically set upper/lower bound when entering negative time interval.
       **** [ ] Grey out "Submit" button when the entered time span is already booked/not possible.
       **** [x] Better default time when opening the dialog to create a reservation.
-  ** Auto-login after registration doesn't fetch user data.
-  ** Improve touch interfaces.
-    *** [x] Reservation time picker doesn't work on mobile when swiping.
-    *** [ ] Room desk picker activates click when dragging a desk with mouse.
 
 * Wording and explanation.
   ** [ ] A space is just an environment for desks and not the desk itself.
