@@ -449,9 +449,14 @@ element model =
                                                     time =
                                                         case model.modelTimeBegin of
                                                             Mensam.Widget.Time.MkModel { selected } ->
-                                                                selected
+                                                                Mensam.Time.unTime selected
                                                 in
-                                                Element.text <| Mensam.Time.timeToString time
+                                                Element.text <|
+                                                    String.concat
+                                                        [ Mensam.Time.hourToString time.hour
+                                                        , ":"
+                                                        , Mensam.Time.minuteToString time.minute
+                                                        ]
                                             , message = Just <| MessagePure ViewTimeBeginPicker
                                             , size = Mensam.Element.Button.Medium
                                             }
@@ -556,9 +561,14 @@ element model =
                                                     time =
                                                         case model.modelTimeEnd of
                                                             Mensam.Widget.Time.MkModel { selected } ->
-                                                                selected
+                                                                Mensam.Time.unTime selected
                                                 in
-                                                Element.text <| Mensam.Time.timeToString time
+                                                Element.text <|
+                                                    String.concat
+                                                        [ Mensam.Time.hourToString time.hour
+                                                        , ":"
+                                                        , Mensam.Time.minuteToString time.minute
+                                                        ]
                                             , message = Just <| MessagePure ViewTimeEndPicker
                                             , size = Mensam.Element.Button.Medium
                                             }

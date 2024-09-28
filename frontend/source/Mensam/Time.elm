@@ -438,18 +438,41 @@ dateToString (MkDate date) =
         ]
 
 
-timeToString : Time -> String
-timeToString (MkTime time) =
+hourToString : Hour -> String
+hourToString (MkHour hour) =
     let
         addPadding =
             (\x -> "00" ++ x) >> String.reverse >> String.toList >> List.take 2 >> String.fromList >> String.reverse
     in
+    addPadding <| String.fromInt hour
+
+
+minuteToString : Minute -> String
+minuteToString (MkMinute minute) =
+    let
+        addPadding =
+            (\x -> "00" ++ x) >> String.reverse >> String.toList >> List.take 2 >> String.fromList >> String.reverse
+    in
+    addPadding <| String.fromInt minute
+
+
+secondToString : Second -> String
+secondToString (MkSecond second) =
+    let
+        addPadding =
+            (\x -> "00" ++ x) >> String.reverse >> String.toList >> List.take 2 >> String.fromList >> String.reverse
+    in
+    addPadding <| String.fromInt second
+
+
+timeToString : Time -> String
+timeToString (MkTime time) =
     String.concat
-        [ addPadding <| String.fromInt <| unHour time.hour
+        [ hourToString time.hour
         , ":"
-        , addPadding <| String.fromInt <| unMinute time.minute
+        , minuteToString time.minute
         , ":"
-        , addPadding <| String.fromInt <| unSecond time.second
+        , secondToString time.second
         ]
 
 
