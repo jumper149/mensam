@@ -9,6 +9,7 @@ roots = [
   "^Mensam.Server.Database.Extra.updateUnique$",
   "^Mensam.Server.Database.Space.spaceListDesks$",
   "^Mensam.Server.User.userSessionGet$",
+  "^Mensam.Server.User.userEmailPreferencesGet$",
 ]
 
 type-class-roots = true
