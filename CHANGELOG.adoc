@@ -1,5 +1,8 @@
 = Changelog
 
+* Backend
+  ** Send emails on successful reservations.
+
 == `0.10.0.3`
 
 * Frontend

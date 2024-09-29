@@ -86,7 +86,7 @@ userLookupId username = do
       pure $ Just $ MkIdentifierUser $ Selda.fromId dbId
 
 userGet ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   SeldaTransactionT m User
 userGet identifier = do
@@ -421,3 +421,28 @@ newtype ConfirmationEffect
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkConfirmationEffect" "") ConfirmationEffect
+
+userEmailPreferencesGet ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierUser ->
+  SeldaTransactionT m EmailPreferences
+userEmailPreferencesGet userIdentifier = do
+  lift $ logDebug $ "Get Email preferences" <> T.pack (show userIdentifier)
+  user <- userGet userIdentifier
+  -- TODO: Actually add email preference option for user.
+  if userEmailValidated user
+    then do
+      lift $ logDebug "Got Email preferences."
+      pure $ MkEmailPreferencesSend $ userEmail user
+    else do
+      lift $ logDebug "User didn't validate the Email address."
+      pure MkEmailPreferencesDontSendNotValidated
+
+type EmailPreferences :: Type
+data EmailPreferences
+  = MkEmailPreferencesSend EmailAddress
+  | MkEmailPreferencesDontSendNotValidated
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkConfirmationEffect" "") EmailPreferences

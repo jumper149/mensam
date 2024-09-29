@@ -10,7 +10,7 @@
     *** [ ] `direnv` from https://github.com/xtruder/nix-devcontainer is outdated.
 
 * Backend.
-  ** [ ] Send email on successful reservations.
+  ** [x] Send email on successful reservations.
   ** [ ] `/space/view` route should return 404 when there is no such space.
   ** [ ] File uploads.
     *** [x] Profile pictures.

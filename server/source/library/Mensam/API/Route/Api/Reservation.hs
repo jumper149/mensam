@@ -88,8 +88,9 @@ data RequestReservationCreate = MkRequestReservationCreate
     via A.CustomJSON (JSONSettings "MkRequest" "requestReservationCreate") RequestReservationCreate
 
 type ResponseReservationCreate :: Type
-newtype ResponseReservationCreate = MkResponseReservationCreate
+data ResponseReservationCreate = MkResponseReservationCreate
   { responseReservationCreateId :: IdentifierReservation
+  , responseReservationEmailSent :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

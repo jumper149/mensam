@@ -7,23 +7,28 @@ import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
 import Mensam.API.Route.Api.Reservation
+import Mensam.Server.Application.Email.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Application.SeldaPool.Servant
 import Mensam.Server.Reservation
 import Mensam.Server.Server.Auth
 import Mensam.Server.Space
+import Mensam.Server.User
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Data.Traversable
 import Data.Typeable
 import Servant hiding (BasicAuthResult (..))
 import Servant.Auth.Server
 import Servant.Server.Generic
+import Text.Blaze.Html.Renderer.Text qualified as T
+import Text.Blaze.Html5 qualified as H
 
 handler ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadEmail m, MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Routes (AsServerT m)
 handler =
   Routes
@@ -33,7 +38,8 @@ handler =
     }
 
 createReservation ::
-  ( MonadLogger m
+  ( MonadEmail m
+  , MonadLogger m
   , MonadSeldaPool m
   , IsMember (WithStatus 201 ResponseReservationCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
@@ -63,10 +69,13 @@ createReservation auth eitherRequest = do
           SMkPermissionSpaceCreateReservation
           (userAuthenticatedId authenticated)
           (deskSpace desk)
-        reservationCreate
-          deskIdentifier
-          (userAuthenticatedId authenticated)
-          (requestReservationCreateTimeWindow request)
+        reservationIdentifier <-
+          reservationCreate
+            deskIdentifier
+            (userAuthenticatedId authenticated)
+            (requestReservationCreateTimeWindow request)
+        user <- userGet $ userAuthenticatedId authenticated
+        pure (reservationIdentifier, userEmail user)
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceCreateReservation)
         seldaResult
@@ -76,9 +85,30 @@ createReservation auth eitherRequest = do
             (WithStatus @409 $ MkStaticText @"Desk is not available within the given time window.")
             seldaResultAfter403
             $ \seldaResultAfter409 ->
-              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter409 $ \reservationIdentifier -> do
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter409 $ \(reservationIdentifier, emailAddress) -> do
                 logInfo "Created reservation."
-                respond $ WithStatus @201 MkResponseReservationCreate {responseReservationCreateId = reservationIdentifier}
+                logDebug "Sending notification email."
+                sendEmailResult <-
+                  sendEmail
+                    MkEmail
+                      { emailRecipient = emailAddress
+                      , emailTitle = "Created Reservation: #" <> T.pack (show reservationIdentifier)
+                      , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
+                          H.head $ do
+                            H.title $ H.text $ "Created Reservation: #" <> T.pack (show reservationIdentifier)
+                          H.body $ do
+                            H.p $ H.text "Your reservation was created successfully."
+                      }
+                let emailSent =
+                      case sendEmailResult of
+                        EmailSent -> True
+                        EmailFailedToSend -> False
+                respond $
+                  WithStatus @201
+                    MkResponseReservationCreate
+                      { responseReservationCreateId = reservationIdentifier
+                      , responseReservationEmailSent = emailSent
+                      }
 
 cancelReservation ::
   ( MonadIO m
