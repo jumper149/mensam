@@ -107,6 +107,7 @@ userGet identifier = do
             MkDbEmailVisibility_hidden -> False
             MkDbEmailVisibility_visible -> True
       , userEmailValidated = dbUser_email_validated dbUser
+      , userEmailNotifications = dbUser_email_notifications dbUser
       }
 
 type User :: Type
@@ -117,6 +118,7 @@ data User = MkUser
   , userEmail :: EmailAddress
   , userEmailVisible :: Bool
   , userEmailValidated :: Bool
+  , userEmailNotifications :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
 
@@ -127,8 +129,10 @@ userCreate ::
   EmailAddress ->
   -- | email address visible
   Bool ->
+  -- | receive email notifications
+  Bool ->
   SeldaTransactionT m IdentifierUser
-userCreate username password emailAddress emailAddressVisible = do
+userCreate username password emailAddress emailAddressVisible emailNotifications = do
   lift $ logDebug "Creating user."
   maybeExistingUser <- userLookupId username
   case maybeExistingUser of
@@ -148,6 +152,7 @@ userCreate username password emailAddress emailAddressVisible = do
                 then MkDbEmailVisibility_visible
                 else MkDbEmailVisibility_hidden
           , dbUser_email_validated = False
+          , dbUser_email_notifications = emailNotifications
           , dbUser_picture_jpeg = Nothing
           }
   lift $ logDebug "Inserting user into database."

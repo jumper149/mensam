@@ -43,6 +43,7 @@ f = do
           , Route.User.requestRegisterPassword = pw
           , Route.User.requestRegisterEmail = email
           , Route.User.requestRegisterEmailVisible = True
+          , Route.User.requestRegisterEmailNotifications = False
           }
   resultRegister <- endpointRegister requestRegister
   liftIO $ print resultRegister

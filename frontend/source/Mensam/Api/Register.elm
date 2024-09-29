@@ -10,6 +10,7 @@ import Url.Builder
 
 type alias Request =
     { email : Mensam.User.Email
+    , emailNotifications : Bool
     , emailVisible : Bool
     , name : Mensam.User.Name
     , password : Mensam.User.Password
@@ -93,6 +94,7 @@ encodeBody : Request -> Encode.Value
 encodeBody body =
     Encode.object
         [ ( "email", Mensam.User.emailEncode body.email )
+        , ( "email-notifications", Encode.bool body.emailNotifications )
         , ( "email-visible", Encode.bool body.emailVisible )
         , ( "name", Mensam.User.nameEncode body.name )
         , ( "password", Mensam.User.passwordEncode body.password )

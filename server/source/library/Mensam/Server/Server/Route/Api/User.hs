@@ -157,7 +157,7 @@ register eitherRequest =
     Left err -> do
       logInfo $ "Failed to parse request: " <> T.pack (show err)
       respond $ WithStatus @400 $ MkErrorParseBodyJson err
-    Right request@MkRequestRegister {requestRegisterName, requestRegisterPassword, requestRegisterEmail, requestRegisterEmailVisible} -> do
+    Right request@MkRequestRegister {requestRegisterName, requestRegisterPassword, requestRegisterEmail, requestRegisterEmailVisible, requestRegisterEmailNotifications} -> do
       logDebug $ "Registering new user: " <> T.pack (show request)
       seldaResult <-
         runSeldaTransactionT $ do
@@ -167,6 +167,7 @@ register eitherRequest =
               (Bcrypt.mkPassword $ unPassword requestRegisterPassword)
               requestRegisterEmail
               requestRegisterEmailVisible
+              requestRegisterEmailNotifications
           let effect = MkConfirmationEffectEmailValidation requestRegisterEmail
           expirationTime <- lift . liftIO $ (T.secondsToNominalDiffTime (60 * 60) `T.addUTCTime`) <$> T.getCurrentTime
           userConfirmationCreate userIdentifier effect expirationTime

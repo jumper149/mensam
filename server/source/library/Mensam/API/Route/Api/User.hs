@@ -205,6 +205,7 @@ data RequestRegister = MkRequestRegister
   , requestRegisterPassword :: Password
   , requestRegisterEmail :: EmailAddress
   , requestRegisterEmailVisible :: Bool
+  , requestRegisterEmailNotifications :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

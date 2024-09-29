@@ -376,6 +376,14 @@ migrations =
             "ALTER TABLE desk\n\
             \ADD COLUMN size_depth DOUBLE PRECISION"
       }
+  , MkMigration
+      { migrationId = Selda.toId 15
+      , migrationName = "addUserEmailNotificationOption"
+      , migrationWork = do
+          Selda.Unsafe.rawStm
+            "ALTER TABLE user\n\
+            \ADD COLUMN email_notifications BOOLEAN NOT NULL DEFAULT FALSE"
+      }
   ]
 
 createDatabase ::

@@ -18,6 +18,7 @@ type alias Model =
     , password : String
     , email : String
     , emailVisible : Bool
+    , emailNotifications : Bool
     , readTermsAndConditions : Bool
     , hint : List String
     }
@@ -29,6 +30,7 @@ init =
     , password = ""
     , email = ""
     , emailVisible = False
+    , emailNotifications = False
     , readTermsAndConditions = False
     , hint = []
     }
@@ -170,6 +172,7 @@ submitRegisterMessage model =
                                     , password = password
                                     , email = email
                                     , emailVisible = model.emailVisible
+                                    , emailNotifications = model.emailNotifications
                                     }
 
 
@@ -270,6 +273,7 @@ type MessageEffect
         , password : Mensam.User.Password
         , email : Mensam.User.Email
         , emailVisible : Bool
+        , emailNotifications : Bool
         }
     | Submitted { username : Mensam.User.Name, password : Mensam.User.Password, emailSent : Bool }
 
@@ -296,11 +300,13 @@ register :
     , password : Mensam.User.Password
     , email : Mensam.User.Email
     , emailVisible : Bool
+    , emailNotifications : Bool
     }
     -> Cmd Message
 register args =
     Mensam.Api.Register.request
         { email = args.email
+        , emailNotifications = args.emailNotifications
         , emailVisible = args.emailVisible
         , name = args.username
         , password = args.password

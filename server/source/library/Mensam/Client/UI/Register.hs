@@ -94,5 +94,6 @@ registerHandleEvent = \case
               , Route.User.requestRegisterPassword = MkPasswordUnsafe $ registerInfo ^. registerInfoPassword
               , Route.User.requestRegisterEmail = fromTextUnsafe $ registerInfo ^. registerInfoEmail
               , Route.User.requestRegisterEmailVisible = registerInfo ^. registerInfoEmailVisible
+              , Route.User.requestRegisterEmailNotifications = False
               }
   event -> lift $ zoom screenStateRegisterForm $ handleFormEvent event

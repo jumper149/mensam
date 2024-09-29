@@ -60,6 +60,7 @@ data DbUser = MkDbUser
   , dbUser_email :: Selda.Text
   , dbUser_email_visibility :: DbEmailVisibility
   , dbUser_email_validated :: Bool
+  , dbUser_email_notifications :: Bool
   , dbUser_picture_jpeg :: Maybe BS.ByteString
   }
   deriving stock (Generic, Show)

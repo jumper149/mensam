@@ -1,7 +1,11 @@
 = Changelog
 
+* API
+  ** During registration users can now decide whether they want to receive email notifications with the `email-notifications` field.
 * Backend
   ** Send emails on successful reservations.
+* Database
+  ** Add flag `email_notifications` to toggle emails being sent to a user.
 
 == `0.10.0.3`
 
