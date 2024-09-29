@@ -18,6 +18,7 @@ import Database.Selda qualified as Selda
 import Database.Selda.Unsafe qualified as Selda.Unsafe
 
 migrateDatabase ::
+  forall m.
   ( MonadIO m
   , MonadLogger m
   , MonadSeldaPool m
@@ -35,29 +36,40 @@ migrateDatabase = do
     pure $ map toKey dbMigrations
   let
     migrationMap ::
-      ( MonadIO m
-      , MonadLogger m
-      , MonadSeldaPool m
+      forall n.
+      ( MonadIO n
+      , MonadLogger n
+      , MonadSeldaPool n
       ) =>
-      M.Map (Selda.ID DbMigration, T.Text) (SeldaTransactionT m ())
+      M.Map (Selda.ID DbMigration, T.Text) (SeldaTransactionT n ())
     migrationMap =
       M.fromListWith (error "Multiple migrations have the same identifier and name.") $
         map (\migration -> ((migrationId migration, migrationName migration), migrationWork migration)) migrations
     migrationsToApply =
       M.toAscList $
         foldr M.delete migrationMap appliedMigrationKeys
-  migrationsToApply `for_` \((identifier, name), work) -> do
-    lift $ logDebug $ "Applying migration: " <> T.pack (show (identifier, name))
-    work
-    currentTime <- liftIO T.getCurrentTime
-    lift $ logDebug "Setting migration as done."
-    Selda.insertOne tableMigration $
-      MkDbMigration
-        { dbMigration_id = identifier
-        , dbMigration_name = name
-        , dbMigration_time_applied = currentTime
-        }
-    pure ()
+    unknownMigrationKeysAlreadyApplied =
+      map fst $
+        M.toAscList $
+          foldr M.delete (M.fromList $ (,()) <$> appliedMigrationKeys) (M.keys (migrationMap @m))
+  case unknownMigrationKeysAlreadyApplied of
+    [] -> do
+      migrationsToApply `for_` \((identifier, name), work) -> do
+        lift $ logDebug $ "Applying migration: " <> T.pack (show (identifier, name))
+        work
+        currentTime <- liftIO T.getCurrentTime
+        lift $ logDebug "Setting migration as done."
+        Selda.insertOne tableMigration $
+          MkDbMigration
+            { dbMigration_id = identifier
+            , dbMigration_name = name
+            , dbMigration_time_applied = currentTime
+            }
+        pure ()
+    _ -> do
+      lift $ logWarn $ "Unknown migrations have already been applied to the database: " <> T.pack (show unknownMigrationKeysAlreadyApplied)
+      lift $ logError "Database is in an unknown state. Let's stop here to prevent undefined behaviour."
+      error "Unknown migrations have been applied before. Database is in an unknown state."
   pure ()
 
 type Migration :: Type
