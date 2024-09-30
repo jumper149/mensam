@@ -24,7 +24,7 @@ type alias Request =
 
 
 type Response
-    = Success { id : Mensam.Reservation.Identifier }
+    = Success { id : Mensam.Reservation.Identifier, emailSent : Maybe Bool }
     | ErrorInsufficientPermission Mensam.Space.Role.Permission
     | ErrorTimeUnavailable
     | ErrorBody String
@@ -133,11 +133,12 @@ encodeBody body =
         ]
 
 
-decodeBody201 : Decode.Decoder { id : Mensam.Reservation.Identifier }
+decodeBody201 : Decode.Decoder { id : Mensam.Reservation.Identifier, emailSent : Maybe Bool }
 decodeBody201 =
-    Decode.map
-        (\id -> { id = id })
+    Decode.map2
+        (\id emailSent -> { id = id, emailSent = emailSent })
         (Decode.field "id" Mensam.Reservation.identifierDecoder)
+        (Decode.field "email-sent" <| Decode.nullable Decode.bool)
 
 
 decodeBody400 : Decode.Decoder String

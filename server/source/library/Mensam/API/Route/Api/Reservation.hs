@@ -90,7 +90,7 @@ data RequestReservationCreate = MkRequestReservationCreate
 type ResponseReservationCreate :: Type
 data ResponseReservationCreate = MkResponseReservationCreate
   { responseReservationCreateId :: IdentifierReservation
-  , responseReservationEmailSent :: Bool
+  , responseReservationCreateEmailSent :: Maybe Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

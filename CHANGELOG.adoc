@@ -2,6 +2,7 @@
 
 * API
   ** During registration users can now decide whether they want to receive email notifications with the `email-notifications` field.
+  ** The `/reservation/create` route now includes an optional boolean field `email-sent`.
 * Backend
   ** Send emails on successful reservations.
 * Database

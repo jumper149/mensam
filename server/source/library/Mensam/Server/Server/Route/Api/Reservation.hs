@@ -74,8 +74,25 @@ createReservation auth eitherRequest = do
             deskIdentifier
             (userAuthenticatedId authenticated)
             (requestReservationCreateTimeWindow request)
-        user <- userGet $ userAuthenticatedId authenticated
-        pure (reservationIdentifier, userEmail user)
+        maybeEmail <- do
+          userEmailPreferencesGet (userAuthenticatedId authenticated) >>= \case
+            MkEmailPreferencesSend emailAddress ->
+              pure $
+                Just
+                  MkEmail
+                    { emailRecipient = emailAddress
+                    , emailTitle = "Created Reservation: #" <> T.pack (show reservationIdentifier)
+                    , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
+                        H.head $ do
+                          H.title $ H.text $ "Created Reservation: #" <> T.pack (show reservationIdentifier)
+                        H.body $ do
+                          H.p $ H.text "Your reservation was created successfully."
+                    }
+            MkEmailPreferencesDontSendNotValidated ->
+              pure Nothing
+            MkEmailPreferencesDontSendNoNotifications ->
+              pure Nothing
+        pure (reservationIdentifier, maybeEmail)
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceCreateReservation)
         seldaResult
@@ -85,29 +102,25 @@ createReservation auth eitherRequest = do
             (WithStatus @409 $ MkStaticText @"Desk is not available within the given time window.")
             seldaResultAfter403
             $ \seldaResultAfter409 ->
-              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter409 $ \(reservationIdentifier, emailAddress) -> do
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter409 $ \(reservationIdentifier, maybeEmail) -> do
                 logInfo "Created reservation."
                 logDebug "Sending notification email."
-                sendEmailResult <-
-                  sendEmail
-                    MkEmail
-                      { emailRecipient = emailAddress
-                      , emailTitle = "Created Reservation: #" <> T.pack (show reservationIdentifier)
-                      , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
-                          H.head $ do
-                            H.title $ H.text $ "Created Reservation: #" <> T.pack (show reservationIdentifier)
-                          H.body $ do
-                            H.p $ H.text "Your reservation was created successfully."
-                      }
+                maybeSendEmailResult <-
+                  case maybeEmail of
+                    Nothing -> do
+                      logDebug "Not sending a notification email."
+                      pure Nothing
+                    Just email -> Just <$> sendEmail email
                 let emailSent =
-                      case sendEmailResult of
-                        EmailSent -> True
-                        EmailFailedToSend -> False
+                      case maybeSendEmailResult of
+                        Just EmailSent -> Just True
+                        Just EmailFailedToSend -> Just False
+                        Nothing -> Nothing
                 respond $
                   WithStatus @201
                     MkResponseReservationCreate
                       { responseReservationCreateId = reservationIdentifier
-                      , responseReservationEmailSent = emailSent
+                      , responseReservationCreateEmailSent = emailSent
                       }
 
 cancelReservation ::
