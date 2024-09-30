@@ -1132,23 +1132,28 @@ visualizeReservation timezone date reservation =
                         Just end ->
                             Just { begin = begin, end = end }
     in
-    case maybeSeconds of
-        Nothing ->
-            Nothing
+    case reservation.status of
+        Mensam.Reservation.MkStatusPlanned ->
+            case maybeSeconds of
+                Nothing ->
+                    Nothing
 
-        Just seconds ->
-            Just <|
-                Svg.rect
-                    [ Svg.Attributes.x <| String.fromInt seconds.begin
-                    , Svg.Attributes.y "0"
-                    , Svg.Attributes.width <| String.fromInt <| seconds.end - seconds.begin
-                    , Svg.Attributes.height "100%"
-                    , Svg.Attributes.rx "0"
-                    , Svg.Attributes.ry "0"
-                    , Svg.Attributes.fill Mensam.Svg.Color.dark.red
-                    , Svg.Attributes.opacity "0.4"
-                    ]
-                    []
+                Just seconds ->
+                    Just <|
+                        Svg.rect
+                            [ Svg.Attributes.x <| String.fromInt seconds.begin
+                            , Svg.Attributes.y "0"
+                            , Svg.Attributes.width <| String.fromInt <| seconds.end - seconds.begin
+                            , Svg.Attributes.height "100%"
+                            , Svg.Attributes.rx "0"
+                            , Svg.Attributes.ry "0"
+                            , Svg.Attributes.fill Mensam.Svg.Color.dark.red
+                            , Svg.Attributes.opacity "0.4"
+                            ]
+                            []
+
+        Mensam.Reservation.MkStatusCancelled ->
+            Nothing
 
 
 timeToSeconds : Mensam.Time.Time -> Int
@@ -1960,26 +1965,38 @@ reservationClashes input =
         endPosix =
             Mensam.Time.toPosix input.timezone input.end
 
+        activeReservations =
+            List.filter
+                (\reservation ->
+                    case reservation.status of
+                        Mensam.Reservation.MkStatusPlanned ->
+                            True
+
+                        Mensam.Reservation.MkStatusCancelled ->
+                            False
+                )
+                input.reservations
+
         isClashingAny =
             List.any
                 (\reservation ->
-                    Time.posixToMillis reservation.timeBegin <= Time.posixToMillis endPosix && Time.posixToMillis reservation.timeEnd >= Time.posixToMillis beginPosix
+                    Time.posixToMillis reservation.timeBegin < Time.posixToMillis endPosix && Time.posixToMillis reservation.timeEnd > Time.posixToMillis beginPosix
                 )
-                input.reservations
+                activeReservations
 
         isObviousClashingBegin =
             List.any
                 (\reservation ->
-                    Time.posixToMillis reservation.timeBegin <= Time.posixToMillis beginPosix && Time.posixToMillis reservation.timeEnd >= Time.posixToMillis beginPosix
+                    Time.posixToMillis reservation.timeBegin <= Time.posixToMillis beginPosix && Time.posixToMillis reservation.timeEnd > Time.posixToMillis beginPosix
                 )
-                input.reservations
+                activeReservations
 
         isObviousClashingEnd =
             List.any
                 (\reservation ->
-                    Time.posixToMillis reservation.timeBegin <= Time.posixToMillis endPosix && Time.posixToMillis reservation.timeEnd >= Time.posixToMillis endPosix
+                    Time.posixToMillis reservation.timeBegin < Time.posixToMillis endPosix && Time.posixToMillis reservation.timeEnd >= Time.posixToMillis endPosix
                 )
-                input.reservations
+                activeReservations
     in
     case ( isClashingAny, isObviousClashingBegin, isObviousClashingEnd ) of
         ( False, _, _ ) ->
