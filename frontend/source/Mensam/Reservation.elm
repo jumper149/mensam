@@ -8,11 +8,6 @@ type Identifier
     = MkIdentifier Int
 
 
-identifierToString : Identifier -> String
-identifierToString (MkIdentifier identifier) =
-    String.fromInt identifier
-
-
 identifierEncode : Identifier -> Encode.Value
 identifierEncode (MkIdentifier identifier) =
     Encode.int identifier

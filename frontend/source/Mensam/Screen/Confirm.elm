@@ -2,8 +2,6 @@ module Mensam.Screen.Confirm exposing (..)
 
 import Element
 import Element.Font
-import Html.Events
-import Json.Decode as Decode
 import Mensam.Api.Confirm
 import Mensam.Auth.Bearer
 import Mensam.Element.Button
@@ -90,23 +88,6 @@ type MessageEffect
     = ReportError Mensam.Error.Error
     | SubmitConfirm Mensam.User.ConfirmationSecret
     | LeaveConfirmationPage
-
-
-onEnter : msg -> Element.Attribute msg
-onEnter msg =
-    Element.htmlAttribute
-        (Html.Events.on "keyup"
-            (Decode.field "key" Decode.string
-                |> Decode.andThen
-                    (\key ->
-                        if key == "Enter" then
-                            Decode.succeed msg
-
-                        else
-                            Decode.fail "Not the enter key"
-                    )
-            )
-        )
 
 
 confirm : Mensam.Auth.Bearer.Jwt -> Mensam.User.ConfirmationSecret -> Cmd Message

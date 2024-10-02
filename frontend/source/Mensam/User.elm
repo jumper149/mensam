@@ -9,11 +9,6 @@ type Identifier
     = MkIdentifierUnsafe Int
 
 
-identifierParse : String -> Maybe Identifier
-identifierParse string =
-    Maybe.map MkIdentifierUnsafe <| String.toInt string
-
-
 identifierToString : Identifier -> String
 identifierToString (MkIdentifierUnsafe identifier) =
     String.fromInt identifier

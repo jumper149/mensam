@@ -81,8 +81,3 @@ decodeBody200 : Decode.Decoder ()
 decodeBody200 =
     Decode.map (\_ -> ())
         (Decode.field "unit" <| Decode.list <| Decode.succeed ())
-
-
-decodeBody400 : Decode.Decoder String
-decodeBody400 =
-    Decode.field "error" Decode.string

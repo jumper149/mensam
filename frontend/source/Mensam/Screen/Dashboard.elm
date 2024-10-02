@@ -5,8 +5,6 @@ import Element.Background
 import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
-import Html.Events
-import Json.Decode as Decode
 import List.Extra
 import Mensam.Api.ReservationCancel
 import Mensam.Api.ReservationList
@@ -578,23 +576,6 @@ type MessageEffect
     | CancelReservation Mensam.Reservation.Identifier
     | OpenPageToBrowseSpaces
     | OpenPageToViewReservations
-
-
-onEnter : msg -> Element.Attribute msg
-onEnter msg =
-    Element.htmlAttribute
-        (Html.Events.on "keyup"
-            (Decode.field "key" Decode.string
-                |> Decode.andThen
-                    (\key ->
-                        if key == "Enter" then
-                            Decode.succeed msg
-
-                        else
-                            Decode.fail "Not the enter key"
-                    )
-            )
-        )
 
 
 spaceList : Mensam.Auth.Bearer.Jwt -> Cmd Message

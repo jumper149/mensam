@@ -121,13 +121,6 @@ toViewportCoordinates { viewportOffset } position =
     }
 
 
-fromViewportCoordinates : Config -> Coordinate -> Coordinate
-fromViewportCoordinates { viewportOffset } position =
-    { x = position.x + viewportOffset.x
-    , y = position.y + viewportOffset.y
-    }
-
-
 type alias Coordinate =
     { x : Float
     , y : Float

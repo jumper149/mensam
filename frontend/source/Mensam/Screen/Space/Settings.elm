@@ -4,8 +4,6 @@ import Element
 import Element.Background
 import Element.Font
 import Element.Input
-import Html.Events
-import Json.Decode as Decode
 import Mensam.Api.SpaceDelete
 import Mensam.Api.SpaceEdit
 import Mensam.Auth.Bearer
@@ -139,8 +137,7 @@ element model =
 
                             Just name ->
                                 Element.Input.text
-                                    [ -- onEnter <| MessageEffect SubmitCreate
-                                      Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                    [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                     ]
                                     { onChange = MessagePure << EnterName << Just << Mensam.Space.MkName
                                     , text = Mensam.Space.nameToString name
@@ -181,8 +178,7 @@ element model =
 
                             Just timezone ->
                                 Element.Input.text
-                                    [ -- onEnter <| MessageEffect SubmitCreate
-                                      Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                    [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                     ]
                                     { onChange = MessagePure << SetTimezone << Just << Mensam.Time.MkTimezoneIdentifier
                                     , text = Mensam.Time.unTimezoneIdentifier timezone
@@ -418,23 +414,6 @@ type MessageEffect
     | ReturnToSpaces
     | SubmitDeleteSpace
     | OpenPageToRoles
-
-
-onEnter : msg -> Element.Attribute msg
-onEnter msg =
-    Element.htmlAttribute
-        (Html.Events.on "keyup"
-            (Decode.field "key" Decode.string
-                |> Decode.andThen
-                    (\key ->
-                        if key == "Enter" then
-                            Decode.succeed msg
-
-                        else
-                            Decode.fail "Not the enter key"
-                    )
-            )
-        )
 
 
 spaceEdit :

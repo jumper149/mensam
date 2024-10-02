@@ -3,7 +3,6 @@ module Mensam.Auth.Basic exposing (..)
 import Base64
 import Http
 import Json.Decode as Decode
-import Mensam.Error
 
 
 type Credentials
@@ -24,20 +23,6 @@ type Error
     = ErrorUsername
     | ErrorPassword
     | ErrorIndefinite
-
-
-error : Error -> Mensam.Error.Error
-error err =
-    Mensam.Error.message "Basic authentication failed" <|
-        case err of
-            ErrorUsername ->
-                Mensam.Error.message "Unknown username" Mensam.Error.undefined
-
-            ErrorPassword ->
-                Mensam.Error.message "Bad password" Mensam.Error.undefined
-
-            ErrorIndefinite ->
-                Mensam.Error.undefined
 
 
 http401BodyDecoder : Decode.Decoder Error

@@ -8,8 +8,6 @@ import Element.Events.Pointer
 import Element.Font
 import Element.Window
 import Html.Attributes
-import Html.Events
-import Json.Decode as Decode
 import List.Extra
 import Mensam.Api.DeskList
 import Mensam.Api.ReservationCreate
@@ -1052,88 +1050,88 @@ visualizeReservation :
         }
     -> Maybe (Svg.Svg a)
 visualizeReservation timezone date reservation =
-    let
-        timestamp =
-            { begin = Mensam.Time.fromPosix timezone reservation.timeBegin
-            , end = Mensam.Time.fromPosix timezone reservation.timeEnd
-            }
+    case reservation.status of
+        Mensam.Reservation.MkStatusPlanned ->
+            let
+                timestamp =
+                    { begin = Mensam.Time.fromPosix timezone reservation.timeBegin
+                    , end = Mensam.Time.fromPosix timezone reservation.timeEnd
+                    }
 
-        isToday =
-            { begin =
-                case Mensam.Time.compareDate (Mensam.Time.unTimestamp timestamp.begin).date date of
-                    LT ->
-                        Just False
+                isToday =
+                    { begin =
+                        case Mensam.Time.compareDate (Mensam.Time.unTimestamp timestamp.begin).date date of
+                            LT ->
+                                Just False
 
-                    EQ ->
-                        Just True
+                            EQ ->
+                                Just True
 
-                    GT ->
-                        Nothing
-            , end =
-                case Mensam.Time.compareDate (Mensam.Time.unTimestamp timestamp.end).date date of
-                    LT ->
-                        Nothing
+                            GT ->
+                                Nothing
+                    , end =
+                        case Mensam.Time.compareDate (Mensam.Time.unTimestamp timestamp.end).date date of
+                            LT ->
+                                Nothing
 
-                    EQ ->
-                        Just True
+                            EQ ->
+                                Just True
 
-                    GT ->
-                        Just False
-            }
+                            GT ->
+                                Just False
+                    }
 
-        time =
-            { begin =
-                case isToday.begin of
-                    Nothing ->
-                        Nothing
+                time =
+                    { begin =
+                        case isToday.begin of
+                            Nothing ->
+                                Nothing
 
-                    Just True ->
-                        Just (Mensam.Time.unTimestamp timestamp.begin).time
+                            Just True ->
+                                Just (Mensam.Time.unTimestamp timestamp.begin).time
 
-                    Just False ->
-                        Just <|
-                            Mensam.Time.MkTime
-                                { hour = Mensam.Time.MkHour 0
-                                , minute = Mensam.Time.MkMinute 0
-                                , second = Mensam.Time.MkSecond 0
-                                }
-            , end =
-                case isToday.end of
-                    Nothing ->
-                        Nothing
+                            Just False ->
+                                Just <|
+                                    Mensam.Time.MkTime
+                                        { hour = Mensam.Time.MkHour 0
+                                        , minute = Mensam.Time.MkMinute 0
+                                        , second = Mensam.Time.MkSecond 0
+                                        }
+                    , end =
+                        case isToday.end of
+                            Nothing ->
+                                Nothing
 
-                    Just True ->
-                        Just (Mensam.Time.unTimestamp timestamp.end).time
+                            Just True ->
+                                Just (Mensam.Time.unTimestamp timestamp.end).time
 
-                    Just False ->
-                        Just <|
-                            Mensam.Time.MkTime
-                                { hour = Mensam.Time.MkHour 23
-                                , minute = Mensam.Time.MkMinute 59
-                                , second = Mensam.Time.MkSecond 59
-                                }
-            }
+                            Just False ->
+                                Just <|
+                                    Mensam.Time.MkTime
+                                        { hour = Mensam.Time.MkHour 23
+                                        , minute = Mensam.Time.MkMinute 59
+                                        , second = Mensam.Time.MkSecond 59
+                                        }
+                    }
 
-        secondsMaybe =
-            { begin = Maybe.map timeToSeconds time.begin
-            , end = Maybe.map timeToSeconds time.end
-            }
+                secondsMaybe =
+                    { begin = Maybe.map timeToSeconds time.begin
+                    , end = Maybe.map timeToSeconds time.end
+                    }
 
-        maybeSeconds =
-            case secondsMaybe.begin of
-                Nothing ->
-                    Nothing
-
-                Just begin ->
-                    case secondsMaybe.end of
+                maybeSeconds =
+                    case secondsMaybe.begin of
                         Nothing ->
                             Nothing
 
-                        Just end ->
-                            Just { begin = begin, end = end }
-    in
-    case reservation.status of
-        Mensam.Reservation.MkStatusPlanned ->
+                        Just begin ->
+                            case secondsMaybe.end of
+                                Nothing ->
+                                    Nothing
+
+                                Just end ->
+                                    Just { begin = begin, end = end }
+            in
             case maybeSeconds of
                 Nothing ->
                     Nothing
@@ -1713,23 +1711,6 @@ type MessageEffect
     | OpenPageToDesks
     | SubmitLeave
     | SubmitReservation
-
-
-onEnter : msg -> Element.Attribute msg
-onEnter msg =
-    Element.htmlAttribute
-        (Html.Events.on "keyup"
-            (Decode.field "key" Decode.string
-                |> Decode.andThen
-                    (\key ->
-                        if key == "Enter" then
-                            Decode.succeed msg
-
-                        else
-                            Decode.fail "Not the enter key"
-                    )
-            )
-        )
 
 
 spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message

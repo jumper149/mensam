@@ -3,8 +3,6 @@ module Mensam.Screen.Profile exposing (..)
 import Element
 import Element.Border
 import Element.Font
-import Html.Events
-import Json.Decode as Decode
 import Mensam.Api.PictureDownload
 import Mensam.Api.Profile
 import Mensam.Auth.Bearer
@@ -180,23 +178,6 @@ type MessageEffect
     | Refresh
     | RefreshProfilePicture
     | OpenPageUserSettings
-
-
-onEnter : msg -> Element.Attribute msg
-onEnter msg =
-    Element.htmlAttribute
-        (Html.Events.on "keyup"
-            (Decode.field "key" Decode.string
-                |> Decode.andThen
-                    (\key ->
-                        if key == "Enter" then
-                            Decode.succeed msg
-
-                        else
-                            Decode.fail "Not the enter key"
-                    )
-            )
-        )
 
 
 profile : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message

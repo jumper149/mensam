@@ -6,8 +6,6 @@ import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import Html.Attributes
-import Html.Events
-import Json.Decode as Decode
 import List.Extra
 import Mensam.Api.RoleDelete
 import Mensam.Api.RoleEdit
@@ -165,8 +163,7 @@ element model =
 
                             Just name ->
                                 Element.Input.text
-                                    [ -- onEnter <| MessageEffect SubmitCreate
-                                      Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                    [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                     ]
                                     { onChange = MessagePure << EnterName << Just << Mensam.Space.Role.MkName
                                     , text = Mensam.Space.Role.nameToString name
@@ -753,23 +750,6 @@ type MessageEffect
     | SubmitEditRole
     | SubmitDeleteRole { fallback : Mensam.Space.Role.Identifier }
     | ReturnToRoles
-
-
-onEnter : msg -> Element.Attribute msg
-onEnter msg =
-    Element.htmlAttribute
-        (Html.Events.on "keyup"
-            (Decode.field "key" Decode.string
-                |> Decode.andThen
-                    (\key ->
-                        if key == "Enter" then
-                            Decode.succeed msg
-
-                        else
-                            Decode.fail "Not the enter key"
-                    )
-            )
-        )
 
 
 spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message

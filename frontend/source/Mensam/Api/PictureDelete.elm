@@ -88,8 +88,3 @@ decodeBody200 =
                     _ ->
                         Decode.fail <| "Unexpected HTTP 200 message: " ++ string
             )
-
-
-decodeBody400 : Decode.Decoder String
-decodeBody400 =
-    Decode.field "error" Decode.string
