@@ -66,8 +66,8 @@
       };
 
       "justinmimbs/timezone-data" = {
-        sha256 = "0a5q4jz8k1jc3wpy6mx4qhkszg8zr1ixaz9zyaaz21fwl5l92mbx";
-        version = "10.1.1";
+        sha256 = "0qlcjrlbjlpac843pc0clp62nbzz7a53596w6c004cvh63ia0n41";
+        version = "11.0.0";
       };
 
       "mdgriffith/elm-ui" = {
