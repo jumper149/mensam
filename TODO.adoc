@@ -1,8 +1,6 @@
 = TODO
 
 * Continuous integration.
-  ** [ ] Run elm-review as part of `nix flake check`.
-    *** https://github.com/jfmengels/elm-review/issues/157
   ** [ ] Use `nixosConfigurations` to test the `nixosModule`.
 
 * Developer Experience.

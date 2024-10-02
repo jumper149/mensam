@@ -40,9 +40,8 @@
        sha256 = "sha256-YB8i2AEAecu2/488IgQSVYTQVm7hTY+rccH9SETFU6Y=";
      };
      npmDepsHash = "sha256-BnvEdkKiFbUtEFGom9ZaCqZzId4ViGU3PlZ/BJCmX4A=";
-     #patches = [ ./elm-review-offline-details.patch ];
-     nativeBuildInputs = with pkgs; [ coreutils ];
-     buildInputs = with elmPackages; [ elm elm-format ];
+     nativeBuildInputs = [ pkgs.coreutils ];
+     buildInputs = [ elmPackages.elm elmPackages. elm-format ];
      buildPhase = ''
        substituteInPlace ./package.json \
          --replace-fail '"elm-tooling install"' '"echo skipping elm-tooling"'
