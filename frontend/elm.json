@@ -19,7 +19,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "justinmimbs/time-extra": "1.2.0",
-            "justinmimbs/timezone-data": "11.0.0",
+            "justinmimbs/timezone-data": "10.1.1",
             "mdgriffith/elm-ui": "1.1.8",
             "mpizenberg/elm-pointer-events": "5.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.4",
