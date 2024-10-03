@@ -1,4 +1,4 @@
-module Mensam.Api.Notifications exposing (..)
+module Mensam.Api.NotificationPreferences exposing (..)
 
 import Http
 import Http.Extra
@@ -33,7 +33,7 @@ request body handleResult =
         , url =
             Url.Builder.absolute
                 [ "api"
-                , "notifications"
+                , "notificationPreferences"
                 ]
                 []
         , body = Http.jsonBody <| encodeBody body
@@ -101,7 +101,7 @@ responseResult httpResponse =
 encodeBody : Request -> Encode.Value
 encodeBody body =
     Encode.object
-        [ ( "receive-notifications"
+        [ ( "receive-email-notifications"
           , case body.receiveEmailNotifications of
                 Nothing ->
                     Encode.null
@@ -115,7 +115,7 @@ encodeBody body =
 decodeBody200 : Decode.Decoder { receiveEmailNotifications : Bool }
 decodeBody200 =
     Decode.map (\receiveEmailNotifications -> { receiveEmailNotifications = receiveEmailNotifications })
-        (Decode.field "receive-notifications" Decode.bool)
+        (Decode.field "receive-email-notifications" Decode.bool)
 
 
 decodeBody400 : Decode.Decoder String

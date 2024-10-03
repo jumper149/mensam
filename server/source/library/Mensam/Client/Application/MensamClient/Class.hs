@@ -134,7 +134,7 @@ endpointConfirm ::
          , WithStatus 500 ()
          ]
     )
-endpointNotifications ::
+endpointNotificationPreferences ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.User.RequestNotifications ->
   ClientM
@@ -408,7 +408,7 @@ Route.Api.Routes
       , Route.Api.User.routePictureDownload = endpointPictureDownload
       , Route.Api.User.routeConfirmationRequest = endpointConfirmationRequest
       , Route.Api.User.routeConfirm = endpointConfirm
-      , Route.Api.User.routeNotifications = endpointNotifications
+      , Route.Api.User.routeNotificationPreferences = endpointNotificationPreferences
       , Route.Api.User.routeProfile = endpointProfile
       }
   , Route.Api.routeSpace =

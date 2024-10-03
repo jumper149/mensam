@@ -154,13 +154,13 @@ data Routes route = Routes
               , WithStatus 410 ()
               , WithStatus 500 ()
               ]
-  , routeNotifications ::
+  , routeNotificationPreferences ::
       route
-        :- Summary "Toggle email notifications"
+        :- Summary "Edit Notification Preferences"
           :> Description
-              "Enable or disable email notifications.\n\
-              \You also have to verify your email address to receive email notificiations.\n"
-          :> "notifications"
+              "Edit your notification preferences.\n\
+              \You first have to verify your email address to be able edit your notification preferences.\n"
+          :> "notificationPreferences"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestNotifications
           :> UVerb
@@ -286,7 +286,7 @@ newtype ResponseConfirm = MkResponseConfirm
 
 type RequestNotifications :: Type
 newtype RequestNotifications = MkRequestNotifications
-  { requestNotificationsReceiveNotifications :: Maybe Bool
+  { requestNotificationsReceiveEmailNotifications :: Maybe Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -295,7 +295,7 @@ newtype RequestNotifications = MkRequestNotifications
 
 type ResponseNotifications :: Type
 newtype ResponseNotifications = MkResponseNotifications
-  { responseNotificationsReceiveNotifications :: Bool
+  { responseNotificationsReceiveEmailNotifications :: Bool
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

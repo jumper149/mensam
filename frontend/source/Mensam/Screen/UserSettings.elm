@@ -9,7 +9,7 @@ import File.Select
 import Html.Events
 import Json.Decode as Decode
 import Mensam.Api.ConfirmationRequest
-import Mensam.Api.Notifications
+import Mensam.Api.NotificationPreferences
 import Mensam.Api.PasswordChange
 import Mensam.Api.PictureDelete
 import Mensam.Api.PictureDownload
@@ -734,20 +734,20 @@ confirmationRequest args =
 
 setNotificationPreferences : { jwt : Mensam.Auth.Bearer.Jwt, receiveEmailNotifications : Maybe Bool } -> Cmd Message
 setNotificationPreferences args =
-    Mensam.Api.Notifications.request
+    Mensam.Api.NotificationPreferences.request
         { jwt = args.jwt
         , receiveEmailNotifications = args.receiveEmailNotifications
         }
     <|
         \response ->
             case response of
-                Ok (Mensam.Api.Notifications.Success notificationPreferences) ->
+                Ok (Mensam.Api.NotificationPreferences.Success notificationPreferences) ->
                     Messages
                         [ MessagePure ClosePopup
                         , MessagePure <| SetNotificationPreferences notificationPreferences
                         ]
 
-                Ok Mensam.Api.Notifications.ErrorEmailNotVerified ->
+                Ok Mensam.Api.NotificationPreferences.ErrorEmailNotVerified ->
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to set notification preferences" <|
@@ -755,7 +755,7 @@ setNotificationPreferences args =
                                     Mensam.Error.message "Cannot set unless your email is verified" <|
                                         Mensam.Error.undefined
 
-                Ok (Mensam.Api.Notifications.ErrorBody error) ->
+                Ok (Mensam.Api.NotificationPreferences.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to set notification preferences" <|
@@ -763,7 +763,7 @@ setNotificationPreferences args =
                                     Mensam.Error.message error <|
                                         Mensam.Error.undefined
 
-                Ok (Mensam.Api.Notifications.ErrorAuth error) ->
+                Ok (Mensam.Api.NotificationPreferences.ErrorAuth error) ->
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to set notification preferences" <|

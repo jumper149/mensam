@@ -1,7 +1,7 @@
 = Changelog
 
 * API
-  ** Add new route `/notifications` to set notification preferences.
+  ** Add new route `/notificationPreferences` to set notification preferences.
   ** During registration users can now decide whether they want to receive email notifications with the `email-notifications` field.
   ** The `/reservation/create` route now includes an optional boolean field `email-sent`.
 * Backend

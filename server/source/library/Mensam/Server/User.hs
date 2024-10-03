@@ -427,11 +427,11 @@ newtype ConfirmationEffect
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkConfirmationEffect" "") ConfirmationEffect
 
-userEmailPreferencesGet ::
+userNotificationsPreferencesEmailGet ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   SeldaTransactionT m EmailPreferences
-userEmailPreferencesGet userIdentifier = do
+userNotificationsPreferencesEmailGet userIdentifier = do
   lift $ logDebug $ "Get Email preferences for " <> T.pack (show userIdentifier) <> "."
   user <- userGet userIdentifier
   if userEmailNotifications user
@@ -443,13 +443,13 @@ userEmailPreferencesGet userIdentifier = do
       pure MkEmailPreferencesDontSend
 
 -- | Make sure the email address is verified and only then set new email preferences.
-userEmailPreferencesSet ::
+userNotificationsPreferencesEmailSet ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
-  -- | receive notifications
+  -- | receive email notifications
   Bool ->
   SeldaTransactionT m ()
-userEmailPreferencesSet userIdentifier receiveNotifications = do
+userNotificationsPreferencesEmailSet userIdentifier receiveNotifications = do
   lift $ logDebug $ "Set Email preferences " <> T.pack (show receiveNotifications) <> " for " <> T.pack (show userIdentifier) <> "."
   user <- userGet userIdentifier
   if userEmailValidated user

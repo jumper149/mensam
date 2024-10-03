@@ -75,7 +75,7 @@ createReservation auth eitherRequest = do
             (userAuthenticatedId authenticated)
             (requestReservationCreateTimeWindow request)
         maybeEmail <- do
-          userEmailPreferencesGet (userAuthenticatedId authenticated) >>= \case
+          userNotificationsPreferencesEmailGet (userAuthenticatedId authenticated) >>= \case
             MkEmailPreferencesSend emailAddress ->
               pure $
                 Just

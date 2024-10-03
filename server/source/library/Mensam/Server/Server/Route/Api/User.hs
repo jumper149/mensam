@@ -50,7 +50,7 @@ handler =
     , routePictureDownload = pictureDownload
     , routeConfirmationRequest = confirmationRequest
     , routeConfirm = confirm
-    , routeNotifications = notifications
+    , routeNotificationPreferences = notificationPreferences
     , routeProfile = profile
     }
 
@@ -406,7 +406,7 @@ confirm auth eitherRequest =
                   { responseConfirmUnit = ()
                   }
 
-notifications ::
+notificationPreferences ::
   ( MonadEmail m
   , MonadLogger m
   , MonadSeldaPool m
@@ -419,34 +419,34 @@ notifications ::
   AuthResult UserAuthenticated ->
   Either String RequestNotifications ->
   m (Union responses)
-notifications auth eitherRequest =
+notificationPreferences auth eitherRequest =
   handleAuthBearer auth $ \authenticated ->
     handleBadRequestBody eitherRequest $ \request -> do
       logInfo "Getting/Setting user notification preferences."
       seldaResult <-
         runSeldaTransactionT $ do
           let getNotificationSettings =
-                userEmailPreferencesGet (userAuthenticatedId authenticated) >>= \case
+                userNotificationsPreferencesEmailGet (userAuthenticatedId authenticated) >>= \case
                   MkEmailPreferencesSend _ -> pure True
                   MkEmailPreferencesDontSend -> pure False
-          case requestNotificationsReceiveNotifications request of
+          case requestNotificationsReceiveEmailNotifications request of
             Nothing -> do
               lift $ logDebug "Just getting user notification preferences."
               getNotificationSettings
             Just newPreferences -> do
               lift $ logDebug "Setting new user notification preferences."
-              userEmailPreferencesSet (userAuthenticatedId authenticated) newPreferences
+              userNotificationsPreferencesEmailSet (userAuthenticatedId authenticated) newPreferences
               getNotificationSettings
       handleSeldaException
         (Proxy @SqlErrorMensamEmailNotVerified)
         (WithStatus @403 $ MkStaticText @"Email address is not verified.")
         seldaResult
         $ \seldaResultAfter403 -> do
-          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \receiveNotifications -> do
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \receiveEmailNotifications -> do
             respond $
               WithStatus @200
                 MkResponseNotifications
-                  { responseNotificationsReceiveNotifications = receiveNotifications
+                  { responseNotificationsReceiveEmailNotifications = receiveEmailNotifications
                   }
 
 profile ::
