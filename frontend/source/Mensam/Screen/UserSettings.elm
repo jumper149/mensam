@@ -245,7 +245,7 @@ element model =
                                     { attributes = [ Element.alignRight, Element.centerY ]
                                     , color = Mensam.Element.Button.Yellow
                                     , enabled = True
-                                    , label = Element.text "Confirm Email Address"
+                                    , label = Element.text "Request Email"
                                     , message = Just <| MessageEffect SubmitConfirmationRequest
                                     , size = Mensam.Element.Button.Medium
                                     }
