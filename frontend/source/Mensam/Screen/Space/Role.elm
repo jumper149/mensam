@@ -553,7 +553,7 @@ type Message
 
 
 type MessagePure
-    = ApplySpaceView { id : Mensam.Space.Identifier, name : Mensam.Space.Name, roles : List { accessibility : Mensam.Space.Role.Accessibility, id : Mensam.Space.Role.Identifier, name : Mensam.Space.Role.Name, permissions : Mensam.Space.Role.Permissions }, users : List { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }, timezone : Mensam.Time.TimezoneIdentifier, visibility : Mensam.Space.Visibility, owner : Mensam.User.Identifier, yourRole : Maybe { accessibility : Mensam.Space.Role.Accessibility, id : Mensam.Space.Role.Identifier, name : Mensam.Space.Role.Name, permissions : Mensam.Space.Role.Permissions } }
+    = ApplySpaceView { id : Mensam.Space.Identifier, name : Mensam.Space.Name, roles : List { accessibility : Mensam.Space.Role.Accessibility, id : Mensam.Space.Role.Identifier, name : Mensam.Space.Role.Name, permissions : Mensam.Space.Role.Permissions }, users : List { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }, timezone : Mensam.Time.Timezone, visibility : Mensam.Space.Visibility, owner : Mensam.User.Identifier, yourRole : Maybe { accessibility : Mensam.Space.Role.Accessibility, id : Mensam.Space.Role.Identifier, name : Mensam.Space.Role.Name, permissions : Mensam.Space.Role.Permissions } }
     | EnterName (Maybe Mensam.Space.Role.Name)
     | EditRoleAccessibilityAndPasswordStart
     | EditRoleSetAccessibility Mensam.Space.Role.Accessibility

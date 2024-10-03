@@ -10,7 +10,7 @@ type Space
     = MkSpace
         { id : Identifier
         , name : Name
-        , timezone : Mensam.Time.TimezoneIdentifier
+        , timezone : Mensam.Time.Timezone
         , owner : Mensam.User.Identifier
         }
 

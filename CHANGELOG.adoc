@@ -1,5 +1,8 @@
 = Changelog
 
+* Frontend
+  ** Select timezones out of drop-down list.
+
 == `0.11.0.0`
 
 * API

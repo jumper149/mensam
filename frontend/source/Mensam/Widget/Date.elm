@@ -45,7 +45,7 @@ elementPickDay (MkModel model) =
             let
                 weekdayOfFirst =
                     Time.toWeekday Time.utc <|
-                        Mensam.Time.toPosix Time.utc <|
+                        Mensam.Time.toPosix Mensam.Time.timezoneEtcUtc <|
                             Mensam.Time.MkTimestamp
                                 { date =
                                     Mensam.Time.MkDate

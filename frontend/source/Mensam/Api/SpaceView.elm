@@ -36,7 +36,7 @@ type Response
                 { user : Mensam.User.Identifier
                 , role : Mensam.Space.Role.Identifier
                 }
-        , timezone : Mensam.Time.TimezoneIdentifier
+        , timezone : Mensam.Time.Timezone
         , visibility : Mensam.Space.Visibility
         , owner : Mensam.User.Identifier
         , yourRole :
@@ -155,7 +155,7 @@ decodeBody200 :
                     { user : Mensam.User.Identifier
                     , role : Mensam.Space.Role.Identifier
                     }
-            , timezone : Mensam.Time.TimezoneIdentifier
+            , timezone : Mensam.Time.Timezone
             , visibility : Mensam.Space.Visibility
             , owner : Mensam.User.Identifier
             , yourRole :
@@ -250,7 +250,7 @@ decodeBody200 input =
                         (Decode.field "user" Mensam.User.identifierDecoder)
                         (Decode.field "role" Mensam.Space.Role.identifierDecoder)
             )
-            (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
+            (Decode.field "timezone" Mensam.Time.timezoneDecoder)
             (Decode.field "visibility" Mensam.Space.visibilityDecoder)
             (Decode.field "owner" Mensam.User.identifierDecoder)
             (Decode.field "your-role" <| Decode.nullable Mensam.Space.Role.identifierDecoder)

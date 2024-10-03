@@ -132,7 +132,7 @@ decodeBody200 =
                     )
                     (Decode.field "id" Mensam.Space.identifierDecoder)
                     (Decode.field "name" Mensam.Space.nameDecoder)
-                    (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
+                    (Decode.field "timezone" Mensam.Time.timezoneDecoder)
                     (Decode.field "owner" Mensam.User.identifierDecoder)
 
 

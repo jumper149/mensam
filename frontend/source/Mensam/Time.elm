@@ -8,47 +8,69 @@ import Time.Extra
 import TimeZone.Extra
 
 
-type TimezoneIdentifier
-    = MkTimezoneIdentifier String
+type Timezone
+    = MkTimezone
+        { identifier : String
+        , zone : Time.Zone
+        }
 
 
-timezone : TimezoneIdentifier -> Time.Zone
-timezone (MkTimezoneIdentifier name) =
-    case Dict.get name TimeZone.Extra.zones of
-        Nothing ->
-            Time.utc
-
-        Just toZone ->
-            toZone ()
+timezoneEncode : Timezone -> Encode.Value
+timezoneEncode (MkTimezone { identifier }) =
+    Encode.string identifier
 
 
-mkTimezone : String -> Maybe ( TimezoneIdentifier, Time.Zone )
-mkTimezone name =
-    Maybe.map (\toZone -> ( MkTimezoneIdentifier name, toZone () )) <| Dict.get name TimeZone.Extra.zones
-
-
-unTimezoneIdentifier : TimezoneIdentifier -> String
-unTimezoneIdentifier (MkTimezoneIdentifier name) =
-    name
-
-
-timezoneIdentifierEncode : TimezoneIdentifier -> Encode.Value
-timezoneIdentifierEncode =
-    Encode.string << unTimezoneIdentifier
-
-
-timezoneIdentifierDecoder : Decode.Decoder TimezoneIdentifier
-timezoneIdentifierDecoder =
+timezoneDecoder : Decode.Decoder Timezone
+timezoneDecoder =
+    let
+        mkTimezone : String -> Maybe Timezone
+        mkTimezone name =
+            Maybe.map
+                (\toZone ->
+                    MkTimezone
+                        { identifier = name
+                        , zone = toZone ()
+                        }
+                )
+            <|
+                Dict.get name TimeZone.Extra.zones
+    in
     Decode.andThen
         (\string ->
             case mkTimezone string of
                 Nothing ->
                     Decode.fail <| "Trying to decode time zone database identifier, but can't recognize: " ++ string
 
-                Just ( timezoneIdentifier, _ ) ->
-                    Decode.succeed timezoneIdentifier
+                Just timezone ->
+                    Decode.succeed timezone
         )
         Decode.string
+
+
+timezoneToString : Timezone -> String
+timezoneToString (MkTimezone { identifier }) =
+    identifier
+
+
+timezoneEtcUtc : Timezone
+timezoneEtcUtc =
+    MkTimezone
+        { identifier = "Etc/UTC"
+        , zone = Time.utc
+        }
+
+
+allTimezones : List Timezone
+allTimezones =
+    List.map
+        (\( identifier, toZone ) ->
+            MkTimezone
+                { identifier = identifier
+                , zone = toZone ()
+                }
+        )
+    <|
+        Dict.toList TimeZone.Extra.zones
 
 
 type Day
@@ -241,8 +263,8 @@ compareTimestamp (MkTimestamp x) (MkTimestamp y) =
             GT
 
 
-fromPosix : Time.Zone -> Time.Posix -> Timestamp
-fromPosix zone posix =
+fromPosix : Timezone -> Time.Posix -> Timestamp
+fromPosix (MkTimezone { zone }) posix =
     let
         parts =
             Time.Extra.posixToParts zone posix
@@ -263,8 +285,8 @@ fromPosix zone posix =
         }
 
 
-toPosix : Time.Zone -> Timestamp -> Time.Posix
-toPosix zone timestamp =
+toPosix : Timezone -> Timestamp -> Time.Posix
+toPosix (MkTimezone { zone }) timestamp =
     let
         parts =
             { year = unYear (unDate (unTimestamp timestamp).date).year

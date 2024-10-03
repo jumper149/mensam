@@ -13,7 +13,7 @@ import Url.Builder
 type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
     , name : Mensam.Space.Name
-    , timezone : Mensam.Time.TimezoneIdentifier
+    , timezone : Mensam.Time.Timezone
     , visibility : Mensam.Space.Visibility
     }
 
@@ -99,7 +99,7 @@ encodeBody body =
           , Mensam.Space.nameEncode body.name
           )
         , ( "timezone"
-          , Mensam.Time.timezoneIdentifierEncode body.timezone
+          , Mensam.Time.timezoneEncode body.timezone
           )
         , ( "visibility"
           , Mensam.Space.visibilityEncode body.visibility

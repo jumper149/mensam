@@ -73,8 +73,7 @@ type Model
         , viewHamburgerMenu : Bool
         , time :
             { now : Time.Posix
-            , zone : Time.Zone
-            , zoneIdentifier : Mensam.Time.TimezoneIdentifier
+            , zone : Mensam.Time.Timezone
             }
         , httpStatus : Http.Extra.Status
         }
@@ -408,8 +407,7 @@ init flagsRaw url navigationKey =
                 , viewHamburgerMenu = False
                 , time =
                     { now = Time.millisToPosix 0
-                    , zone = Time.utc
-                    , zoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
+                    , zone = Mensam.Time.timezoneEtcUtc
                     }
                 , httpStatus = Http.Extra.Done
                 }
@@ -967,7 +965,7 @@ update message (MkModel model) =
         MessageSpaces (Mensam.Screen.Spaces.MessagePure m) ->
             case model.screen of
                 ScreenSpaces screenModel ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenSpaces <| Mensam.Screen.Spaces.updatePure m { timezone = model.time.zoneIdentifier } screenModel }
+                    update EmptyMessage <| MkModel { model | screen = ScreenSpaces <| Mensam.Screen.Spaces.updatePure m { timezone = model.time.zone } screenModel }
 
                 _ ->
                     update (ReportError errorScreen) <| MkModel model
@@ -1425,7 +1423,7 @@ update message (MkModel model) =
                                             { jwt = jwt
                                             , id = screenModel.id
                                             , name = screenModel.new.name
-                                            , timezone = screenModel.new.timezone
+                                            , timezone = Maybe.map .selected screenModel.new.timezone
                                             , visibility = screenModel.new.visibility
                                             }
                                     )

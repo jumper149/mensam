@@ -42,7 +42,7 @@ type alias Model =
             , space :
                 { id : Mensam.Space.Identifier
                 , name : Mensam.Space.Name
-                , timezone : Mensam.Time.TimezoneIdentifier
+                , timezone : Mensam.Time.Timezone
                 , owner : Mensam.User.Identifier
                 }
             , user :
@@ -50,7 +50,7 @@ type alias Model =
                 }
             }
     , selectedReservation : Maybe Int
-    , timezone : Time.Zone
+    , timezone : Mensam.Time.Timezone
     , modelDateBegin : Mensam.Time.Date
     , modelDateEnd : Mensam.Time.Date
     , popup : Maybe PopupModel
@@ -61,7 +61,7 @@ type PopupModel
     = PopupViewReservation Mensam.Reservation.Identifier
 
 
-init : { time : { now : Time.Posix, zone : Time.Zone } } -> Model
+init : { time : { now : Time.Posix, zone : Mensam.Time.Timezone } } -> Model
 init value =
     let
         initialDateModel =
@@ -276,7 +276,7 @@ element model =
                                                         , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
                                                             Element.text <|
                                                                 Mensam.Time.timestampToString <|
-                                                                    Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeBegin
+                                                                    Mensam.Time.fromPosix entry.space.timezone entry.reservation.timeBegin
                                                         ]
                                                     , Element.row [ Element.alignRight, Element.spacing 3 ]
                                                         [ Element.el
@@ -289,7 +289,7 @@ element model =
                                                         , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300 ] <|
                                                             Element.text <|
                                                                 Mensam.Time.timestampToString <|
-                                                                    Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeEnd
+                                                                    Mensam.Time.fromPosix entry.space.timezone entry.reservation.timeEnd
                                                         ]
                                                     ]
                               }
@@ -400,7 +400,7 @@ element model =
                                             , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400 ] <|
                                                 Element.text <|
                                                     Mensam.Time.timestampToString <|
-                                                        Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeBegin
+                                                        Mensam.Time.fromPosix entry.space.timezone entry.reservation.timeBegin
                                             ]
                                         , Element.row [ Element.alignRight, Element.spacing 3 ]
                                             [ Element.el
@@ -413,7 +413,7 @@ element model =
                                             , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400 ] <|
                                                 Element.text <|
                                                     Mensam.Time.timestampToString <|
-                                                        Mensam.Time.fromPosix (Mensam.Time.timezone entry.space.timezone) entry.reservation.timeEnd
+                                                        Mensam.Time.fromPosix entry.space.timezone entry.reservation.timeEnd
                                             ]
                                         , Element.row [ Element.alignLeft, Element.spacing 3 ]
                                             [ Element.el
@@ -425,7 +425,7 @@ element model =
                                                 Element.text "Timezone"
                                             , Element.el [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400 ] <|
                                                 Element.text <|
-                                                    Mensam.Time.unTimezoneIdentifier <|
+                                                    Mensam.Time.timezoneToString <|
                                                         entry.space.timezone
                                             ]
                                         , Element.row [ Element.alignLeft, Element.spacing 3 ]
@@ -533,7 +533,7 @@ type MessagePure
             , space :
                 { id : Mensam.Space.Identifier
                 , name : Mensam.Space.Name
-                , timezone : Mensam.Time.TimezoneIdentifier
+                , timezone : Mensam.Time.Timezone
                 , owner : Mensam.User.Identifier
                 }
             , user :

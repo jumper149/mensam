@@ -15,7 +15,7 @@ type alias Request =
     { jwt : Mensam.Auth.Bearer.Jwt
     , id : Mensam.Space.Identifier
     , name : Maybe Mensam.Space.Name
-    , timezone : Maybe Mensam.Time.TimezoneIdentifier
+    , timezone : Maybe Mensam.Time.Timezone
     , visibility : Maybe Mensam.Space.Visibility
     }
 
@@ -24,7 +24,7 @@ type Response
     = Success
         { id : Mensam.Space.Identifier
         , name : Mensam.Space.Name
-        , timezone : Mensam.Time.TimezoneIdentifier
+        , timezone : Mensam.Time.Timezone
         , visibility : Mensam.Space.Visibility
         }
     | ErrorInsufficientPermission Mensam.Space.Role.Permission
@@ -146,7 +146,7 @@ encodeBody body =
                 Just timezone ->
                     Encode.object
                         [ ( "update", Encode.bool True )
-                        , ( "value", Mensam.Time.timezoneIdentifierEncode timezone )
+                        , ( "value", Mensam.Time.timezoneEncode timezone )
                         ]
           )
         , ( "visibility"
@@ -169,7 +169,7 @@ decodeBody200 :
     Decode.Decoder
         { id : Mensam.Space.Identifier
         , name : Mensam.Space.Name
-        , timezone : Mensam.Time.TimezoneIdentifier
+        , timezone : Mensam.Time.Timezone
         , visibility : Mensam.Space.Visibility
         }
 decodeBody200 =
@@ -183,7 +183,7 @@ decodeBody200 =
         )
         (Decode.field "id" Mensam.Space.identifierDecoder)
         (Decode.field "name" Mensam.Space.nameDecoder)
-        (Decode.field "timezone" Mensam.Time.timezoneIdentifierDecoder)
+        (Decode.field "timezone" Mensam.Time.timezoneDecoder)
         (Decode.field "visibility" Mensam.Space.visibilityDecoder)
 
 

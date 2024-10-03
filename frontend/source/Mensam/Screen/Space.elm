@@ -46,10 +46,7 @@ type alias Model =
             , name : Mensam.Space.Role.Name
             , permissions : Mensam.Space.Role.Permissions
             }
-    , timezone :
-        { identifier : Mensam.Time.TimezoneIdentifier
-        , zone : Time.Zone
-        }
+    , timezone : Mensam.Time.Timezone
     , visibility : Mensam.Space.Visibility
     , yourRole :
         Maybe
@@ -121,15 +118,12 @@ type PickerVisibility
     | TimeEndPickerVisible
 
 
-init : { id : Mensam.Space.Identifier, time : { now : Time.Posix, zone : Time.Zone } } -> Model
+init : { id : Mensam.Space.Identifier, time : { now : Time.Posix, zone : Mensam.Time.Timezone } } -> Model
 init args =
     { space = args.id
     , name = Mensam.Space.MkName ""
     , roles = []
-    , timezone =
-        { identifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
-        , zone = Time.utc
-        }
+    , timezone = Mensam.Time.timezoneEtcUtc
     , visibility = Mensam.Space.MkVisibilityHidden
     , yourRole = Nothing
     , desks = []
@@ -387,7 +381,7 @@ element model =
                     let
                         clashes =
                             reservationClashes
-                                { timezone = model.timezone.zone
+                                { timezone = model.timezone
                                 , begin =
                                     Mensam.Time.MkTimestamp
                                         { date = (Mensam.Widget.Date.unModel model.modelDateBegin).selected
@@ -904,7 +898,7 @@ deskTimetable model =
                                         ]
                                     <|
                                         visualizeReservations
-                                            model.timezone.zone
+                                            model.timezone
                                             (Mensam.Widget.Date.unModel model.modelDateBegin).selected
                                             x.reservations
                                 ]
@@ -1017,7 +1011,7 @@ deskTimetable model =
 
 
 visualizeReservations :
-    Time.Zone
+    Mensam.Time.Timezone
     -> Mensam.Time.Date
     ->
         List
@@ -1042,7 +1036,7 @@ visualizeReservations timezone date reservations =
 
 
 visualizeReservation :
-    Time.Zone
+    Mensam.Time.Timezone
     -> Mensam.Time.Date
     ->
         { desk : Mensam.Desk.Identifier
@@ -1244,7 +1238,7 @@ type MessagePure
                 , name : Mensam.Space.Role.Name
                 , permissions : Mensam.Space.Role.Permissions
                 }
-        , timezone : Mensam.Time.TimezoneIdentifier
+        , timezone : Mensam.Time.Timezone
         , visibility : Mensam.Space.Visibility
         , yourRole :
             Maybe
@@ -1331,10 +1325,7 @@ updatePure message model =
                 | space = space.id
                 , name = space.name
                 , roles = space.roles
-                , timezone =
-                    { identifier = space.timezone
-                    , zone = Mensam.Time.timezone space.timezone
-                    }
+                , timezone = space.timezone
                 , visibility = space.visibility
                 , yourRole = space.yourRole
             }
@@ -1831,7 +1822,7 @@ reservationCreate jwt model { desk } =
         , desk = desk
         , timeWindow =
             { start =
-                Mensam.Time.toPosix model.timezone.zone <|
+                Mensam.Time.toPosix model.timezone <|
                     Mensam.Time.MkTimestamp
                         { date =
                             case model.modelDateBegin of
@@ -1843,7 +1834,7 @@ reservationCreate jwt model { desk } =
                                     modelTime.selected
                         }
             , end =
-                Mensam.Time.toPosix model.timezone.zone <|
+                Mensam.Time.toPosix model.timezone <|
                     Mensam.Time.MkTimestamp
                         { date =
                             case model.modelDateEnd of
@@ -1927,7 +1918,7 @@ calculateHour event dimensions =
 
 
 reservationClashes :
-    { timezone : Time.Zone
+    { timezone : Mensam.Time.Timezone
     , begin : Mensam.Time.Timestamp
     , end : Mensam.Time.Timestamp
     , reservations :

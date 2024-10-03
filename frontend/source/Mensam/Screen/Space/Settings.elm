@@ -2,8 +2,10 @@ module Mensam.Screen.Space.Settings exposing (..)
 
 import Element
 import Element.Background
+import Element.Events.Pointer
 import Element.Font
 import Element.Input
+import Html.Attributes
 import Mensam.Api.SpaceDelete
 import Mensam.Api.SpaceEdit
 import Mensam.Auth.Bearer
@@ -21,12 +23,16 @@ type alias Model =
     { id : Mensam.Space.Identifier
     , old :
         { name : Mensam.Space.Name
-        , timezone : Mensam.Time.TimezoneIdentifier
+        , timezone : Mensam.Time.Timezone
         , visibility : Mensam.Space.Visibility
         }
     , new :
         { name : Maybe Mensam.Space.Name
-        , timezone : Maybe Mensam.Time.TimezoneIdentifier
+        , timezone :
+            Maybe
+                { selected : Mensam.Time.Timezone
+                , hovering : Maybe Int
+                }
         , visibility : Maybe Mensam.Space.Visibility
         }
     , popup : Maybe PopupModel
@@ -42,7 +48,7 @@ init args =
     { id = args.id
     , old =
         { name = Mensam.Space.MkName ""
-        , timezone = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
+        , timezone = Mensam.Time.timezoneEtcUtc
         , visibility = Mensam.Space.MkVisibilityVisible
         }
     , new =
@@ -148,7 +154,7 @@ element model =
                 , Element.column
                     [ Element.spacing 20
                     , Element.width Element.fill
-                    , Element.height <| Element.px 140
+                    , Element.height <| Element.px 245
                     ]
                     [ Element.row
                         [ Element.spacing 20
@@ -156,12 +162,12 @@ element model =
                         , Element.height <| Element.px 25
                         ]
                         [ Element.el [] <| Element.text "Current Timezone:"
-                        , Element.el [] <| Element.text <| Mensam.Time.unTimezoneIdentifier model.old.timezone
+                        , Element.el [] <| Element.text <| Mensam.Time.timezoneToString model.old.timezone
                         ]
                     , Element.el
                         [ Element.paddingXY 30 5
                         , Element.width Element.fill
-                        , Element.height <| Element.px 115
+                        , Element.height <| Element.px 200
                         ]
                       <|
                         case model.new.timezone of
@@ -176,14 +182,62 @@ element model =
                                         , size = Mensam.Element.Button.Medium
                                         }
 
-                            Just timezone ->
-                                Element.Input.text
-                                    [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                            Just timezoneWidget ->
+                                Element.indexedTable
+                                    [ Element.width Element.fill
+                                    , Element.height <| Element.px 150
+                                    , Element.Background.color (Element.rgba 0 0 0 0.1)
+                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                    , Element.Font.size 16
+                                    , Element.clipY
+                                    , Element.scrollbarY
                                     ]
-                                    { onChange = MessagePure << SetTimezone << Just << Mensam.Time.MkTimezoneIdentifier
-                                    , text = Mensam.Time.unTimezoneIdentifier timezone
-                                    , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Timezone"
-                                    , label = Element.Input.labelHidden "Timezone"
+                                    { data = Mensam.Time.allTimezones
+                                    , columns =
+                                        let
+                                            cell =
+                                                Element.el
+                                                    [ Element.height <| Element.px 40
+                                                    , Element.padding 10
+                                                    ]
+                                        in
+                                        [ { header = Element.none
+                                          , width = Element.fill
+                                          , view =
+                                                \n timezone ->
+                                                    Element.el
+                                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetHoveringTimezone Nothing
+                                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringTimezone <| Just n
+                                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| SetTimezone <| Just timezone
+                                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                        , let
+                                                            alpha =
+                                                                case timezoneWidget.hovering of
+                                                                    Nothing ->
+                                                                        0.2
+
+                                                                    Just m ->
+                                                                        if m == n then
+                                                                            0.4
+
+                                                                        else
+                                                                            0.2
+                                                          in
+                                                          if timezoneWidget.selected == timezone then
+                                                            Element.Background.color (Element.rgba 0 0.2 0 alpha)
+
+                                                          else
+                                                            Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                        ]
+                                                    <|
+                                                        cell <|
+                                                            Element.el
+                                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                            <|
+                                                                Element.text <|
+                                                                    Mensam.Time.timezoneToString timezone
+                                          }
+                                        ]
                                     }
                     ]
                 , Element.column
@@ -358,12 +412,13 @@ type Message
 type MessagePure
     = SetOldSettings
         { name : Mensam.Space.Name
-        , timezone : Mensam.Time.TimezoneIdentifier
+        , timezone : Mensam.Time.Timezone
         , visibility : Mensam.Space.Visibility
         }
     | ResetNewSettings
     | EnterName (Maybe Mensam.Space.Name)
-    | SetTimezone (Maybe Mensam.Time.TimezoneIdentifier)
+    | SetTimezone (Maybe Mensam.Time.Timezone)
+    | SetHoveringTimezone (Maybe Int)
     | SetVisibility (Maybe Mensam.Space.Visibility)
     | OpenDialogToDeleteSpace
     | CloseDialogToDeleteSpace
@@ -385,12 +440,40 @@ updatePure message model =
             in
             { model | new = { newSettings | name = name } }
 
-        SetTimezone timezone ->
+        SetTimezone maybeNewNewTimezone ->
             let
                 newSettings =
                     model.new
             in
-            { model | new = { newSettings | timezone = timezone } }
+            { model
+                | new =
+                    { newSettings
+                        | timezone =
+                            case maybeNewNewTimezone of
+                                Nothing ->
+                                    Nothing
+
+                                Just newNewTimezone ->
+                                    case newSettings.timezone of
+                                        Nothing ->
+                                            Just { selected = newNewTimezone, hovering = Nothing }
+
+                                        Just oldNewTimezone ->
+                                            Just { oldNewTimezone | selected = newNewTimezone }
+                    }
+            }
+
+        SetHoveringTimezone maybeN ->
+            let
+                newSettings =
+                    model.new
+            in
+            case newSettings.timezone of
+                Nothing ->
+                    model
+
+                Just newTimezone ->
+                    { model | new = { newSettings | timezone = Just { newTimezone | hovering = maybeN } } }
 
         SetVisibility visibility ->
             let
@@ -420,7 +503,7 @@ spaceEdit :
     { jwt : Mensam.Auth.Bearer.Jwt
     , id : Mensam.Space.Identifier
     , name : Maybe Mensam.Space.Name
-    , timezone : Maybe Mensam.Time.TimezoneIdentifier
+    , timezone : Maybe Mensam.Time.Timezone
     , visibility : Maybe Mensam.Space.Visibility
     }
     -> Cmd Message

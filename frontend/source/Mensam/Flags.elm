@@ -17,8 +17,7 @@ type Flags
         { storage : Maybe Mensam.Storage.Storage
         , time :
             { now : Time.Posix
-            , zone : Time.Zone
-            , zoneIdentifier : Mensam.Time.TimezoneIdentifier
+            , zone : Mensam.Time.Timezone
             }
         }
 
@@ -40,19 +39,7 @@ decoder =
     Decode.map2 (\storage time -> MkFlags { storage = storage, time = time })
         (Decode.field "storage" Mensam.Storage.decoder)
         (Decode.field "time" <|
-            Decode.map2 (\now ( zoneIdentifier, zone ) -> { now = now, zone = zone, zoneIdentifier = zoneIdentifier })
+            Decode.map2 (\now timezone -> { now = now, zone = timezone })
                 (Decode.field "now" (Decode.map Time.millisToPosix Decode.int))
-                (Decode.field "zone"
-                    (Decode.andThen
-                        (\string ->
-                            case Mensam.Time.mkTimezone string of
-                                Nothing ->
-                                    Decode.fail <| "Trying to decode timezone, but this timezone is not supported: " ++ string
-
-                                Just ( identifier, zone ) ->
-                                    Decode.succeed ( identifier, zone )
-                        )
-                        Decode.string
-                    )
-                )
+                (Decode.field "zone" Mensam.Time.timezoneDecoder)
         )

@@ -33,7 +33,7 @@ type alias Model =
             , name : Mensam.Space.Role.Name
             , permissions : Mensam.Space.Role.Permissions
             }
-    , timezoneIdentifier : Mensam.Time.TimezoneIdentifier
+    , timezone : Mensam.Time.Timezone
     , visibility : Mensam.Space.Visibility
     , yourRole :
         Maybe
@@ -52,7 +52,7 @@ init args =
     { spaceId = args.spaceId
     , spaceName = Mensam.Space.MkName ""
     , roles = []
-    , timezoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
+    , timezone = Mensam.Time.timezoneEtcUtc
     , visibility = Mensam.Space.MkVisibilityHidden
     , yourRole = Nothing
     , roleIdSelected = args.roleIdSelected
@@ -204,7 +204,7 @@ type MessagePure
                 , name : Mensam.Space.Role.Name
                 , permissions : Mensam.Space.Role.Permissions
                 }
-        , timezone : Mensam.Time.TimezoneIdentifier
+        , timezone : Mensam.Time.Timezone
         , visibility : Mensam.Space.Visibility
         , yourRole :
             Maybe
@@ -240,7 +240,7 @@ updatePure message model =
                                     False
                         )
                         view.roles
-                , timezoneIdentifier = view.timezone
+                , timezone = view.timezone
                 , visibility = view.visibility
                 , yourRole = view.yourRole
             }
