@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.11.0.0`
+
 * API
   ** Add new route `/notificationPreferences` to set notification preferences.
   ** During registration users can now decide whether they want to receive email notifications with the `email-notifications` field.
