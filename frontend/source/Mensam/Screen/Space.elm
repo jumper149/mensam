@@ -46,8 +46,10 @@ type alias Model =
             , name : Mensam.Space.Role.Name
             , permissions : Mensam.Space.Role.Permissions
             }
-    , timezone : Time.Zone
-    , timezoneIdentifier : Mensam.Time.TimezoneIdentifier
+    , timezone :
+        { identifier : Mensam.Time.TimezoneIdentifier
+        , zone : Time.Zone
+        }
     , visibility : Mensam.Space.Visibility
     , yourRole :
         Maybe
@@ -124,8 +126,10 @@ init args =
     { space = args.id
     , name = Mensam.Space.MkName ""
     , roles = []
-    , timezone = Time.utc
-    , timezoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
+    , timezone =
+        { identifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
+        , zone = Time.utc
+        }
     , visibility = Mensam.Space.MkVisibilityHidden
     , yourRole = Nothing
     , desks = []
@@ -383,7 +387,7 @@ element model =
                     let
                         clashes =
                             reservationClashes
-                                { timezone = model.timezone
+                                { timezone = model.timezone.zone
                                 , begin =
                                     Mensam.Time.MkTimestamp
                                         { date = (Mensam.Widget.Date.unModel model.modelDateBegin).selected
@@ -900,7 +904,7 @@ deskTimetable model =
                                         ]
                                     <|
                                         visualizeReservations
-                                            model.timezone
+                                            model.timezone.zone
                                             (Mensam.Widget.Date.unModel model.modelDateBegin).selected
                                             x.reservations
                                 ]
@@ -1327,8 +1331,10 @@ updatePure message model =
                 | space = space.id
                 , name = space.name
                 , roles = space.roles
-                , timezone = Mensam.Time.timezone space.timezone
-                , timezoneIdentifier = space.timezone
+                , timezone =
+                    { identifier = space.timezone
+                    , zone = Mensam.Time.timezone space.timezone
+                    }
                 , visibility = space.visibility
                 , yourRole = space.yourRole
             }
@@ -1825,7 +1831,7 @@ reservationCreate jwt model { desk } =
         , desk = desk
         , timeWindow =
             { start =
-                Mensam.Time.toPosix model.timezone <|
+                Mensam.Time.toPosix model.timezone.zone <|
                     Mensam.Time.MkTimestamp
                         { date =
                             case model.modelDateBegin of
@@ -1837,7 +1843,7 @@ reservationCreate jwt model { desk } =
                                     modelTime.selected
                         }
             , end =
-                Mensam.Time.toPosix model.timezone <|
+                Mensam.Time.toPosix model.timezone.zone <|
                     Mensam.Time.MkTimestamp
                         { date =
                             case model.modelDateEnd of
