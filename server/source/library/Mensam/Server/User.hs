@@ -427,33 +427,52 @@ newtype ConfirmationEffect
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkConfirmationEffect" "") ConfirmationEffect
 
--- | Users will receive notification emails when they validate their email address and turn on email notifications.
 userEmailPreferencesGet ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   SeldaTransactionT m EmailPreferences
 userEmailPreferencesGet userIdentifier = do
-  lift $ logDebug $ "Get Email preferences" <> T.pack (show userIdentifier)
+  lift $ logDebug $ "Get Email preferences for " <> T.pack (show userIdentifier) <> "."
+  user <- userGet userIdentifier
+  if userEmailNotifications user
+    then do
+      lift $ logDebug "User will receive notification."
+      pure $ MkEmailPreferencesSend $ userEmail user
+    else do
+      lift $ logDebug "User doesn't prefer email notifications."
+      pure MkEmailPreferencesDontSend
+
+-- | Make sure the email address is verified and only then set new email preferences.
+userEmailPreferencesSet ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierUser ->
+  -- | receive notifications
+  Bool ->
+  SeldaTransactionT m ()
+userEmailPreferencesSet userIdentifier receiveNotifications = do
+  lift $ logDebug $ "Set Email preferences " <> T.pack (show receiveNotifications) <> " for " <> T.pack (show userIdentifier) <> "."
   user <- userGet userIdentifier
   if userEmailValidated user
-    then
-      if userEmailNotifications user
-        then do
-          lift $ logDebug "User will receive notification."
-          pure $ MkEmailPreferencesSend $ userEmail user
-        else do
-          lift $ logDebug "User doesn't prefer email notifications."
-          pure MkEmailPreferencesDontSendNotValidated
+    then do
+      lift $ logDebug "Email address is verified. Setting notification preferences."
+      Selda.updateOne
+        tableUser
+        (#dbUser_id `Selda.is` Selda.toId @DbUser (unIdentifierUser userIdentifier))
+        (`Selda.with` [#dbUser_email_notifications Selda.:= Selda.literal receiveNotifications])
     else do
-      lift $ logDebug "User didn't validate the Email address."
-      pure MkEmailPreferencesDontSendNotValidated
+      lift $ logDebug "Cannot set notification preferences, because the email address is not verified."
+      throwM MkSqlErrorMensamEmailNotVerified
 
 type EmailPreferences :: Type
 data EmailPreferences
   = MkEmailPreferencesSend EmailAddress
-  | MkEmailPreferencesDontSendNotValidated
-  | MkEmailPreferencesDontSendNoNotifications
+  | MkEmailPreferencesDontSend
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkConfirmationEffect" "") EmailPreferences
+
+type SqlErrorMensamEmailNotVerified :: Type
+data SqlErrorMensamEmailNotVerified = MkSqlErrorMensamEmailNotVerified
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving anyclass (Exception)

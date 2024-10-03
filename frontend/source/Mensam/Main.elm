@@ -1915,6 +1915,38 @@ update message (MkModel model) =
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
 
+                Mensam.Screen.UserSettings.RefreshNotificationPreferences ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenUserSettings _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageUserSettings <|
+                                        Mensam.Screen.UserSettings.setNotificationPreferences { jwt = jwt, receiveEmailNotifications = Nothing }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.UserSettings.SubmitNotificationPreferences notificationPreferences ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenUserSettings _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageUserSettings <|
+                                        Mensam.Screen.UserSettings.setNotificationPreferences { jwt = jwt, receiveEmailNotifications = Just notificationPreferences.receiveEmailNotifications }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
                 Mensam.Screen.UserSettings.DownloadProfilePictureRequest ->
                     case model.authenticated of
                         Mensam.Auth.SignedOut ->

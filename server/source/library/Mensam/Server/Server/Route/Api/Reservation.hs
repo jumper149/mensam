@@ -88,9 +88,7 @@ createReservation auth eitherRequest = do
                         H.body $ do
                           H.p $ H.text "Your reservation was created successfully."
                     }
-            MkEmailPreferencesDontSendNotValidated ->
-              pure Nothing
-            MkEmailPreferencesDontSendNoNotifications ->
+            MkEmailPreferencesDontSend ->
               pure Nothing
         pure (reservationIdentifier, maybeEmail)
       handleSeldaException403InsufficientPermission

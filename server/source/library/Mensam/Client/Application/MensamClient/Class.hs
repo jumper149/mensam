@@ -134,6 +134,18 @@ endpointConfirm ::
          , WithStatus 500 ()
          ]
     )
+endpointNotifications ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  Route.Api.User.RequestNotifications ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 Route.Api.User.ResponseNotifications
+         , WithStatus 400 ErrorParseBodyJson
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (StaticText "Email address is not verified.")
+         , WithStatus 500 ()
+         ]
+    )
 endpointProfile ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.User.RequestProfile ->
@@ -396,6 +408,7 @@ Route.Api.Routes
       , Route.Api.User.routePictureDownload = endpointPictureDownload
       , Route.Api.User.routeConfirmationRequest = endpointConfirmationRequest
       , Route.Api.User.routeConfirm = endpointConfirm
+      , Route.Api.User.routeNotifications = endpointNotifications
       , Route.Api.User.routeProfile = endpointProfile
       }
   , Route.Api.routeSpace =

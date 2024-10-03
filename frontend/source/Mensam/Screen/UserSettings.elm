@@ -9,6 +9,7 @@ import File.Select
 import Html.Events
 import Json.Decode as Decode
 import Mensam.Api.ConfirmationRequest
+import Mensam.Api.Notifications
 import Mensam.Api.PasswordChange
 import Mensam.Api.PictureDelete
 import Mensam.Api.PictureDownload
@@ -29,6 +30,8 @@ type alias Model =
     , profilePictureUrl : String
     , email : Maybe Mensam.User.Email
     , emailVerified : Bool
+    , notificationPreferences :
+        { receiveEmailNotifications : Bool }
     , popup : Maybe PopupModel
     }
 
@@ -37,6 +40,9 @@ type PopupModel
     = PopupChangePassword
         { newPassword : String
         , hint : List String
+        }
+    | PopupNotificationPreferences
+        { receiveEmailNotifications : Bool
         }
     | PopupDeleteProfilePicture
 
@@ -53,6 +59,7 @@ init value =
             []
     , email = Nothing
     , emailVerified = True
+    , notificationPreferences = { receiveEmailNotifications = False }
     , popup = Nothing
     }
 
@@ -243,6 +250,50 @@ element model =
                                     , size = Mensam.Element.Button.Medium
                                     }
                         ]
+                    , Element.column
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 90
+                        , Element.padding 10
+                        , Element.spacing 10
+                        ]
+                        [ Element.row
+                            [ Element.width Element.fill
+                            , Element.height <| Element.px 30
+                            , Element.spacing 30
+                            , Element.alignTop
+                            ]
+                            [ Element.el
+                                [ Element.alignLeft
+                                , Element.centerY
+                                ]
+                              <|
+                                Element.text "Receive Email notifications?"
+                            , if model.notificationPreferences.receiveEmailNotifications then
+                                Element.el
+                                    [ Element.alignLeft
+                                    , Element.centerY
+                                    ]
+                                <|
+                                    Element.text "Yes"
+
+                              else
+                                Element.el
+                                    [ Element.alignLeft
+                                    , Element.centerY
+                                    ]
+                                <|
+                                    Element.text "No"
+                            ]
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.alignBottom, Element.alignRight, Element.centerY ]
+                                , color = Mensam.Element.Button.Yellow
+                                , enabled = True
+                                , label = Element.text "Notification Preferences"
+                                , message = Just <| MessagePure OpenDialogToSetNotificationPreferences
+                                , size = Mensam.Element.Button.Medium
+                                }
+                        ]
                     ]
                 ]
         , popup =
@@ -305,6 +356,60 @@ element model =
                                         , enabled = True
                                         , label = Element.text "Submit new Password"
                                         , message = Just <| submitNewPasswordMessage popupModel
+                                        , size = Mensam.Element.Button.Medium
+                                        }
+                                ]
+                            ]
+
+                Just (PopupNotificationPreferences popupModel) ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 26
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Notification Preferences"
+                            , Element.Input.checkbox
+                                []
+                                { onChange = MessagePure << SetNotificationPreferencesInDialog
+                                , icon = Element.Input.defaultCheckbox
+                                , checked = popupModel.receiveEmailNotifications
+                                , label = Element.Input.labelRight [] <| Element.text "Receive email notifications"
+                                }
+                            , if model.emailVerified then
+                                Element.none
+
+                              else
+                                Element.paragraph
+                                    [ Element.alignBottom ]
+                                    [ Element.text "You have to verify your email address before you can change your notification settings."
+                                    ]
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = []
+                                        , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
+                                        , label = Element.text "Go back"
+                                        , message = Just <| MessagePure <| ClosePopup
+                                        , size = Mensam.Element.Button.Medium
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Blue
+                                        , enabled = model.emailVerified
+                                        , label = Element.text "Submit Preferences"
+                                        , message = Just <| MessageEffect <| SubmitNotificationPreferences popupModel
                                         , size = Mensam.Element.Button.Medium
                                         }
                                 ]
@@ -382,9 +487,12 @@ type MessagePure
     | SetProfilePicture { url : String }
     | SetEmail (Maybe Mensam.User.Email)
     | SetEmailVerified Bool
+    | SetNotificationPreferences { receiveEmailNotifications : Bool }
     | OpenDialogToChangePassword
     | EnterNewPassword String
     | SetPasswordHint Mensam.User.ErrorPasswordParse
+    | OpenDialogToSetNotificationPreferences
+    | SetNotificationPreferencesInDialog Bool
     | ClosePopup
 
 
@@ -406,6 +514,9 @@ updatePure message model =
         SetEmailVerified verified ->
             { model | emailVerified = verified }
 
+        SetNotificationPreferences notificationPreferences ->
+            { model | notificationPreferences = notificationPreferences }
+
         OpenDialogToChangePassword ->
             { model | popup = Just <| PopupChangePassword { newPassword = "", hint = [] } }
 
@@ -418,6 +529,9 @@ updatePure message model =
 
                         Just (PopupChangePassword popupModel) ->
                             Just <| PopupChangePassword { popupModel | newPassword = newPassword }
+
+                        Just (PopupNotificationPreferences _) ->
+                            Nothing
 
                         Just PopupDeleteProfilePicture ->
                             Nothing
@@ -453,6 +567,29 @@ updatePure message model =
                                                     ]
                                     }
 
+                        Just (PopupNotificationPreferences _) ->
+                            Nothing
+
+                        Just PopupDeleteProfilePicture ->
+                            Nothing
+            }
+
+        OpenDialogToSetNotificationPreferences ->
+            { model | popup = Just <| PopupNotificationPreferences { receiveEmailNotifications = model.notificationPreferences.receiveEmailNotifications } }
+
+        SetNotificationPreferencesInDialog receiveEmailNotifications ->
+            { model
+                | popup =
+                    case model.popup of
+                        Nothing ->
+                            Nothing
+
+                        Just (PopupChangePassword _) ->
+                            Nothing
+
+                        Just (PopupNotificationPreferences popupModel) ->
+                            Just <| PopupNotificationPreferences { popupModel | receiveEmailNotifications = receiveEmailNotifications }
+
                         Just PopupDeleteProfilePicture ->
                             Nothing
             }
@@ -466,6 +603,8 @@ type MessageEffect
     | Refresh
     | SubmitNewPassword { newPassword : Mensam.User.Password }
     | SubmitConfirmationRequest
+    | RefreshNotificationPreferences
+    | SubmitNotificationPreferences { receiveEmailNotifications : Bool }
     | UploadProfilePictureRequested
     | UploadProfilePictureUpload File.File
     | DeleteProfilePictureRequest
@@ -504,6 +643,7 @@ profile jwt userId =
                         [ MessagePure <| SetName body.name
                         , MessagePure <| SetEmail body.email
                         , MessagePure <| SetEmailVerified body.emailVerified
+                        , MessageEffect <| RefreshNotificationPreferences
                         ]
 
                 Ok Mensam.Api.Profile.ErrorUnknownUser ->
@@ -589,6 +729,50 @@ confirmationRequest args =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Failed to perform confirmation request" <|
+                                Mensam.Error.http error
+
+
+setNotificationPreferences : { jwt : Mensam.Auth.Bearer.Jwt, receiveEmailNotifications : Maybe Bool } -> Cmd Message
+setNotificationPreferences args =
+    Mensam.Api.Notifications.request
+        { jwt = args.jwt
+        , receiveEmailNotifications = args.receiveEmailNotifications
+        }
+    <|
+        \response ->
+            case response of
+                Ok (Mensam.Api.Notifications.Success notificationPreferences) ->
+                    Messages
+                        [ MessagePure ClosePopup
+                        , MessagePure <| SetNotificationPreferences notificationPreferences
+                        ]
+
+                Ok Mensam.Api.Notifications.ErrorEmailNotVerified ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to set notification preferences" <|
+                                Mensam.Error.message "Your email is not verified" <|
+                                    Mensam.Error.message "Cannot set unless your email is verified" <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.Notifications.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to set notification preferences" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.Notifications.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to set notification preferences" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to change password" <|
                                 Mensam.Error.http error
 
 

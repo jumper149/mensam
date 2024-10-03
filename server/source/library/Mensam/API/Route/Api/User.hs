@@ -154,6 +154,24 @@ data Routes route = Routes
               , WithStatus 410 ()
               , WithStatus 500 ()
               ]
+  , routeNotifications ::
+      route
+        :- Summary "Toggle email notifications"
+          :> Description
+              "Enable or disable email notifications.\n\
+              \You also have to verify your email address to receive email notificiations.\n"
+          :> "notifications"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> ReqBody' '[Lenient, Required] '[JSON] RequestNotifications
+          :> UVerb
+              POST
+              '[JSON]
+              [ WithStatus 200 ResponseNotifications
+              , WithStatus 400 ErrorParseBodyJson
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (StaticText "Email address is not verified.")
+              , WithStatus 500 ()
+              ]
   , routeProfile ::
       route
         :- Summary "View User"
@@ -265,6 +283,24 @@ newtype ResponseConfirm = MkResponseConfirm
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseConfirm") ResponseConfirm
+
+type RequestNotifications :: Type
+newtype RequestNotifications = MkRequestNotifications
+  { requestNotificationsReceiveNotifications :: Maybe Bool
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkRequest" "requestNotifications") RequestNotifications
+
+type ResponseNotifications :: Type
+newtype ResponseNotifications = MkResponseNotifications
+  { responseNotificationsReceiveNotifications :: Bool
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseNotifications") ResponseNotifications
 
 type RequestProfile :: Type
 newtype RequestProfile = MkRequestProfile
