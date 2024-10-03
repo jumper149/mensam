@@ -56,7 +56,6 @@ type alias Model =
             , name : Mensam.Space.Role.Name
             , permissions : Mensam.Space.Role.Permissions
             }
-    , popup : Maybe PopupModel
     , desks :
         List
             { desk :
@@ -90,6 +89,7 @@ type alias Model =
     , window : Element.Window.Model
     , timetablePointer : Maybe Element.Events.Pointer.Event
     , timetablePointerRegionDimensions : Maybe { width : Float, height : Float }
+    , popup : Maybe PopupModel
     }
 
 
@@ -128,7 +128,6 @@ init args =
     , timezoneIdentifier = Mensam.Time.MkTimezoneIdentifier "Etc/UTC"
     , visibility = Mensam.Space.MkVisibilityHidden
     , yourRole = Nothing
-    , popup = Nothing
     , desks = []
     , selected = Nothing
     , selectionDragging = Nothing
@@ -175,6 +174,7 @@ init args =
     , window = Element.Window.init Element.Window.defaultConfig { position = { x = 183.5, y = 250 } }
     , timetablePointer = Nothing
     , timetablePointerRegionDimensions = Nothing
+    , popup = Nothing
     }
 
 
