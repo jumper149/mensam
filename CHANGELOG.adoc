@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.11.0.1`
+
 * Frontend
   ** Select timezones out of drop-down list.
 
