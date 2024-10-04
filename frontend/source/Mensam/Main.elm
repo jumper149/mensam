@@ -1016,6 +1016,14 @@ update message (MkModel model) =
                 Mensam.Screen.Spaces.ChooseSpace identifier ->
                     update (SetUrl <| RouteSpace identifier) <| MkModel model
 
+        MessageSpaces (Mensam.Screen.Spaces.Messages ms) ->
+            case model.screen of
+                ScreenSpaces _ ->
+                    update (Messages <| List.map MessageSpaces ms) <| MkModel model
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
         MessageSpace (Mensam.Screen.Space.MessagePure m) ->
             case model.screen of
                 ScreenSpace screenModel ->

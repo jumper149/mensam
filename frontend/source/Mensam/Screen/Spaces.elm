@@ -16,6 +16,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Time
+import Mensam.Widget.Timezone
 
 
 type alias Model =
@@ -30,7 +31,7 @@ type PopupModel
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
         , visible : Bool
-        , selectedTimezone : Maybe Int
+        , timezonePicker : Maybe Mensam.Widget.Timezone.Model
         }
 
 
@@ -211,62 +212,52 @@ element model =
                                 , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
                                 , label = Element.Input.labelAbove [] <| Element.text "Name"
                                 }
-                            , Element.indexedTable
+                            , Element.column
                                 [ Element.width Element.fill
-                                , Element.height Element.fill
-                                , Element.Background.color (Element.rgba 0 0 0 0.1)
-                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                , Element.Font.size 16
-                                , Element.clipY
-                                , Element.scrollbarY
                                 ]
-                                { data = Mensam.Time.allTimezones
-                                , columns =
-                                    let
-                                        cell =
-                                            Element.el
-                                                [ Element.height <| Element.px 40
-                                                , Element.padding 10
-                                                ]
-                                    in
-                                    [ { header = Element.none
-                                      , width = Element.fill
-                                      , view =
-                                            \n timezone ->
-                                                Element.el
-                                                    [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedTimezone Nothing
-                                                    , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedTimezone <| Just n
-                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseTimezone timezone
-                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                                    , let
-                                                        alpha =
-                                                            case popupModel.selectedTimezone of
-                                                                Nothing ->
-                                                                    0.2
-
-                                                                Just m ->
-                                                                    if m == n then
-                                                                        0.4
-
-                                                                    else
-                                                                        0.2
-                                                      in
-                                                      if popupModel.timezone == timezone then
-                                                        Element.Background.color (Element.rgba 0 0.2 0 alpha)
-
-                                                      else
-                                                        Element.Background.color (Element.rgba 0 0 0 alpha)
-                                                    ]
-                                                <|
-                                                    cell <|
-                                                        Element.el
-                                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                                        <|
-                                                            Element.text <|
-                                                                Mensam.Time.timezoneToString timezone
-                                      }
+                                [ Element.row [ Element.width Element.fill ]
+                                    [ Element.el [ Element.alignLeft, Element.alignBottom, Element.paddingXY 0 5 ] <| Element.text "Timezone"
+                                    , Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.alignRight, Element.alignBottom ]
+                                            , color = Mensam.Element.Button.Transparent
+                                            , enabled = True
+                                            , label = Element.text "Reset"
+                                            , message =
+                                                Just <|
+                                                    Messages
+                                                        [ MessagePure TimezonePickerClose
+                                                        , MessagePure SetTimezoneToLocalTimezone
+                                                        ]
+                                            , size = Mensam.Element.Button.Small
+                                            }
                                     ]
-                                }
+                                , case popupModel.timezonePicker of
+                                    Nothing ->
+                                        Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Yellow
+                                                , enabled = True
+                                                , label =
+                                                    Element.el
+                                                        [ Element.paddingXY 0 4
+                                                        ]
+                                                    <|
+                                                        Element.text <|
+                                                            Mensam.Time.timezoneToString popupModel.timezone
+                                                , message = Just <| MessagePure <| TimezonePickerOpen
+                                                , size = Mensam.Element.Button.Small
+                                                }
+
+                                    Just timezonePickerModel ->
+                                        Element.el
+                                            [ Element.width <| Element.px 250
+                                            ]
+                                        <|
+                                            Element.map (MessagePure << TimezonePickerMessage) <|
+                                                Mensam.Widget.Timezone.elementPickTimezone timezonePickerModel
+                                ]
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10
@@ -275,7 +266,7 @@ element model =
                                 [ Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
-                                        , color = Mensam.Element.Button.Yellow
+                                        , color = Mensam.Element.Button.Gray
                                         , enabled = True
                                         , label = Element.text "Abort"
                                         , message = Just <| MessagePure <| CloseDialogToCreate
@@ -284,7 +275,7 @@ element model =
                                 , Mensam.Element.Button.button <|
                                     Mensam.Element.Button.MkButton
                                         { attributes = [ Element.width Element.fill ]
-                                        , color = Mensam.Element.Button.Yellow
+                                        , color = Mensam.Element.Button.Blue
                                         , enabled = True
                                         , label = Element.text "Submit"
                                         , message =
@@ -306,6 +297,7 @@ element model =
 type Message
     = MessagePure MessagePure
     | MessageEffect MessageEffect
+    | Messages (List Message)
 
 
 type MessagePure
@@ -314,8 +306,10 @@ type MessagePure
     | OpenDialogToCreate
     | CloseDialogToCreate
     | EnterSpaceName Mensam.Space.Name
-    | SetSelectedTimezone (Maybe Int)
-    | ChooseTimezone Mensam.Time.Timezone
+    | SetTimezoneToLocalTimezone
+    | TimezonePickerOpen
+    | TimezonePickerClose
+    | TimezonePickerMessage Mensam.Widget.Timezone.Message
 
 
 updatePure : MessagePure -> MainModelAccess -> Model -> Model
@@ -335,7 +329,7 @@ updatePure message mainModel model =
                             { name = Mensam.Space.MkName ""
                             , timezone = mainModel.timezone
                             , visible = False
-                            , selectedTimezone = Nothing
+                            , timezonePicker = Nothing
                             }
             }
 
@@ -350,21 +344,55 @@ updatePure message mainModel model =
                 Just (PopupCreateSpace popupModel) ->
                     { model | popup = Just <| PopupCreateSpace { popupModel | name = name } }
 
-        SetSelectedTimezone maybeN ->
+        SetTimezoneToLocalTimezone ->
             case model.popup of
                 Nothing ->
                     model
 
                 Just (PopupCreateSpace popupModel) ->
-                    { model | popup = Just <| PopupCreateSpace { popupModel | selectedTimezone = maybeN } }
+                    { model | popup = Just <| PopupCreateSpace { popupModel | timezone = mainModel.timezone } }
 
-        ChooseTimezone timezone ->
+        TimezonePickerOpen ->
             case model.popup of
                 Nothing ->
                     model
 
                 Just (PopupCreateSpace popupModel) ->
-                    { model | popup = Just <| PopupCreateSpace { popupModel | timezone = timezone } }
+                    { model | popup = Just <| PopupCreateSpace { popupModel | timezonePicker = Just <| Mensam.Widget.Timezone.init popupModel.timezone } }
+
+        TimezonePickerClose ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupCreateSpace popupModel) ->
+                    case popupModel.timezonePicker of
+                        Nothing ->
+                            model
+
+                        Just (Mensam.Widget.Timezone.MkModel timezonePickerModel) ->
+                            { model | popup = Just <| PopupCreateSpace { popupModel | timezone = timezonePickerModel.selected, timezonePicker = Nothing } }
+
+        TimezonePickerMessage msg ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupCreateSpace popupModel) ->
+                    case popupModel.timezonePicker of
+                        Nothing ->
+                            model
+
+                        Just timezonePickerModel ->
+                            case msg of
+                                Mensam.Widget.Timezone.Select _ ->
+                                    updatePure
+                                        TimezonePickerClose
+                                        mainModel
+                                        { model | popup = Just <| PopupCreateSpace { popupModel | timezonePicker = Just <| Mensam.Widget.Timezone.update msg timezonePickerModel } }
+
+                                Mensam.Widget.Timezone.Hover _ ->
+                                    { model | popup = Just <| PopupCreateSpace { popupModel | timezonePicker = Just <| Mensam.Widget.Timezone.update msg timezonePickerModel } }
 
 
 type MessageEffect
