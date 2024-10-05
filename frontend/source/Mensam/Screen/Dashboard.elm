@@ -24,7 +24,13 @@ import Time
 
 
 type alias Model =
-    { spaces : List Mensam.Space.Space
+    { spaces :
+        List
+            { id : Mensam.Space.Identifier
+            , name : Mensam.Space.Name
+            , timezone : Mensam.Time.Timezone
+            , owner : Mensam.User.Identifier
+            }
     , selectedSpace : Maybe Int
     , reservations :
         List
@@ -149,7 +155,7 @@ element model =
                             [ { header = Element.none
                               , width = Element.fill
                               , view =
-                                    \n (Mensam.Space.MkSpace space) ->
+                                    \n space ->
                                         Element.el
                                             [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedSpace <| Just n
                                             , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedSpace Nothing
@@ -515,7 +521,14 @@ type Message
 
 
 type MessagePure
-    = SetSpaces (List Mensam.Space.Space)
+    = SetSpaces
+        (List
+            { id : Mensam.Space.Identifier
+            , name : Mensam.Space.Name
+            , timezone : Mensam.Time.Timezone
+            , owner : Mensam.User.Identifier
+            }
+        )
     | SetSelectedSpace (Maybe Int)
     | SetReservations
         (List

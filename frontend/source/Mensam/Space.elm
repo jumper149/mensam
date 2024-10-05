@@ -2,17 +2,6 @@ module Mensam.Space exposing (..)
 
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Mensam.Time
-import Mensam.User
-
-
-type Space
-    = MkSpace
-        { id : Identifier
-        , name : Name
-        , timezone : Mensam.Time.Timezone
-        , owner : Mensam.User.Identifier
-        }
 
 
 type Identifier

@@ -16,11 +16,18 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Time
+import Mensam.User
 import Mensam.Widget.Timezone
 
 
 type alias Model =
-    { spaces : List Mensam.Space.Space
+    { spaces :
+        List
+            { id : Mensam.Space.Identifier
+            , name : Mensam.Space.Name
+            , timezone : Mensam.Time.Timezone
+            , owner : Mensam.User.Identifier
+            }
     , selected : Maybe Int
     , popup : Maybe PopupModel
     }
@@ -113,7 +120,7 @@ element model =
                                             Element.text "ID"
                           , width = Element.px 100
                           , view =
-                                \n (Mensam.Space.MkSpace space) ->
+                                \n space ->
                                     Element.el
                                         [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
                                         , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
@@ -154,7 +161,7 @@ element model =
                                             Element.text "Name"
                           , width = Element.fill
                           , view =
-                                \n (Mensam.Space.MkSpace space) ->
+                                \n space ->
                                     Element.el
                                         [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just n
                                         , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelected Nothing
@@ -301,7 +308,14 @@ type Message
 
 
 type MessagePure
-    = SetSpaces (List Mensam.Space.Space)
+    = SetSpaces
+        (List
+            { id : Mensam.Space.Identifier
+            , name : Mensam.Space.Name
+            , timezone : Mensam.Time.Timezone
+            , owner : Mensam.User.Identifier
+            }
+        )
     | SetSelected (Maybe Int)
     | OpenDialogToCreate
     | CloseDialogToCreate

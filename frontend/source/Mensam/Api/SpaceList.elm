@@ -19,7 +19,15 @@ type alias Request =
 
 
 type Response
-    = Success { spaces : List Mensam.Space.Space }
+    = Success
+        { spaces :
+            List
+                { id : Mensam.Space.Identifier
+                , name : Mensam.Space.Name
+                , timezone : Mensam.Time.Timezone
+                , owner : Mensam.User.Identifier
+                }
+        }
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -116,19 +124,27 @@ encodeBody body =
         ]
 
 
-decodeBody200 : Decode.Decoder { spaces : List Mensam.Space.Space }
+decodeBody200 :
+    Decode.Decoder
+        { spaces :
+            List
+                { id : Mensam.Space.Identifier
+                , name : Mensam.Space.Name
+                , timezone : Mensam.Time.Timezone
+                , owner : Mensam.User.Identifier
+                }
+        }
 decodeBody200 =
     Decode.map (\x -> { spaces = x }) <|
         Decode.field "spaces" <|
             Decode.list <|
                 Decode.map4
                     (\id name timezone owner ->
-                        Mensam.Space.MkSpace
-                            { id = id
-                            , name = name
-                            , timezone = timezone
-                            , owner = owner
-                            }
+                        { id = id
+                        , name = name
+                        , timezone = timezone
+                        , owner = owner
+                        }
                     )
                     (Decode.field "id" Mensam.Space.identifierDecoder)
                     (Decode.field "name" Mensam.Space.nameDecoder)
