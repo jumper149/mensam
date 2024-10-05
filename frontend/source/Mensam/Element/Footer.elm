@@ -95,7 +95,7 @@ element content =
                 , Element.alignTop
                 ]
                 Element.none
-            , elementSource
+            , elementOpenApi
             , Element.el
                 [ Element.width Element.fill
                 , Element.height Element.fill
@@ -114,8 +114,8 @@ element content =
         ]
 
 
-elementSource : Element.Element Message
-elementSource =
+elementOpenApi : Element.Element Message
+elementOpenApi =
     Element.newTabLink
         [ Element.centerX
         , Element.centerY
