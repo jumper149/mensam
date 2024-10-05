@@ -31,7 +31,7 @@ type alias Model =
             , timezone : Mensam.Time.Timezone
             , owner : Mensam.User.Identifier
             }
-    , selectedSpace : Maybe Int
+    , hoveringSpace : Maybe Int
     , reservations :
         List
             { desk :
@@ -55,7 +55,7 @@ type alias Model =
                 { id : Mensam.User.Identifier
                 }
             }
-    , selectedReservation : Maybe Int
+    , hoveringReservation : Maybe Int
     , timezone : Mensam.Time.Timezone
     , modelDateBegin : Mensam.Time.Date
     , modelDateEnd : Mensam.Time.Date
@@ -87,9 +87,9 @@ init value =
             }
     in
     { spaces = []
-    , selectedSpace = Nothing
+    , hoveringSpace = Nothing
     , reservations = []
-    , selectedReservation = Nothing
+    , hoveringReservation = Nothing
     , timezone = value.time.zone
     , modelDateBegin = initialDateModel.begin
     , modelDateEnd = initialDateModel.end
@@ -157,13 +157,13 @@ element model =
                               , view =
                                     \n space ->
                                         Element.el
-                                            [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedSpace <| Just n
-                                            , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedSpace Nothing
+                                            [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringSpace <| Just n
+                                            , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetHoveringSpace Nothing
                                             , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| ChooseSpace space.id
                                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                             , let
                                                 alpha =
-                                                    case model.selectedSpace of
+                                                    case model.hoveringSpace of
                                                         Nothing ->
                                                             0.2
 
@@ -240,14 +240,14 @@ element model =
                                         Element.el
                                             (case entry.reservation.status of
                                                 Mensam.Reservation.MkStatusPlanned ->
-                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedReservation <| Just n
-                                                    , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedReservation Nothing
+                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringReservation <| Just n
+                                                    , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetHoveringReservation Nothing
                                                     , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseReservation entry.reservation.id
                                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     , let
                                                         alpha =
-                                                            case model.selectedReservation of
+                                                            case model.hoveringReservation of
                                                                 Nothing ->
                                                                     0.2
 
@@ -262,7 +262,7 @@ element model =
                                                     ]
 
                                                 Mensam.Reservation.MkStatusCancelled ->
-                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedReservation <| Just n
+                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringReservation <| Just n
                                                     , Element.Background.color (Element.rgba 1 0 0 0.2)
                                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     ]
@@ -306,14 +306,14 @@ element model =
                                         Element.el
                                             (case entry.reservation.status of
                                                 Mensam.Reservation.MkStatusPlanned ->
-                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedReservation <| Just n
-                                                    , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedReservation Nothing
+                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringReservation <| Just n
+                                                    , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetHoveringReservation Nothing
                                                     , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseReservation entry.reservation.id
                                                     , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
                                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     , let
                                                         alpha =
-                                                            case model.selectedReservation of
+                                                            case model.hoveringReservation of
                                                                 Nothing ->
                                                                     0.2
 
@@ -328,7 +328,7 @@ element model =
                                                     ]
 
                                                 Mensam.Reservation.MkStatusCancelled ->
-                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedReservation <| Just n
+                                                    [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringReservation <| Just n
                                                     , Element.Background.color (Element.rgba 1 0 0 0.2)
                                                     , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                                     ]
@@ -529,7 +529,7 @@ type MessagePure
             , owner : Mensam.User.Identifier
             }
         )
-    | SetSelectedSpace (Maybe Int)
+    | SetHoveringSpace (Maybe Int)
     | SetReservations
         (List
             { desk :
@@ -554,7 +554,7 @@ type MessagePure
                 }
             }
         )
-    | SetSelectedReservation (Maybe Int)
+    | SetHoveringReservation (Maybe Int)
     | ChooseReservation Mensam.Reservation.Identifier
     | ClosePopup
 
@@ -565,14 +565,14 @@ updatePure message model =
         SetSpaces spaces ->
             { model | spaces = spaces }
 
-        SetSelectedSpace selection ->
-            { model | selectedSpace = selection }
+        SetHoveringSpace maybeN ->
+            { model | hoveringSpace = maybeN }
 
         SetReservations reservations ->
             { model | reservations = reservations }
 
-        SetSelectedReservation selection ->
-            { model | selectedReservation = selection }
+        SetHoveringReservation maybeN ->
+            { model | hoveringReservation = maybeN }
 
         ChooseReservation id ->
             { model | popup = Just <| PopupViewReservation id }
