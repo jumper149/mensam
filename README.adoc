@@ -4,9 +4,6 @@ __**A desk-booking web application.**__
 
 ****
 Public instance:: https://mens.am[**mens.am**]
-
-OpenAPI specification::
-https://mens.am/openapi[Rendered] or https://mens.am/api/openapi[JSON]
 ****
 
 ____
