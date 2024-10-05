@@ -41,9 +41,26 @@ specification = do
           }
       linkCurrent = routeJson . Route.Api.routeOpenApi $ allFieldLinks
       relativePath = relativePathGoBack linkCurrent
+    addDescription :: OpenApi -> OpenApi
+    addDescription =
+      info . description
+        ?~ T.concat
+          [ "This is the API for Mensam Desk-Booking.\n\
+            \\n\
+            \- [User Interface](..)\n"
+          , case configSourceUrl config of
+              Nothing -> ""
+              Just sourceUrl -> "- [GitHub](" <> sourceUrl <> ")\n"
+          , "- [OpenAPI]()\n\
+            \- [Haddock (server source)](./haddock/index.html)\n\
+            \\n"
+          ]
   pure $
-    Mensam.Server.OpenApi.openapi (configSourceUrl config)
+    Mensam.Server.OpenApi.openapi
+      & info . title .~ "Mensam API"
       & addVersion
+      & info . license ?~ "GNU Affero General Public License v3.0"
+      & addDescription
       & addServer
 
 -- | Assuming that the origin link doesn't have a trailing slash.
