@@ -9,16 +9,12 @@ import Mensam.Element.Color
 import Mensam.Element.Font
 
 
-type alias Content =
-    {}
-
-
 type Message
     = ClickedSomewhere
 
 
-element : Content -> Element.Element Message
-element content =
+element : Element.Element Message
+element =
     Element.row
         [ Element.width Element.fill
         , Element.height <| Element.px 45

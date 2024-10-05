@@ -2173,11 +2173,6 @@ footerMessage (MkModel _) message =
             HideHamburgerMenu
 
 
-footerContent : Mensam.Element.Footer.Content
-footerContent =
-    {}
-
-
 dropdownMessage : Model -> Mensam.Element.Dropdown.Message -> Message
 dropdownMessage (MkModel _) message =
     case message of
@@ -2289,7 +2284,7 @@ view (MkModel model) =
 
                     ScreenConfirm screenModel ->
                         Mensam.Element.screen MessageConfirm <| Mensam.Screen.Confirm.element screenModel
-            , Element.map (footerMessage <| MkModel model) <| Mensam.Element.Footer.element <| footerContent
+            , Element.map (footerMessage <| MkModel model) <| Mensam.Element.Footer.element
             ]
 
 
