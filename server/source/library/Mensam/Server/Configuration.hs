@@ -24,7 +24,7 @@ data Configuration = Configuration
   , configBaseUrl :: BaseUrl
   , configFonts :: [FontConfig]
   , configAuth :: AuthConfig
-  , configDirectoryHaddock :: FilePath
+  , configDirectoryHaddock :: Maybe FilePath
   , configSourceUrl :: Maybe T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)

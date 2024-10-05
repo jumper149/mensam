@@ -2,6 +2,7 @@
 
 * Backend
   ** Add new configuration field `source-url`.
+  ** Configuration field `directory-haddock` is now optional to improve the development workflow.
 
 == `0.11.0.1`
 

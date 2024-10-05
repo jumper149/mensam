@@ -40,7 +40,10 @@
     builtins.fromJSON (builtins.readFile ./configurations/${deployment}.json) // {
       revision = if self ? rev then self.rev else null;
       directory-static = "${self.subflakes.static.packages.x86_64-linux.default}";
-      directory-haddock = "${self.subflakes.server.packages.x86_64-linux.package.doc}/share/doc/mensam-0/html";
+      directory-haddock =
+        if deployment == "development"
+        then null
+        else "${self.subflakes.server.packages.x86_64-linux.package.doc}/share/doc/mensam-0/html";
     };
 
   overlays.default = final: prev: {

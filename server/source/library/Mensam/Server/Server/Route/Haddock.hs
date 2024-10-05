@@ -17,8 +17,13 @@ handler ::
   (MonadConfigured m, MonadLogger m, MonadUnliftIO m) =>
   ServerT API m
 handler = do
-  directory <- configDirectoryHaddock <$> configuration
+  maybeDirectory <- configDirectoryHaddock <$> configuration
   fallbackApplication <- runApplicationT application404
-  logInfo "Serve haddock file download."
-  settings <- fileServerSettings directory
-  RawM.serveDirectoryWith settings {ss404Handler = Just fallbackApplication}
+  case maybeDirectory of
+    Nothing -> do
+      logWarn "No haddock files configured. Serving fallback application."
+      pure fallbackApplication
+    Just directory -> do
+      logInfo "Serve haddock file download."
+      settings <- fileServerSettings directory
+      RawM.serveDirectoryWith settings {ss404Handler = Just fallbackApplication}
