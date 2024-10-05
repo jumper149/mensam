@@ -35,17 +35,25 @@ import Servant.Auth.OrphanInstances ()
 import Servant.OpenApi
 import Text.Email.OrphanInstances ()
 
-openapi :: OpenApi
-openapi =
+openapi ::
+  -- | source URL
+  Maybe T.Text ->
+  OpenApi
+openapi maybeSourceUrl =
   generatedOpenApi
     & info . title .~ "Mensam API"
     & info . description
-      ?~ "This is the API for Mensam Desk-Booking.\n\
-         \- [User Interface](..)\n\
-         \- [GitHub](https://github.com/jumper149/mensam)\n\
-         \- [OpenAPI]()\n\
-         \- [Haddock (server source)](./haddock/index.html)\n\
-         \\n"
+      ?~ T.concat
+        [ "This is the API for Mensam Desk-Booking.\n\
+          \\n\
+          \- [User Interface](..)\n"
+        , case maybeSourceUrl of
+            Nothing -> ""
+            Just sourceUrl -> "- [GitHub](" <> sourceUrl <> ")\n"
+        , "- [OpenAPI]()\n\
+          \- [Haddock (server source)](./haddock/index.html)\n\
+          \\n"
+        ]
     & info . license ?~ "GNU Affero General Public License v3.0"
  where
   generatedOpenApi = toOpenApi $ Proxy @(NamedRoutes Route.Api.Routes)
@@ -314,7 +322,7 @@ deriving via A.CustomJSON (JSONSettings "Mk" "reservationWithInfo") Route.Reserv
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseReservationList") Route.Reservation.ResponseReservationList instance ToSchema Route.Reservation.ResponseReservationList
 
 openapiJsonStdout :: IO ()
-openapiJsonStdout = TL.putStrLn $ TL.decodeUtf8 $ A.encode Mensam.Server.OpenApi.openapi
+openapiJsonStdout = TL.putStrLn $ TL.decodeUtf8 $ A.encode $ Mensam.Server.OpenApi.openapi Nothing
 
 escapeCharsForPatternCharacterSet :: [Char] -> String
 escapeCharsForPatternCharacterSet = \case

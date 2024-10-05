@@ -144,4 +144,5 @@
   { "timeout-seconds": 1209600
   }
 , "directory-haddock": "/usr/share/mensam/haddock"
+, "source-url": "https://github.com/jumper149/mensam"
 }

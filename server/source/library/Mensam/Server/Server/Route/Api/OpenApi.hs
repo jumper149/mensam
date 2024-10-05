@@ -42,7 +42,7 @@ specification = do
       linkCurrent = routeJson . Route.Api.routeOpenApi $ allFieldLinks
       relativePath = relativePathGoBack linkCurrent
   pure $
-    Mensam.Server.OpenApi.openapi
+    Mensam.Server.OpenApi.openapi (configSourceUrl config)
       & addVersion
       & addServer
 

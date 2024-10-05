@@ -142,4 +142,5 @@
 , "auth":
   { "timeout-seconds": 900
   }
+, "source-url": "https://github.com/jumper149/mensam"
 }

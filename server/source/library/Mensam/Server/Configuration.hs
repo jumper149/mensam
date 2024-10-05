@@ -25,6 +25,7 @@ data Configuration = Configuration
   , configFonts :: [FontConfig]
   , configAuth :: AuthConfig
   , configDirectoryHaddock :: FilePath
+  , configSourceUrl :: Maybe T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (NFData)
