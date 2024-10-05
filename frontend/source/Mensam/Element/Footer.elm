@@ -10,8 +10,7 @@ import Mensam.Element.Font
 
 
 type alias Content =
-    { sourceUrl : String
-    }
+    {}
 
 
 type Message
@@ -96,7 +95,7 @@ element content =
                 , Element.alignTop
                 ]
                 Element.none
-            , elementSource content
+            , elementSource
             , Element.el
                 [ Element.width Element.fill
                 , Element.height Element.fill
@@ -115,13 +114,13 @@ element content =
         ]
 
 
-elementSource : Content -> Element.Element Message
-elementSource content =
+elementSource : Element.Element Message
+elementSource =
     Element.newTabLink
         [ Element.centerX
         , Element.centerY
         ]
-        { url = content.sourceUrl
+        { url = "/openapi"
         , label =
             Element.el
                 ([ Element.padding 3
@@ -139,7 +138,7 @@ elementSource content =
                        )
                 )
             <|
-                Element.text "Source on GitHub"
+                Element.text "OpenAPI"
         }
 
 

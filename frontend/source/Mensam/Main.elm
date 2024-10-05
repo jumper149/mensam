@@ -2175,8 +2175,7 @@ footerMessage (MkModel _) message =
 
 footerContent : Mensam.Element.Footer.Content
 footerContent =
-    { sourceUrl = "https://github.com/jumper149/mensam"
-    }
+    {}
 
 
 dropdownMessage : Model -> Mensam.Element.Dropdown.Message -> Message

@@ -39,7 +39,13 @@ openapi :: OpenApi
 openapi =
   generatedOpenApi
     & info . title .~ "Mensam API"
-    & info . description ?~ "This is an API for hot desk booking."
+    & info . description
+      ?~ "This is the API for Mensam Desk-Booking.\n\
+         \- [User Interface](..)\n\
+         \- [GitHub](https://github.com/jumper149/mensam)\n\
+         \- [OpenAPI]()\n\
+         \- [Haddock (server source)](./haddock/index.html)\n\
+         \\n"
     & info . license ?~ "GNU Affero General Public License v3.0"
  where
   generatedOpenApi = toOpenApi $ Proxy @(NamedRoutes Route.Api.Routes)
