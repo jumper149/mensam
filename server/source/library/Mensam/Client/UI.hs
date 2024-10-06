@@ -115,7 +115,15 @@ handleEvent chan = \case
                     (DataJWTWithSession jwt)
                     (Route.Space.MkRequestSpaceList (MkOrderByCategories []) Nothing)
             case result of
-              Right (Z (I (WithStatus @200 (Route.Space.MkResponseSpaceList xs)))) -> do
+              Right (Z (I (WithStatus @200 (Route.Space.MkResponseSpaceList spaceListSpaces)))) -> do
+                let xs =
+                      spaceListSpaces <&> \space ->
+                        MkSpace
+                          { spaceId = Route.Space.spaceListSpaceId space
+                          , spaceName = Route.Space.spaceListSpaceName space
+                          , spaceTimezone = Route.Space.spaceListSpaceTimezone space
+                          , spaceOwner = Route.Space.spaceListSpaceOwner space
+                          }
                 let l = listReplace (Seq.fromList xs) (Just 0) spacesListInitial
                 modify $ \s -> s {_clientStateScreenState = ClientScreenStateSpaces (MkScreenSpacesState l False Nothing)}
               err -> modify $ \s -> s {_clientStatePopup = Just $ T.pack $ show err}

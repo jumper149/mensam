@@ -29,6 +29,7 @@ import Data.Time.Zones.All qualified as T
 import Data.Typeable
 import Database.Selda qualified as Selda
 import GHC.Generics
+import Numeric.Natural
 
 type SqlErrorMensamSpacePermissionNotSatisfied :: PermissionSpace -> Type
 data SqlErrorMensamSpacePermissionNotSatisfied permission = MkSqlErrorMensamSpacePermissionNotSatisfied
@@ -240,6 +241,20 @@ spaceListVisible userIdentifier spaceOrder maybeIsMember = do
           , spaceOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner space
           }
   pure $ fromDbSpace <$> dbSpaces
+
+spaceCountUsers ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  SeldaTransactionT m Natural
+spaceCountUsers identifier = do
+  lift $ logDebug $ "Counting space users: " <> T.pack (show identifier)
+  dbUserCount <- Selda.queryOne $ do
+    Selda.aggregate $ do
+      dbSpaceUser <- Selda.select tableSpaceUser
+      Selda.restrict $ dbSpaceUser Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
+      pure $ Selda.count $ dbSpaceUser Selda.! #dbSpaceUser_id
+  let intToNatural :: Int -> Natural = toEnum
+  pure $ intToNatural dbUserCount
 
 spaceRoleLookupId ::
   (MonadLogger m, MonadSeldaPool m) =>

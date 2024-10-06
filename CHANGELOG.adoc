@@ -1,5 +1,7 @@
 = Changelog
 
+* API
+  ** Add new field `users` to route `/space/list` to count users.
 * Backend
   ** Add new configuration field `source-url`.
   ** Configuration field `directory-haddock` is now optional to improve the development workflow.

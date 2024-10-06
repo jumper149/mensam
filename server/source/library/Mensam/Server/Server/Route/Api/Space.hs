@@ -407,7 +407,17 @@ listSpaces auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to list spaces: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        spaceListVisible (userAuthenticatedId authenticated) (requestSpaceListOrder request) (requestSpaceListMember request)
+        spaces <- spaceListVisible (userAuthenticatedId authenticated) (requestSpaceListOrder request) (requestSpaceListMember request)
+        for spaces $ \space -> do
+          userCount <- spaceCountUsers $ spaceId space
+          pure
+            MkSpaceListSpace
+              { spaceListSpaceId = spaceId space
+              , spaceListSpaceName = spaceName space
+              , spaceListSpaceTimezone = spaceTimezone space
+              , spaceListSpaceOwner = spaceOwner space
+              , spaceListSpaceUsers = userCount
+              }
       handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \spaces -> do
         logInfo "Listed spaces."
         respond $ WithStatus @200 MkResponseSpaceList {responseSpaceListSpaces = spaces}

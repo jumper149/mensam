@@ -18,6 +18,7 @@ import Data.Time qualified as T
 import Data.Time.Zones.All qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
+import Numeric.Natural
 import Servant.API hiding (BasicAuth)
 import Servant.Auth
 import Servant.Auth.JWT.WithSession
@@ -510,12 +511,25 @@ data RequestSpaceList = MkRequestSpaceList
 
 type ResponseSpaceList :: Type
 newtype ResponseSpaceList = MkResponseSpaceList
-  { responseSpaceListSpaces :: [Space]
+  { responseSpaceListSpaces :: [SpaceListSpace]
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") ResponseSpaceList
+
+type SpaceListSpace :: Type
+data SpaceListSpace = MkSpaceListSpace
+  { spaceListSpaceId :: IdentifierSpace
+  , spaceListSpaceName :: NameSpace
+  , spaceListSpaceTimezone :: T.TZLabel
+  , spaceListSpaceOwner :: IdentifierUser
+  , spaceListSpaceUsers :: Natural
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "Mk" "spaceListSpace") SpaceListSpace
 
 type RequestRoleCreate :: Type
 data RequestRoleCreate = MkRequestRoleCreate

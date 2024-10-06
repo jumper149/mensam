@@ -30,6 +30,7 @@ type alias Model =
             , name : Mensam.Space.Name
             , timezone : Mensam.Time.Timezone
             , owner : Mensam.User.Identifier
+            , users : Int
             }
     , hoveringSpace : Maybe Int
     , reservations :
@@ -527,6 +528,7 @@ type MessagePure
             , name : Mensam.Space.Name
             , timezone : Mensam.Time.Timezone
             , owner : Mensam.User.Identifier
+            , users : Int
             }
         )
     | SetHoveringSpace (Maybe Int)

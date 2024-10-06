@@ -278,6 +278,7 @@ deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceView") Route.Sp
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") Route.Space.ResponseSpaceView instance ToSchema Route.Space.ResponseSpaceView
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestSpaceList") Route.Space.RequestSpaceList instance ToSchema Route.Space.RequestSpaceList
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceList") Route.Space.ResponseSpaceList instance ToSchema Route.Space.ResponseSpaceList
+deriving via A.CustomJSON (JSONSettings "Mk" "spaceListSpace") Route.Space.SpaceListSpace instance ToSchema Route.Space.SpaceListSpace
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRoleCreate") Route.Space.RequestRoleCreate instance ToSchema Route.Space.RequestRoleCreate
 deriving via A.CustomJSON (JSONSettings "MkResponse" "responseRoleCreate") Route.Space.ResponseRoleCreate instance ToSchema Route.Space.ResponseRoleCreate
 deriving via A.CustomJSON (JSONSettings "MkRequest" "requestRoleEdit") Route.Space.RequestRoleEdit instance ToSchema Route.Space.RequestRoleEdit
