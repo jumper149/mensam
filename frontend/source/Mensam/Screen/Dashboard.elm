@@ -1,17 +1,21 @@
 module Mensam.Screen.Dashboard exposing (..)
 
+import Dict
 import Element
 import Element.Background
+import Element.Border
 import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
 import List.Extra
+import Mensam.Api.Profile
 import Mensam.Api.ReservationCancel
 import Mensam.Api.ReservationList
 import Mensam.Api.SpaceList
 import Mensam.Auth.Bearer
 import Mensam.Desk
 import Mensam.Element.Button
+import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
@@ -33,6 +37,7 @@ type alias Model =
             , users : Int
             }
     , hoveringSpace : Maybe Int
+    , owners : Dict.Dict Int Mensam.User.Name
     , reservations :
         List
             { desk :
@@ -89,6 +94,7 @@ init value =
     in
     { spaces = []
     , hoveringSpace = Nothing
+    , owners = Dict.empty
     , reservations = []
     , hoveringReservation = Nothing
     , timezone = value.time.zone
@@ -139,6 +145,13 @@ element model =
                         [ Element.width Element.fill
                         , Element.height Element.fill
                         , Element.Background.color (Element.rgba 0 0 0 0.1)
+                        , Element.Border.widthEach
+                            { bottom = 1
+                            , left = 0
+                            , right = 0
+                            , top = 1
+                            }
+                        , Element.Border.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
                         , Element.Font.family [ Mensam.Element.Font.condensed ]
                         , Element.Font.size 16
                         , Element.clipY
@@ -146,22 +159,19 @@ element model =
                         ]
                         { data = model.spaces
                         , columns =
-                            let
-                                cell =
-                                    Element.el
-                                        [ Element.height <| Element.px 40
-                                        , Element.padding 10
-                                        ]
-                            in
                             [ { header = Element.none
                               , width = Element.fill
                               , view =
                                     \n space ->
                                         Element.el
-                                            [ Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringSpace <| Just n
+                                            [ Element.height <| Element.px 80
+                                            , Element.width Element.fill
+                                            , Element.padding 10
+                                            , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringSpace <| Just n
                                             , Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetHoveringSpace Nothing
                                             , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| ChooseSpace space.id
                                             , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                                             , let
                                                 alpha =
                                                     case model.hoveringSpace of
@@ -176,14 +186,121 @@ element model =
                                                                 0.2
                                               in
                                               Element.Background.color (Element.rgba 0 0 0 alpha)
+                                            , Element.Border.widthEach
+                                                { bottom = 0
+                                                , left = 0
+                                                , right = 0
+                                                , top =
+                                                    if n == 0 then
+                                                        0
+
+                                                    else
+                                                        1
+                                                }
+                                            , Element.Border.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                            , Element.inFront <|
+                                                Element.el
+                                                    [ Element.width <| Element.px 80
+                                                    , Element.height <| Element.px 80
+                                                    , Element.alignRight
+                                                    , Element.centerY
+                                                    , Element.Background.color <| Mensam.Element.Color.dark.cyan Mensam.Element.Color.Opaque25
+                                                    ]
+                                                <|
+                                                    Element.el
+                                                        [ Element.width <| Element.px 60
+                                                        , Element.height <| Element.px 60
+                                                        , Element.centerX
+                                                        , Element.centerY
+                                                        , Element.Background.color <| Mensam.Element.Color.bright.cyan Mensam.Element.Color.Opaque100
+                                                        ]
+                                                        Element.none
                                             ]
                                         <|
-                                            cell <|
-                                                Element.el
-                                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                                <|
-                                                    Element.text <|
-                                                        Mensam.Space.nameToString space.name
+                                            Element.row
+                                                [ Element.width Element.fill
+                                                , Element.height Element.fill
+                                                , Element.spacing 10
+                                                ]
+                                                [ Element.column
+                                                    [ Element.width <| Element.px 175
+                                                    , Element.height <| Element.fill
+                                                    , Element.alignLeft
+                                                    , Element.spacing 1
+                                                    , Element.clip
+                                                    ]
+                                                    [ Element.paragraph
+                                                        [ Element.alignTop
+                                                        ]
+                                                        [ Element.text <|
+                                                            Mensam.Space.nameToString space.name
+                                                        ]
+                                                    , Element.el
+                                                        [ Element.alignBottom
+                                                        , Element.Font.size 12
+                                                        , Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                                        , Element.paddingEach
+                                                            { top = 0
+                                                            , right = 0
+                                                            , bottom = 0
+                                                            , left = 5
+                                                            }
+                                                        ]
+                                                      <|
+                                                        Element.text <|
+                                                            Mensam.Time.timezoneToString space.timezone
+                                                    ]
+                                                , Element.column
+                                                    [ Element.width Element.fill
+                                                    , Element.height Element.fill
+                                                    , Element.alignLeft
+                                                    , Element.clip
+                                                    ]
+                                                    [ Element.column
+                                                        [ Element.alignTop
+                                                        , Element.spacing 1
+                                                        ]
+                                                        [ Element.el
+                                                            [ Element.alignTop
+                                                            , Element.Font.size 10
+                                                            ]
+                                                          <|
+                                                            Element.text "Owner"
+                                                        , Element.el
+                                                            [ Element.alignTop
+                                                            , Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                                            ]
+                                                          <|
+                                                            Element.text <|
+                                                                case
+                                                                    Dict.get
+                                                                        (case space.id of
+                                                                            Mensam.Space.MkIdentifier id ->
+                                                                                id
+                                                                        )
+                                                                        model.owners
+                                                                of
+                                                                    Nothing ->
+                                                                        ""
+
+                                                                    Just name ->
+                                                                        Mensam.User.nameToString name
+                                                        ]
+                                                    , Element.el
+                                                        [ Element.alignBottom
+                                                        , Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                                        ]
+                                                      <|
+                                                        Element.text <|
+                                                            String.fromInt space.users
+                                                                ++ (if space.users == 1 then
+                                                                        " User"
+
+                                                                    else
+                                                                        " Users"
+                                                                   )
+                                                    ]
+                                                ]
                               }
                             ]
                         }
@@ -532,6 +649,10 @@ type MessagePure
             }
         )
     | SetHoveringSpace (Maybe Int)
+    | SetOwnerName
+        { space : Mensam.Space.Identifier
+        , owner : Mensam.User.Name
+        }
     | SetReservations
         (List
             { desk :
@@ -570,6 +691,18 @@ updatePure message model =
         SetHoveringSpace maybeN ->
             { model | hoveringSpace = maybeN }
 
+        SetOwnerName { space, owner } ->
+            { model
+                | owners =
+                    Dict.insert
+                        (case space of
+                            Mensam.Space.MkIdentifier id ->
+                                id
+                        )
+                        owner
+                        model.owners
+            }
+
         SetReservations reservations ->
             { model | reservations = reservations }
 
@@ -586,6 +719,7 @@ updatePure message model =
 type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshSpaces
+    | RefreshOwnerName { space : Mensam.Space.Identifier, owner : Mensam.User.Identifier }
     | ChooseSpace Mensam.Space.Identifier
     | RefreshReservations
     | CancelReservation Mensam.Reservation.Identifier
@@ -599,7 +733,17 @@ spaceList jwt =
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceList.Success value) ->
-                    MessagePure <| SetSpaces value.spaces
+                    Messages <|
+                        (MessagePure <| SetSpaces value.spaces)
+                            :: List.map
+                                (\space ->
+                                    MessageEffect <|
+                                        RefreshOwnerName
+                                            { space = space.id
+                                            , owner = space.owner
+                                            }
+                                )
+                                value.spaces
 
                 Ok (Mensam.Api.SpaceList.ErrorBody error) ->
                     MessageEffect <|
@@ -619,6 +763,42 @@ spaceList jwt =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Requesting spaces failed" <|
+                                Mensam.Error.http error
+
+
+ownerGetName : { jwt : Mensam.Auth.Bearer.Jwt, space : Mensam.Space.Identifier, owner : Mensam.User.Identifier } -> Cmd Message
+ownerGetName args =
+    Mensam.Api.Profile.request { jwt = args.jwt, id = args.owner } <|
+        \result ->
+            case result of
+                Ok (Mensam.Api.Profile.Success value) ->
+                    MessagePure <| SetOwnerName { space = args.space, owner = value.name }
+
+                Ok Mensam.Api.Profile.ErrorUnknownUser ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting owner failed" <|
+                                Mensam.Error.message "Unknown user" <|
+                                    Mensam.Error.undefined
+
+                Ok (Mensam.Api.Profile.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting owner failed" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.Profile.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting owner failed" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Requesting owner failed" <|
                                 Mensam.Error.http error
 
 
