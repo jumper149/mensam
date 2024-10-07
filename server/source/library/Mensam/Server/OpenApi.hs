@@ -131,17 +131,17 @@ instance Typeable p => ToSchema (ErrorInsufficientPermission p) where
    where
     text = T.pack $ show $ A.toJSON $ MkErrorInsufficientPermission @p
 
-deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJpeg") Route.User.ErrorParseBodyJpeg instance ToSchema Route.User.ErrorParseBodyJpeg
-
 deriving via A.CustomJSON (JSONSettings "MkErrorBasicAuth" "") ErrorBasicAuth instance ToSchema ErrorBasicAuth
 deriving newtype instance ToSchema ErrorBearerAuth
 deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBodyJson instance ToSchema ErrorParseBodyJson
+deriving via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJpeg") ErrorParseBodyJpeg instance ToSchema ErrorParseBodyJpeg
 deriving via A.CustomJSON (JSONSettings "" "") (NameOrIdentifier name identifier) instance (ToSchema name, ToSchema identifier) => ToSchema (NameOrIdentifier name identifier)
 deriving newtype instance ToParamSchema IdentifierUser
 deriving newtype instance ToSchema IdentifierUser
 deriving newtype instance ToSchema ConfirmationSecret
 deriving via A.CustomJSON (JSONSettings "Mk" "space") Space instance ToSchema Space
 deriving newtype instance ToSchema IdentifierSpace
+deriving newtype instance ToParamSchema IdentifierSpace
 deriving newtype instance ToSchema NameSpace
 deriving via A.CustomJSON (JSONSettings "Mk" "spaceRole") SpaceRole instance ToSchema SpaceRole
 deriving newtype instance ToSchema IdentifierSpaceRole

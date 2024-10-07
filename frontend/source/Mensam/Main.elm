@@ -274,6 +274,7 @@ routeToModelUpdate route (MkModel model) =
             update
                 (Messages
                     [ MessageSpaceSettings <| Mensam.Screen.Space.Settings.MessageEffect Mensam.Screen.Space.Settings.RefreshOldSettings
+                    , MessageSpaceSettings <| Mensam.Screen.Space.Settings.MessageEffect Mensam.Screen.Space.Settings.DownloadSpacePictureRequest
                     ]
                 )
             <|
@@ -1483,6 +1484,66 @@ update message (MkModel model) =
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Space.Settings.DownloadSpacePictureRequest ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceSettings screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.downloadSpacePicture jwt screenModel.id
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Space.Settings.UploadSpacePictureRequested ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication _) ->
+                            case model.screen of
+                                ScreenSpaceSettings _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.selectSpacePictureToUpload
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Space.Settings.UploadSpacePictureUpload file ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceSettings screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.uploadSpacePicture jwt screenModel.id file
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Space.Settings.DeleteSpacePictureRequest ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenSpaceSettings screenModel ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.deleteSpacePicture jwt screenModel.id
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Space.Settings.ReturnToSpaces ->
                     case model.screen of

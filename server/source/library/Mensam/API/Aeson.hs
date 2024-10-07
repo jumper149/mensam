@@ -33,3 +33,10 @@ newtype ErrorParseBodyJson = MkErrorParseBodyJson
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving (A.FromJSON, A.ToJSON) via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJson") ErrorParseBodyJson
+
+type ErrorParseBodyJpeg :: Type
+newtype ErrorParseBodyJpeg = MkErrorParseBodyJpeg
+  { errorParseBodyJpegError :: String
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving (A.FromJSON, A.ToJSON) via A.CustomJSON (JSONSettings "Mk" "errorParseBodyJpeg") ErrorParseBodyJpeg

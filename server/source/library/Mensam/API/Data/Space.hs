@@ -13,6 +13,7 @@ import Data.Time.Zones.All qualified as T
 import Data.Time.Zones.All.OrphanInstances ()
 import Deriving.Aeson qualified as A
 import GHC.Generics
+import Servant.API qualified as Servant
 
 type Space :: Type
 data Space = MkSpace
@@ -30,6 +31,7 @@ type IdentifierSpace :: Type
 newtype IdentifierSpace = MkIdentifierSpace {unIdentifierSpace :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
+  deriving newtype (Servant.FromHttpApiData, Servant.ToHttpApiData)
 
 type NameSpace :: Type
 newtype NameSpace = MkNameSpace {unNameSpace :: T.Text}

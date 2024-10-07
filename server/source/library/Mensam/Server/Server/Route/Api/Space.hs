@@ -8,8 +8,11 @@ import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
 import Mensam.API.Route.Api.Space
 import Mensam.API.Update
+import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.SeldaPool.Class
 import Mensam.Server.Application.SeldaPool.Servant
+import Mensam.Server.Configuration
+import Mensam.Server.Jpeg
 import Mensam.Server.Reservation
 import Mensam.Server.Server.Auth
 import Mensam.Server.Space
@@ -18,24 +21,30 @@ import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
+import Data.ByteString qualified as B
 import Data.Foldable
 import Data.Password.Bcrypt
+import Data.SOP qualified as SOP
 import Data.Text qualified as T
 import Data.Traversable
 import Data.Typeable
 import Database.Selda qualified as Selda
 import Servant hiding (BasicAuthResult (..))
+import Servant.API.ImageJpeg
 import Servant.Auth.Server
 import Servant.Server.Generic
 
 handler ::
-  (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
+  (MonadConfigured m, MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   Routes (AsServerT m)
 handler =
   Routes
     { routeSpaceCreate = createSpace
     , routeSpaceDelete = deleteSpace
     , routeSpaceEdit = editSpace
+    , routePictureUpload = pictureUpload
+    , routePictureDelete = pictureDelete
+    , routePictureDownload = pictureDownload
     , routeSpaceJoin = joinSpace
     , routeSpaceLeave = leaveSpace
     , routeSpaceKick = kickUser
@@ -182,6 +191,135 @@ editSpace auth eitherRequest =
                       , responseSpaceEditTimezone = spaceInternalTimezone spaceInternal
                       , responseSpaceEditVisibility = spaceInternalVisibility spaceInternal
                       }
+
+pictureUpload ::
+  ( MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 (StaticText "Uploaded space picture.")) responses
+  , IsMember (WithStatus 400 ErrorParseBodyJpeg) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either T.Text IdentifierSpace ->
+  Either String ImageJpegBytes ->
+  m (Union responses)
+pictureUpload auth eitherQueryParamIdentifierSpace eitherRequest =
+  handleAuthBearer auth $ \authenticated ->
+    handleBadRequestBodyJpeg eitherRequest $ \request -> do
+      case eitherQueryParamIdentifierSpace of
+        Left _ -> do
+          logInfo "Unable to parse space identifier."
+          respond $ WithStatus @404 $ MkStaticText @"Space not found."
+        Right identifierSpace -> do
+          logInfo "Changing space picture."
+          case jpegConvertSpacePicture request of
+            Left err -> do
+              logWarn $ "Failed to resize picture: " <> T.pack (show err)
+              respond $ WithStatus @400 $ MkErrorParseBodyJpeg "Unable to read picture."
+            Right picture -> do
+              logInfo "Successfully verified and potentially resized picture."
+              seldaResult <-
+                runSeldaTransactionT $ do
+                  checkPermission
+                    SMkPermissionSpaceEditSpace
+                    (userAuthenticatedId authenticated)
+                    identifierSpace
+                  spaceSetPicture identifierSpace (Just picture)
+              handleSeldaException403InsufficientPermission
+                (Proxy @MkPermissionSpaceEditSpace)
+                seldaResult
+                $ \seldaResultAfter403 ->
+                  handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+                    logInfo "Changed space picture successfully."
+                    respond $ WithStatus @200 $ MkStaticText @"Uploaded space picture."
+
+pictureDelete ::
+  ( MonadLogger m
+  , MonadSeldaPool m
+  , IsMember (WithStatus 200 (StaticText "Deleted space picture.")) responses
+  , IsMember (WithStatus 401 ErrorBearerAuth) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
+  , IsMember (WithStatus 500 ()) responses
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either T.Text IdentifierSpace ->
+  m (Union responses)
+pictureDelete auth eitherQueryParamIdentifierSpace =
+  handleAuthBearer auth $ \authenticated -> do
+    case eitherQueryParamIdentifierSpace of
+      Left _ -> do
+        logInfo "Unable to parse space identifier."
+        respond $ WithStatus @404 $ MkStaticText @"Space not found."
+      Right identifierSpace -> do
+        logInfo "Deleting space picture."
+        seldaResult <-
+          runSeldaTransactionT $ do
+            checkPermission
+              SMkPermissionSpaceEditSpace
+              (userAuthenticatedId authenticated)
+              identifierSpace
+            spaceSetPicture identifierSpace Nothing
+        handleSeldaException403InsufficientPermission
+          (Proxy @MkPermissionSpaceEditSpace)
+          seldaResult
+          $ \seldaResultAfter403 ->
+            handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+              logInfo "Deleted space picture successfully."
+              respond $ WithStatus @200 $ MkStaticText @"Deleted space picture."
+
+pictureDownload ::
+  ( MonadConfigured m
+  , MonadIO m
+  , MonadLogger m
+  , MonadSeldaPool m
+  ) =>
+  AuthResult UserAuthenticated ->
+  Either T.Text IdentifierSpace ->
+  m ImageJpegBytes
+pictureDownload auth eitherQueryParamIdentifierSpace = do
+  handledResult <- do
+    handleAuthBearer auth $ \authenticated -> do
+      case eitherQueryParamIdentifierSpace of
+        Left _ -> do
+          logInfo "Unable to parse space identifier."
+          respond $ WithStatus @404 $ MkStaticText @"Space not found."
+        Right identifierSpace -> do
+          logDebug $ "Requesting a space picture from " <> T.pack (show identifierSpace)
+          seldaResult <-
+            runSeldaTransactionT $ do
+              checkPermission
+                SMkPermissionSpaceViewSpace
+                (userAuthenticatedId authenticated)
+                identifierSpace
+              spaceGetPicture identifierSpace
+          handleSeldaException403InsufficientPermission
+            (Proxy @MkPermissionSpaceViewSpace)
+            seldaResult
+            $ \seldaResultAfter403 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \maybePicture -> do
+                logInfo "Checked out space picture successfully."
+                case maybePicture of
+                  Nothing -> do
+                    logInfo "No picture set for this space. Returning default picture."
+                    defaultProfilePictureFilePath <- (<> "/default-space-picture.jpeg") . configDirectoryStatic <$> configuration
+                    picture <- liftIO $ B.readFile defaultProfilePictureFilePath
+                    respond $ WithStatus @200 $ MkImageJpegBytes . B.fromStrict $ picture
+                  Just picture -> do
+                    logInfo "Answering with space picture."
+                    respond $ WithStatus @200 $ MkImageJpegBytes . unByteStringJpeg $ picture
+  logDebug $ "Handling multi-mimetype response manually: " <> T.pack (show handledResult) -- TODO: Logging pictures right now.
+  -- TODO: Add all these HTTP statuses to the API definition. Requires different output types.
+  case handledResult :: Union [WithStatus 200 ImageJpegBytes, WithStatus 401 ErrorBearerAuth, WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace), WithStatus 404 (StaticText "Space not found."), WithStatus 500 ()] of
+    SOP.Z (SOP.I (WithStatus result)) -> pure result
+    SOP.S (SOP.Z (SOP.I (WithStatus errorBearerAuth))) -> error $ show errorBearerAuth
+    SOP.S (SOP.S (SOP.Z (SOP.I (WithStatus MkErrorInsufficientPermission)))) -> undefined
+    SOP.S (SOP.S (SOP.S (SOP.Z (SOP.I (WithStatus MkStaticText))))) -> undefined
+    SOP.S (SOP.S (SOP.S (SOP.S (SOP.Z (SOP.I (WithStatus ())))))) -> undefined
+    SOP.S (SOP.S (SOP.S (SOP.S (SOP.S impossibleCase)))) -> case impossibleCase of {}
 
 joinSpace ::
   ( MonadLogger m
@@ -722,6 +860,19 @@ handleBadRequestBody parsedRequestBody handler' =
   case parsedRequestBody of
     Right a -> handler' a
     Left err -> respond $ WithStatus @400 $ MkErrorParseBodyJson err
+
+handleBadRequestBodyJpeg ::
+  ( MonadLogger m
+  , IsMember (WithStatus 400 ErrorParseBodyJpeg) responses
+  ) =>
+  Either String a ->
+  (a -> m (Union responses)) ->
+  m (Union responses)
+handleBadRequestBodyJpeg parsedRequestBody handler' =
+  -- TODO: Rename arguments `handler'` to `handler`
+  case parsedRequestBody of
+    Right a -> handler' a
+    Left err -> respond $ WithStatus @400 $ MkErrorParseBodyJpeg err
 
 handleSeldaException403InsufficientPermission ::
   forall (p :: PermissionSpace) m responses a.

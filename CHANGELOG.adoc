@@ -1,5 +1,15 @@
 = Changelog
 
+* Frontend
+  ** Space logos can be edited in your settings.
+* Database
+  ** Add new column `picture_jpeg` to the `space` table.
+* API
+  ** Add `/space/picture` route to change a space picture.
+    *** Use GET to download pictures.
+    *** Use PUT to upload a picture replacing the old one.
+    *** Use DELETE to delete the current picture.
+
 == `0.11.1.0`
 
 * API

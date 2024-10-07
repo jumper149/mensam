@@ -37,3 +37,6 @@ jpegConvertProfilePicture bytesIn = do
         let croppedWidthCutOff = (originalWidth - croppedWidth) `div` 2
         modify $ crop croppedWidthCutOff 0 croppedWidth originalHeight
     modify $ scaleBilinear targetSize targetSize
+
+jpegConvertSpacePicture :: ImageJpegBytes -> Either String ByteStringJpeg
+jpegConvertSpacePicture = jpegConvertProfilePicture

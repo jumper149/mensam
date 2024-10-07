@@ -20,6 +20,7 @@ import Deriving.Aeson qualified as A
 import GHC.Generics
 import Numeric.Natural
 import Servant.API hiding (BasicAuth)
+import Servant.API.ImageJpeg
 import Servant.Auth
 import Servant.Auth.JWT.WithSession
 
@@ -82,6 +83,55 @@ data Routes route = Routes
               , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
+  , routePictureUpload ::
+      route
+        :- Summary "Change Space Picture"
+          :> Description
+              "Upload a new space logo.\n\
+              \This overwrites any old space logo.\n"
+          :> "space"
+          :> "picture"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> QueryParam' '[Lenient, Required] "space" IdentifierSpace
+          :> ReqBody' '[Lenient, Required] '[ImageJpeg] ImageJpegBytes
+          :> UVerb
+              PUT
+              '[JSON]
+              [ WithStatus 200 (StaticText "Uploaded space picture.")
+              , WithStatus 400 ErrorParseBodyJpeg
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 404 (StaticText "Space not found.")
+              , WithStatus 500 ()
+              ]
+  , routePictureDelete ::
+      route
+        :- Summary "Delete Space Picture"
+          :> Description
+              "Delete the current space logo.\n"
+          :> "space"
+          :> "picture"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> QueryParam' '[Lenient, Required] "space" IdentifierSpace
+          :> UVerb
+              DELETE
+              '[JSON]
+              [ WithStatus 200 (StaticText "Deleted space picture.")
+              , WithStatus 401 ErrorBearerAuth
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 404 (StaticText "Space not found.")
+              , WithStatus 500 ()
+              ]
+  , routePictureDownload ::
+      route
+        :- Summary "View Space Picture"
+          :> Description
+              "View a space logo.\n"
+          :> "space"
+          :> "picture"
+          :> Auth '[JWTWithSession] UserAuthenticated
+          :> QueryParam' '[Lenient, Required] "space" IdentifierSpace
+          :> Get '[ImageJpeg] ImageJpegBytes -- TODO: Use multiple returned mimetypes.
   , routeSpaceJoin ::
       route
         :- Summary "Join Space"

@@ -8,7 +8,7 @@ BUILT_ICONS = $(patsubst $(SOURCE)%, $(BUILD)%, $(ICONS))
 BUILT_FILES =
 
 .PHONY: all
-all: $(BUILD)/favicon.ico $(BUILD)/favicon.png $(BUILT_FAVICONS) $(BUILD)/fonts.css $(BUILD)/redoc.css $(BUILD)/fallback.html $(BUILD)/default-profile-picture.jpeg $(BUILT_ICONS) $(BUILT_FILES)
+all: $(BUILD)/favicon.ico $(BUILD)/favicon.png $(BUILT_FAVICONS) $(BUILD)/fonts.css $(BUILD)/redoc.css $(BUILD)/fallback.html $(BUILD)/default-profile-picture.jpeg $(BUILD)/default-space-picture.jpeg $(BUILT_ICONS) $(BUILT_FILES)
 
 $(BUILD)/favicon.ico: $(BUILD)/favicon.png $(BUILD)
 	cp "$<" "$@"
@@ -29,6 +29,11 @@ $(BUILD)/fallback.html: $(SOURCE)/fallback.html $(BUILD)
 	cp "$<" "$@"
 
 $(BUILD)/default-profile-picture.jpeg: $(SOURCE)/default-profile-picture.xpm $(BUILD)
+	convert "$<" -adaptive-resize "640x640" "tmp.xpm"
+	convert "tmp.xpm" "$@"
+	rm "tmp.xpm"
+
+$(BUILD)/default-space-picture.jpeg: $(SOURCE)/default-space-picture.xpm $(BUILD)
 	convert "$<" -adaptive-resize "640x640" "tmp.xpm"
 	convert "tmp.xpm" "$@"
 	rm "tmp.xpm"

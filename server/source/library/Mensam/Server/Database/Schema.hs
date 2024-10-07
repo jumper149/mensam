@@ -130,6 +130,7 @@ data DbSpace = MkDbSpace
   , dbSpace_timezone :: Time.TZLabel
   , dbSpace_visibility :: DbSpaceVisibility
   , dbSpace_owner :: Selda.ID DbUser
+  , dbSpace_picture_jpeg :: Maybe BS.ByteString
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.Relational, Selda.SqlRow)

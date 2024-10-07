@@ -17,6 +17,7 @@ import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Control.Monad.Trans.Class
+import Data.ByteString.Lazy qualified as BL
 import Data.Foldable
 import Data.Kind
 import Data.List qualified as L
@@ -29,6 +30,7 @@ import Data.Time.Zones.All qualified as T
 import Data.Typeable
 import Database.Selda qualified as Selda
 import GHC.Generics
+import Mensam.Server.Jpeg
 import Numeric.Natural
 
 type SqlErrorMensamSpacePermissionNotSatisfied :: PermissionSpace -> Type
@@ -306,6 +308,7 @@ spaceCreate name owner timezoneLabel visibility = do
           , dbSpace_timezone = timezoneLabel
           , dbSpace_visibility = spaceVisibilityApiToDb visibility
           , dbSpace_owner = Selda.toId @DbUser $ unIdentifierUser owner
+          , dbSpace_picture_jpeg = Nothing
           }
   dbSpaceId <- Selda.insertWithPK tableSpace [dbSpace]
   lift $ logInfo "Created space successfully."
@@ -377,6 +380,32 @@ spaceVisibilitySet identifier visibility = do
     (#dbSpace_id `Selda.is` Selda.toId @DbSpace (unIdentifierSpace identifier))
     (\rowSpace -> rowSpace `Selda.with` [#dbSpace_visibility Selda.:= Selda.literal (spaceVisibilityApiToDb visibility)])
   lift $ logInfo "Set visibility successfully."
+
+spaceSetPicture ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  Maybe ByteStringJpeg ->
+  SeldaTransactionT m ()
+spaceSetPicture identifier picture = do
+  lift $ logDebug "Set new space picture."
+  Selda.updateOne
+    tableSpace
+    (#dbSpace_id `Selda.is` Selda.toId @DbSpace (unIdentifierSpace identifier))
+    (`Selda.with` [#dbSpace_picture_jpeg Selda.:= Selda.literal (BL.toStrict . unByteStringJpeg <$> picture)])
+  lift $ logInfo "Set new space picture successfully."
+
+spaceGetPicture ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  SeldaTransactionT m (Maybe ByteStringJpeg)
+spaceGetPicture identifier = do
+  lift $ logDebug "Get space picture."
+  picture <- Selda.queryOne $ do
+    space <- Selda.select tableSpace
+    Selda.restrict $ space Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
+    pure $ space Selda.! #dbSpace_picture_jpeg
+  lift $ logInfo "Got space picture successfully."
+  pure $ MkByteStringJpegUnsafe . BL.fromStrict <$> picture
 
 spaceUserAdd ::
   (MonadLogger m, MonadSeldaPool m) =>

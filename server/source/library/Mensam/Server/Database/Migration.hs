@@ -396,6 +396,14 @@ migrations =
             "ALTER TABLE user\n\
             \ADD COLUMN email_notifications BOOLEAN NOT NULL DEFAULT FALSE"
       }
+  , MkMigration
+      { migrationId = Selda.toId 16
+      , migrationName = "addSpacePicture"
+      , migrationWork = do
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space\n\
+            \ADD COLUMN picture_jpeg BLOB"
+      }
   ]
 
 createDatabase ::

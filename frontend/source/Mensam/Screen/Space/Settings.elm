@@ -2,12 +2,18 @@ module Mensam.Screen.Space.Settings exposing (..)
 
 import Element
 import Element.Background
+import Element.Border
 import Element.Events.Pointer
 import Element.Font
 import Element.Input
+import File
+import File.Select
 import Html.Attributes
 import Mensam.Api.SpaceDelete
 import Mensam.Api.SpaceEdit
+import Mensam.Api.SpacePictureDelete
+import Mensam.Api.SpacePictureDownload
+import Mensam.Api.SpacePictureUpload
 import Mensam.Auth.Bearer
 import Mensam.Element.Button
 import Mensam.Element.Color
@@ -17,6 +23,7 @@ import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
+import Url.Builder
 
 
 type alias Model =
@@ -35,12 +42,14 @@ type alias Model =
                 }
         , visibility : Maybe Mensam.Space.Visibility
         }
+    , spacePictureUrl : String
     , popup : Maybe PopupModel
     }
 
 
 type PopupModel
     = PopupDeleteSpace
+    | PopupDeleteSpacePicture
 
 
 init : { id : Mensam.Space.Identifier } -> Model
@@ -56,6 +65,12 @@ init args =
         , timezone = Nothing
         , visibility = Nothing
         }
+    , spacePictureUrl =
+        Url.Builder.absolute
+            [ "static"
+            , "default-space-picture.jpeg"
+            ]
+            []
     , popup = Nothing
     }
 
@@ -150,6 +165,53 @@ element model =
                                     , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
                                     , label = Element.Input.labelHidden "Name"
                                     }
+                    ]
+                , Element.row
+                    [ Element.width Element.fill
+                    , Element.height <| Element.px 220
+                    , Element.padding 10
+                    , Element.spacing 30
+                    ]
+                    [ Element.el
+                        [ Element.alignLeft
+                        , Element.centerY
+                        , Element.padding 10
+                        ]
+                      <|
+                        Element.image
+                            [ Element.width <| Element.px 180
+                            , Element.height <| Element.px 180
+                            , Element.Border.rounded 30
+                            , Element.clip
+                            ]
+                            { src = model.spacePictureUrl
+                            , description = "Space picture."
+                            }
+                    , Element.column
+                        [ Element.padding 10
+                        , Element.spacing 30
+                        , Element.alignRight
+                        , Element.centerY
+                        ]
+                        [ Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = []
+                                , color = Mensam.Element.Button.Yellow
+                                , enabled = True
+                                , label = Element.text "Upload Pic"
+                                , message = Just <| MessageEffect UploadSpacePictureRequested
+                                , size = Mensam.Element.Button.Medium
+                                }
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = []
+                                , color = Mensam.Element.Button.Red
+                                , enabled = True
+                                , label = Element.text "Delete Pic"
+                                , message = Just <| MessagePure OpenDialogToDeleteSpacePicture
+                                , size = Mensam.Element.Button.Medium
+                                }
+                        ]
                     ]
                 , Element.column
                     [ Element.spacing 20
@@ -399,7 +461,50 @@ element model =
                                         }
                                 ]
                             ]
-        , closePopup = MessagePure CloseDialogToDeleteSpace
+
+                Just PopupDeleteSpacePicture ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Delete Space Logo"
+                            , Element.paragraph
+                                []
+                                [ Element.text "Are you sure you want to delete the current picture?"
+                                ]
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
+                                        , label = Element.text "Abort"
+                                        , message = Just <| MessagePure CloseDialogToDeleteSpacePicture
+                                        , size = Mensam.Element.Button.Medium
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Red
+                                        , enabled = True
+                                        , label = Element.text "Delete Picture"
+                                        , message = Just <| MessageEffect DeleteSpacePictureRequest
+                                        , size = Mensam.Element.Button.Medium
+                                        }
+                                ]
+                            ]
+        , closePopup = MessagePure ClosePopup
         }
 
 
@@ -410,7 +515,8 @@ type Message
 
 
 type MessagePure
-    = SetOldSettings
+    = ClosePopup
+    | SetOldSettings
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
         , visibility : Mensam.Space.Visibility
@@ -420,13 +526,19 @@ type MessagePure
     | SetTimezone (Maybe Mensam.Time.Timezone)
     | SetHoveringTimezone (Maybe Int)
     | SetVisibility (Maybe Mensam.Space.Visibility)
+    | SetSpacePicture { url : String }
     | OpenDialogToDeleteSpace
     | CloseDialogToDeleteSpace
+    | OpenDialogToDeleteSpacePicture
+    | CloseDialogToDeleteSpacePicture
 
 
 updatePure : MessagePure -> Model -> Model
 updatePure message model =
     case message of
+        ClosePopup ->
+            { model | popup = Nothing }
+
         SetOldSettings args ->
             { model | old = args }
 
@@ -482,11 +594,20 @@ updatePure message model =
             in
             { model | new = { newSettings | visibility = visibility } }
 
+        SetSpacePicture picture ->
+            { model | spacePictureUrl = picture.url }
+
         OpenDialogToDeleteSpace ->
             { model | popup = Just PopupDeleteSpace }
 
         CloseDialogToDeleteSpace ->
-            { model | popup = Nothing }
+            updatePure ClosePopup model
+
+        OpenDialogToDeleteSpacePicture ->
+            { model | popup = Just PopupDeleteSpacePicture }
+
+        CloseDialogToDeleteSpacePicture ->
+            updatePure ClosePopup model
 
 
 type MessageEffect
@@ -496,6 +617,10 @@ type MessageEffect
     | ReturnToSpace
     | ReturnToSpaces
     | SubmitDeleteSpace
+    | UploadSpacePictureRequested
+    | UploadSpacePictureUpload File.File
+    | DeleteSpacePictureRequest
+    | DownloadSpacePictureRequest
     | OpenPageToRoles
 
 
@@ -554,24 +679,145 @@ spaceDelete requestArgs =
                     MessageEffect ReturnToSpaces
 
                 Ok (Mensam.Api.SpaceDelete.ErrorInsufficientPermission permission) ->
-                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok Mensam.Api.SpaceDelete.ErrorSpaceNotFound ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Try a different space identifier" <|
-                                Mensam.Error.message "Space not found" <|
-                                    Mensam.Error.undefined
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Error.message "Try a different space identifier" <|
+                                    Mensam.Error.message "Space not found" <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceDelete.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Bad request body" <|
-                                Mensam.Error.message error <|
-                                    Mensam.Error.undefined
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceDelete.ErrorAuth error) ->
                     MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
 
                 Err error ->
                     MessageEffect <| ReportError <| Mensam.Error.http error
+
+
+selectSpacePictureToUpload : Cmd Message
+selectSpacePictureToUpload =
+    File.Select.file [ "image/jpeg" ] <| \file -> MessageEffect <| UploadSpacePictureUpload file
+
+
+downloadSpacePicture : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+downloadSpacePicture jwt space =
+    Mensam.Api.SpacePictureDownload.request
+        { jwt = jwt
+        , space = space
+        }
+    <|
+        \response ->
+            case response of
+                Ok (Mensam.Api.SpacePictureDownload.Success picture) ->
+                    MessagePure <| SetSpacePicture picture
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to download space picture" <|
+                                Mensam.Error.http error
+
+
+uploadSpacePicture : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> File.File -> Cmd Message
+uploadSpacePicture jwt space file =
+    Mensam.Api.SpacePictureUpload.request
+        { jwt = jwt
+        , space = space
+        , picture = file
+        }
+    <|
+        \response ->
+            case response of
+                Ok Mensam.Api.SpacePictureUpload.Success ->
+                    MessageEffect DownloadSpacePictureRequest
+
+                Ok (Mensam.Api.SpacePictureUpload.ErrorInsufficientPermission permission) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Space.Role.errorInsufficientPermission permission
+
+                Ok Mensam.Api.SpacePictureUpload.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Error.message "Try a different space identifier" <|
+                                    Mensam.Error.message "Space not found" <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpacePictureUpload.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message "Make sure to use JPEG" <|
+                                        Mensam.Error.message error <|
+                                            Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpacePictureUpload.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Error.message "Try reducing the file size before uploading" <|
+                                    Mensam.Error.http error
+
+
+deleteSpacePicture : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+deleteSpacePicture jwt space =
+    Mensam.Api.SpacePictureDelete.request
+        { jwt = jwt
+        , space = space
+        }
+    <|
+        \response ->
+            case response of
+                Ok Mensam.Api.SpacePictureDelete.Success ->
+                    Messages
+                        [ MessagePure ClosePopup
+                        , MessageEffect DownloadSpacePictureRequest
+                        ]
+
+                Ok (Mensam.Api.SpacePictureDelete.ErrorInsufficientPermission permission) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Space.Role.errorInsufficientPermission permission
+
+                Ok Mensam.Api.SpacePictureDelete.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Error.message "Try a different space identifier" <|
+                                    Mensam.Error.message "Space not found" <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpacePictureDelete.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to upload space picture" <|
+                                Mensam.Error.message "Try reducing the file size before uploading" <|
+                                    Mensam.Error.http error

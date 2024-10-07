@@ -2,6 +2,7 @@ module Mensam.Client.Application.MensamClient.Class where
 
 import Mensam.API.Aeson
 import Mensam.API.Aeson.StaticText
+import Mensam.API.Data.Space
 import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
 import Mensam.API.Route.Api qualified as Route.Api
@@ -15,15 +16,14 @@ import Control.Monad.Trans
 import Control.Monad.Trans.Compose
 import Control.Monad.Trans.Elevator
 import Data.Kind
+import Data.OpenApi qualified
 import Data.Proxy
 import Servant.API
 import Servant.API.ImageJpeg
-import Servant.Client
-import Servant.RawM.Client ()
-
-import Data.OpenApi qualified
 import Servant.Auth qualified
 import Servant.Auth.JWT.WithSession qualified as Servant.Auth
+import Servant.Client
+import Servant.RawM.Client ()
 
 type MonadMensamClient :: (Type -> Type) -> Constraint
 class Monad m => MonadMensamClient m where
@@ -89,18 +89,18 @@ endpointPasswordChange ::
          , WithStatus 500 ()
          ]
     )
-endpointPictureUpload ::
+endpointUserPictureUpload ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   ImageJpegBytes ->
   ClientM
     ( Union
         '[ WithStatus 200 (StaticText "Uploaded profile picture.")
-         , WithStatus 400 Route.Api.User.ErrorParseBodyJpeg
+         , WithStatus 400 ErrorParseBodyJpeg
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 500 ()
          ]
     )
-endpointPictureDelete ::
+endpointUserPictureDelete ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   ClientM
     ( Union
@@ -109,7 +109,7 @@ endpointPictureDelete ::
          , WithStatus 500 ()
          ]
     )
-endpointPictureDownload ::
+endpointUserPictureDownload ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   IdentifierUser ->
   ClientM ImageJpegBytes
@@ -195,6 +195,36 @@ endpointSpaceEdit ::
          , WithStatus 500 ()
          ]
     )
+endpointSpacePictureUpload ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  IdentifierSpace ->
+  ImageJpegBytes ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 (StaticText "Uploaded space picture.")
+         , WithStatus 400 ErrorParseBodyJpeg
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+         , WithStatus 404 (StaticText "Space not found.")
+         , WithStatus 500 ()
+         ]
+    )
+endpointSpacePictureDelete ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  IdentifierSpace ->
+  ClientM
+    ( Union
+        '[ WithStatus 200 (StaticText "Deleted space picture.")
+         , WithStatus 401 ErrorBearerAuth
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+         , WithStatus 404 (StaticText "Space not found.")
+         , WithStatus 500 ()
+         ]
+    )
+endpointSpacePictureDownload ::
+  AuthData '[Servant.Auth.JWTWithSession] ->
+  IdentifierSpace ->
+  ClientM ImageJpegBytes
 endpointSpaceJoin ::
   AuthData '[Servant.Auth.JWTWithSession] ->
   Route.Api.Space.RequestSpaceJoin ->
@@ -403,9 +433,9 @@ Route.Api.Routes
       , Route.Api.User.routeLogout = endpointLogout
       , Route.Api.User.routeRegister = endpointRegister
       , Route.Api.User.routePasswordChange = endpointPasswordChange
-      , Route.Api.User.routePictureUpload = endpointPictureUpload
-      , Route.Api.User.routePictureDelete = endpointPictureDelete
-      , Route.Api.User.routePictureDownload = endpointPictureDownload
+      , Route.Api.User.routePictureUpload = endpointUserPictureUpload
+      , Route.Api.User.routePictureDelete = endpointUserPictureDelete
+      , Route.Api.User.routePictureDownload = endpointUserPictureDownload
       , Route.Api.User.routeConfirmationRequest = endpointConfirmationRequest
       , Route.Api.User.routeConfirm = endpointConfirm
       , Route.Api.User.routeNotificationPreferences = endpointNotificationPreferences
@@ -416,6 +446,9 @@ Route.Api.Routes
       { Route.Api.Space.routeSpaceCreate = endpointSpaceCreate
       , Route.Api.Space.routeSpaceDelete = endpointSpaceDelete
       , Route.Api.Space.routeSpaceEdit = endpointSpaceEdit
+      , Route.Api.Space.routePictureUpload = endpointSpacePictureUpload
+      , Route.Api.Space.routePictureDelete = endpointSpacePictureDelete
+      , Route.Api.Space.routePictureDownload = endpointSpacePictureDownload
       , Route.Api.Space.routeSpaceJoin = endpointSpaceJoin
       , Route.Api.Space.routeSpaceLeave = endpointSpaceLeave
       , Route.Api.Space.routeSpaceKick = endpointSpaceKick
