@@ -759,6 +759,7 @@ deskTimetable model =
         , Element.Font.size 16
         , Element.clipY
         , Element.scrollbarY
+        , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
         , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
         ]
         { data = model.desks

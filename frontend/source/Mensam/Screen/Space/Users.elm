@@ -127,6 +127,7 @@ element model =
                     , Element.Font.size 16
                     , Element.clipY
                     , Element.scrollbarY
+                    , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
                     ]
                     { data = Dict.values model.users
                     , columns =
@@ -417,6 +418,7 @@ element model =
                                         , Element.Font.size 16
                                         , Element.clipY
                                         , Element.scrollbarY
+                                        , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
                                         ]
                                         { data = model.roles
                                         , columns =

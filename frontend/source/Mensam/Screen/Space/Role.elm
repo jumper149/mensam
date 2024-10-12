@@ -95,6 +95,7 @@ element model =
                 , Element.height Element.fill
                 , Element.clipY
                 , Element.scrollbarY
+                , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
                 ]
                 [ Element.row
                     [ Element.width Element.fill
@@ -460,6 +461,7 @@ element model =
                                 , Element.Font.size 16
                                 , Element.clipY
                                 , Element.scrollbarY
+                                , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
                                 ]
                                 { data = List.filter (\role -> role.id /= model.role.id) model.roles
                                 , columns =
