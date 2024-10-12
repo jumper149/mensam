@@ -247,13 +247,16 @@ element model =
                                                 ]
                                                 [ Element.column
                                                     [ Element.width <| Element.px 175
-                                                    , Element.height <| Element.fill
                                                     , Element.alignLeft
                                                     , Element.spacing 1
                                                     , Element.clip
                                                     ]
                                                     [ Element.paragraph
-                                                        [ Element.alignTop
+                                                        [ Element.height <| Element.px 40
+                                                        , Element.alignTop
+                                                        , Element.clipY
+                                                        , Element.Font.size 15
+                                                        , Element.Font.semiBold
                                                         ]
                                                         [ Element.text <|
                                                             Mensam.Space.nameToString space.name
