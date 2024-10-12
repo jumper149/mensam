@@ -28,6 +28,7 @@ type alias Model =
             , timezone : Mensam.Time.Timezone
             , owner : Mensam.User.Identifier
             , users : Int
+            , desks : Int
             }
     , selected : Maybe Int
     , popup : Maybe PopupModel
@@ -317,6 +318,7 @@ type MessagePure
             , timezone : Mensam.Time.Timezone
             , owner : Mensam.User.Identifier
             , users : Int
+            , desks : Int
             }
         )
     | SetSelected (Maybe Int)

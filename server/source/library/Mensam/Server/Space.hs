@@ -258,6 +258,20 @@ spaceCountUsers identifier = do
   let intToNatural :: Int -> Natural = toEnum
   pure $ intToNatural dbUserCount
 
+spaceCountDesks ::
+  (MonadLogger m, MonadSeldaPool m) =>
+  IdentifierSpace ->
+  SeldaTransactionT m Natural
+spaceCountDesks identifier = do
+  lift $ logDebug $ "Counting space desks: " <> T.pack (show identifier)
+  dbDeskCount <- Selda.queryOne $ do
+    Selda.aggregate $ do
+      dbDesk <- Selda.select tableDesk
+      Selda.restrict $ dbDesk Selda.! #dbDesk_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
+      pure $ Selda.count $ dbDesk Selda.! #dbDesk_id
+  let intToNatural :: Int -> Natural = toEnum
+  pure $ intToNatural dbDeskCount
+
 spaceRoleLookupId ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->

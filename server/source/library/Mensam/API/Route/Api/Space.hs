@@ -575,6 +575,7 @@ data SpaceListSpace = MkSpaceListSpace
   , spaceListSpaceTimezone :: T.TZLabel
   , spaceListSpaceOwner :: IdentifierUser
   , spaceListSpaceUsers :: Natural
+  , spaceListSpaceDesks :: Natural
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

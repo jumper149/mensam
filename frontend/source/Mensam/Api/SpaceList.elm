@@ -27,6 +27,7 @@ type Response
                 , timezone : Mensam.Time.Timezone
                 , owner : Mensam.User.Identifier
                 , users : Int
+                , desks : Int
                 }
         }
     | ErrorBody String
@@ -134,19 +135,21 @@ decodeBody200 :
                 , timezone : Mensam.Time.Timezone
                 , owner : Mensam.User.Identifier
                 , users : Int
+                , desks : Int
                 }
         }
 decodeBody200 =
     Decode.map (\x -> { spaces = x }) <|
         Decode.field "spaces" <|
             Decode.list <|
-                Decode.map5
-                    (\id name timezone owner users ->
+                Decode.map6
+                    (\id name timezone owner users desks ->
                         { id = id
                         , name = name
                         , timezone = timezone
                         , owner = owner
                         , users = users
+                        , desks = desks
                         }
                     )
                     (Decode.field "id" Mensam.Space.identifierDecoder)
@@ -154,6 +157,7 @@ decodeBody200 =
                     (Decode.field "timezone" Mensam.Time.timezoneDecoder)
                     (Decode.field "owner" Mensam.User.identifierDecoder)
                     (Decode.field "users" Decode.int)
+                    (Decode.field "desks" Decode.int)
 
 
 decodeBody400 : Decode.Decoder String

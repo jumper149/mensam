@@ -37,6 +37,7 @@ type alias Model =
             , timezone : Mensam.Time.Timezone
             , owner : Mensam.User.Identifier
             , users : Int
+            , desks : Int
             }
     , hoveringSpace : Maybe Int
     , owners : Dict.Dict Int Mensam.User.Name
@@ -247,7 +248,7 @@ element model =
                                                 , Element.spacing 10
                                                 ]
                                                 [ Element.column
-                                                    [ Element.width <| Element.px 175
+                                                    [ Element.width <| Element.px 150
                                                     , Element.alignLeft
                                                     , Element.spacing 1
                                                     , Element.clip
@@ -319,13 +320,23 @@ element model =
                                                         ]
                                                       <|
                                                         Element.text <|
-                                                            String.fromInt space.users
-                                                                ++ (if space.users == 1 then
-                                                                        " User"
+                                                            String.concat
+                                                                [ String.fromInt space.users
+                                                                    ++ (if space.users == 1 then
+                                                                            " User"
 
-                                                                    else
-                                                                        " Users"
-                                                                   )
+                                                                        else
+                                                                            " Users"
+                                                                       )
+                                                                , ", "
+                                                                , String.fromInt space.desks
+                                                                    ++ (if space.desks == 1 then
+                                                                            " Desk"
+
+                                                                        else
+                                                                            " Desks"
+                                                                       )
+                                                                ]
                                                     ]
                                                 ]
                               }
@@ -674,6 +685,7 @@ type MessagePure
             , timezone : Mensam.Time.Timezone
             , owner : Mensam.User.Identifier
             , users : Int
+            , desks : Int
             }
         )
     | SetHoveringSpace (Maybe Int)

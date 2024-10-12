@@ -9,6 +9,7 @@
     *** Use GET to download pictures.
     *** Use PUT to upload a picture replacing the old one.
     *** Use DELETE to delete the current picture.
+  ** Add new field `desks` to route `/space/list` to count desks.
 
 == `0.11.1.0`
 

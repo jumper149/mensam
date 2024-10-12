@@ -548,6 +548,7 @@ listSpaces auth eitherRequest =
         spaces <- spaceListVisible (userAuthenticatedId authenticated) (requestSpaceListOrder request) (requestSpaceListMember request)
         for spaces $ \space -> do
           userCount <- spaceCountUsers $ spaceId space
+          deskCount <- spaceCountDesks $ spaceId space
           pure
             MkSpaceListSpace
               { spaceListSpaceId = spaceId space
@@ -555,6 +556,7 @@ listSpaces auth eitherRequest =
               , spaceListSpaceTimezone = spaceTimezone space
               , spaceListSpaceOwner = spaceOwner space
               , spaceListSpaceUsers = userCount
+              , spaceListSpaceDesks = deskCount
               }
       handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \spaces -> do
         logInfo "Listed spaces."
