@@ -83,313 +83,322 @@ element model =
                 [ Element.width Element.fill
                 , Element.height Element.fill
                 ]
-                [ Element.row
+                [ Element.column
                     [ Element.width Element.fill
-                    , Element.height <| Element.px 70
-                    , Element.padding 10
-                    , Element.spacing 10
-                    ]
-                    [ Element.el
-                        [ Element.Font.size 30
-                        , Element.Font.hairline
-                        , Element.alignLeft
-                        , Element.centerY
-                        ]
-                      <|
-                        Element.text "Settings"
-                    , Mensam.Element.Button.button <|
-                        Mensam.Element.Button.MkButton
-                            { attributes = [ Element.alignLeft, Element.centerY ]
-                            , color = Mensam.Element.Button.Red
-                            , enabled = True
-                            , label = Element.text "Delete"
-                            , message = Just <| MessagePure OpenDialogToDeleteSpace
-                            , size = Mensam.Element.Button.Medium
-                            }
-                    , Mensam.Element.Button.button <|
-                        Mensam.Element.Button.MkButton
-                            { attributes = [ Element.alignRight, Element.centerY ]
-                            , color = Mensam.Element.Button.Yellow
-                            , enabled = True
-                            , label = Element.text "Roles"
-                            , message = Just <| MessageEffect OpenPageToRoles
-                            , size = Mensam.Element.Button.Medium
-                            }
-                    , Mensam.Element.Button.button <|
-                        Mensam.Element.Button.MkButton
-                            { attributes = [ Element.alignRight, Element.centerY ]
-                            , color = Mensam.Element.Button.Gray
-                            , enabled = True
-                            , label = Element.text "Go back"
-                            , message = Just <| MessageEffect ReturnToSpace
-                            , size = Mensam.Element.Button.Medium
-                            }
-                    ]
-                , Element.column
-                    [ Element.spacing 20
-                    , Element.width Element.fill
-                    , Element.height <| Element.px 140
+                    , Element.height Element.fill
+                    , Element.clipY
+                    , Element.scrollbarY
+                    , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
                     ]
                     [ Element.row
-                        [ Element.spacing 20
-                        , Element.width Element.fill
-                        , Element.height <| Element.px 25
-                        ]
-                        [ Element.el [] <| Element.text "Current Name:"
-                        , Element.el [] <| Element.text <| Mensam.Space.nameToString model.old.name
-                        ]
-                    , Element.el
-                        [ Element.paddingXY 30 5
-                        , Element.width Element.fill
-                        , Element.height <| Element.px 115
-                        ]
-                      <|
-                        case model.new.name of
-                            Nothing ->
-                                Mensam.Element.Button.button <|
-                                    Mensam.Element.Button.MkButton
-                                        { attributes = [ Element.width Element.fill ]
-                                        , color = Mensam.Element.Button.Yellow
-                                        , enabled = True
-                                        , label = Element.text "Edit Name"
-                                        , message = Just <| MessagePure <| EnterName <| Just <| model.old.name
-                                        , size = Mensam.Element.Button.Medium
-                                        }
-
-                            Just name ->
-                                Element.Input.text
-                                    [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
-                                    ]
-                                    { onChange = MessagePure << EnterName << Just << Mensam.Space.MkName
-                                    , text = Mensam.Space.nameToString name
-                                    , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
-                                    , label = Element.Input.labelHidden "Name"
-                                    }
-                    ]
-                , Element.row
-                    [ Element.width Element.fill
-                    , Element.height <| Element.px 220
-                    , Element.padding 10
-                    , Element.spacing 30
-                    ]
-                    [ Element.el
-                        [ Element.alignLeft
-                        , Element.centerY
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 70
                         , Element.padding 10
+                        , Element.spacing 10
                         ]
-                      <|
-                        Element.image
-                            [ Element.width <| Element.px 180
-                            , Element.height <| Element.px 180
-                            , Element.Border.rounded 30
-                            , Element.clip
+                        [ Element.el
+                            [ Element.Font.size 30
+                            , Element.Font.hairline
+                            , Element.alignLeft
+                            , Element.centerY
                             ]
-                            { src = model.spacePictureUrl
-                            , description = "Space picture."
-                            }
-                    , Element.column
-                        [ Element.padding 10
-                        , Element.spacing 30
-                        , Element.alignRight
-                        , Element.centerY
-                        ]
-                        [ Mensam.Element.Button.button <|
+                          <|
+                            Element.text "Settings"
+                        , Mensam.Element.Button.button <|
                             Mensam.Element.Button.MkButton
-                                { attributes = []
-                                , color = Mensam.Element.Button.Yellow
+                                { attributes = [ Element.alignLeft, Element.centerY ]
+                                , color = Mensam.Element.Button.Red
                                 , enabled = True
-                                , label = Element.text "Upload Pic"
-                                , message = Just <| MessageEffect UploadSpacePictureRequested
+                                , label = Element.text "Delete"
+                                , message = Just <| MessagePure OpenDialogToDeleteSpace
                                 , size = Mensam.Element.Button.Medium
                                 }
                         , Mensam.Element.Button.button <|
                             Mensam.Element.Button.MkButton
-                                { attributes = []
-                                , color = Mensam.Element.Button.Red
+                                { attributes = [ Element.alignRight, Element.centerY ]
+                                , color = Mensam.Element.Button.Yellow
                                 , enabled = True
-                                , label = Element.text "Delete Pic"
-                                , message = Just <| MessagePure OpenDialogToDeleteSpacePicture
+                                , label = Element.text "Roles"
+                                , message = Just <| MessageEffect OpenPageToRoles
+                                , size = Mensam.Element.Button.Medium
+                                }
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.alignRight, Element.centerY ]
+                                , color = Mensam.Element.Button.Gray
+                                , enabled = True
+                                , label = Element.text "Go back"
+                                , message = Just <| MessageEffect ReturnToSpace
                                 , size = Mensam.Element.Button.Medium
                                 }
                         ]
-                    ]
-                , Element.column
-                    [ Element.spacing 20
-                    , Element.width Element.fill
-                    , Element.height <| Element.px 245
-                    ]
-                    [ Element.row
+                    , Element.column
                         [ Element.spacing 20
                         , Element.width Element.fill
-                        , Element.height <| Element.px 25
+                        , Element.height <| Element.px 140
                         ]
-                        [ Element.el [] <| Element.text "Current Timezone:"
-                        , Element.el [] <| Element.text <| Mensam.Time.timezoneToString model.old.timezone
-                        ]
-                    , Element.el
-                        [ Element.paddingXY 30 5
-                        , Element.width Element.fill
-                        , Element.height <| Element.px 200
-                        ]
-                      <|
-                        case model.new.timezone of
-                            Nothing ->
-                                Mensam.Element.Button.button <|
-                                    Mensam.Element.Button.MkButton
-                                        { attributes = [ Element.width Element.fill ]
-                                        , color = Mensam.Element.Button.Yellow
-                                        , enabled = True
-                                        , label = Element.text "Edit Timezone"
-                                        , message = Just <| MessagePure <| SetTimezone <| Just model.old.timezone
-                                        , size = Mensam.Element.Button.Medium
-                                        }
+                        [ Element.row
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height <| Element.px 25
+                            ]
+                            [ Element.el [] <| Element.text "Current Name:"
+                            , Element.el [] <| Element.text <| Mensam.Space.nameToString model.old.name
+                            ]
+                        , Element.el
+                            [ Element.paddingXY 30 5
+                            , Element.width Element.fill
+                            , Element.height <| Element.px 115
+                            ]
+                          <|
+                            case model.new.name of
+                                Nothing ->
+                                    Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.width Element.fill ]
+                                            , color = Mensam.Element.Button.Yellow
+                                            , enabled = True
+                                            , label = Element.text "Edit Name"
+                                            , message = Just <| MessagePure <| EnterName <| Just <| model.old.name
+                                            , size = Mensam.Element.Button.Medium
+                                            }
 
-                            Just timezoneWidget ->
-                                Element.indexedTable
-                                    [ Element.width Element.fill
-                                    , Element.height <| Element.px 150
-                                    , Element.Background.color (Element.rgba 0 0 0 0.1)
-                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                    , Element.Font.size 16
-                                    , Element.clipY
-                                    , Element.scrollbarY
-                                    , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
-                                    ]
-                                    { data = Mensam.Time.allTimezones
-                                    , columns =
-                                        let
-                                            cell =
-                                                Element.el
-                                                    [ Element.height <| Element.px 40
-                                                    , Element.padding 10
-                                                    ]
-                                        in
-                                        [ { header = Element.none
-                                          , width = Element.fill
-                                          , view =
-                                                \n timezone ->
-                                                    Element.el
-                                                        [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetHoveringTimezone Nothing
-                                                        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringTimezone <| Just n
-                                                        , Element.Events.Pointer.onClick <| \_ -> MessagePure <| SetTimezone <| Just timezone
-                                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                                                        , let
-                                                            alpha =
-                                                                case timezoneWidget.hovering of
-                                                                    Nothing ->
-                                                                        0.2
-
-                                                                    Just m ->
-                                                                        if m == n then
-                                                                            0.4
-
-                                                                        else
-                                                                            0.2
-                                                          in
-                                                          if timezoneWidget.selected == timezone then
-                                                            Element.Background.color (Element.rgba 0 0.2 0 alpha)
-
-                                                          else
-                                                            Element.Background.color (Element.rgba 0 0 0 alpha)
-                                                        ]
-                                                    <|
-                                                        cell <|
-                                                            Element.el
-                                                                [ Element.width <| Element.maximum 100 <| Element.fill ]
-                                                            <|
-                                                                Element.text <|
-                                                                    Mensam.Time.timezoneToString timezone
-                                          }
+                                Just name ->
+                                    Element.Input.text
+                                        [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
                                         ]
+                                        { onChange = MessagePure << EnterName << Just << Mensam.Space.MkName
+                                        , text = Mensam.Space.nameToString name
+                                        , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
+                                        , label = Element.Input.labelHidden "Name"
+                                        }
+                        ]
+                    , Element.row
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 220
+                        , Element.padding 10
+                        , Element.spacing 30
+                        ]
+                        [ Element.el
+                            [ Element.alignLeft
+                            , Element.centerY
+                            , Element.padding 10
+                            ]
+                          <|
+                            Element.image
+                                [ Element.width <| Element.px 180
+                                , Element.height <| Element.px 180
+                                , Element.Border.rounded 30
+                                , Element.clip
+                                ]
+                                { src = model.spacePictureUrl
+                                , description = "Space picture."
+                                }
+                        , Element.column
+                            [ Element.padding 10
+                            , Element.spacing 30
+                            , Element.alignRight
+                            , Element.centerY
+                            ]
+                            [ Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = []
+                                    , color = Mensam.Element.Button.Yellow
+                                    , enabled = True
+                                    , label = Element.text "Upload Pic"
+                                    , message = Just <| MessageEffect UploadSpacePictureRequested
+                                    , size = Mensam.Element.Button.Medium
                                     }
-                    ]
-                , Element.column
-                    [ Element.spacing 20
-                    , Element.width Element.fill
-                    , Element.height <| Element.px 140
-                    ]
-                    [ Element.row
+                            , Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = []
+                                    , color = Mensam.Element.Button.Red
+                                    , enabled = True
+                                    , label = Element.text "Delete Pic"
+                                    , message = Just <| MessagePure OpenDialogToDeleteSpacePicture
+                                    , size = Mensam.Element.Button.Medium
+                                    }
+                            ]
+                        ]
+                    , Element.column
                         [ Element.spacing 20
                         , Element.width Element.fill
-                        , Element.height <| Element.px 25
+                        , Element.height <| Element.px 245
                         ]
-                        [ Element.el [] <| Element.text "Current Visibility:"
-                        , Element.el [] <| Element.text <| Mensam.Space.visibilityToString model.old.visibility
+                        [ Element.row
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height <| Element.px 25
+                            ]
+                            [ Element.el [] <| Element.text "Current Timezone:"
+                            , Element.el [] <| Element.text <| Mensam.Time.timezoneToString model.old.timezone
+                            ]
+                        , Element.el
+                            [ Element.paddingXY 30 5
+                            , Element.width Element.fill
+                            , Element.height <| Element.px 200
+                            ]
+                          <|
+                            case model.new.timezone of
+                                Nothing ->
+                                    Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.width Element.fill ]
+                                            , color = Mensam.Element.Button.Yellow
+                                            , enabled = True
+                                            , label = Element.text "Edit Timezone"
+                                            , message = Just <| MessagePure <| SetTimezone <| Just model.old.timezone
+                                            , size = Mensam.Element.Button.Medium
+                                            }
+
+                                Just timezoneWidget ->
+                                    Element.indexedTable
+                                        [ Element.width Element.fill
+                                        , Element.height <| Element.px 150
+                                        , Element.Background.color (Element.rgba 0 0 0 0.1)
+                                        , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                        , Element.Font.size 16
+                                        , Element.clipY
+                                        , Element.scrollbarY
+                                        , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
+                                        ]
+                                        { data = Mensam.Time.allTimezones
+                                        , columns =
+                                            let
+                                                cell =
+                                                    Element.el
+                                                        [ Element.height <| Element.px 40
+                                                        , Element.padding 10
+                                                        ]
+                                            in
+                                            [ { header = Element.none
+                                              , width = Element.fill
+                                              , view =
+                                                    \n timezone ->
+                                                        Element.el
+                                                            [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetHoveringTimezone Nothing
+                                                            , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetHoveringTimezone <| Just n
+                                                            , Element.Events.Pointer.onClick <| \_ -> MessagePure <| SetTimezone <| Just timezone
+                                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                            , let
+                                                                alpha =
+                                                                    case timezoneWidget.hovering of
+                                                                        Nothing ->
+                                                                            0.2
+
+                                                                        Just m ->
+                                                                            if m == n then
+                                                                                0.4
+
+                                                                            else
+                                                                                0.2
+                                                              in
+                                                              if timezoneWidget.selected == timezone then
+                                                                Element.Background.color (Element.rgba 0 0.2 0 alpha)
+
+                                                              else
+                                                                Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                            ]
+                                                        <|
+                                                            cell <|
+                                                                Element.el
+                                                                    [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                                <|
+                                                                    Element.text <|
+                                                                        Mensam.Time.timezoneToString timezone
+                                              }
+                                            ]
+                                        }
                         ]
-                    , Element.el
-                        [ Element.paddingXY 30 5
+                    , Element.column
+                        [ Element.spacing 20
                         , Element.width Element.fill
-                        , Element.height <| Element.px 115
+                        , Element.height <| Element.px 140
                         ]
-                      <|
-                        case model.new.visibility of
-                            Nothing ->
-                                Mensam.Element.Button.button <|
-                                    Mensam.Element.Button.MkButton
-                                        { attributes = [ Element.width Element.fill ]
-                                        , color = Mensam.Element.Button.Yellow
-                                        , enabled = True
-                                        , label = Element.text "Edit Visibility"
-                                        , message = Just <| MessagePure <| SetVisibility <| Just <| model.old.visibility
-                                        , size = Mensam.Element.Button.Medium
-                                        }
+                        [ Element.row
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height <| Element.px 25
+                            ]
+                            [ Element.el [] <| Element.text "Current Visibility:"
+                            , Element.el [] <| Element.text <| Mensam.Space.visibilityToString model.old.visibility
+                            ]
+                        , Element.el
+                            [ Element.paddingXY 30 5
+                            , Element.width Element.fill
+                            , Element.height <| Element.px 115
+                            ]
+                          <|
+                            case model.new.visibility of
+                                Nothing ->
+                                    Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.width Element.fill ]
+                                            , color = Mensam.Element.Button.Yellow
+                                            , enabled = True
+                                            , label = Element.text "Edit Visibility"
+                                            , message = Just <| MessagePure <| SetVisibility <| Just <| model.old.visibility
+                                            , size = Mensam.Element.Button.Medium
+                                            }
 
-                            Just visibility ->
-                                Element.row
-                                    [ Element.spacing 20
-                                    , Element.width Element.fill
-                                    , Element.height <| Element.px 60
-                                    ]
-                                    -- TODO: Use `Mensam.Element.Button.button`.
-                                    [ Element.Input.button
-                                        [ if visibility == Mensam.Space.MkVisibilityVisible then
-                                            Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
-
-                                          else
-                                            Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
-                                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.magenta Mensam.Element.Color.Opaque100 ]
-                                        , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                Just visibility ->
+                                    Element.row
+                                        [ Element.spacing 20
                                         , Element.width Element.fill
-                                        , Element.padding 10
+                                        , Element.height <| Element.px 60
                                         ]
-                                        { onPress = Just <| MessagePure <| SetVisibility <| Just <| Mensam.Space.MkVisibilityVisible
-                                        , label =
-                                            Element.el
-                                                [ Element.centerX
-                                                , Element.centerY
-                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                ]
-                                            <|
-                                                Element.text "visible"
-                                        }
-                                    , Element.Input.button
-                                        [ if visibility == Mensam.Space.MkVisibilityHidden then
-                                            Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
+                                        -- TODO: Use `Mensam.Element.Button.button`.
+                                        [ Element.Input.button
+                                            [ if visibility == Mensam.Space.MkVisibilityVisible then
+                                                Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
-                                          else
-                                            Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
-                                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.magenta Mensam.Element.Color.Opaque100 ]
-                                        , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
-                                        , Element.width Element.fill
-                                        , Element.padding 10
+                                              else
+                                                Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                            , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.magenta Mensam.Element.Color.Opaque100 ]
+                                            , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                            , Element.width Element.fill
+                                            , Element.padding 10
+                                            ]
+                                            { onPress = Just <| MessagePure <| SetVisibility <| Just <| Mensam.Space.MkVisibilityVisible
+                                            , label =
+                                                Element.el
+                                                    [ Element.centerX
+                                                    , Element.centerY
+                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                    ]
+                                                <|
+                                                    Element.text "visible"
+                                            }
+                                        , Element.Input.button
+                                            [ if visibility == Mensam.Space.MkVisibilityHidden then
+                                                Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
+
+                                              else
+                                                Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                            , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.magenta Mensam.Element.Color.Opaque100 ]
+                                            , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                            , Element.width Element.fill
+                                            , Element.padding 10
+                                            ]
+                                            { onPress = Just <| MessagePure <| SetVisibility <| Just <| Mensam.Space.MkVisibilityHidden
+                                            , label =
+                                                Element.el
+                                                    [ Element.centerX
+                                                    , Element.centerY
+                                                    , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                                    ]
+                                                <|
+                                                    Element.text "hidden"
+                                            }
                                         ]
-                                        { onPress = Just <| MessagePure <| SetVisibility <| Just <| Mensam.Space.MkVisibilityHidden
-                                        , label =
-                                            Element.el
-                                                [ Element.centerX
-                                                , Element.centerY
-                                                , Element.Font.family [ Mensam.Element.Font.condensed ]
-                                                ]
-                                            <|
-                                                Element.text "hidden"
-                                        }
-                                    ]
+                        ]
                     ]
                 , Element.row
                     [ Element.spacing 20
                     , Element.padding 20
                     , Element.width Element.fill
                     , Element.alignBottom
+                    , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque05
                     ]
                     [ Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton

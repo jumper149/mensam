@@ -4,8 +4,8 @@
   "learn more": "elm-review suppress --help",
   "suppressions": [
     { "count": 8, "filePath": "source/Mensam/Element/Font.elm" },
-    { "count": 2, "filePath": "source/Mensam/Element/Color.elm" },
     { "count": 1, "filePath": "source/Mensam/Api/Login.elm" },
+    { "count": 1, "filePath": "source/Mensam/Element/Color.elm" },
     { "count": 1, "filePath": "source/Mensam/NameOrIdentifier.elm" },
     { "count": 1, "filePath": "source/Mensam/Screen/PrivacyPolicy.elm" },
     { "count": 1, "filePath": "source/Mensam/Screen/TermsAndConditions.elm" }
