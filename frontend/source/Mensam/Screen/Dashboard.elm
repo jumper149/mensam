@@ -12,6 +12,7 @@ import Mensam.Api.Profile
 import Mensam.Api.ReservationCancel
 import Mensam.Api.ReservationList
 import Mensam.Api.SpaceList
+import Mensam.Api.SpacePictureDownload
 import Mensam.Auth.Bearer
 import Mensam.Desk
 import Mensam.Element.Button
@@ -25,6 +26,7 @@ import Mensam.Space.Role
 import Mensam.Time
 import Mensam.User
 import Time
+import Url.Builder
 
 
 type alias Model =
@@ -38,6 +40,7 @@ type alias Model =
             }
     , hoveringSpace : Maybe Int
     , owners : Dict.Dict Int Mensam.User.Name
+    , pictureUrls : Dict.Dict Int String
     , reservations :
         List
             { desk :
@@ -95,6 +98,7 @@ init value =
     { spaces = []
     , hoveringSpace = Nothing
     , owners = Dict.empty
+    , pictureUrls = Dict.empty
     , reservations = []
     , hoveringReservation = Nothing
     , timezone = value.time.zone
@@ -207,14 +211,33 @@ element model =
                                                     , Element.Background.color <| Mensam.Element.Color.dark.cyan Mensam.Element.Color.Opaque25
                                                     ]
                                                 <|
-                                                    Element.el
+                                                    Element.image
                                                         [ Element.width <| Element.px 60
                                                         , Element.height <| Element.px 60
                                                         , Element.centerX
                                                         , Element.centerY
-                                                        , Element.Background.color <| Mensam.Element.Color.bright.cyan Mensam.Element.Color.Opaque100
+                                                        , Element.clip
                                                         ]
-                                                        Element.none
+                                                        { src =
+                                                            case
+                                                                Dict.get
+                                                                    (case space.id of
+                                                                        Mensam.Space.MkIdentifier id ->
+                                                                            id
+                                                                    )
+                                                                    model.pictureUrls
+                                                            of
+                                                                Nothing ->
+                                                                    Url.Builder.absolute
+                                                                        [ "static"
+                                                                        , "default-space-picture.jpeg"
+                                                                        ]
+                                                                        []
+
+                                                                Just url ->
+                                                                    url
+                                                        , description = "Profile picture."
+                                                        }
                                             ]
                                         <|
                                             Element.row
@@ -653,6 +676,10 @@ type MessagePure
         { space : Mensam.Space.Identifier
         , owner : Mensam.User.Name
         }
+    | SetSpacePictureUrl
+        { space : Mensam.Space.Identifier
+        , url : String
+        }
     | SetReservations
         (List
             { desk :
@@ -703,6 +730,18 @@ updatePure message model =
                         model.owners
             }
 
+        SetSpacePictureUrl { space, url } ->
+            { model
+                | pictureUrls =
+                    Dict.insert
+                        (case space of
+                            Mensam.Space.MkIdentifier id ->
+                                id
+                        )
+                        url
+                        model.pictureUrls
+            }
+
         SetReservations reservations ->
             { model | reservations = reservations }
 
@@ -720,6 +759,7 @@ type MessageEffect
     = ReportError Mensam.Error.Error
     | RefreshSpaces
     | RefreshOwnerName { space : Mensam.Space.Identifier, owner : Mensam.User.Identifier }
+    | RefreshSpacePicture Mensam.Space.Identifier
     | ChooseSpace Mensam.Space.Identifier
     | RefreshReservations
     | CancelReservation Mensam.Reservation.Identifier
@@ -735,15 +775,18 @@ spaceList jwt =
                 Ok (Mensam.Api.SpaceList.Success value) ->
                     Messages <|
                         (MessagePure <| SetSpaces value.spaces)
-                            :: List.map
-                                (\space ->
-                                    MessageEffect <|
-                                        RefreshOwnerName
-                                            { space = space.id
-                                            , owner = space.owner
-                                            }
-                                )
-                                value.spaces
+                            :: (List.map
+                                    (\space ->
+                                        MessageEffect <|
+                                            RefreshOwnerName
+                                                { space = space.id
+                                                , owner = space.owner
+                                                }
+                                    )
+                                    value.spaces
+                                    ++ List.map (\space -> MessageEffect <| RefreshSpacePicture space.id)
+                                        value.spaces
+                               )
 
                 Ok (Mensam.Api.SpaceList.ErrorBody error) ->
                     MessageEffect <|
@@ -911,4 +954,23 @@ reservationCancel argument =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Requesting reservations failed" <|
+                                Mensam.Error.http error
+
+
+downloadSpacePicture : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+downloadSpacePicture jwt space =
+    Mensam.Api.SpacePictureDownload.request
+        { jwt = jwt
+        , space = space
+        }
+    <|
+        \response ->
+            case response of
+                Ok (Mensam.Api.SpacePictureDownload.Success picture) ->
+                    MessagePure <| SetSpacePictureUrl { space = space, url = picture.url }
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to download space picture" <|
                                 Mensam.Error.http error

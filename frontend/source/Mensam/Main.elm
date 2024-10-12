@@ -931,6 +931,21 @@ update message (MkModel model) =
                                 _ ->
                                     update (ReportError errorScreen) <| MkModel model
 
+                Mensam.Screen.Dashboard.RefreshSpacePicture space ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenDashboard _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.downloadSpacePicture jwt space
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
+
                 Mensam.Screen.Dashboard.ChooseSpace identifier ->
                     update (SetUrl <| RouteSpace identifier) <| MkModel model
 
