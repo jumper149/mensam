@@ -1,7 +1,11 @@
 = Changelog
 
+== `0.12.0.0`
+
 * Frontend
   ** Space logos can be edited in your settings.
+  ** Space logos are displayed on the dashboard.
+  ** Fixed compatibility issues with Chrome 129.
 * Database
   ** Add new column `picture_jpeg` to the `space` table.
 * API
