@@ -12,11 +12,8 @@
   ** [ ] `/space/view` route should return 404 when there is no such space.
   ** [ ] File uploads.
     *** [x] Profile pictures.
-    *** [ ] Space pictures.
+    *** [x] Space pictures.
     *** [ ] Desk pictures.
-  ** [ ] Simplify names.
-    ** [ ] -> Change `SpaceRole` to `Role`
-    ** [ ] -> Change `SpaceRolePermission` to `Permission`
   ** [ ] Forbid creating reservations in the past. Maybe this should be configurable for each space (or role?).
 
 * Frontend.
