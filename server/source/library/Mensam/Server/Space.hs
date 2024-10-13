@@ -620,7 +620,7 @@ rolePasswordCheck ::
   Maybe Password ->
   SeldaTransactionT m PasswordCheck
 rolePasswordCheck identifier maybePassword = do
-  lift $ logDebug $ "Querying space_role " <> T.pack (show identifier) <> " from database to check password."
+  lift $ logDebug $ "Querying role " <> T.pack (show identifier) <> " from database to check password."
   dbRole <- Selda.queryOne $ spaceRoleGet $ Selda.toId @DbRole $ unIdentifierRole identifier
   case PasswordHash <$> dbRole_password_hash dbRole of
     Nothing -> do
@@ -661,7 +661,7 @@ rolePasswordCheck' identifier maybePassword =
   rolePasswordCheck identifier maybePassword >>= \case
     PasswordCheckSuccess -> pure ()
     PasswordCheckFail -> do
-      lift $ logDebug "Abort transaction after failed space_role password check."
+      lift $ logDebug "Abort transaction after failed role password check."
       throwM MkSqlErrorMensamRolePasswordCheckFail
 
 type SqlErrorMensamRolePasswordCheckFail :: Type

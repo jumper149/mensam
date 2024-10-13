@@ -178,7 +178,7 @@ data DbRoleAccessibility
 tableRole :: Selda.Table DbRole
 tableRole =
   Selda.tableFieldMod
-    "space_role"
+    "role"
     [ #dbRole_id Selda.:- Selda.autoPrimary
     , #dbRole_space Selda.:+ #dbRole_name Selda.:- Selda.unique
     , #dbRole_space Selda.:- Selda.foreignKey tableSpace #dbSpace_id
@@ -197,7 +197,7 @@ data DbRolePermission = MkDbRolePermission
 tableRolePermission :: Selda.Table DbRolePermission
 tableRolePermission =
   Selda.tableFieldMod
-    "space_role_permission"
+    "role_permission"
     [ #dbRolePermission_id Selda.:- Selda.autoPrimary
     , #dbRolePermission_role Selda.:+ #dbRolePermission_permission Selda.:- Selda.unique
     , #dbRolePermission_role Selda.:- Selda.foreignKey tableRole #dbRole_id

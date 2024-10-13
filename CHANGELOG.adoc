@@ -1,5 +1,9 @@
 = Changelog
 
+* Database
+  ** Rename table `space_role` to `role`.
+  ** Rename table `space_role_permission` to `role_permission`.
+
 == `0.12.0.0`
 
 * Frontend

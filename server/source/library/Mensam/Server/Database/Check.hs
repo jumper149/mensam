@@ -38,10 +38,10 @@ checkDatabase = void $ runSeldaTransactionT $ do
   --  lift $ logDebug "Validating table 'space'."
   --  Selda.validateTable tableSpace
   --
-  --  lift $ logDebug "Validating table 'space_role'."
+  --  lift $ logDebug "Validating table 'role'."
   --  Selda.validateTable tableRole
   --
-  --  lift $ logDebug "Validating table 'space_role_permission'."
+  --  lift $ logDebug "Validating table 'role_permission'."
   --  Selda.validateTable tableRolePermission
   --
   --  lift $ logDebug "Validating table 'space_user'."

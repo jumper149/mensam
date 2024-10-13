@@ -404,6 +404,17 @@ migrations =
             "ALTER TABLE space\n\
             \ADD COLUMN picture_jpeg BLOB"
       }
+  , MkMigration
+      { migrationId = Selda.toId 17
+      , migrationName = "renameSpaceRoleToRole"
+      , migrationWork = do
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space_role\n\
+            \RENAME TO role"
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space_role_permission\n\
+            \RENAME TO role_permission"
+      }
   ]
 
 createDatabase ::
