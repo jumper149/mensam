@@ -1173,6 +1173,7 @@ deskRoom model =
         , Element.clip
         , Element.Border.width 1
         , Element.Background.color <| Mensam.Element.Color.dark.white Mensam.Element.Color.Opaque100
+        , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
         ]
     <|
         Element.Window.view model.window
