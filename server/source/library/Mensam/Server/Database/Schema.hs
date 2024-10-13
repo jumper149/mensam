@@ -155,54 +155,54 @@ tableSpace =
 -- TODO: Some assumptions are currently not checked by the database:
 --   - When `accessibility = 'joinable_with_password'` we also have `password_hash IS NOT NULL`
 --   - When `accessibility != 'joinable_with_password'` we also have `password_hash IS NULL`
-type DbSpaceRole :: Type
-data DbSpaceRole = MkDbSpaceRole
-  { dbSpaceRole_id :: ~(Selda.ID DbSpaceRole)
-  , dbSpaceRole_space :: Selda.ID DbSpace
-  , dbSpaceRole_name :: Selda.Text
-  , dbSpaceRole_accessibility :: DbSpaceRoleAccessibility
-  , dbSpaceRole_password_hash :: Maybe Selda.Text
+type DbRole :: Type
+data DbRole = MkDbRole
+  { dbRole_id :: ~(Selda.ID DbRole)
+  , dbRole_space :: Selda.ID DbSpace
+  , dbRole_name :: Selda.Text
+  , dbRole_accessibility :: DbRoleAccessibility
+  , dbRole_password_hash :: Maybe Selda.Text
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.Relational, Selda.SqlRow)
 
-type DbSpaceRoleAccessibility :: Type
-data DbSpaceRoleAccessibility
-  = MkDbSpaceRoleAccessibility_joinable
-  | MkDbSpaceRoleAccessibility_joinable_with_password
-  | MkDbSpaceRoleAccessibility_inaccessible
+type DbRoleAccessibility :: Type
+data DbRoleAccessibility
+  = MkDbRoleAccessibility_joinable
+  | MkDbRoleAccessibility_joinable_with_password
+  | MkDbRoleAccessibility_inaccessible
   deriving stock (Bounded, Enum, Read, Show)
-  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceRoleAccessibility_" DbSpaceRoleAccessibility)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbRoleAccessibility_" DbRoleAccessibility)
   deriving anyclass (Selda.SqlType)
 
-tableSpaceRole :: Selda.Table DbSpaceRole
-tableSpaceRole =
+tableRole :: Selda.Table DbRole
+tableRole =
   Selda.tableFieldMod
     "space_role"
-    [ #dbSpaceRole_id Selda.:- Selda.autoPrimary
-    , #dbSpaceRole_space Selda.:+ #dbSpaceRole_name Selda.:- Selda.unique
-    , #dbSpaceRole_space Selda.:- Selda.foreignKey tableSpace #dbSpace_id
+    [ #dbRole_id Selda.:- Selda.autoPrimary
+    , #dbRole_space Selda.:+ #dbRole_name Selda.:- Selda.unique
+    , #dbRole_space Selda.:- Selda.foreignKey tableSpace #dbSpace_id
     ]
-    (fromJust . T.stripPrefix "dbSpaceRole_")
+    (fromJust . T.stripPrefix "dbRole_")
 
-type DbSpaceRolePermission :: Type
-data DbSpaceRolePermission = MkDbSpaceRolePermission
-  { dbSpaceRolePermission_id :: ~(Selda.ID DbSpaceRolePermission)
-  , dbSpaceRolePermission_role :: Selda.ID DbSpaceRole
-  , dbSpaceRolePermission_permission :: DbSpacePermission
+type DbRolePermission :: Type
+data DbRolePermission = MkDbRolePermission
+  { dbRolePermission_id :: ~(Selda.ID DbRolePermission)
+  , dbRolePermission_role :: Selda.ID DbRole
+  , dbRolePermission_permission :: DbSpacePermission
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.Relational, Selda.SqlRow)
 
-tableSpaceRolePermission :: Selda.Table DbSpaceRolePermission
-tableSpaceRolePermission =
+tableRolePermission :: Selda.Table DbRolePermission
+tableRolePermission =
   Selda.tableFieldMod
     "space_role_permission"
-    [ #dbSpaceRolePermission_id Selda.:- Selda.autoPrimary
-    , #dbSpaceRolePermission_role Selda.:+ #dbSpaceRolePermission_permission Selda.:- Selda.unique
-    , #dbSpaceRolePermission_role Selda.:- Selda.foreignKey tableSpaceRole #dbSpaceRole_id
+    [ #dbRolePermission_id Selda.:- Selda.autoPrimary
+    , #dbRolePermission_role Selda.:+ #dbRolePermission_permission Selda.:- Selda.unique
+    , #dbRolePermission_role Selda.:- Selda.foreignKey tableRole #dbRole_id
     ]
-    (fromJust . T.stripPrefix "dbSpaceRolePermission_")
+    (fromJust . T.stripPrefix "dbRolePermission_")
 
 type DbSpacePermission :: Type
 data DbSpacePermission
@@ -222,7 +222,7 @@ data DbSpaceUser = MkDbSpaceUser
   { dbSpaceUser_id :: ~(Selda.ID DbSpaceUser)
   , dbSpaceUser_space :: Selda.ID DbSpace
   , dbSpaceUser_user :: Selda.ID DbUser
-  , dbSpaceUser_role :: Selda.ID DbSpaceRole
+  , dbSpaceUser_role :: Selda.ID DbRole
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.Relational, Selda.SqlRow)

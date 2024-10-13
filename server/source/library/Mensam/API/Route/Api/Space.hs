@@ -450,7 +450,7 @@ data ResponseSpaceEdit = MkResponseSpaceEdit
 type RequestSpaceJoin :: Type
 data RequestSpaceJoin = MkRequestSpaceJoin
   { requestSpaceJoinSpace :: NameOrIdentifier NameSpace IdentifierSpace
-  , requestSpaceJoinRole :: NameOrIdentifier NameSpaceRole IdentifierSpaceRole
+  , requestSpaceJoinRole :: NameOrIdentifier NameRole IdentifierRole
   , requestSpaceJoinPassword :: Maybe T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -508,7 +508,7 @@ type RequestSpaceUserRole :: Type
 data RequestSpaceUserRole = MkRequestSpaceUserRole
   { requestSpaceUserRoleSpace :: IdentifierSpace
   , requestSpaceUserRoleUser :: IdentifierUser
-  , requestSpaceUserRoleRole :: IdentifierSpaceRole
+  , requestSpaceUserRoleRole :: IdentifierRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -540,9 +540,9 @@ data ResponseSpaceView = MkResponseSpaceView
   , responseSpaceViewTimezone :: T.TZLabel
   , responseSpaceViewVisibility :: VisibilitySpace
   , responseSpaceViewOwner :: IdentifierUser
-  , responseSpaceViewRoles :: S.Set SpaceRole
+  , responseSpaceViewRoles :: S.Set Role
   , responseSpaceViewUsers :: S.Set SpaceUser
-  , responseSpaceViewYourRole :: Maybe IdentifierSpaceRole
+  , responseSpaceViewYourRole :: Maybe IdentifierRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -585,8 +585,8 @@ data SpaceListSpace = MkSpaceListSpace
 type RequestRoleCreate :: Type
 data RequestRoleCreate = MkRequestRoleCreate
   { requestRoleCreateSpace :: IdentifierSpace
-  , requestRoleCreateName :: NameSpaceRole
-  , requestRoleCreateAccessibility :: AccessibilitySpaceRole
+  , requestRoleCreateName :: NameRole
+  , requestRoleCreateAccessibility :: AccessibilityRole
   , requestRoleCreatePassword :: Maybe T.Text
   , requestRoleCreatePermissions :: S.Set PermissionSpace
   }
@@ -597,7 +597,7 @@ data RequestRoleCreate = MkRequestRoleCreate
 
 type ResponseRoleCreate :: Type
 newtype ResponseRoleCreate = MkResponseRoleCreate
-  { responseRoleCreateId :: IdentifierSpaceRole
+  { responseRoleCreateId :: IdentifierRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -606,8 +606,8 @@ newtype ResponseRoleCreate = MkResponseRoleCreate
 
 type RequestRoleEdit :: Type
 data RequestRoleEdit = MkRequestRoleEdit
-  { requestRoleEditId :: IdentifierSpaceRole
-  , requestRoleEditName :: Updatable NameSpaceRole
+  { requestRoleEditId :: IdentifierRole
+  , requestRoleEditName :: Updatable NameRole
   , requestRoleEditAccessibilityAndPassword :: Updatable RoleEditAccessibilityAndPassword
   , requestRoleEditPermissions :: Updatable (S.Set PermissionSpace)
   }
@@ -618,7 +618,7 @@ data RequestRoleEdit = MkRequestRoleEdit
 
 type RoleEditAccessibilityAndPassword :: Type
 data RoleEditAccessibilityAndPassword = MkRoleEditAccessibilityAndPassword
-  { roleEditAccessibilityAndPasswordAccessibility :: AccessibilitySpaceRole
+  { roleEditAccessibilityAndPasswordAccessibility :: AccessibilityRole
   , roleEditAccessibilityAndPasswordPassword :: Maybe T.Text
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -637,8 +637,8 @@ newtype ResponseRoleEdit = MkResponseRoleEdit
 
 type RequestRoleDelete :: Type
 data RequestRoleDelete = MkRequestRoleDelete
-  { requestRoleDeleteId :: IdentifierSpaceRole
-  , requestRoleDeleteFallbackId :: IdentifierSpaceRole
+  { requestRoleDeleteId :: IdentifierRole
+  , requestRoleDeleteFallbackId :: IdentifierRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

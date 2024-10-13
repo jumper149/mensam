@@ -25,42 +25,42 @@ spaceGet identifier = do
 
 spaceListRoles ::
   Selda.ID DbSpace ->
-  Selda.Query backend (Selda.Row backend DbSpaceRole)
+  Selda.Query backend (Selda.Row backend DbRole)
 spaceListRoles space = do
-  dbSpaceRole <- Selda.select tableSpaceRole
-  Selda.restrict $ dbSpaceRole Selda.! #dbSpaceRole_space Selda..== Selda.literal space
-  pure dbSpaceRole
+  dbRole <- Selda.select tableRole
+  Selda.restrict $ dbRole Selda.! #dbRole_space Selda..== Selda.literal space
+  pure dbRole
 
-roleLookup ::
+spaceRoleLookup ::
   Selda.ID DbSpace ->
   -- | name
   Selda.Text ->
-  Selda.Query backend (Selda.Row backend DbSpaceRole)
-roleLookup space name = do
-  dbSpaceRole <- spaceListRoles space
-  Selda.restrict $ dbSpaceRole Selda.! #dbSpaceRole_name Selda..== Selda.literal name
-  pure dbSpaceRole
+  Selda.Query backend (Selda.Row backend DbRole)
+spaceRoleLookup space name = do
+  dbRole <- spaceListRoles space
+  Selda.restrict $ dbRole Selda.! #dbRole_name Selda..== Selda.literal name
+  pure dbRole
 
-roleGet ::
-  Selda.ID DbSpaceRole ->
-  Selda.Query backend (Selda.Row backend DbSpaceRole)
-roleGet identifier = do
-  dbSpaceRole <- Selda.select tableSpaceRole
-  Selda.restrict $ dbSpaceRole Selda.! #dbSpaceRole_id Selda..== Selda.literal identifier
-  pure dbSpaceRole
+spaceRoleGet ::
+  Selda.ID DbRole ->
+  Selda.Query backend (Selda.Row backend DbRole)
+spaceRoleGet identifier = do
+  dbRole <- Selda.select tableRole
+  Selda.restrict $ dbRole Selda.! #dbRole_id Selda..== Selda.literal identifier
+  pure dbRole
 
-roleListPermissions ::
-  Selda.ID DbSpaceRole ->
-  Selda.Query backend (Selda.Row backend DbSpaceRolePermission)
-roleListPermissions role = do
-  dbSpaceRolePermission <- Selda.select tableSpaceRolePermission
-  Selda.restrict $ dbSpaceRolePermission Selda.! #dbSpaceRolePermission_role Selda..== Selda.literal role
-  pure dbSpaceRolePermission
+spaceRoleListPermissions ::
+  Selda.ID DbRole ->
+  Selda.Query backend (Selda.Row backend DbRolePermission)
+spaceRoleListPermissions role = do
+  dbRolePermission <- Selda.select tableRolePermission
+  Selda.restrict $ dbRolePermission Selda.! #dbRolePermission_role Selda..== Selda.literal role
+  pure dbRolePermission
 
 spaceUserGetRole ::
   Selda.ID DbSpace ->
   Selda.ID DbUser ->
-  Selda.Query backend (Selda.Col backend (Selda.ID DbSpaceRole))
+  Selda.Query backend (Selda.Col backend (Selda.ID DbRole))
 spaceUserGetRole space user = do
   dbSpaceUser <- Selda.select tableSpaceUser
   Selda.restrict $
@@ -71,12 +71,12 @@ spaceUserGetRole space user = do
 spaceUserListPermissions ::
   Selda.ID DbSpace ->
   Selda.ID DbUser ->
-  Selda.Query backend (Selda.Row backend DbSpaceRolePermission)
+  Selda.Query backend (Selda.Row backend DbRolePermission)
 spaceUserListPermissions space user = do
   dbRoleId <- spaceUserGetRole space user
-  dbSpaceRolePermission <- Selda.select tableSpaceRolePermission
-  Selda.restrict $ dbSpaceRolePermission Selda.! #dbSpaceRolePermission_role Selda..== dbRoleId
-  pure dbSpaceRolePermission
+  dbRolePermission <- Selda.select tableRolePermission
+  Selda.restrict $ dbRolePermission Selda.! #dbRolePermission_role Selda..== dbRoleId
+  pure dbRolePermission
 
 spaceListUsers ::
   Selda.ID DbSpace ->

@@ -82,22 +82,22 @@ createSpace auth eitherRequest =
 
         do
           lift $ logInfo "Create admin role and add user."
-          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Admin") MkAccessibilitySpaceRoleInaccessible Nothing
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditDesk
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditUser
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditRole
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceEditSpace
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCancelReservation
-          spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
+          roleIdentifier <- roleCreate spaceIdentifier (MkNameRole "Admin") MkAccessibilityRoleInaccessible Nothing
+          rolePermissionGive roleIdentifier MkPermissionSpaceViewSpace
+          rolePermissionGive roleIdentifier MkPermissionSpaceEditDesk
+          rolePermissionGive roleIdentifier MkPermissionSpaceEditUser
+          rolePermissionGive roleIdentifier MkPermissionSpaceEditRole
+          rolePermissionGive roleIdentifier MkPermissionSpaceEditSpace
+          rolePermissionGive roleIdentifier MkPermissionSpaceCreateReservation
+          rolePermissionGive roleIdentifier MkPermissionSpaceCancelReservation
+          spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) roleIdentifier
 
         do
           lift $ logInfo "Create member role."
-          spaceRoleIdentifier <- spaceRoleCreate spaceIdentifier (MkNameSpaceRole "Member") MkAccessibilitySpaceRoleJoinable Nothing
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceViewSpace
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCreateReservation
-          spaceRolePermissionGive spaceRoleIdentifier MkPermissionSpaceCancelReservation
+          roleIdentifier <- roleCreate spaceIdentifier (MkNameRole "Member") MkAccessibilityRoleJoinable Nothing
+          rolePermissionGive roleIdentifier MkPermissionSpaceViewSpace
+          rolePermissionGive roleIdentifier MkPermissionSpaceCreateReservation
+          rolePermissionGive roleIdentifier MkPermissionSpaceCancelReservation
 
         pure spaceIdentifier
       handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \spaceIdentifier ->
@@ -342,34 +342,34 @@ joinSpace auth eitherRequest =
           case requestSpaceJoinSpace request of
             Identifier spaceId -> pure spaceId
             Name name -> spaceLookupId name
-        spaceRoleIdentifier <-
+        roleIdentifier <-
           case requestSpaceJoinRole request of
             Identifier spaceId -> pure spaceId
             Name name ->
-              spaceRoleLookupId spaceIdentifier name >>= \case
+              roleLookupId spaceIdentifier name >>= \case
                 Just identifier -> pure identifier
                 Nothing -> do
                   let msg :: T.Text = "No matching space-role."
                   lift $ logWarn msg
                   throwM $ Selda.SqlError $ show msg
-        spaceRole <- spaceRoleGet spaceRoleIdentifier
-        case spaceRoleAccessibility spaceRole of
-          MkAccessibilitySpaceRoleInaccessible -> do
+        role <- roleGet roleIdentifier
+        case roleAccessibility role of
+          MkAccessibilityRoleInaccessible -> do
             lift $ logInfo "Space-role is inaccessible. Cannot join."
-            throwM MkSqlErrorMensamSpaceRoleInaccessible
-          MkAccessibilitySpaceRoleJoinableWithPassword -> do
+            throwM MkSqlErrorMensamRoleInaccessible
+          MkAccessibilityRoleJoinableWithPassword -> do
             lift $ logDebug "Space-role is joinable with password. Checking password."
-            spaceRolePasswordCheck' spaceRoleIdentifier (mkPassword <$> requestSpaceJoinPassword request)
-          MkAccessibilitySpaceRoleJoinable -> do
+            rolePasswordCheck' roleIdentifier (mkPassword <$> requestSpaceJoinPassword request)
+          MkAccessibilityRoleJoinable -> do
             lift $ logDebug "Space-role is joinable. Joining."
-        spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) spaceRoleIdentifier
+        spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) roleIdentifier
       handleSeldaException
-        (Proxy @SqlErrorMensamSpaceRoleInaccessible)
+        (Proxy @SqlErrorMensamRoleInaccessible)
         (WithStatus @403 $ specificStaticText @["Role is inaccessible.", "Wrong role password."] $ MkStaticText @"Role is inaccessible.")
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaException
-            (Proxy @SqlErrorMensamSpaceRolePasswordCheckFail)
+            (Proxy @SqlErrorMensamRolePasswordCheckFail)
             (WithStatus @403 $ specificStaticText @["Role is inaccessible.", "Wrong role password."] $ MkStaticText @"Wrong role password.")
             seldaResultAfter403
             $ \seldaResultAfter403' ->
@@ -585,14 +585,14 @@ createRole auth eitherRequest =
           SMkPermissionSpaceEditRole
           (userAuthenticatedId authenticated)
           (requestRoleCreateSpace request)
-        spaceRoleId <-
-          spaceRoleCreate
+        roleId <-
+          roleCreate
             (requestRoleCreateSpace request)
             (requestRoleCreateName request)
             (requestRoleCreateAccessibility request)
             (mkPassword <$> requestRoleCreatePassword request)
-        traverse_ (spaceRolePermissionGive spaceRoleId) (requestRoleCreatePermissions request)
-        pure spaceRoleId
+        traverse_ (rolePermissionGive roleId) (requestRoleCreatePermissions request)
+        pure roleId
       handleSeldaException
         (Proxy @SqlErrorMensamSpaceNotFound)
         (WithStatus @404 $ MkStaticText @"Space not found.")
@@ -603,7 +603,7 @@ createRole auth eitherRequest =
             seldaResultAfter404
             $ \seldaResultAfter403 ->
               handleSeldaException
-                (Proxy @SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch)
+                (Proxy @SqlErrorMensamRoleAccessibilityAndPasswordDontMatch)
                 (WithStatus @400 $ MkErrorParseBodyJson {errorParseBodyJsonError = "accessibility and password don't match"})
                 seldaResultAfter403
                 $ \seldaResultAfter500 ->
@@ -629,24 +629,24 @@ editRole auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to delete role: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        spaceIdentifier <- spaceRoleSpace <$> spaceRoleGet (requestRoleEditId request)
+        spaceIdentifier <- roleSpace <$> roleGet (requestRoleEditId request)
         checkPermission
           SMkPermissionSpaceEditRole
           (userAuthenticatedId authenticated)
           spaceIdentifier
         case requestRoleEditName request of
           Preserve -> pure ()
-          Overwrite name -> spaceRoleNameSet (requestRoleEditId request) name
+          Overwrite name -> roleNameSet (requestRoleEditId request) name
         case requestRoleEditAccessibilityAndPassword request of
           Preserve -> pure ()
           Overwrite accessibilityAndPassword ->
-            spaceRoleAccessibilityAndPasswordSet
+            roleAccessibilityAndPasswordSet
               (requestRoleEditId request)
               (roleEditAccessibilityAndPasswordAccessibility accessibilityAndPassword)
               (mkPassword <$> roleEditAccessibilityAndPasswordPassword accessibilityAndPassword)
         case requestRoleEditPermissions request of
           Preserve -> pure ()
-          Overwrite permissions -> spaceRolePermissionsSet (requestRoleEditId request) permissions
+          Overwrite permissions -> rolePermissionsSet (requestRoleEditId request) permissions
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceEditRole)
         seldaResult
@@ -672,12 +672,12 @@ deleteRole auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to delete role: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        spaceIdentifier <- spaceRoleSpace <$> spaceRoleGet (requestRoleDeleteId request)
+        spaceIdentifier <- roleSpace <$> roleGet (requestRoleDeleteId request)
         checkPermission
           SMkPermissionSpaceEditRole
           (userAuthenticatedId authenticated)
           spaceIdentifier
-        spaceRoleDeleteWithFallback (requestRoleDeleteId request) (requestRoleDeleteFallbackId request)
+        roleDeleteWithFallback (requestRoleDeleteId request) (requestRoleDeleteFallbackId request)
       handleSeldaException403InsufficientPermission
         (Proxy @MkPermissionSpaceEditRole)
         seldaResult

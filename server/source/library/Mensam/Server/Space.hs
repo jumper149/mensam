@@ -141,43 +141,43 @@ spaceView userIdentifier spaceIdentifier = do
     Nothing -> pure Nothing
     Just dbSpace -> do
       lift $ logInfo "Got space successfully."
-      lift $ logDebug "Getting space roles."
-      spaceRoles <- do
-        dbSpaceRoles <- Selda.query $ spaceListRoles $ dbSpace_id dbSpace
-        dbSpaceRolesPermissions <- traverse (Selda.query . roleListPermissions . dbSpaceRole_id) dbSpaceRoles
-        let spaceRoles =
+      lift $ logDebug "Getting roles."
+      roles <- do
+        dbRoles <- Selda.query $ spaceListRoles $ dbSpace_id dbSpace
+        dbRolesPermissions <- traverse (Selda.query . spaceRoleListPermissions . dbRole_id) dbRoles
+        let roles =
               zipWith
-                ( \dbSpaceRole dbSpaceRolePermissions ->
-                    MkSpaceRole
-                      { spaceRoleId = MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole $ dbSpaceRole_id dbSpaceRole
-                      , spaceRoleSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpaceRole_space dbSpaceRole
-                      , spaceRoleName = MkNameSpaceRole $ dbSpaceRole_name dbSpaceRole
-                      , spaceRolePermissions = S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> dbSpaceRolePermissions
-                      , spaceRoleAccessibility = spaceRoleAccessibilityDbToApi $ dbSpaceRole_accessibility dbSpaceRole
+                ( \dbRole dbRolePermissions ->
+                    MkRole
+                      { roleId = MkIdentifierRole $ Selda.fromId @DbRole $ dbRole_id dbRole
+                      , roleSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbRole_space dbRole
+                      , roleName = MkNameRole $ dbRole_name dbRole
+                      , rolePermissions = S.fromList $ spacePermissionDbToApi . dbRolePermission_permission <$> dbRolePermissions
+                      , roleAccessibility = roleAccessibilityDbToApi $ dbRole_accessibility dbRole
                       }
                 )
-                dbSpaceRoles
-                dbSpaceRolesPermissions
-        pure spaceRoles
+                dbRoles
+                dbRolesPermissions
+        pure roles
       dbSpaceUsers <- Selda.query $ spaceListUsers $ dbSpace_id dbSpace
       let spaceUsers =
             ( \dbSpaceUser ->
                 MkSpaceUser
                   { spaceUserUser = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpaceUser_user dbSpaceUser
-                  , spaceUserRole = MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole $ dbSpaceUser_role dbSpaceUser
+                  , spaceUserRole = MkIdentifierRole $ Selda.fromId @DbRole $ dbSpaceUser_role dbSpaceUser
                   }
             )
               <$> dbSpaceUsers
-      lift $ logInfo "Got space roles successfully."
-      lift $ logDebug "Looking up space role for requesting user."
-      maybeSpaceRoleIdentifier <- do
-        dbMaybeSpaceRoleId <-
+      lift $ logInfo "Got roles successfully."
+      lift $ logDebug "Looking up role for requesting user."
+      maybeRoleIdentifier <- do
+        dbMaybeRoleId <-
           Selda.queryUnique $
             spaceUserGetRole
               (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
               (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
-        pure $ MkIdentifierSpaceRole . Selda.fromId @DbSpaceRole <$> dbMaybeSpaceRoleId
-      lift $ logInfo "Got requesting user's space role successfully."
+        pure $ MkIdentifierRole . Selda.fromId @DbRole <$> dbMaybeRoleId
+      lift $ logInfo "Got requesting user's role successfully."
       pure $
         Just
           MkSpaceView
@@ -186,9 +186,9 @@ spaceView userIdentifier spaceIdentifier = do
             , spaceViewTimezone = dbSpace_timezone dbSpace
             , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
             , spaceViewOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
-            , spaceViewRoles = S.fromList spaceRoles
+            , spaceViewRoles = S.fromList roles
             , spaceViewUsers = S.fromList spaceUsers
-            , spaceViewYourRole = maybeSpaceRoleIdentifier
+            , spaceViewYourRole = maybeRoleIdentifier
             }
 
 type SpaceView :: Type
@@ -198,9 +198,9 @@ data SpaceView = MkSpaceView
   , spaceViewTimezone :: T.TZLabel
   , spaceViewVisibility :: VisibilitySpace
   , spaceViewOwner :: IdentifierUser
-  , spaceViewRoles :: S.Set SpaceRole
+  , spaceViewRoles :: S.Set Role
   , spaceViewUsers :: S.Set SpaceUser
-  , spaceViewYourRole :: Maybe IdentifierSpaceRole
+  , spaceViewYourRole :: Maybe IdentifierRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
 
@@ -272,38 +272,38 @@ spaceCountDesks identifier = do
   let intToNatural :: Int -> Natural = toEnum
   pure $ intToNatural dbDeskCount
 
-spaceRoleLookupId ::
+roleLookupId ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
-  NameSpaceRole ->
-  SeldaTransactionT m (Maybe IdentifierSpaceRole)
-spaceRoleLookupId spaceIdentifier name = do
+  NameRole ->
+  SeldaTransactionT m (Maybe IdentifierRole)
+roleLookupId spaceIdentifier name = do
   lift $ logDebug $ "Looking up space-role identifier with name: " <> T.pack (show name)
-  maybeDbSpaceRole <- Selda.queryUnique $ roleLookup (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier) $ unNameSpaceRole name
-  case maybeDbSpaceRole of
+  maybeDbRole <- Selda.queryUnique $ spaceRoleLookup (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier) $ unNameRole name
+  case maybeDbRole of
     Nothing -> do
       lift $ logWarn $ "Failed to look up space-role. Name doesn't exist: " <> T.pack (show name)
       pure Nothing
-    Just dbSpaceRole -> do
+    Just dbRole -> do
       lift $ logInfo "Looked up space successfully."
-      pure $ Just $ MkIdentifierSpaceRole $ Selda.fromId $ dbSpaceRole_id dbSpaceRole
+      pure $ Just $ MkIdentifierRole $ Selda.fromId $ dbRole_id dbRole
 
-spaceRoleGet ::
+roleGet ::
   (MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpaceRole ->
-  SeldaTransactionT m SpaceRole
-spaceRoleGet identifier = do
-  lift $ logDebug $ "Get space role info with identifier: " <> T.pack (show identifier)
-  dbSpaceRole <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier
-  dbSpaceRolePermissions <- Selda.query $ roleListPermissions $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier
-  lift $ logInfo "Got space role info successfully."
+  IdentifierRole ->
+  SeldaTransactionT m Role
+roleGet identifier = do
+  lift $ logDebug $ "Get role info with identifier: " <> T.pack (show identifier)
+  dbRole <- Selda.queryOne $ spaceRoleGet $ Selda.toId @DbRole $ unIdentifierRole identifier
+  dbRolePermissions <- Selda.query $ spaceRoleListPermissions $ Selda.toId @DbRole $ unIdentifierRole identifier
+  lift $ logInfo "Got role info successfully."
   pure
-    MkSpaceRole
-      { spaceRoleId = MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole $ dbSpaceRole_id dbSpaceRole
-      , spaceRoleSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpaceRole_space dbSpaceRole
-      , spaceRoleName = MkNameSpaceRole $ dbSpaceRole_name dbSpaceRole
-      , spaceRolePermissions = S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> dbSpaceRolePermissions
-      , spaceRoleAccessibility = spaceRoleAccessibilityDbToApi $ dbSpaceRole_accessibility dbSpaceRole
+    MkRole
+      { roleId = MkIdentifierRole $ Selda.fromId @DbRole $ dbRole_id dbRole
+      , roleSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbRole_space dbRole
+      , roleName = MkNameRole $ dbRole_name dbRole
+      , rolePermissions = S.fromList $ spacePermissionDbToApi . dbRolePermission_permission <$> dbRolePermissions
+      , roleAccessibility = roleAccessibilityDbToApi $ dbRole_accessibility dbRole
       }
 
 spaceCreate ::
@@ -344,13 +344,13 @@ spaceDelete identifier = do
   countMembers <- Selda.deleteFrom tableSpaceUser $ \row ->
     row Selda.! #dbSpaceUser_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
   lift $ logDebug $ "Space had " <> T.pack (show countMembers) <> " memberships."
-  dbSpaceRoleIdentifiers <- Selda.query $ do
-    dbDesk <- Selda.select tableSpaceRole
-    Selda.restrict $ dbDesk Selda.! #dbSpaceRole_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
-    pure $ dbDesk Selda.! #dbSpaceRole_id
-  lift $ logDebug "Deleting space roles."
-  traverse_ (spaceRoleDeleteUnsafe . MkIdentifierSpaceRole . Selda.fromId @DbSpaceRole) dbSpaceRoleIdentifiers
-  lift $ logDebug $ "Space had " <> T.pack (show (length dbSpaceRoleIdentifiers)) <> " space roles."
+  dbRoleIdentifiers <- Selda.query $ do
+    dbDesk <- Selda.select tableRole
+    Selda.restrict $ dbDesk Selda.! #dbRole_space Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
+    pure $ dbDesk Selda.! #dbRole_id
+  lift $ logDebug "Deleting roles."
+  traverse_ (roleDeleteUnsafe . MkIdentifierRole . Selda.fromId @DbRole) dbRoleIdentifiers
+  lift $ logDebug $ "Space had " <> T.pack (show (length dbRoleIdentifiers)) <> " roles."
   Selda.deleteOneFrom tableSpace $ \row ->
     row Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace identifier)
   lift $ logInfo "Deleted space successfully."
@@ -425,23 +425,23 @@ spaceUserAdd ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
-  IdentifierSpaceRole ->
+  IdentifierRole ->
   SeldaTransactionT m ()
 spaceUserAdd spaceIdentifier userIdentifier roleIdentifier = do
   lift $ logDebug $ "Adding user " <> T.pack (show userIdentifier) <> " to space " <> T.pack (show spaceIdentifier) <> " as " <> T.pack (show roleIdentifier) <> "."
   lift $ logDebug "Ensuring that the role is of the right space."
   roleBelongsToSpace <- do
-    dbSpaceRole <- Selda.queryOne $ do
-      roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole roleIdentifier
-    let spaceRoleSpaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpaceRole_space dbSpaceRole
-    pure $ spaceRoleSpaceId == spaceIdentifier
+    dbRole <- Selda.queryOne $ do
+      spaceRoleGet $ Selda.toId @DbRole $ unIdentifierRole roleIdentifier
+    let roleSpaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbRole_space dbRole
+    pure $ roleSpaceId == spaceIdentifier
   unless roleBelongsToSpace undefined -- TODO: Use an actual Exception type.
   let dbSpaceUser =
         MkDbSpaceUser
           { dbSpaceUser_id = Selda.def
           , dbSpaceUser_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
           , dbSpaceUser_user = Selda.toId @DbUser $ unIdentifierUser userIdentifier
-          , dbSpaceUser_role = Selda.toId @DbSpaceRole $ unIdentifierSpaceRole roleIdentifier
+          , dbSpaceUser_role = Selda.toId @DbRole $ unIdentifierRole roleIdentifier
           }
   _dbSpaceUserId <- Selda.insertWithPK tableSpaceUser [dbSpaceUser]
   lift $ logInfo "Created space-user successfully."
@@ -467,16 +467,16 @@ spaceUserRoleEdit ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
-  IdentifierSpaceRole ->
+  IdentifierRole ->
   SeldaTransactionT m ()
 spaceUserRoleEdit spaceIdentifier userIdentifier roleIdentifier = do
   lift $ logDebug $ "Setting new role " <> T.pack (show roleIdentifier) <> " for user " <> T.pack (show userIdentifier) <> " from space " <> T.pack (show spaceIdentifier) <> "."
   lift $ logDebug "Ensuring that the role is of the right space."
   roleBelongsToSpace <- do
-    dbSpaceRole <- Selda.queryOne $ do
-      roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole roleIdentifier
-    let spaceRoleSpaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpaceRole_space dbSpaceRole
-    pure $ spaceRoleSpaceId == spaceIdentifier
+    dbRole <- Selda.queryOne $ do
+      spaceRoleGet $ Selda.toId @DbRole $ unIdentifierRole roleIdentifier
+    let roleSpaceId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbRole_space dbRole
+    pure $ roleSpaceId == spaceIdentifier
   unless roleBelongsToSpace undefined -- TODO: Use an actual Exception type.
   lift $ logDebug "Updating the role."
   dbSpaceUser <- Selda.queryOne $ do
@@ -487,7 +487,7 @@ spaceUserRoleEdit spaceIdentifier userIdentifier roleIdentifier = do
   Selda.updateOne
     tableSpaceUser
     (#dbSpaceUser_id `Selda.is` dbSpaceUser_id dbSpaceUser)
-    (\rowSpaceUser -> rowSpaceUser `Selda.with` [#dbSpaceUser_role Selda.:= Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole roleIdentifier)])
+    (\rowSpaceUser -> rowSpaceUser `Selda.with` [#dbSpaceUser_role Selda.:= Selda.literal (Selda.toId @DbRole $ unIdentifierRole roleIdentifier)])
   lift $ logInfo "Set new role for space-user successfully."
   pure ()
 
@@ -515,114 +515,114 @@ spaceUserPermissions spaceIdentifier userIdentifier = do
         (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
         (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
   lift $ logInfo "Looked up space permissions successfully."
-  pure $ S.fromList $ spacePermissionDbToApi . dbSpaceRolePermission_permission <$> permissions
+  pure $ S.fromList $ spacePermissionDbToApi . dbRolePermission_permission <$> permissions
 
-spaceRoleCreate ::
+roleCreate ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
-  NameSpaceRole ->
-  AccessibilitySpaceRole ->
+  NameRole ->
+  AccessibilityRole ->
   Maybe Password ->
-  SeldaTransactionT m IdentifierSpaceRole
-spaceRoleCreate spaceIdentifier roleName accessibility password = do
+  SeldaTransactionT m IdentifierRole
+roleCreate spaceIdentifier roleName accessibility password = do
   lift $ logDebug $ "Creating role: " <> T.pack (show (spaceIdentifier, roleName))
   maybePasswordHash :: Maybe (PasswordHash Bcrypt) <- do
     lift $ logDebug "Confirming that accessibility and password_hash match."
     let accessibilityMatchesPassword =
           case accessibility of
-            MkAccessibilitySpaceRoleJoinable -> isNothing password
-            MkAccessibilitySpaceRoleJoinableWithPassword -> isJust password
-            MkAccessibilitySpaceRoleInaccessible -> isNothing password
+            MkAccessibilityRoleJoinable -> isNothing password
+            MkAccessibilityRoleJoinableWithPassword -> isJust password
+            MkAccessibilityRoleInaccessible -> isNothing password
     if accessibilityMatchesPassword
       then lift $ traverse hashPassword password
-      else throwM MkSqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch
-  let dbSpaceRole =
-        MkDbSpaceRole
-          { dbSpaceRole_id = Selda.def
-          , dbSpaceRole_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
-          , dbSpaceRole_name = unNameSpaceRole roleName
-          , dbSpaceRole_accessibility = spaceRoleAccessibilityApiToDb accessibility
-          , dbSpaceRole_password_hash = unPasswordHash <$> maybePasswordHash
+      else throwM MkSqlErrorMensamRoleAccessibilityAndPasswordDontMatch
+  let dbRole =
+        MkDbRole
+          { dbRole_id = Selda.def
+          , dbRole_space = Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
+          , dbRole_name = unNameRole roleName
+          , dbRole_accessibility = roleAccessibilityApiToDb accessibility
+          , dbRole_password_hash = unPasswordHash <$> maybePasswordHash
           }
   lift $ logDebug "Inserting space-role into database."
-  dbSpaceRoleId <- Selda.insertWithPK tableSpaceRole [dbSpaceRole]
+  dbRoleId <- Selda.insertWithPK tableRole [dbRole]
   lift $ logInfo "Created role successfully."
-  pure $ MkIdentifierSpaceRole $ Selda.fromId @DbSpaceRole dbSpaceRoleId
+  pure $ MkIdentifierRole $ Selda.fromId @DbRole dbRoleId
 
-type SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch :: Type
-data SqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch = MkSqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch
+type SqlErrorMensamRoleAccessibilityAndPasswordDontMatch :: Type
+data SqlErrorMensamRoleAccessibilityAndPasswordDontMatch = MkSqlErrorMensamRoleAccessibilityAndPasswordDontMatch
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
 
-spaceRoleDeleteUnsafe ::
+roleDeleteUnsafe ::
   (MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpaceRole ->
+  IdentifierRole ->
   SeldaTransactionT m ()
-spaceRoleDeleteUnsafe identifier = do
-  lift $ logDebug $ "Deleting space role: " <> T.pack (show identifier)
-  countPermissions <- Selda.deleteFrom tableSpaceRolePermission $ \row ->
-    row Selda.! #dbSpaceRolePermission_role Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier)
+roleDeleteUnsafe identifier = do
+  lift $ logDebug $ "Deleting role: " <> T.pack (show identifier)
+  countPermissions <- Selda.deleteFrom tableRolePermission $ \row ->
+    row Selda.! #dbRolePermission_role Selda..== Selda.literal (Selda.toId @DbRole $ unIdentifierRole identifier)
   lift $ logDebug $ "Role had " <> T.pack (show countPermissions) <> " permissions."
-  Selda.deleteOneFrom tableSpaceRole $ \row ->
-    row Selda.! #dbSpaceRole_id Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier)
-  lift $ logInfo "Deleted space role successfully."
+  Selda.deleteOneFrom tableRole $ \row ->
+    row Selda.! #dbRole_id Selda..== Selda.literal (Selda.toId @DbRole $ unIdentifierRole identifier)
+  lift $ logInfo "Deleted role successfully."
   pure ()
 
-spaceRoleDeleteWithFallback ::
+roleDeleteWithFallback ::
   (MonadLogger m, MonadSeldaPool m) =>
   -- | to be deleted
-  IdentifierSpaceRole ->
+  IdentifierRole ->
   -- | fallback
-  IdentifierSpaceRole ->
+  IdentifierRole ->
   SeldaTransactionT m ()
-spaceRoleDeleteWithFallback identifierToDelete identifierFallback = do
-  lift $ logDebug $ "Deleting space role " <> T.pack (show identifierToDelete) <> " with fallback " <> T.pack (show identifierFallback) <> "."
+roleDeleteWithFallback identifierToDelete identifierFallback = do
+  lift $ logDebug $ "Deleting role " <> T.pack (show identifierToDelete) <> " with fallback " <> T.pack (show identifierFallback) <> "."
   lift $ logInfo "Making sure that the fallback role is of the same space."
   if identifierToDelete /= identifierFallback
     then lift $ logInfo "The fallback role is different from the role that will be deleted."
     else error "Fallback is the same."
-  dbSpaceRoleToDelete <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierToDelete
-  dbSpaceRoleFallback <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierFallback
-  if dbSpaceRole_space dbSpaceRoleToDelete == dbSpaceRole_space dbSpaceRoleFallback
+  dbRoleToDelete <- Selda.queryOne $ spaceRoleGet $ Selda.toId @DbRole $ unIdentifierRole identifierToDelete
+  dbRoleFallback <- Selda.queryOne $ spaceRoleGet $ Selda.toId @DbRole $ unIdentifierRole identifierFallback
+  if dbRole_space dbRoleToDelete == dbRole_space dbRoleFallback
     then lift $ logInfo "The fallback role is of the same space."
     else error "Fallback role is not of the same space"
   countFallbackSpaceUsers <-
     Selda.update
       tableSpaceUser
-      (\dbSpaceUser -> dbSpaceUser Selda.! #dbSpaceUser_role Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierToDelete))
-      (\dbSpaceUser -> dbSpaceUser `Selda.with` [#dbSpaceUser_role Selda.:= Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifierFallback)])
+      (\dbSpaceUser -> dbSpaceUser Selda.! #dbSpaceUser_role Selda..== Selda.literal (Selda.toId @DbRole $ unIdentifierRole identifierToDelete))
+      (\dbSpaceUser -> dbSpaceUser `Selda.with` [#dbSpaceUser_role Selda.:= Selda.literal (Selda.toId @DbRole $ unIdentifierRole identifierFallback)])
   lift $ logDebug $ "The amount of users that now use the fallback role: " <> T.pack (show countFallbackSpaceUsers)
-  spaceRoleDeleteUnsafe identifierToDelete
+  roleDeleteUnsafe identifierToDelete
   pure ()
 
-spaceRolePermissionGive ::
+rolePermissionGive ::
   (MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpaceRole ->
+  IdentifierRole ->
   PermissionSpace ->
   SeldaTransactionT m ()
-spaceRolePermissionGive spaceRoleIdentifier permission = do
-  lift $ logDebug $ "Giving role " <> T.pack (show spaceRoleIdentifier) <> " permission " <> T.pack (show permission) <> "."
-  let dbSpaceRolePermission =
-        MkDbSpaceRolePermission
-          { dbSpaceRolePermission_id = Selda.def
-          , dbSpaceRolePermission_role = Selda.toId @DbSpaceRole $ unIdentifierSpaceRole spaceRoleIdentifier
-          , dbSpaceRolePermission_permission = spacePermissionApiToDb permission
+rolePermissionGive roleIdentifier permission = do
+  lift $ logDebug $ "Giving role " <> T.pack (show roleIdentifier) <> " permission " <> T.pack (show permission) <> "."
+  let dbRolePermission =
+        MkDbRolePermission
+          { dbRolePermission_id = Selda.def
+          , dbRolePermission_role = Selda.toId @DbRole $ unIdentifierRole roleIdentifier
+          , dbRolePermission_permission = spacePermissionApiToDb permission
           }
   lift $ logDebug "Inserting space-role permission."
-  Selda.insert_ tableSpaceRolePermission [dbSpaceRolePermission]
+  Selda.insert_ tableRolePermission [dbRolePermission]
   lift $ logInfo "Gave space-role a permission successfully."
 
 -- | Just checks that the password matches.
 -- Does not check the accessibility of the role.
-spaceRolePasswordCheck ::
+rolePasswordCheck ::
   (MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpaceRole ->
+  IdentifierRole ->
   Maybe Password ->
   SeldaTransactionT m PasswordCheck
-spaceRolePasswordCheck identifier maybePassword = do
+rolePasswordCheck identifier maybePassword = do
   lift $ logDebug $ "Querying space_role " <> T.pack (show identifier) <> " from database to check password."
-  dbSpaceRole <- Selda.queryOne $ roleGet $ Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier
-  case PasswordHash <$> dbSpaceRole_password_hash dbSpaceRole of
+  dbRole <- Selda.queryOne $ spaceRoleGet $ Selda.toId @DbRole $ unIdentifierRole identifier
+  case PasswordHash <$> dbRole_password_hash dbRole of
     Nothing -> do
       case maybePassword of
         Nothing -> do
@@ -630,7 +630,7 @@ spaceRolePasswordCheck identifier maybePassword = do
           pure PasswordCheckSuccess
         Just _ -> do
           lift $ logWarn "Tried to enter a password even though there is no password set up."
-          throwM MkSqlErrorMensamSpaceRoleNoPasswordSetCannotCheck
+          throwM MkSqlErrorMensamRoleNoPasswordSetCannotCheck
     Just passwordHash -> do
       case maybePassword of
         Nothing -> do
@@ -646,86 +646,86 @@ spaceRolePasswordCheck identifier maybePassword = do
               lift $ logInfo "Password does not matches. Check failed."
           pure passwordCheck
 
-type SqlErrorMensamSpaceRoleNoPasswordSetCannotCheck :: Type
-data SqlErrorMensamSpaceRoleNoPasswordSetCannotCheck = MkSqlErrorMensamSpaceRoleNoPasswordSetCannotCheck
+type SqlErrorMensamRoleNoPasswordSetCannotCheck :: Type
+data SqlErrorMensamRoleNoPasswordSetCannotCheck = MkSqlErrorMensamRoleNoPasswordSetCannotCheck
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
 
 -- | Fails the transaction when the password check fails.
-spaceRolePasswordCheck' ::
+rolePasswordCheck' ::
   (MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpaceRole ->
+  IdentifierRole ->
   Maybe Password ->
   SeldaTransactionT m ()
-spaceRolePasswordCheck' identifier maybePassword =
-  spaceRolePasswordCheck identifier maybePassword >>= \case
+rolePasswordCheck' identifier maybePassword =
+  rolePasswordCheck identifier maybePassword >>= \case
     PasswordCheckSuccess -> pure ()
     PasswordCheckFail -> do
       lift $ logDebug "Abort transaction after failed space_role password check."
-      throwM MkSqlErrorMensamSpaceRolePasswordCheckFail
+      throwM MkSqlErrorMensamRolePasswordCheckFail
 
-type SqlErrorMensamSpaceRolePasswordCheckFail :: Type
-data SqlErrorMensamSpaceRolePasswordCheckFail = MkSqlErrorMensamSpaceRolePasswordCheckFail
+type SqlErrorMensamRolePasswordCheckFail :: Type
+data SqlErrorMensamRolePasswordCheckFail = MkSqlErrorMensamRolePasswordCheckFail
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
 
-type SqlErrorMensamSpaceRoleInaccessible :: Type
-data SqlErrorMensamSpaceRoleInaccessible = MkSqlErrorMensamSpaceRoleInaccessible
+type SqlErrorMensamRoleInaccessible :: Type
+data SqlErrorMensamRoleInaccessible = MkSqlErrorMensamRoleInaccessible
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
 
-spaceRoleNameSet ::
+roleNameSet ::
   (MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpaceRole ->
-  NameSpaceRole ->
+  IdentifierRole ->
+  NameRole ->
   SeldaTransactionT m ()
-spaceRoleNameSet identifier name = do
+roleNameSet identifier name = do
   lift $ logDebug $ "Setting name " <> T.pack (show name) <> " of role " <> T.pack (show identifier) <> "."
   Selda.updateOne
-    tableSpaceRole
-    (#dbSpaceRole_id `Selda.is` Selda.toId @DbSpaceRole (unIdentifierSpaceRole identifier))
-    (\rowSpaceRole -> rowSpaceRole `Selda.with` [#dbSpaceRole_name Selda.:= Selda.literal (unNameSpaceRole name)])
+    tableRole
+    (#dbRole_id `Selda.is` Selda.toId @DbRole (unIdentifierRole identifier))
+    (\rowRole -> rowRole `Selda.with` [#dbRole_name Selda.:= Selda.literal (unNameRole name)])
   lift $ logInfo "Set new role name successfully."
 
-spaceRoleAccessibilityAndPasswordSet ::
+roleAccessibilityAndPasswordSet ::
   (MonadIO m, MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpaceRole ->
-  AccessibilitySpaceRole ->
+  IdentifierRole ->
+  AccessibilityRole ->
   Maybe Password ->
   SeldaTransactionT m ()
-spaceRoleAccessibilityAndPasswordSet identifier accessibility password = do
+roleAccessibilityAndPasswordSet identifier accessibility password = do
   lift $ logDebug $ "Setting accessibility " <> T.pack (show accessibility) <> " of role " <> T.pack (show identifier) <> "."
   maybePasswordHash :: Maybe (PasswordHash Bcrypt) <- do
     lift $ logDebug "Confirming that accessibility and password_hash match."
     let accessibilityMatchesPassword =
           case accessibility of
-            MkAccessibilitySpaceRoleJoinable -> isNothing password
-            MkAccessibilitySpaceRoleJoinableWithPassword -> isJust password
-            MkAccessibilitySpaceRoleInaccessible -> isNothing password
+            MkAccessibilityRoleJoinable -> isNothing password
+            MkAccessibilityRoleJoinableWithPassword -> isJust password
+            MkAccessibilityRoleInaccessible -> isNothing password
     if accessibilityMatchesPassword
       then lift $ traverse hashPassword password
-      else throwM MkSqlErrorMensamSpaceRoleAccessibilityAndPasswordDontMatch
+      else throwM MkSqlErrorMensamRoleAccessibilityAndPasswordDontMatch
   Selda.updateOne
-    tableSpaceRole
-    (#dbSpaceRole_id `Selda.is` Selda.toId @DbSpaceRole (unIdentifierSpaceRole identifier))
-    (\rowSpaceRole -> rowSpaceRole `Selda.with` [#dbSpaceRole_accessibility Selda.:= Selda.literal (spaceRoleAccessibilityApiToDb accessibility)])
+    tableRole
+    (#dbRole_id `Selda.is` Selda.toId @DbRole (unIdentifierRole identifier))
+    (\rowRole -> rowRole `Selda.with` [#dbRole_accessibility Selda.:= Selda.literal (roleAccessibilityApiToDb accessibility)])
   Selda.updateOne
-    tableSpaceRole
-    (#dbSpaceRole_id `Selda.is` Selda.toId @DbSpaceRole (unIdentifierSpaceRole identifier))
-    (\rowSpaceRole -> rowSpaceRole `Selda.with` [#dbSpaceRole_password_hash Selda.:= Selda.literal (unPasswordHash <$> maybePasswordHash)])
+    tableRole
+    (#dbRole_id `Selda.is` Selda.toId @DbRole (unIdentifierRole identifier))
+    (\rowRole -> rowRole `Selda.with` [#dbRole_password_hash Selda.:= Selda.literal (unPasswordHash <$> maybePasswordHash)])
   lift $ logInfo "Set new role accessibility successfully."
 
-spaceRolePermissionsSet ::
+rolePermissionsSet ::
   (MonadLogger m, MonadSeldaPool m) =>
-  IdentifierSpaceRole ->
+  IdentifierRole ->
   S.Set PermissionSpace ->
   SeldaTransactionT m ()
-spaceRolePermissionsSet identifier permissions = do
+rolePermissionsSet identifier permissions = do
   lift $ logDebug $ "Setting permissions " <> T.pack (show permissions) <> " of role " <> T.pack (show identifier) <> "."
-  countPermissionsDeleted <- Selda.deleteFrom tableSpaceRolePermission $ \row ->
-    row Selda.! #dbSpaceRolePermission_role Selda..== Selda.literal (Selda.toId @DbSpaceRole $ unIdentifierSpaceRole identifier)
+  countPermissionsDeleted <- Selda.deleteFrom tableRolePermission $ \row ->
+    row Selda.! #dbRolePermission_role Selda..== Selda.literal (Selda.toId @DbRole $ unIdentifierRole identifier)
   lift $ logDebug $ "Deleted old permissions: " <> T.pack (show countPermissionsDeleted)
-  countPermissionsGiven <- L.length <$> traverse (spaceRolePermissionGive identifier) (S.toList permissions)
+  countPermissionsGiven <- L.length <$> traverse (rolePermissionGive identifier) (S.toList permissions)
   lift $ logDebug $ "Gave new permissions: " <> T.pack (show countPermissionsGiven)
   lift $ logInfo "Set new role permissions successfully."
 
@@ -933,17 +933,17 @@ spaceVisibilityDbToApi = \case
   MkDbSpaceVisibility_visible -> MkVisibilitySpaceVisible
   MkDbSpaceVisibility_hidden -> MkVisibilitySpaceHidden
 
-spaceRoleAccessibilityApiToDb :: AccessibilitySpaceRole -> DbSpaceRoleAccessibility
-spaceRoleAccessibilityApiToDb = \case
-  MkAccessibilitySpaceRoleJoinable -> MkDbSpaceRoleAccessibility_joinable
-  MkAccessibilitySpaceRoleJoinableWithPassword -> MkDbSpaceRoleAccessibility_joinable_with_password
-  MkAccessibilitySpaceRoleInaccessible -> MkDbSpaceRoleAccessibility_inaccessible
+roleAccessibilityApiToDb :: AccessibilityRole -> DbRoleAccessibility
+roleAccessibilityApiToDb = \case
+  MkAccessibilityRoleJoinable -> MkDbRoleAccessibility_joinable
+  MkAccessibilityRoleJoinableWithPassword -> MkDbRoleAccessibility_joinable_with_password
+  MkAccessibilityRoleInaccessible -> MkDbRoleAccessibility_inaccessible
 
-spaceRoleAccessibilityDbToApi :: DbSpaceRoleAccessibility -> AccessibilitySpaceRole
-spaceRoleAccessibilityDbToApi = \case
-  MkDbSpaceRoleAccessibility_joinable -> MkAccessibilitySpaceRoleJoinable
-  MkDbSpaceRoleAccessibility_joinable_with_password -> MkAccessibilitySpaceRoleJoinableWithPassword
-  MkDbSpaceRoleAccessibility_inaccessible -> MkAccessibilitySpaceRoleInaccessible
+roleAccessibilityDbToApi :: DbRoleAccessibility -> AccessibilityRole
+roleAccessibilityDbToApi = \case
+  MkDbRoleAccessibility_joinable -> MkAccessibilityRoleJoinable
+  MkDbRoleAccessibility_joinable_with_password -> MkAccessibilityRoleJoinableWithPassword
+  MkDbRoleAccessibility_inaccessible -> MkAccessibilityRoleInaccessible
 
 spacePermissionApiToDb :: PermissionSpace -> DbSpacePermission
 spacePermissionApiToDb = \case

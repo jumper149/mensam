@@ -39,10 +39,10 @@ checkDatabase = void $ runSeldaTransactionT $ do
   --  Selda.validateTable tableSpace
   --
   --  lift $ logDebug "Validating table 'space_role'."
-  --  Selda.validateTable tableSpaceRole
+  --  Selda.validateTable tableRole
   --
   --  lift $ logDebug "Validating table 'space_role_permission'."
-  --  Selda.validateTable tableSpaceRolePermission
+  --  Selda.validateTable tableRolePermission
   --
   --  lift $ logDebug "Validating table 'space_user'."
   --  Selda.validateTable tableSpaceUser
@@ -72,36 +72,36 @@ checkDatabase = void $ runSeldaTransactionT $ do
   do
     lift $ logInfo "Checking that setting a password coincides with the `joinable_with_password` accessibility."
     do
-      dbSpaceRolesJoinableWithPasswordButPasswordNull <- Selda.query $ do
-        dbSpaceRole <- Selda.select tableSpaceRole
-        Selda.restrict $ dbSpaceRole Selda.! #dbSpaceRole_accessibility Selda..== Selda.literal MkDbSpaceRoleAccessibility_joinable_with_password
-        Selda.restrict $ Selda.isNull $ dbSpaceRole Selda.! #dbSpaceRole_password_hash
-        pure dbSpaceRole
-      case dbSpaceRolesJoinableWithPasswordButPasswordNull of
-        [] -> lift $ logInfo "No space roles with missing passwords found."
-        _ : _ -> lift $ logError $ "There are missing passwords in space roles: " <> T.pack (show dbSpaceRolesJoinableWithPasswordButPasswordNull)
+      dbRolesJoinableWithPasswordButPasswordNull <- Selda.query $ do
+        dbRole <- Selda.select tableRole
+        Selda.restrict $ dbRole Selda.! #dbRole_accessibility Selda..== Selda.literal MkDbRoleAccessibility_joinable_with_password
+        Selda.restrict $ Selda.isNull $ dbRole Selda.! #dbRole_password_hash
+        pure dbRole
+      case dbRolesJoinableWithPasswordButPasswordNull of
+        [] -> lift $ logInfo "No roles with missing passwords found."
+        _ : _ -> lift $ logError $ "There are missing passwords in roles: " <> T.pack (show dbRolesJoinableWithPasswordButPasswordNull)
     do
-      dbSpaceRolesNotJoinableWithPasswordButPasswordNotNull <- Selda.query $ do
-        dbSpaceRole <- Selda.select tableSpaceRole
-        Selda.restrict $ dbSpaceRole Selda.! #dbSpaceRole_accessibility Selda../= Selda.literal MkDbSpaceRoleAccessibility_joinable_with_password
-        Selda.restrict $ Selda.not_ $ Selda.isNull $ dbSpaceRole Selda.! #dbSpaceRole_password_hash
-        pure dbSpaceRole
-      case dbSpaceRolesNotJoinableWithPasswordButPasswordNotNull of
-        [] -> lift $ logInfo "No space roles with passwords and unexpected accessibility found."
-        _ : _ -> lift $ logError $ "There are unexpected accessibilities in space roles: " <> T.pack (show dbSpaceRolesNotJoinableWithPasswordButPasswordNotNull)
+      dbRolesNotJoinableWithPasswordButPasswordNotNull <- Selda.query $ do
+        dbRole <- Selda.select tableRole
+        Selda.restrict $ dbRole Selda.! #dbRole_accessibility Selda../= Selda.literal MkDbRoleAccessibility_joinable_with_password
+        Selda.restrict $ Selda.not_ $ Selda.isNull $ dbRole Selda.! #dbRole_password_hash
+        pure dbRole
+      case dbRolesNotJoinableWithPasswordButPasswordNotNull of
+        [] -> lift $ logInfo "No roles with passwords and unexpected accessibility found."
+        _ : _ -> lift $ logError $ "There are unexpected accessibilities in roles: " <> T.pack (show dbRolesNotJoinableWithPasswordButPasswordNotNull)
 
   do
     lift $ logInfo "Checking that the roles used for `space_user`s actually belong to the right space."
     dbSpaceUsersWithWrongRoles <- Selda.query $ do
       dbSpaceUser <- Selda.select tableSpaceUser
-      dbSpaceRole <-
+      dbRole <-
         Selda.innerJoin
-          ( \dbSpaceRole ->
-              dbSpaceRole Selda.! #dbSpaceRole_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_role
-                Selda..&& dbSpaceRole Selda.! #dbSpaceRole_space Selda../= dbSpaceUser Selda.! #dbSpaceUser_space
+          ( \dbRole ->
+              dbRole Selda.! #dbRole_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_role
+                Selda..&& dbRole Selda.! #dbRole_space Selda../= dbSpaceUser Selda.! #dbSpaceUser_space
           )
-          (Selda.select tableSpaceRole)
-      pure (dbSpaceUser Selda.:*: dbSpaceRole)
+          (Selda.select tableRole)
+      pure (dbSpaceUser Selda.:*: dbRole)
     case dbSpaceUsersWithWrongRoles of
       [] -> lift $ logInfo "No users have roles from other spaces."
       _ : _ -> lift $ logError $ "There are unexpected role/space combinations in space users: " <> T.pack (show dbSpaceUsersWithWrongRoles)

@@ -47,39 +47,39 @@ data VisibilitySpace
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkVisibilitySpace" "") VisibilitySpace
 
-type SpaceRole :: Type
-data SpaceRole = MkSpaceRole
-  { spaceRoleId :: IdentifierSpaceRole
-  , spaceRoleSpace :: IdentifierSpace
-  , spaceRoleName :: NameSpaceRole
-  , spaceRolePermissions :: S.Set PermissionSpace
-  , spaceRoleAccessibility :: AccessibilitySpaceRole
+type Role :: Type
+data Role = MkRole
+  { roleId :: IdentifierRole
+  , roleSpace :: IdentifierSpace
+  , roleName :: NameRole
+  , rolePermissions :: S.Set PermissionSpace
+  , roleAccessibility :: AccessibilityRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "Mk" "spaceRole") SpaceRole
+    via A.CustomJSON (JSONSettings "Mk" "role") Role
 
-type IdentifierSpaceRole :: Type
-newtype IdentifierSpaceRole = MkIdentifierSpaceRole {unIdentifierSpaceRole :: Int64}
+type IdentifierRole :: Type
+newtype IdentifierRole = MkIdentifierRole {unIdentifierRole :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
 
-type NameSpaceRole :: Type
-newtype NameSpaceRole = MkNameSpaceRole {unNameSpaceRole :: T.Text}
+type NameRole :: Type
+newtype NameRole = MkNameRole {unNameRole :: T.Text}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
   deriving newtype (A.FromJSONKey, A.ToJSONKey)
 
-type AccessibilitySpaceRole :: Type
-data AccessibilitySpaceRole
-  = MkAccessibilitySpaceRoleJoinable
-  | MkAccessibilitySpaceRoleJoinableWithPassword
-  | MkAccessibilitySpaceRoleInaccessible
+type AccessibilityRole :: Type
+data AccessibilityRole
+  = MkAccessibilityRoleJoinable
+  | MkAccessibilityRoleJoinableWithPassword
+  | MkAccessibilityRoleInaccessible
   deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "MkAccessibilitySpaceRole" "") AccessibilitySpaceRole
+    via A.CustomJSON (JSONSettings "MkAccessibilityRole" "") AccessibilityRole
 
 type SpaceOrderCategory :: Type
 data SpaceOrderCategory
@@ -93,7 +93,7 @@ data SpaceOrderCategory
 type SpaceUser :: Type
 data SpaceUser = MkSpaceUser
   { spaceUserUser :: IdentifierUser
-  , spaceUserRole :: IdentifierSpaceRole
+  , spaceUserRole :: IdentifierRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
