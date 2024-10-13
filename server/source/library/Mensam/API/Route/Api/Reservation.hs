@@ -34,7 +34,7 @@ data Routes route = Routes
               [ WithStatus 201 ResponseReservationCreate
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCreateReservation)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionCreateReservation)
               , WithStatus 409 (StaticText "Desk is not available within the given time window.")
               , WithStatus 500 ()
               ]
@@ -52,7 +52,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseReservationCancel
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCancelReservation)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionCancelReservation)
               , WithStatus 409 (StaticText "Already cancelled.")
               , WithStatus 410 (StaticText "Already happened.")
               , WithStatus 500 ()

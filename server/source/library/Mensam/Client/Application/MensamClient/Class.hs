@@ -177,7 +177,7 @@ endpointSpaceDelete ::
         '[ WithStatus 200 Route.Api.Space.ResponseSpaceDelete
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -190,7 +190,7 @@ endpointSpaceEdit ::
         '[ WithStatus 200 Route.Api.Space.ResponseSpaceEdit
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -204,7 +204,7 @@ endpointSpacePictureUpload ::
         '[ WithStatus 200 (StaticText "Uploaded space picture.")
          , WithStatus 400 ErrorParseBodyJpeg
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -216,7 +216,7 @@ endpointSpacePictureDelete ::
     ( Union
         '[ WithStatus 200 (StaticText "Deleted space picture.")
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -257,7 +257,7 @@ endpointSpaceKick ::
         '[ WithStatus 200 Route.Api.Space.ResponseSpaceKick
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
          , WithStatus 500 ()
          ]
     )
@@ -269,7 +269,7 @@ endpointSpaceUserRole ::
         '[ WithStatus 200 Route.Api.Space.ResponseSpaceUserRole
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
          , WithStatus 500 ()
          ]
     )
@@ -281,7 +281,7 @@ endpointSpaceView ::
         '[ WithStatus 200 Route.Api.Space.ResponseSpaceView
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
          , WithStatus 500 ()
          ]
     )
@@ -304,7 +304,7 @@ endpointRoleCreate ::
         '[ WithStatus 201 Route.Api.Space.ResponseRoleCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -317,7 +317,7 @@ endpointRoleEdit ::
         '[ WithStatus 200 Route.Api.Space.ResponseRoleEdit
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
          , WithStatus 500 ()
          ]
     )
@@ -329,7 +329,7 @@ endpointRoleDelete ::
         '[ WithStatus 200 Route.Api.Space.ResponseRoleDelete
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
          , WithStatus 500 ()
          ]
     )
@@ -341,7 +341,7 @@ endpointDeskCreate ::
         '[ WithStatus 201 Route.Api.Space.ResponseDeskCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
          , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
@@ -354,7 +354,7 @@ endpointDeskDelete ::
         '[ WithStatus 200 Route.Api.Space.ResponseDeskDelete
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
          , WithStatus 404 (StaticText "Desk not found.")
          , WithStatus 500 ()
          ]
@@ -367,7 +367,7 @@ endpointDeskEdit ::
         '[ WithStatus 200 Route.Api.Space.ResponseDeskEdit
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
          , WithStatus 404 (StaticText "Desk not found.")
          , WithStatus 500 ()
          ]
@@ -380,7 +380,7 @@ endpointDeskList ::
         '[ WithStatus 200 Route.Api.Space.ResponseDeskList
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
          , WithStatus 500 ()
          ]
     )
@@ -392,7 +392,7 @@ endpointReservationCreate ::
         '[ WithStatus 201 Route.Api.Reservation.ResponseReservationCreate
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCreateReservation)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionCreateReservation)
          , WithStatus 409 (StaticText "Desk is not available within the given time window.")
          , WithStatus 500 ()
          ]
@@ -405,7 +405,7 @@ endpointReservationCancel ::
         '[ WithStatus 200 Route.Api.Reservation.ResponseReservationCancel
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCancelReservation)
+         , WithStatus 403 (ErrorInsufficientPermission MkPermissionCancelReservation)
          , WithStatus 409 (StaticText "Already cancelled.")
          , WithStatus 410 (StaticText "Already happened.")
          , WithStatus 500 ()

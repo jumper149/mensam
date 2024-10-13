@@ -237,25 +237,25 @@ http403BodyDecoder =
 
                     Just suffix ->
                         case suffix of
-                            "'MkPermissionSpaceViewSpace" ->
+                            "'MkPermissionViewSpace" ->
                                 Decode.succeed MkPermissionViewSpace
 
-                            "'MkPermissionSpaceEditDesk" ->
+                            "'MkPermissionEditDesk" ->
                                 Decode.succeed MkPermissionEditDesk
 
-                            "'MkPermissionSpaceEditUser" ->
+                            "'MkPermissionEditUser" ->
                                 Decode.succeed MkPermissionEditUser
 
-                            "'MkPermissionSpaceEditRole" ->
+                            "'MkPermissionEditRole" ->
                                 Decode.succeed MkPermissionEditRole
 
-                            "'MkPermissionSpaceEditSpace" ->
+                            "'MkPermissionEditSpace" ->
                                 Decode.succeed MkPermissionEditSpace
 
-                            "'MkPermissionSpaceCreateReservation" ->
+                            "'MkPermissionCreateReservation" ->
                                 Decode.succeed MkPermissionCreateReservation
 
-                            "'MkPermissionSpaceCancelReservation" ->
+                            "'MkPermissionCancelReservation" ->
                                 Decode.succeed MkPermissionCancelReservation
 
                             unknownSuffix ->

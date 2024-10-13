@@ -13,21 +13,21 @@ import Data.Typeable
 import Deriving.Aeson qualified as A
 import GHC.Generics
 
-type PermissionSpace :: Type
-data PermissionSpace
-  = MkPermissionSpaceViewSpace
-  | MkPermissionSpaceEditDesk
-  | MkPermissionSpaceEditUser
-  | MkPermissionSpaceEditRole
-  | MkPermissionSpaceEditSpace
-  | MkPermissionSpaceCreateReservation
-  | MkPermissionSpaceCancelReservation
+type Permission :: Type
+data Permission
+  = MkPermissionViewSpace
+  | MkPermissionEditDesk
+  | MkPermissionEditUser
+  | MkPermissionEditRole
+  | MkPermissionEditSpace
+  | MkPermissionCreateReservation
+  | MkPermissionCancelReservation
   deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "MkPermissionSpace" "") PermissionSpace
+    via A.CustomJSON (JSONSettings "MkPermission" "") Permission
 
-type ErrorInsufficientPermission :: PermissionSpace -> Type
+type ErrorInsufficientPermission :: Permission -> Type
 data ErrorInsufficientPermission p = MkErrorInsufficientPermission
   deriving stock (Eq, Generic, Ord, Read, Show)
 
@@ -50,4 +50,4 @@ instance Typeable p => A.ToJSON (ErrorInsufficientPermission p) where
    where
     permissionName = tyConName (typeRepTyCon (typeRep $ Proxy @p))
 
-genSingletons [''PermissionSpace]
+genSingletons [''Permission]

@@ -60,7 +60,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceDelete
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
               , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
@@ -79,7 +79,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceEdit
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
               , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
@@ -100,7 +100,7 @@ data Routes route = Routes
               [ WithStatus 200 (StaticText "Uploaded space picture.")
               , WithStatus 400 ErrorParseBodyJpeg
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
               , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
@@ -118,7 +118,7 @@ data Routes route = Routes
               '[JSON]
               [ WithStatus 200 (StaticText "Deleted space picture.")
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
               , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
@@ -184,7 +184,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceKick
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
               , WithStatus 500 ()
               ]
   , routeSpaceUserRole ::
@@ -204,7 +204,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceUserRole
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
               , WithStatus 500 ()
               ]
   , routeSpaceView ::
@@ -222,7 +222,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceView
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
               , WithStatus 500 ()
               ]
   , routeSpaceList ::
@@ -259,7 +259,7 @@ data Routes route = Routes
               [ WithStatus 201 ResponseRoleCreate
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
               , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
@@ -279,7 +279,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseRoleEdit
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
               , WithStatus 500 ()
               ]
   , routeRoleDelete ::
@@ -299,7 +299,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseRoleDelete
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
               , WithStatus 500 ()
               ]
   , routeDeskCreate ::
@@ -319,7 +319,7 @@ data Routes route = Routes
               [ WithStatus 201 ResponseDeskCreate
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
               , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
@@ -339,7 +339,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseDeskDelete
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
               , WithStatus 404 (StaticText "Desk not found.")
               , WithStatus 500 ()
               ]
@@ -359,7 +359,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseDeskEdit
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
               , WithStatus 404 (StaticText "Desk not found.")
               , WithStatus 500 ()
               ]
@@ -379,7 +379,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseDeskList
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)
+              , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
               , WithStatus 500 ()
               ]
   }
@@ -588,7 +588,7 @@ data RequestRoleCreate = MkRequestRoleCreate
   , requestRoleCreateName :: NameRole
   , requestRoleCreateAccessibility :: AccessibilityRole
   , requestRoleCreatePassword :: Maybe T.Text
-  , requestRoleCreatePermissions :: S.Set PermissionSpace
+  , requestRoleCreatePermissions :: S.Set Permission
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -609,7 +609,7 @@ data RequestRoleEdit = MkRequestRoleEdit
   { requestRoleEditId :: IdentifierRole
   , requestRoleEditName :: Updatable NameRole
   , requestRoleEditAccessibilityAndPassword :: Updatable RoleEditAccessibilityAndPassword
-  , requestRoleEditPermissions :: Updatable (S.Set PermissionSpace)
+  , requestRoleEditPermissions :: Updatable (S.Set Permission)
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving

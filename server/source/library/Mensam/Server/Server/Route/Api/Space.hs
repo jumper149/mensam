@@ -83,21 +83,21 @@ createSpace auth eitherRequest =
         do
           lift $ logInfo "Create admin role and add user."
           roleIdentifier <- roleCreate spaceIdentifier (MkNameRole "Admin") MkAccessibilityRoleInaccessible Nothing
-          rolePermissionGive roleIdentifier MkPermissionSpaceViewSpace
-          rolePermissionGive roleIdentifier MkPermissionSpaceEditDesk
-          rolePermissionGive roleIdentifier MkPermissionSpaceEditUser
-          rolePermissionGive roleIdentifier MkPermissionSpaceEditRole
-          rolePermissionGive roleIdentifier MkPermissionSpaceEditSpace
-          rolePermissionGive roleIdentifier MkPermissionSpaceCreateReservation
-          rolePermissionGive roleIdentifier MkPermissionSpaceCancelReservation
+          rolePermissionGive roleIdentifier MkPermissionViewSpace
+          rolePermissionGive roleIdentifier MkPermissionEditDesk
+          rolePermissionGive roleIdentifier MkPermissionEditUser
+          rolePermissionGive roleIdentifier MkPermissionEditRole
+          rolePermissionGive roleIdentifier MkPermissionEditSpace
+          rolePermissionGive roleIdentifier MkPermissionCreateReservation
+          rolePermissionGive roleIdentifier MkPermissionCancelReservation
           spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) roleIdentifier
 
         do
           lift $ logInfo "Create member role."
           roleIdentifier <- roleCreate spaceIdentifier (MkNameRole "Member") MkAccessibilityRoleJoinable Nothing
-          rolePermissionGive roleIdentifier MkPermissionSpaceViewSpace
-          rolePermissionGive roleIdentifier MkPermissionSpaceCreateReservation
-          rolePermissionGive roleIdentifier MkPermissionSpaceCancelReservation
+          rolePermissionGive roleIdentifier MkPermissionViewSpace
+          rolePermissionGive roleIdentifier MkPermissionCreateReservation
+          rolePermissionGive roleIdentifier MkPermissionCancelReservation
 
         pure spaceIdentifier
       handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \spaceIdentifier ->
@@ -109,7 +109,7 @@ deleteSpace ::
   , IsMember (WithStatus 200 ResponseSpaceDelete) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)) responses
   , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -122,7 +122,7 @@ deleteSpace auth eitherRequest =
       logDebug $ "Received request to delete space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         checkPermission
-          SMkPermissionSpaceEditSpace
+          SMkPermissionEditSpace
           (userAuthenticatedId authenticated)
           (requestSpaceDeleteId request)
         lift $ logInfo "Delete space."
@@ -133,7 +133,7 @@ deleteSpace auth eitherRequest =
         seldaResult
         $ \seldaResultAfter404 ->
           handleSeldaException403InsufficientPermission
-            (Proxy @MkPermissionSpaceEditSpace)
+            (Proxy @MkPermissionEditSpace)
             seldaResultAfter404
             $ \seldaResultAfter403 ->
               handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
@@ -146,7 +146,7 @@ editSpace ::
   , IsMember (WithStatus 200 ResponseSpaceEdit) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)) responses
   , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -159,7 +159,7 @@ editSpace auth eitherRequest =
       logDebug $ "Received request to edit space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         checkPermission
-          SMkPermissionSpaceEditSpace
+          SMkPermissionEditSpace
           (userAuthenticatedId authenticated)
           (requestSpaceEditId request)
         case requestSpaceEditName request of
@@ -178,7 +178,7 @@ editSpace auth eitherRequest =
         seldaResult
         $ \seldaResultAfter404 ->
           handleSeldaException403InsufficientPermission
-            (Proxy @MkPermissionSpaceEditSpace)
+            (Proxy @MkPermissionEditSpace)
             seldaResultAfter404
             $ \seldaResultAfter403 ->
               handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \spaceInternal -> do
@@ -198,7 +198,7 @@ pictureUpload ::
   , IsMember (WithStatus 200 (StaticText "Uploaded space picture.")) responses
   , IsMember (WithStatus 400 ErrorParseBodyJpeg) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)) responses
   , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -224,12 +224,12 @@ pictureUpload auth eitherQueryParamIdentifierSpace eitherRequest =
               seldaResult <-
                 runSeldaTransactionT $ do
                   checkPermission
-                    SMkPermissionSpaceEditSpace
+                    SMkPermissionEditSpace
                     (userAuthenticatedId authenticated)
                     identifierSpace
                   spaceSetPicture identifierSpace (Just picture)
               handleSeldaException403InsufficientPermission
-                (Proxy @MkPermissionSpaceEditSpace)
+                (Proxy @MkPermissionEditSpace)
                 seldaResult
                 $ \seldaResultAfter403 ->
                   handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
@@ -241,7 +241,7 @@ pictureDelete ::
   , MonadSeldaPool m
   , IsMember (WithStatus 200 (StaticText "Deleted space picture.")) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditSpace)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)) responses
   , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -259,12 +259,12 @@ pictureDelete auth eitherQueryParamIdentifierSpace =
         seldaResult <-
           runSeldaTransactionT $ do
             checkPermission
-              SMkPermissionSpaceEditSpace
+              SMkPermissionEditSpace
               (userAuthenticatedId authenticated)
               identifierSpace
             spaceSetPicture identifierSpace Nothing
         handleSeldaException403InsufficientPermission
-          (Proxy @MkPermissionSpaceEditSpace)
+          (Proxy @MkPermissionEditSpace)
           seldaResult
           $ \seldaResultAfter403 ->
             handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
@@ -292,12 +292,12 @@ pictureDownload auth eitherQueryParamIdentifierSpace = do
           seldaResult <-
             runSeldaTransactionT $ do
               checkPermission
-                SMkPermissionSpaceViewSpace
+                SMkPermissionViewSpace
                 (userAuthenticatedId authenticated)
                 identifierSpace
               spaceGetPicture identifierSpace
           handleSeldaException403InsufficientPermission
-            (Proxy @MkPermissionSpaceViewSpace)
+            (Proxy @MkPermissionViewSpace)
             seldaResult
             $ \seldaResultAfter403 ->
               handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \maybePicture -> do
@@ -313,7 +313,7 @@ pictureDownload auth eitherQueryParamIdentifierSpace = do
                     respond $ WithStatus @200 $ MkImageJpegBytes . unByteStringJpeg $ picture
   logDebug $ "Handling multi-mimetype response manually: " <> T.pack (show handledResult) -- TODO: Logging pictures right now.
   -- TODO: Add all these HTTP statuses to the API definition. Requires different output types.
-  case handledResult :: Union [WithStatus 200 ImageJpegBytes, WithStatus 401 ErrorBearerAuth, WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace), WithStatus 404 (StaticText "Space not found."), WithStatus 500 ()] of
+  case handledResult :: Union [WithStatus 200 ImageJpegBytes, WithStatus 401 ErrorBearerAuth, WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace), WithStatus 404 (StaticText "Space not found."), WithStatus 500 ()] of
     SOP.Z (SOP.I (WithStatus result)) -> pure result
     SOP.S (SOP.Z (SOP.I (WithStatus errorBearerAuth))) -> error $ show errorBearerAuth
     SOP.S (SOP.S (SOP.Z (SOP.I (WithStatus MkErrorInsufficientPermission)))) -> undefined
@@ -422,7 +422,7 @@ kickUser ::
   , IsMember (WithStatus 200 ResponseSpaceKick) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -434,7 +434,7 @@ kickUser auth eitherRequest =
       logDebug $ "Received request to kick user from space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         checkPermission
-          SMkPermissionSpaceEditUser
+          SMkPermissionEditUser
           (userAuthenticatedId authenticated)
           (requestSpaceKickSpace request)
         isOwner <- spaceUserIsOwner (requestSpaceKickSpace request) (requestSpaceKickUser request)
@@ -447,7 +447,7 @@ kickUser auth eitherRequest =
             spaceUserRemove (requestSpaceKickSpace request) (requestSpaceKickUser request)
             pure True
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceEditUser)
+        (Proxy @MkPermissionEditUser)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \removed ->
@@ -465,7 +465,7 @@ setUserRole ::
   , IsMember (WithStatus 200 ResponseSpaceUserRole) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditUser)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -477,7 +477,7 @@ setUserRole auth eitherRequest =
       logDebug $ "Received request to change user role for space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         checkPermission
-          SMkPermissionSpaceEditUser
+          SMkPermissionEditUser
           (userAuthenticatedId authenticated)
           (requestSpaceUserRoleSpace request)
         spaceUserRoleEdit
@@ -485,7 +485,7 @@ setUserRole auth eitherRequest =
           (requestSpaceUserRoleUser request)
           (requestSpaceUserRoleRole request)
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceEditUser)
+        (Proxy @MkPermissionEditUser)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
@@ -498,7 +498,7 @@ viewSpace ::
   , IsMember (WithStatus 200 ResponseSpaceView) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -513,7 +513,7 @@ viewSpace auth eitherRequest =
       handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \case
         Nothing -> do
           logInfo "User not permitted to view space."
-          respond $ WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionSpaceViewSpace
+          respond $ WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionViewSpace
         Just space -> do
           logInfo "Viewed space."
           respond $
@@ -569,7 +569,7 @@ createRole ::
   , IsMember (WithStatus 201 ResponseRoleCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)) responses
   , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -582,7 +582,7 @@ createRole auth eitherRequest =
       logDebug $ "Received request to create role: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         checkPermission
-          SMkPermissionSpaceEditRole
+          SMkPermissionEditRole
           (userAuthenticatedId authenticated)
           (requestRoleCreateSpace request)
         roleId <-
@@ -599,7 +599,7 @@ createRole auth eitherRequest =
         seldaResult
         $ \seldaResultAfter404 ->
           handleSeldaException403InsufficientPermission
-            (Proxy @MkPermissionSpaceEditRole)
+            (Proxy @MkPermissionEditRole)
             seldaResultAfter404
             $ \seldaResultAfter403 ->
               handleSeldaException
@@ -618,7 +618,7 @@ editRole ::
   , IsMember (WithStatus 200 ResponseRoleEdit) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -631,7 +631,7 @@ editRole auth eitherRequest =
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <- roleSpace <$> roleGet (requestRoleEditId request)
         checkPermission
-          SMkPermissionSpaceEditRole
+          SMkPermissionEditRole
           (userAuthenticatedId authenticated)
           spaceIdentifier
         case requestRoleEditName request of
@@ -648,7 +648,7 @@ editRole auth eitherRequest =
           Preserve -> pure ()
           Overwrite permissions -> rolePermissionsSet (requestRoleEditId request) permissions
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceEditRole)
+        (Proxy @MkPermissionEditRole)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
@@ -661,7 +661,7 @@ deleteRole ::
   , IsMember (WithStatus 200 ResponseRoleDelete) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditRole)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -674,12 +674,12 @@ deleteRole auth eitherRequest =
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <- roleSpace <$> roleGet (requestRoleDeleteId request)
         checkPermission
-          SMkPermissionSpaceEditRole
+          SMkPermissionEditRole
           (userAuthenticatedId authenticated)
           spaceIdentifier
         roleDeleteWithFallback (requestRoleDeleteId request) (requestRoleDeleteFallbackId request)
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceEditRole)
+        (Proxy @MkPermissionEditRole)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
@@ -692,7 +692,7 @@ createDesk ::
   , IsMember (WithStatus 201 ResponseDeskCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)) responses
   , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -709,7 +709,7 @@ createDesk auth eitherRequest =
             Identifier spaceId -> pure spaceId
             Name name -> spaceLookupId name
         checkPermission
-          SMkPermissionSpaceEditDesk
+          SMkPermissionEditDesk
           (userAuthenticatedId authenticated)
           spaceIdentifier
         deskCreate (requestDeskCreateName request) spaceIdentifier (requestDeskCreateLocation request)
@@ -719,7 +719,7 @@ createDesk auth eitherRequest =
         seldaResult
         $ \seldaResultAfter404 ->
           handleSeldaException403InsufficientPermission
-            (Proxy @MkPermissionSpaceEditDesk)
+            (Proxy @MkPermissionEditDesk)
             seldaResultAfter404
             $ \seldaResultAfter403 ->
               handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \deskIdentifier -> do
@@ -732,7 +732,7 @@ deleteDesk ::
   , IsMember (WithStatus 200 ResponseDeskDelete) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)) responses
   , IsMember (WithStatus 404 (StaticText "Desk not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -746,12 +746,12 @@ deleteDesk auth eitherRequest =
       seldaResult <- runSeldaTransactionT $ do
         desk <- deskGetFromId $ requestDeskDeleteId request
         checkPermission
-          SMkPermissionSpaceEditDesk
+          SMkPermissionEditDesk
           (userAuthenticatedId authenticated)
           (deskSpace desk)
         deskDelete $ deskId desk
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceEditDesk)
+        (Proxy @MkPermissionEditDesk)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaException
@@ -768,7 +768,7 @@ editDesk ::
   , IsMember (WithStatus 200 ResponseDeskEdit) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceEditDesk)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)) responses
   , IsMember (WithStatus 404 (StaticText "Desk not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -782,7 +782,7 @@ editDesk auth eitherRequest =
       seldaResult <- runSeldaTransactionT $ do
         desk <- deskGetFromId $ requestDeskEditId request
         checkPermission
-          SMkPermissionSpaceEditDesk
+          SMkPermissionEditDesk
           (userAuthenticatedId authenticated)
           (deskSpace desk)
         case requestDeskEditName request of
@@ -797,7 +797,7 @@ editDesk auth eitherRequest =
         seldaResult
         $ \seldaResultAfter404 ->
           handleSeldaException403InsufficientPermission
-            (Proxy @MkPermissionSpaceEditDesk)
+            (Proxy @MkPermissionEditDesk)
             seldaResultAfter404
             $ \seldaResultAfter403 ->
               handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
@@ -812,7 +812,7 @@ listDesks ::
   , IsMember (WithStatus 200 ResponseDeskList) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceViewSpace)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -828,7 +828,7 @@ listDesks auth eitherRequest =
             Name spaceName -> spaceLookupId spaceName
             Identifier spaceId -> pure spaceId
         checkPermission
-          SMkPermissionSpaceViewSpace
+          SMkPermissionViewSpace
           (userAuthenticatedId authenticated)
           spaceIdentifier
         desks <- deskList spaceIdentifier (userAuthenticatedId authenticated)
@@ -843,7 +843,7 @@ listDesks auth eitherRequest =
               , deskWithInfoReservations = reservations
               }
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceViewSpace)
+        (Proxy @MkPermissionViewSpace)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \desksWithInfo -> do
@@ -877,7 +877,7 @@ handleBadRequestBodyJpeg parsedRequestBody handler' =
     Left err -> respond $ WithStatus @400 $ MkErrorParseBodyJpeg err
 
 handleSeldaException403InsufficientPermission ::
-  forall (p :: PermissionSpace) m responses a.
+  forall (p :: Permission) m responses a.
   ( Typeable p
   , Applicative m
   , IsMember (WithStatus 403 (ErrorInsufficientPermission p)) responses
@@ -888,5 +888,5 @@ handleSeldaException403InsufficientPermission ::
   m (Union responses)
 handleSeldaException403InsufficientPermission Proxy =
   handleSeldaException
-    (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied p))
+    (Proxy @(SqlErrorMensamPermissionNotSatisfied p))
     (WithStatus @403 $ MkErrorInsufficientPermission @p)

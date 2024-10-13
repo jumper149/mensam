@@ -44,7 +44,7 @@ createReservation ::
   , IsMember (WithStatus 201 ResponseReservationCreate) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCreateReservation)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionCreateReservation)) responses
   , IsMember (WithStatus 409 (StaticText "Desk is not available within the given time window.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
@@ -66,7 +66,7 @@ createReservation auth eitherRequest = do
             Identifier deskId -> pure deskId
         desk <- deskGetFromId deskIdentifier
         checkPermission
-          SMkPermissionSpaceCreateReservation
+          SMkPermissionCreateReservation
           (userAuthenticatedId authenticated)
           (deskSpace desk)
         reservationIdentifier <-
@@ -92,7 +92,7 @@ createReservation auth eitherRequest = do
               pure Nothing
         pure (reservationIdentifier, maybeEmail)
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceCreateReservation)
+        (Proxy @MkPermissionCreateReservation)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaException
@@ -128,7 +128,7 @@ cancelReservation ::
   , IsMember (WithStatus 200 ResponseReservationCancel) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionSpaceCancelReservation)) responses
+  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionCancelReservation)) responses
   , IsMember (WithStatus 409 (StaticText "Already cancelled.")) responses
   , IsMember (WithStatus 410 (StaticText "Already happened.")) responses
   , IsMember (WithStatus 500 ()) responses
@@ -145,12 +145,12 @@ cancelReservation auth eitherRequest = do
         reservation <- reservationGet reservationIdentifier
         desk <- deskGetFromId $ reservationDesk reservation
         checkPermission
-          SMkPermissionSpaceCancelReservation
+          SMkPermissionCancelReservation
           (userAuthenticatedId authenticated)
           (deskSpace desk)
         reservationCancel reservationIdentifier
       handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionSpaceCancelReservation)
+        (Proxy @MkPermissionCancelReservation)
         seldaResult
         $ \seldaResultAfter403 ->
           handleSeldaException
@@ -211,7 +211,7 @@ handleBadRequestBody parsedRequestBody handler' =
     Left err -> respond $ WithStatus @400 $ MkErrorParseBodyJson err
 
 handleSeldaException403InsufficientPermission ::
-  forall (p :: PermissionSpace) m responses a.
+  forall (p :: Permission) m responses a.
   ( Typeable p
   , Applicative m
   , IsMember (WithStatus 403 (ErrorInsufficientPermission p)) responses
@@ -222,5 +222,5 @@ handleSeldaException403InsufficientPermission ::
   m (Union responses)
 handleSeldaException403InsufficientPermission Proxy =
   handleSeldaException
-    (Proxy @(SqlErrorMensamSpacePermissionNotSatisfied p))
+    (Proxy @(SqlErrorMensamPermissionNotSatisfied p))
     (WithStatus @403 $ MkErrorInsufficientPermission @p)

@@ -33,14 +33,14 @@ import GHC.Generics
 import Mensam.Server.Jpeg
 import Numeric.Natural
 
-type SqlErrorMensamSpacePermissionNotSatisfied :: PermissionSpace -> Type
-data SqlErrorMensamSpacePermissionNotSatisfied permission = MkSqlErrorMensamSpacePermissionNotSatisfied
+type SqlErrorMensamPermissionNotSatisfied :: Permission -> Type
+data SqlErrorMensamPermissionNotSatisfied permission = MkSqlErrorMensamPermissionNotSatisfied
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
 
 checkPermission ::
   (MonadLogger m, MonadSeldaPool m, Typeable p) =>
-  SPermissionSpace p ->
+  SPermission p ->
   IdentifierUser ->
   IdentifierSpace ->
   SeldaTransactionT m ()
@@ -57,7 +57,7 @@ checkPermission sPermission userIdentifier spaceIdentifier = do
         else do
           lift $ logInfo "Permission was not satisfied."
           case sPermission of
-            (_ :: SPermissionSpace permission) -> throwM $ MkSqlErrorMensamSpacePermissionNotSatisfied @permission
+            (_ :: SPermission permission) -> throwM $ MkSqlErrorMensamPermissionNotSatisfied @permission
 
 spaceLookupId ::
   (MonadLogger m, MonadSeldaPool m) =>
@@ -135,7 +135,7 @@ spaceView userIdentifier spaceIdentifier = do
       dbSpace
         Selda.! #dbSpace_visibility
         Selda..== Selda.literal MkDbSpaceVisibility_visible
-        Selda..|| Selda.literal (MkPermissionSpaceViewSpace `S.member` permissions)
+        Selda..|| Selda.literal (MkPermissionViewSpace `S.member` permissions)
     pure dbSpace
   case maybeDbSpace of
     Nothing -> pure Nothing
@@ -506,7 +506,7 @@ spaceUserPermissions ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
   IdentifierUser ->
-  SeldaTransactionT m (S.Set PermissionSpace)
+  SeldaTransactionT m (S.Set Permission)
 spaceUserPermissions spaceIdentifier userIdentifier = do
   lift $ logDebug $ "Looking up user " <> T.pack (show userIdentifier) <> " permissions for space " <> T.pack (show spaceIdentifier) <> "."
   permissions <-
@@ -598,7 +598,7 @@ roleDeleteWithFallback identifierToDelete identifierFallback = do
 rolePermissionGive ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierRole ->
-  PermissionSpace ->
+  Permission ->
   SeldaTransactionT m ()
 rolePermissionGive roleIdentifier permission = do
   lift $ logDebug $ "Giving role " <> T.pack (show roleIdentifier) <> " permission " <> T.pack (show permission) <> "."
@@ -718,7 +718,7 @@ roleAccessibilityAndPasswordSet identifier accessibility password = do
 rolePermissionsSet ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierRole ->
-  S.Set PermissionSpace ->
+  S.Set Permission ->
   SeldaTransactionT m ()
 rolePermissionsSet identifier permissions = do
   lift $ logDebug $ "Setting permissions " <> T.pack (show permissions) <> " of role " <> T.pack (show identifier) <> "."
@@ -945,22 +945,22 @@ roleAccessibilityDbToApi = \case
   MkDbRoleAccessibility_joinable_with_password -> MkAccessibilityRoleJoinableWithPassword
   MkDbRoleAccessibility_inaccessible -> MkAccessibilityRoleInaccessible
 
-spacePermissionApiToDb :: PermissionSpace -> DbSpacePermission
+spacePermissionApiToDb :: Permission -> DbPermission
 spacePermissionApiToDb = \case
-  MkPermissionSpaceViewSpace -> MkDbSpacePermission_view_space
-  MkPermissionSpaceEditDesk -> MkDbSpacePermission_edit_desk
-  MkPermissionSpaceEditUser -> MkDbSpacePermission_edit_user
-  MkPermissionSpaceEditRole -> MkDbSpacePermission_edit_role
-  MkPermissionSpaceEditSpace -> MkDbSpacePermission_edit_space
-  MkPermissionSpaceCreateReservation -> MkDbSpacePermission_create_reservation
-  MkPermissionSpaceCancelReservation -> MkDbSpacePermission_cancel_reservation
+  MkPermissionViewSpace -> MkDbPermission_view_space
+  MkPermissionEditDesk -> MkDbPermission_edit_desk
+  MkPermissionEditUser -> MkDbPermission_edit_user
+  MkPermissionEditRole -> MkDbPermission_edit_role
+  MkPermissionEditSpace -> MkDbPermission_edit_space
+  MkPermissionCreateReservation -> MkDbPermission_create_reservation
+  MkPermissionCancelReservation -> MkDbPermission_cancel_reservation
 
-spacePermissionDbToApi :: DbSpacePermission -> PermissionSpace
+spacePermissionDbToApi :: DbPermission -> Permission
 spacePermissionDbToApi = \case
-  MkDbSpacePermission_view_space -> MkPermissionSpaceViewSpace
-  MkDbSpacePermission_edit_desk -> MkPermissionSpaceEditDesk
-  MkDbSpacePermission_edit_user -> MkPermissionSpaceEditUser
-  MkDbSpacePermission_edit_role -> MkPermissionSpaceEditRole
-  MkDbSpacePermission_edit_space -> MkPermissionSpaceEditSpace
-  MkDbSpacePermission_create_reservation -> MkPermissionSpaceCreateReservation
-  MkDbSpacePermission_cancel_reservation -> MkPermissionSpaceCancelReservation
+  MkDbPermission_view_space -> MkPermissionViewSpace
+  MkDbPermission_edit_desk -> MkPermissionEditDesk
+  MkDbPermission_edit_user -> MkPermissionEditUser
+  MkDbPermission_edit_role -> MkPermissionEditRole
+  MkDbPermission_edit_space -> MkPermissionEditSpace
+  MkDbPermission_create_reservation -> MkPermissionCreateReservation
+  MkDbPermission_cancel_reservation -> MkPermissionCancelReservation

@@ -52,7 +52,7 @@ data Role = MkRole
   { roleId :: IdentifierRole
   , roleSpace :: IdentifierSpace
   , roleName :: NameRole
-  , rolePermissions :: S.Set PermissionSpace
+  , rolePermissions :: S.Set Permission
   , roleAccessibility :: AccessibilityRole
   }
   deriving stock (Eq, Generic, Ord, Read, Show)

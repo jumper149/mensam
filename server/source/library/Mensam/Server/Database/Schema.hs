@@ -189,7 +189,7 @@ type DbRolePermission :: Type
 data DbRolePermission = MkDbRolePermission
   { dbRolePermission_id :: ~(Selda.ID DbRolePermission)
   , dbRolePermission_role :: Selda.ID DbRole
-  , dbRolePermission_permission :: DbSpacePermission
+  , dbRolePermission_permission :: DbPermission
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.Relational, Selda.SqlRow)
@@ -204,17 +204,17 @@ tableRolePermission =
     ]
     (fromJust . T.stripPrefix "dbRolePermission_")
 
-type DbSpacePermission :: Type
-data DbSpacePermission
-  = MkDbSpacePermission_view_space
-  | MkDbSpacePermission_edit_desk
-  | MkDbSpacePermission_edit_user
-  | MkDbSpacePermission_edit_role
-  | MkDbSpacePermission_edit_space
-  | MkDbSpacePermission_create_reservation
-  | MkDbSpacePermission_cancel_reservation
+type DbPermission :: Type
+data DbPermission
+  = MkDbPermission_view_space
+  | MkDbPermission_edit_desk
+  | MkDbPermission_edit_user
+  | MkDbPermission_edit_role
+  | MkDbPermission_edit_space
+  | MkDbPermission_create_reservation
+  | MkDbPermission_cancel_reservation
   deriving stock (Bounded, Enum, Read, Show)
-  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpacePermission_" DbSpacePermission)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbPermission_" DbPermission)
   deriving anyclass (Selda.SqlType)
 
 type DbSpaceUser :: Type

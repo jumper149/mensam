@@ -149,7 +149,7 @@ deriving newtype instance ToSchema NameRole
 deriving via A.CustomJSON (JSONSettings "MkAccessibilityRole" "") AccessibilityRole instance ToSchema AccessibilityRole
 deriving via A.CustomJSON (JSONSettings "MkVisibilitySpace" "") VisibilitySpace instance ToSchema VisibilitySpace
 deriving via A.CustomJSON (JSONSettings "Mk" "spaceUser") SpaceUser instance ToSchema SpaceUser
-deriving via A.CustomJSON (JSONSettings "MkPermissionSpace" "") PermissionSpace instance ToSchema PermissionSpace
+deriving via A.CustomJSON (JSONSettings "MkPermission" "") Permission instance ToSchema Permission
 deriving via A.CustomJSON (JSONSettings "Mk" "desk") Desk instance ToSchema Desk
 deriving newtype instance ToSchema IdentifierDesk
 deriving newtype instance ToSchema NameDesk
