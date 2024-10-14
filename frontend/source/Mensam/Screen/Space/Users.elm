@@ -15,6 +15,7 @@ import Mensam.Api.SpaceUserRole
 import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Element.Button
+import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
@@ -408,7 +409,18 @@ element model =
                                     [ Element.paragraph
                                         [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
                                         ]
-                                        [ Element.text "Choose a new role for this user."
+                                        [ Element.text "Choose a new role for this user. Roles can be customized with "
+                                        , Element.el
+                                            [ Element.Events.Pointer.onClick <| \_ -> MessageEffect <| OpenPageSpaceRoles model.spaceId
+                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                            , Element.Font.color <| Mensam.Element.Color.dark.cyan Mensam.Element.Color.Opaque100
+                                            , Element.mouseOver
+                                                [ Element.Font.color <| Mensam.Element.Color.bright.cyan Mensam.Element.Color.Opaque100
+                                                ]
+                                            ]
+                                          <|
+                                            Element.text "Role Settings"
+                                        , Element.text "."
                                         ]
                                     , Element.indexedTable
                                         [ Element.width Element.fill
@@ -795,6 +807,7 @@ type MessageEffect
     | SubmitKickUser { user : Mensam.User.Identifier }
     | ReturnToSpace
     | OpenPageToProfile Mensam.User.Identifier
+    | OpenPageSpaceRoles Mensam.Space.Identifier
 
 
 spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
