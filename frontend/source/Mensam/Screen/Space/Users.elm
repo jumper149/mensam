@@ -62,6 +62,7 @@ type alias Model =
 type PopupModel
     = PopupEditUser
         { user : Mensam.User.Identifier
+        , profilePictureUrl : String
         , role : Maybe Mensam.Space.Role.Identifier
         , selected : Maybe Int
         }
@@ -352,7 +353,16 @@ element model =
                                 [ Element.width Element.fill
                                 , Element.spacing 10
                                 ]
-                                [ case model.yourRole of
+                                [ Element.image
+                                    [ Element.width <| Element.px 64
+                                    , Element.height <| Element.px 64
+                                    , Element.Border.rounded 6
+                                    , Element.clip
+                                    ]
+                                    { src = popupModel.profilePictureUrl
+                                    , description = "Profile picture."
+                                    }
+                                , case model.yourRole of
                                     Nothing ->
                                         Element.none
 
@@ -763,8 +773,31 @@ updatePure message model =
         ClosePopup ->
             { model | popup = Nothing }
 
-        ChooseUser userId ->
-            { model | popup = Just <| PopupEditUser { user = userId, role = Nothing, selected = Nothing } }
+        ChooseUser (Mensam.User.MkIdentifierUnsafe userIdRaw) ->
+            { model
+                | popup =
+                    Just <|
+                        PopupEditUser <|
+                            case Dict.get userIdRaw model.users of
+                                Nothing ->
+                                    { user = Mensam.User.MkIdentifierUnsafe userIdRaw
+                                    , role = Nothing
+                                    , selected = Nothing
+                                    , profilePictureUrl =
+                                        Url.Builder.absolute
+                                            [ "static"
+                                            , "default-profile-picture.jpeg"
+                                            ]
+                                            []
+                                    }
+
+                                Just user ->
+                                    { user = user.user
+                                    , role = Just user.role
+                                    , selected = Nothing
+                                    , profilePictureUrl = user.profilePictureUrl
+                                    }
+            }
 
         SetSelectedRole maybeN ->
             case model.popup of
