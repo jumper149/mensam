@@ -4,6 +4,7 @@ import Mensam.API.Aeson
 import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
+import Mensam.API.Data.Space
 import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
 import Mensam.API.Pretty
@@ -20,6 +21,8 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger.CallStack
 import Data.Text qualified as T
 import Data.Text.Lazy qualified as TL
+import Data.Time.Zones qualified as Time
+import Data.Time.Zones.All qualified as Time
 import Data.Traversable
 import Data.Typeable
 import Servant hiding (BasicAuthResult (..))
@@ -76,18 +79,28 @@ createReservation auth eitherRequest = do
             (userAuthenticatedId authenticated)
             (requestReservationCreateTimeWindow request)
         maybeEmail <- do
+          reservation <- reservationGet reservationIdentifier
+          user <- userGet $ reservationUser reservation
+          space <- spaceGetFromId $ deskSpace desk
           userNotificationsPreferencesEmailGet (userAuthenticatedId authenticated) >>= \case
             MkEmailPreferencesSend emailAddress ->
               pure $
                 Just
                   MkEmail
                     { emailRecipient = emailAddress
-                    , emailTitle = "Created Reservation: #" <> toPrettyText reservationIdentifier
+                    , emailTitle = "Created Reservation: " <> toPrettyText (reservationId reservation)
                     , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
                         H.head $ do
-                          H.title $ H.text "Created Reservation: " <> toPrettyHtml5 reservationIdentifier
+                          H.title $ H.text "Created Reservation: " <> toPrettyHtml5 (reservationId reservation)
                         H.body $ do
                           H.p $ H.text "Your reservation was created successfully."
+                          H.p $ H.text "Reservation: " <> toPrettyHtml5 (reservationId reservation)
+                          H.p $ H.text "Space: " <> toPrettyHtml5 (spaceName space) <> " (" <> toPrettyHtml5 (spaceId space) <> ")"
+                          H.p $ H.text "Desk: " <> toPrettyHtml5 (deskName desk) <> " (" <> toPrettyHtml5 (reservationDesk reservation) <> ")"
+                          H.p $ H.text "User: " <> toPrettyHtml5 (userName user) <> " (" <> toPrettyHtml5 (userId user) <> ")"
+                          H.p $ H.text "Timezone: " <> toPrettyHtml5 (spaceTimezone space)
+                          H.p $ H.text "From: " <> toPrettyHtml5 (Time.utcToLocalTimeTZ (Time.tzByLabel $ spaceTimezone space) $ reservationTimeBegin reservation)
+                          H.p $ H.text "To: " <> toPrettyHtml5 (Time.utcToLocalTimeTZ (Time.tzByLabel $ spaceTimezone space) $ reservationTimeEnd reservation)
                     }
             MkEmailPreferencesDontSend ->
               pure Nothing

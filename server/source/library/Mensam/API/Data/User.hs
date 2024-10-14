@@ -2,6 +2,7 @@ module Mensam.API.Data.User where
 
 import Mensam.API.Aeson
 import Mensam.API.Aeson.StaticText
+import Mensam.API.Pretty
 
 import Data.Aeson qualified as A
 import Data.Int
@@ -28,6 +29,11 @@ newtype IdentifierUser = MkIdentifierUser {unIdentifierUser :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
   deriving newtype (Servant.FromHttpApiData, Servant.ToHttpApiData)
+
+instance ToPrettyText IdentifierUser where
+  toPrettyText = ("#" <>) . T.pack . show . unIdentifierUser
+
+deriving via PrettyHtml5ViaPrettyText IdentifierUser instance ToPrettyHtml5 IdentifierUser
 
 type Session :: Type
 data Session = MkSession

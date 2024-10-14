@@ -3,6 +3,7 @@ module Mensam.API.Data.Space where
 import Mensam.API.Aeson
 import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
+import Mensam.API.Pretty
 
 import Data.Aeson qualified as A
 import Data.Int
@@ -33,10 +34,18 @@ newtype IdentifierSpace = MkIdentifierSpace {unIdentifierSpace :: Int64}
   deriving newtype (A.FromJSON, A.ToJSON)
   deriving newtype (Servant.FromHttpApiData, Servant.ToHttpApiData)
 
+instance ToPrettyText IdentifierSpace where
+  toPrettyText = ("#" <>) . T.pack . show . unIdentifierSpace
+
+deriving via PrettyHtml5ViaPrettyText IdentifierSpace instance ToPrettyHtml5 IdentifierSpace
+
 type NameSpace :: Type
 newtype NameSpace = MkNameSpace {unNameSpace :: T.Text}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
+
+deriving via PrettyTextViaShow T.Text instance ToPrettyText NameSpace
+deriving via PrettyHtml5ViaPrettyText NameSpace instance ToPrettyHtml5 NameSpace
 
 type VisibilitySpace :: Type
 data VisibilitySpace

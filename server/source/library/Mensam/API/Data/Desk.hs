@@ -2,6 +2,7 @@ module Mensam.API.Data.Desk where
 
 import Mensam.API.Aeson
 import Mensam.API.Data.Space
+import Mensam.API.Pretty
 
 import Data.Aeson qualified as A
 import Data.Int
@@ -29,10 +30,18 @@ newtype IdentifierDesk = MkIdentifierDesk {unIdentifierDesk :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
 
+instance ToPrettyText IdentifierDesk where
+  toPrettyText = ("#" <>) . T.pack . show . unIdentifierDesk
+
+deriving via PrettyHtml5ViaPrettyText IdentifierDesk instance ToPrettyHtml5 IdentifierDesk
+
 type NameDesk :: Type
 newtype NameDesk = MkNameDesk {unNameDesk :: T.Text}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
+
+deriving via PrettyTextViaShow T.Text instance ToPrettyText NameDesk
+deriving via PrettyHtml5ViaPrettyText NameDesk instance ToPrettyHtml5 NameDesk
 
 type DeskNameWithContext :: Type
 data DeskNameWithContext = MkDeskNameWithContext
