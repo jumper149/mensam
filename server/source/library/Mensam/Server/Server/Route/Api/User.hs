@@ -5,6 +5,7 @@ import Mensam.API.Aeson.StaticText
 import Mensam.API.Data.User
 import Mensam.API.Data.User.Password
 import Mensam.API.Data.User.Username
+import Mensam.API.Pretty
 import Mensam.API.Route.Api.User
 import Mensam.Server.Application.Configured.Class
 import Mensam.Server.Application.Email.Class
@@ -345,10 +346,10 @@ confirmationRequest auth =
           sendEmail
             MkEmail
               { emailRecipient = userEmail user
-              , emailTitle = "Email Address Verification: " <> unUsername (userName user)
+              , emailTitle = "Email Address Verification: " <> toPrettyText (userName user)
               , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
                   H.head $ do
-                    H.title $ H.text $ "Email Address Verification: " <> unUsername (userName user)
+                    H.title $ H.text "Email Address Verification: " <> toPrettyHtml5 (userName user)
                   H.body $ do
                     H.p $ H.text "Click the link to confirm your email address."
                     let confirmLink :: T.Text = displayBaseUrl (configBaseUrl config) <> "register/confirm/" <> unConfirmationSecret confirmationSecret

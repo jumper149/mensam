@@ -2,6 +2,8 @@
 
 module Mensam.API.Data.User.Username where
 
+import Mensam.API.Pretty
+
 import Control.Applicative
 import Data.Aeson qualified as A
 import Data.Attoparsec.Combinator qualified as P
@@ -47,3 +49,6 @@ instance FromHttpApiData Username where
     case mkUsername text of
       Left err -> Left $ T.pack err
       Right parsed -> Right parsed
+
+deriving via PrettyTextViaShow T.Text instance ToPrettyText Username
+deriving via PrettyHtml5ViaPrettyText Username instance ToPrettyHtml5 Username
