@@ -3,10 +3,12 @@ module Mensam.API.Data.Reservation where
 import Mensam.API.Aeson
 import Mensam.API.Data.Desk
 import Mensam.API.Data.User
+import Mensam.API.Pretty
 
 import Data.Aeson qualified as A
 import Data.Int
 import Data.Kind
+import Data.Text qualified as T
 import Data.Time qualified as T
 import Deriving.Aeson qualified as A
 import GHC.Generics
@@ -29,6 +31,11 @@ type IdentifierReservation :: Type
 newtype IdentifierReservation = MkIdentifierReservation {unIdentifierReservation :: Int64}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)
+
+instance ToPrettyText IdentifierReservation where
+  toPrettyText = ("#" <>) . T.pack . show . unIdentifierReservation
+
+deriving via PrettyHtml5ViaPrettyText IdentifierReservation instance ToPrettyHtml5 IdentifierReservation
 
 type StatusReservation :: Type
 data StatusReservation

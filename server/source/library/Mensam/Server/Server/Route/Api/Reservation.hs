@@ -6,6 +6,7 @@ import Mensam.API.Data.Desk
 import Mensam.API.Data.Reservation
 import Mensam.API.Data.Space.Permission
 import Mensam.API.Data.User
+import Mensam.API.Pretty
 import Mensam.API.Route.Api.Reservation
 import Mensam.Server.Application.Email.Class
 import Mensam.Server.Application.SeldaPool.Class
@@ -81,10 +82,10 @@ createReservation auth eitherRequest = do
                 Just
                   MkEmail
                     { emailRecipient = emailAddress
-                    , emailTitle = "Created Reservation: #" <> T.pack (show reservationIdentifier)
+                    , emailTitle = "Created Reservation: #" <> toPrettyText reservationIdentifier
                     , emailBodyHtml = TL.toStrict $ T.renderHtml $ H.docTypeHtml $ do
                         H.head $ do
-                          H.title $ H.text $ "Created Reservation: #" <> T.pack (show reservationIdentifier)
+                          H.title $ H.text "Created Reservation: " <> toPrettyHtml5 reservationIdentifier
                         H.body $ do
                           H.p $ H.text "Your reservation was created successfully."
                     }

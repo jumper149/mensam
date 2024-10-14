@@ -33,23 +33,23 @@ instance (MonadIO m, MonadLogger m) => MonadEmail (EmailT m) where
     let
       mimeMailFromEmailConfig :: EmailConfig -> Mail
       mimeMailFromEmailConfig MkEmailConfig {emailUsername} =
-            Mail
-              { mailFrom =
-                  Address
-                    { addressName = Just "Mensam"
-                    , addressEmail = T.pack emailUsername
-                    }
-              , mailTo =
-                  [ Address
-                      { addressName = Nothing
-                      , addressEmail = toText $ emailRecipient email
-                      }
-                  ]
-              , mailCc = []
-              , mailBcc = []
-              , mailHeaders = [("Subject", emailTitle email)]
-              , mailParts = [[Network.Mail.Mime.htmlPart $ TL.fromStrict $ emailBodyHtml email]]
-              }
+        Mail
+          { mailFrom =
+              Address
+                { addressName = Just "Mensam"
+                , addressEmail = T.pack emailUsername
+                }
+          , mailTo =
+              [ Address
+                  { addressName = Nothing
+                  , addressEmail = toText $ emailRecipient email
+                  }
+              ]
+          , mailCc = []
+          , mailBcc = []
+          , mailHeaders = [("Subject", emailTitle email)]
+          , mailParts = [[Network.Mail.Mime.htmlPart $ TL.fromStrict $ emailBodyHtml email]]
+          }
     case maybeEmailConfig of
       Nothing -> do
         lift $ logWarn "A requested email was not sent."

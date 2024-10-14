@@ -134,6 +134,7 @@ library
     , Mensam.API.Data.User.Password
     , Mensam.API.Data.User.Username
     , Mensam.API.Order
+    , Mensam.API.Pretty
     , Mensam.API.Route
     , Mensam.API.Route.Api
     , Mensam.API.Route.Api.OpenApi
