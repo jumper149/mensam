@@ -30,14 +30,9 @@ instance (MonadIO m, MonadLogger m) => MonadEmail (EmailT m) where
   sendEmail email = do
     maybeEmailConfig <- MkEmailT ask
     lift $ logDebug $ "Sending email: " <> T.pack (show email)
-    case maybeEmailConfig of
-      Nothing -> do
-        lift $ logWarn "A requested email was not sent."
-        pure EmailFailedToSend
-      Just MkEmailConfig {emailHostname, emailPort, emailUsername, emailPassword, emailTls} -> do
-        let
-          port = toEnum $ fromEnum emailPort
-          mimeMail =
+    let
+      mimeMailFromEmailConfig :: EmailConfig -> Mail
+      mimeMailFromEmailConfig MkEmailConfig {emailUsername} =
             Mail
               { mailFrom =
                   Address
@@ -55,14 +50,34 @@ instance (MonadIO m, MonadLogger m) => MonadEmail (EmailT m) where
               , mailHeaders = [("Subject", emailTitle email)]
               , mailParts = [[Network.Mail.Mime.htmlPart $ TL.fromStrict $ emailBodyHtml email]]
               }
+    case maybeEmailConfig of
+      Nothing -> do
+        lift $ logWarn "A requested email was not sent."
+        let
+          placeholderEmailConfig =
+            MkEmailConfig
+              { emailHostname = undefined
+              , emailPort = undefined
+              , emailUsername = "nousernamegiven@example.com"
+              , emailPassword = undefined
+              , emailTls = undefined
+              }
+          mimeMail = mimeMailFromEmailConfig placeholderEmailConfig
+        renderedMail <- lift $ liftIO $ renderMail' mimeMail
+        lift $ logDebug $ "Tried to send email: " <> T.pack (show renderedMail)
+        pure EmailFailedToSend
+      Just emailConfig -> do
+        let
+          port = toEnum $ fromEnum $ emailPort emailConfig
+          mimeMail = mimeMailFromEmailConfig emailConfig
         sendMailResult <-
           lift . liftIO . try $
-            if emailTls
-              then sendMailWithLoginTLS' emailHostname port emailUsername emailPassword mimeMail
-              else sendMailWithLogin' emailHostname port emailUsername emailPassword mimeMail
+            if emailTls emailConfig
+              then sendMailWithLoginTLS' (emailHostname emailConfig) port (emailUsername emailConfig) (emailPassword emailConfig) mimeMail
+              else sendMailWithLogin' (emailHostname emailConfig) port (emailUsername emailConfig) (emailPassword emailConfig) mimeMail
         case sendMailResult of
           Left (err :: SomeException) -> do
-            lift $ logWarn $ "Failed to send an email: " <> T.pack (show err)
+            lift $ logWarn $ "Failed to actually send an email: " <> T.pack (show err)
             pure EmailFailedToSend
           Right () -> do
             lift $ logInfo "Sent an email."
