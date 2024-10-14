@@ -51,6 +51,14 @@
   ** [ ] justinmimbs/timezone-data for Elm.
   ** [ ] Matching IANA database versions.
 
+* Rooms.
+  ** [ ] Desks can be assigned to rooms.
+  ** [ ] Whole rooms can be booked.
+    *** [ ] Rooms can only be booked when no desk in the room is already booked.
+    *** [ ] Booked rooms block all desks inside that room.
+  ** [ ] Rooms are displayed nicely in the 2D room view.
+  ** [ ] Rooms are editable independently of desks.
+
 * Smart desk assignment.
   ** Users can choose to reserve any desk (not a specific one).
   ** Mensam will not choose the desk until the reservation actually happens.
