@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.13.0.0`
+
 * API
   ** Alter messages in 403 "missing permission" status slightly.
 * Database
