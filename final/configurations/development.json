@@ -4,13 +4,7 @@
   , "connection-pool-max-number-of-connections": 10
   , "check-data-integrity-on-startup": true
   }
-, "email-config":
-  { "hostname": ""
-  , "port": 465
-  , "username": ""
-  , "password": ""
-  , "tls": true
-  }
+, "email-config": null
 , "port": 8177
 , "base-url":
   { "scheme": "http"
