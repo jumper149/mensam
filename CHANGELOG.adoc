@@ -1,5 +1,11 @@
 = Changelog
 
+== `0.13.1.0`
+
+* Frontend
+  ** Fixed screen to edit desks.
+  ** Added URL invite generation.
+
 == `0.13.0.1`
 
 * Frontend
