@@ -69,6 +69,11 @@ type PopupModel
     | PopupKickUser
         { user : Mensam.User.Identifier
         }
+    | PopupInvite
+        { role : Maybe Mensam.Space.Role.Identifier
+        , selected : Maybe Int
+        , password : Maybe String
+        }
 
 
 usersKey : Mensam.User.Identifier -> Int
@@ -111,6 +116,15 @@ element model =
                         ]
                       <|
                         Element.text "Users"
+                    , Mensam.Element.Button.button <|
+                        Mensam.Element.Button.MkButton
+                            { attributes = [ Element.alignRight, Element.centerY ]
+                            , color = Mensam.Element.Button.Yellow
+                            , enabled = True
+                            , label = Element.text "Invite Users"
+                            , message = Just <| MessagePure OpenDialogToInvite
+                            , size = Mensam.Element.Button.Medium
+                            }
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
@@ -663,6 +677,65 @@ element model =
                                         }
                                 ]
                             ]
+
+                Just (PopupInvite popupModel) ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Invite Users"
+                            , Element.paragraph
+                                [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                , Element.Font.justify
+                                ]
+                                [ Element.text "Invite new users by sharing a URL to join."
+                                ]
+                            , Element.el
+                                [ Element.width Element.fill
+                                , Element.height <| Element.px 40
+                                , Element.Background.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                , Element.Border.color <| Mensam.Element.Color.dark.white Mensam.Element.Color.Opaque100
+                                , Element.Border.width 2
+                                , Element.clipX
+                                , Element.scrollbarX
+                                ]
+                              <|
+                                Element.el
+                                    ([ Element.centerY
+                                     , Element.paddingXY 12 0
+                                     , Element.Font.size 16
+                                     , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque50
+                                     ]
+                                        ++ Mensam.Element.Font.font Mensam.Element.Font.Monospace400
+                                    )
+                                <|
+                                    Element.text <|
+                                        -- TODO: BaseUrl is hardcoded.
+                                        Url.Builder.custom
+                                            (Url.Builder.CrossOrigin "https://mens.am")
+                                            [ "join"
+                                            , "space"
+                                            , Mensam.Space.identifierToString model.spaceId
+                                            ]
+                                            []
+                                            Nothing
+                            , Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = [ Element.width Element.fill, Element.alignBottom ]
+                                    , color = Mensam.Element.Button.Yellow
+                                    , enabled = True
+                                    , label = Element.text "Go back"
+                                    , message = Just <| MessagePure <| CloseDialogToInvite
+                                    , size = Mensam.Element.Button.Medium
+                                    }
+                            ]
         , closePopup = MessagePure ClosePopup
         }
 
@@ -716,6 +789,8 @@ type MessagePure
     | CloseDialogToEditUser
     | OpenDialogToKick Mensam.User.Identifier
     | CloseDialogToKick
+    | OpenDialogToInvite
+    | CloseDialogToInvite
 
 
 updatePure : MessagePure -> Model -> Model
@@ -810,6 +885,9 @@ updatePure message model =
                 Just (PopupKickUser popupModel) ->
                     { model | popup = Just <| PopupKickUser popupModel }
 
+                Just (PopupInvite popupModel) ->
+                    { model | popup = Just <| PopupInvite popupModel }
+
         ChooseNewRole roleId ->
             case model.popup of
                 Nothing ->
@@ -821,6 +899,9 @@ updatePure message model =
                 Just (PopupKickUser popupModel) ->
                     { model | popup = Just <| PopupKickUser popupModel }
 
+                Just (PopupInvite popupModel) ->
+                    { model | popup = Just <| PopupInvite popupModel }
+
         CloseDialogToEditUser ->
             { model | popup = Nothing }
 
@@ -828,6 +909,20 @@ updatePure message model =
             { model | popup = Just <| PopupKickUser { user = userId } }
 
         CloseDialogToKick ->
+            { model | popup = Nothing }
+
+        OpenDialogToInvite ->
+            { model
+                | popup =
+                    Just <|
+                        PopupInvite <|
+                            { password = Nothing
+                            , role = Nothing
+                            , selected = Nothing
+                            }
+            }
+
+        CloseDialogToInvite ->
             { model | popup = Nothing }
 
 
