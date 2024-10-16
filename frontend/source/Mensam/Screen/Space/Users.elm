@@ -689,7 +689,11 @@ element model =
                                     , "space"
                                     , Mensam.Space.identifierToString model.spaceId
                                     ]
-                                    []
+                                    (List.filterMap (\x -> x)
+                                        [ Maybe.map (Url.Builder.int "role" << Mensam.Space.Role.identifierToInt) popupModel.role
+                                        , Maybe.map (Url.Builder.string "password") popupModel.password
+                                        ]
+                                    )
                                     Nothing
                         in
                         Element.column
@@ -704,13 +708,136 @@ element model =
                               <|
                                 Element.text "Invite Users"
                             , Element.paragraph
-                                [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                [ Element.alignTop
+                                , Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
                                 , Element.Font.justify
                                 ]
-                                [ Element.text "Invite new users by sharing a URL to join."
+                                [ Element.text "You can set the preferred role for the new user."
+                                ]
+
+                            -- TODO: Set password already aswell.
+                            , Element.indexedTable
+                                [ Element.alignTop
+                                , Element.width Element.fill
+                                , Element.height <| Element.px 140
+                                , Element.Background.color (Element.rgba 0 0 0 0.1)
+                                , Element.Font.family [ Mensam.Element.Font.condensed ]
+                                , Element.Font.size 16
+                                , Element.clipY
+                                , Element.scrollbarY
+                                , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
+                                ]
+                                { data = model.roles
+                                , columns =
+                                    let
+                                        cell =
+                                            Element.el
+                                                [ Element.height <| Element.px 40
+                                                , Element.padding 10
+                                                ]
+                                    in
+                                    [ { header =
+                                            Element.el
+                                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                                ]
+                                            <|
+                                                cell <|
+                                                    Element.el
+                                                        []
+                                                    <|
+                                                        Element.text "ID"
+                                      , width = Element.px 40
+                                      , view =
+                                            \n role ->
+                                                Element.el
+                                                    [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedRole Nothing
+                                                    , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedRole <| Just n
+                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseNewRole role.id
+                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                    , let
+                                                        alpha =
+                                                            case popupModel.selected of
+                                                                Nothing ->
+                                                                    0.2
+
+                                                                Just m ->
+                                                                    if m == n then
+                                                                        0.4
+
+                                                                    else
+                                                                        0.2
+                                                      in
+                                                      if popupModel.role == Just role.id then
+                                                        Element.Background.color (Element.rgba 0 0.2 0 alpha)
+
+                                                      else
+                                                        Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                    ]
+                                                <|
+                                                    cell <|
+                                                        Element.el
+                                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                        <|
+                                                            Element.text <|
+                                                                Mensam.Space.Role.identifierToString role.id
+                                      }
+                                    , { header =
+                                            Element.el
+                                                [ Element.Background.color (Element.rgba 0 0 0 0.3)
+                                                ]
+                                            <|
+                                                cell <|
+                                                    Element.el
+                                                        []
+                                                    <|
+                                                        Element.text "Name"
+                                      , width = Element.fill
+                                      , view =
+                                            \n role ->
+                                                Element.el
+                                                    [ Element.Events.Pointer.onLeave <| \_ -> MessagePure <| SetSelectedRole Nothing
+                                                    , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelectedRole <| Just n
+                                                    , Element.Events.Pointer.onClick <| \_ -> MessagePure <| ChooseNewRole role.id
+                                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                                    , let
+                                                        alpha =
+                                                            case popupModel.selected of
+                                                                Nothing ->
+                                                                    0.2
+
+                                                                Just m ->
+                                                                    if m == n then
+                                                                        0.4
+
+                                                                    else
+                                                                        0.2
+                                                      in
+                                                      if popupModel.role == Just role.id then
+                                                        Element.Background.color (Element.rgba 0 0.2 0 alpha)
+
+                                                      else
+                                                        Element.Background.color (Element.rgba 0 0 0 alpha)
+                                                    ]
+                                                <|
+                                                    cell <|
+                                                        Element.el
+                                                            [ Element.width <| Element.maximum 100 <| Element.fill ]
+                                                        <|
+                                                            Element.text <|
+                                                                Mensam.Space.Role.nameToString role.name
+                                      }
+                                    ]
+                                }
+                            , Element.paragraph
+                                [ Element.alignBottom
+                                , Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                , Element.Font.justify
+                                ]
+                                [ Element.text "Invite new users by sharing a URL to join this space."
                                 ]
                             , Element.column
-                                [ Element.width Element.fill
+                                [ Element.alignBottom
+                                , Element.width Element.fill
                                 ]
                                 [ Element.el
                                     [ Element.width Element.fill
@@ -907,7 +1034,7 @@ updatePure message model =
                     { model | popup = Just <| PopupKickUser popupModel }
 
                 Just (PopupInvite popupModel) ->
-                    { model | popup = Just <| PopupInvite popupModel }
+                    { model | popup = Just <| PopupInvite { popupModel | selected = maybeN } }
 
         ChooseNewRole roleId ->
             case model.popup of
@@ -921,7 +1048,7 @@ updatePure message model =
                     { model | popup = Just <| PopupKickUser popupModel }
 
                 Just (PopupInvite popupModel) ->
-                    { model | popup = Just <| PopupInvite popupModel }
+                    { model | popup = Just <| PopupInvite { popupModel | role = Just roleId } }
 
         CloseDialogToEditUser ->
             { model | popup = Nothing }
