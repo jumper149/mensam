@@ -1,5 +1,10 @@
 = Changelog
 
+* Frontend
+  ** Fixed screen to join spaces when space is hidden.
+* API
+  ** Add information to the HTTP 403 status response body of `/space/view`.
+
 == `0.13.0.0`
 
 * API

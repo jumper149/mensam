@@ -864,8 +864,17 @@ spaceView auth id =
                             ++ List.map (\user -> MessageEffect <| GetProfile user.user)
                                 view.users
 
-                Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
-                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+                Ok (Mensam.Api.SpaceView.Success403Restricted view) ->
+                    Messages <|
+                        [ MessagePure <|
+                            SetSpaceInfo
+                                { name = view.name
+                                , yourRole = Nothing
+                                , roles = view.roles
+                                , owner = Mensam.User.MkIdentifierUnsafe -1
+                                }
+                        , MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission Mensam.Space.Role.MkPermissionViewSpace
+                        ]
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|

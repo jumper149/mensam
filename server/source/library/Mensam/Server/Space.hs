@@ -120,76 +120,63 @@ newtype SqlErrorMensamSpaceNotFound = MkSqlErrorMensamSpaceNotFound Selda.SqlErr
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)
 
--- | Already checks permissions.
 spaceView ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierUser ->
   IdentifierSpace ->
-  SeldaTransactionT m (Maybe SpaceView)
+  SeldaTransactionT m SpaceView
 spaceView userIdentifier spaceIdentifier = do
-  lift $ logDebug $ "Get space info with identifier: " <> T.pack (show (spaceIdentifier, userIdentifier))
-  permissions <- spaceUserPermissions spaceIdentifier userIdentifier
-  maybeDbSpace <- Selda.queryUnique $ do
-    dbSpace <- spaceGet (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
-    Selda.restrict $
-      dbSpace
-        Selda.! #dbSpace_visibility
-        Selda..== Selda.literal MkDbSpaceVisibility_visible
-        Selda..|| Selda.literal (MkPermissionViewSpace `S.member` permissions)
-    pure dbSpace
-  case maybeDbSpace of
-    Nothing -> pure Nothing
-    Just dbSpace -> do
-      lift $ logInfo "Got space successfully."
-      lift $ logDebug "Getting roles."
-      roles <- do
-        dbRoles <- Selda.query $ spaceListRoles $ dbSpace_id dbSpace
-        dbRolesPermissions <- traverse (Selda.query . spaceRoleListPermissions . dbRole_id) dbRoles
-        let roles =
-              zipWith
-                ( \dbRole dbRolePermissions ->
-                    MkRole
-                      { roleId = MkIdentifierRole $ Selda.fromId @DbRole $ dbRole_id dbRole
-                      , roleSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbRole_space dbRole
-                      , roleName = MkNameRole $ dbRole_name dbRole
-                      , rolePermissions = S.fromList $ spacePermissionDbToApi . dbRolePermission_permission <$> dbRolePermissions
-                      , roleAccessibility = roleAccessibilityDbToApi $ dbRole_accessibility dbRole
-                      }
-                )
-                dbRoles
-                dbRolesPermissions
-        pure roles
-      dbSpaceUsers <- Selda.query $ spaceListUsers $ dbSpace_id dbSpace
-      let spaceUsers =
-            ( \dbSpaceUser ->
-                MkSpaceUser
-                  { spaceUserUser = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpaceUser_user dbSpaceUser
-                  , spaceUserRole = MkIdentifierRole $ Selda.fromId @DbRole $ dbSpaceUser_role dbSpaceUser
+  lift $ logDebug $ "Getting space info with identifier: " <> T.pack (show (spaceIdentifier, userIdentifier))
+  dbSpace <- Selda.queryOne $ spaceGet $ Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier
+  lift $ logInfo "Got space successfully."
+  lift $ logDebug "Getting roles."
+  roles <- do
+    dbRoles <- Selda.query $ spaceListRoles $ dbSpace_id dbSpace
+    dbRolesPermissions <- traverse (Selda.query . spaceRoleListPermissions . dbRole_id) dbRoles
+    let roles =
+          zipWith
+            ( \dbRole dbRolePermissions ->
+                MkRole
+                  { roleId = MkIdentifierRole $ Selda.fromId @DbRole $ dbRole_id dbRole
+                  , roleSpace = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbRole_space dbRole
+                  , roleName = MkNameRole $ dbRole_name dbRole
+                  , rolePermissions = S.fromList $ spacePermissionDbToApi . dbRolePermission_permission <$> dbRolePermissions
+                  , roleAccessibility = roleAccessibilityDbToApi $ dbRole_accessibility dbRole
                   }
             )
-              <$> dbSpaceUsers
-      lift $ logInfo "Got roles successfully."
-      lift $ logDebug "Looking up role for requesting user."
-      maybeRoleIdentifier <- do
-        dbMaybeRoleId <-
-          Selda.queryUnique $
-            spaceUserGetRole
-              (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
-              (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
-        pure $ MkIdentifierRole . Selda.fromId @DbRole <$> dbMaybeRoleId
-      lift $ logInfo "Got requesting user's role successfully."
-      pure $
-        Just
-          MkSpaceView
-            { spaceViewId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
-            , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
-            , spaceViewTimezone = dbSpace_timezone dbSpace
-            , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
-            , spaceViewOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
-            , spaceViewRoles = S.fromList roles
-            , spaceViewUsers = S.fromList spaceUsers
-            , spaceViewYourRole = maybeRoleIdentifier
-            }
+            dbRoles
+            dbRolesPermissions
+    pure roles
+  dbSpaceUsers <- Selda.query $ spaceListUsers $ dbSpace_id dbSpace
+  let spaceUsers =
+        ( \dbSpaceUser ->
+            MkSpaceUser
+              { spaceUserUser = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpaceUser_user dbSpaceUser
+              , spaceUserRole = MkIdentifierRole $ Selda.fromId @DbRole $ dbSpaceUser_role dbSpaceUser
+              }
+        )
+          <$> dbSpaceUsers
+  lift $ logInfo "Got roles successfully."
+  lift $ logDebug "Looking up role for requesting user."
+  maybeRoleIdentifier <- do
+    dbMaybeRoleId <-
+      Selda.queryUnique $
+        spaceUserGetRole
+          (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
+          (Selda.toId @DbUser $ unIdentifierUser userIdentifier)
+    pure $ MkIdentifierRole . Selda.fromId @DbRole <$> dbMaybeRoleId
+  lift $ logInfo "Got requesting user's role successfully."
+  pure $
+    MkSpaceView
+      { spaceViewId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
+      , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
+      , spaceViewTimezone = dbSpace_timezone dbSpace
+      , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
+      , spaceViewOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
+      , spaceViewRoles = S.fromList roles
+      , spaceViewUsers = S.fromList spaceUsers
+      , spaceViewYourRole = maybeRoleIdentifier
+      }
 
 type SpaceView :: Type
 data SpaceView = MkSpaceView

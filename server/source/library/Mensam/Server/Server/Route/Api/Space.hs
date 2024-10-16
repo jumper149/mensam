@@ -498,7 +498,7 @@ viewSpace ::
   , IsMember (WithStatus 200 ResponseSpaceView) responses
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
-  , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)) responses
+  , IsMember (WithStatus 403 ResponseSpaceView403) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -509,24 +509,41 @@ viewSpace auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to view space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
-        spaceView (userAuthenticatedId authenticated) (requestSpaceViewId request)
+        spaceViewResult <- spaceView (userAuthenticatedId authenticated) (requestSpaceViewId request)
+        let permissionCheck =
+              checkPermission
+                SMkPermissionViewSpace
+                (userAuthenticatedId authenticated)
+                (requestSpaceViewId request)
+        catch (permissionCheck >> pure (Right spaceViewResult)) $ \case
+          MkSqlErrorMensamPermissionNotSatisfied @MkPermissionViewSpace ->
+            pure $ Left spaceViewResult
       handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \case
-        Nothing -> do
-          logInfo "User not permitted to view space."
-          respond $ WithStatus @403 $ MkErrorInsufficientPermission @MkPermissionViewSpace
-        Just space -> do
+        Left spaceViewResult -> do
+          logInfo "User not permitted to view space fully. Creating reduced space view."
+          respond $
+            WithStatus @403 $
+              MkResponseSpaceView403
+                { responseSpaceView403Id = spaceViewId spaceViewResult
+                , responseSpaceView403Name = spaceViewName spaceViewResult
+                , responseSpaceView403Timezone = spaceViewTimezone spaceViewResult
+                , responseSpaceView403Visibility = spaceViewVisibility spaceViewResult
+                , responseSpaceView403Roles = spaceViewRoles spaceViewResult
+                , responseSpaceView403YourRole = spaceViewYourRole spaceViewResult
+                }
+        Right spaceViewResult -> do
           logInfo "Viewed space."
           respond $
             WithStatus @200
               MkResponseSpaceView
-                { responseSpaceViewId = spaceViewId space
-                , responseSpaceViewName = spaceViewName space
-                , responseSpaceViewTimezone = spaceViewTimezone space
-                , responseSpaceViewVisibility = spaceViewVisibility space
-                , responseSpaceViewOwner = spaceViewOwner space
-                , responseSpaceViewRoles = spaceViewRoles space
-                , responseSpaceViewUsers = spaceViewUsers space
-                , responseSpaceViewYourRole = spaceViewYourRole space
+                { responseSpaceViewId = spaceViewId spaceViewResult
+                , responseSpaceViewName = spaceViewName spaceViewResult
+                , responseSpaceViewTimezone = spaceViewTimezone spaceViewResult
+                , responseSpaceViewVisibility = spaceViewVisibility spaceViewResult
+                , responseSpaceViewOwner = spaceViewOwner spaceViewResult
+                , responseSpaceViewRoles = spaceViewRoles spaceViewResult
+                , responseSpaceViewUsers = spaceViewUsers spaceViewResult
+                , responseSpaceViewYourRole = spaceViewYourRole spaceViewResult
                 }
 
 listSpaces ::

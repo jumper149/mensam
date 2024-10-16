@@ -191,6 +191,7 @@ element model =
 type Message
     = MessagePure MessagePure
     | MessageEffect MessageEffect
+    | Messages (List Message)
 
 
 type MessagePure
@@ -300,17 +301,18 @@ spaceView auth model =
                         Just _ ->
                             MessageEffect JoinedSuccessfully
 
-                Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
-                    case permission of
-                        Mensam.Space.Role.MkPermissionViewSpace ->
-                            MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
-
-                        _ ->
-                            MessageEffect <|
-                                ReportError <|
-                                    Mensam.Error.message "Failed to get space information" <|
-                                        Mensam.Error.message "Unexpected permission required" <|
-                                            Mensam.Space.Role.errorInsufficientPermission permission
+                Ok (Mensam.Api.SpaceView.Success403Restricted view) ->
+                    Messages <|
+                        [ MessagePure <|
+                            SetSpaceInfo
+                                { id = view.id
+                                , name = view.name
+                                , roles = view.roles
+                                , timezone = view.timezone
+                                , visibility = view.visibility
+                                , yourRole = view.yourRole
+                                }
+                        ]
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|

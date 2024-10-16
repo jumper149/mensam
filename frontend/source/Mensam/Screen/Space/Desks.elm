@@ -836,13 +836,15 @@ spaceView auth id =
     Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
-                Ok (Mensam.Api.SpaceView.Success view) ->
+                Ok (Mensam.Api.SpaceView.Success _) ->
+                    Messages <|
+                        [ MessageEffect ReturnToSpace
+                        ]
+
+                Ok (Mensam.Api.SpaceView.Success403Restricted view) ->
                     Messages <|
                         [ MessagePure <| SetSpaceName view.name
                         ]
-
-                Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
-                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|

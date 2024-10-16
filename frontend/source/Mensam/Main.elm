@@ -1253,6 +1253,14 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
+        MessageSpaceJoin (Mensam.Screen.Space.Join.Messages ms) ->
+            case model.screen of
+                ScreenSpaceJoin _ ->
+                    update (Messages <| List.map MessageSpaceJoin ms) <| MkModel model
+
+                _ ->
+                    update (ReportError errorScreen) <| MkModel model
+
         MessageSpaceRoles (Mensam.Screen.Space.Roles.MessagePure m) ->
             case model.screen of
                 ScreenSpaceRoles screenModel ->

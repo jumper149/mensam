@@ -222,7 +222,7 @@ data Routes route = Routes
               [ WithStatus 200 ResponseSpaceView
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
+              , WithStatus 403 ResponseSpaceView403
               , WithStatus 500 ()
               ]
   , routeSpaceList ::
@@ -548,6 +548,20 @@ data ResponseSpaceView = MkResponseSpaceView
   deriving
     (A.FromJSON, A.ToJSON)
     via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView") ResponseSpaceView
+
+type ResponseSpaceView403 :: Type
+data ResponseSpaceView403 = MkResponseSpaceView403
+  { responseSpaceView403Id :: IdentifierSpace
+  , responseSpaceView403Name :: NameSpace
+  , responseSpaceView403Timezone :: T.TZLabel
+  , responseSpaceView403Visibility :: VisibilitySpace
+  , responseSpaceView403Roles :: S.Set Role
+  , responseSpaceView403YourRole :: Maybe IdentifierRole
+  }
+  deriving stock (Eq, Generic, Ord, Read, Show)
+  deriving
+    (A.FromJSON, A.ToJSON)
+    via A.CustomJSON (JSONSettings "MkResponse" "responseSpaceView403") ResponseSpaceView403
 
 type RequestSpaceList :: Type
 data RequestSpaceList = MkRequestSpaceList

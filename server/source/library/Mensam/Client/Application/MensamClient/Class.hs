@@ -281,7 +281,7 @@ endpointSpaceView ::
         '[ WithStatus 200 Route.Api.Space.ResponseSpaceView
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
-         , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
+         , WithStatus 403 Route.Api.Space.ResponseSpaceView403
          , WithStatus 500 ()
          ]
     )

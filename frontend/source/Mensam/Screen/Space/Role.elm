@@ -555,7 +555,28 @@ type Message
 
 
 type MessagePure
-    = ApplySpaceView { id : Mensam.Space.Identifier, name : Mensam.Space.Name, roles : List { accessibility : Mensam.Space.Role.Accessibility, id : Mensam.Space.Role.Identifier, name : Mensam.Space.Role.Name, permissions : Mensam.Space.Role.Permissions }, users : List { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }, timezone : Mensam.Time.Timezone, visibility : Mensam.Space.Visibility, owner : Mensam.User.Identifier, yourRole : Maybe { accessibility : Mensam.Space.Role.Accessibility, id : Mensam.Space.Role.Identifier, name : Mensam.Space.Role.Name, permissions : Mensam.Space.Role.Permissions } }
+    = ApplySpaceView
+        { id : Mensam.Space.Identifier
+        , name : Mensam.Space.Name
+        , roles :
+            List
+                { accessibility : Mensam.Space.Role.Accessibility
+                , id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        , users : List { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }
+        , timezone : Mensam.Time.Timezone
+        , visibility : Mensam.Space.Visibility
+        , owner : Mensam.User.Identifier
+        , yourRole :
+            Maybe
+                { accessibility : Mensam.Space.Role.Accessibility
+                , id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        }
     | EnterName (Maybe Mensam.Space.Role.Name)
     | EditRoleAccessibilityAndPasswordStart
     | EditRoleSetAccessibility Mensam.Space.Role.Accessibility
@@ -764,8 +785,8 @@ spaceView auth id =
                         [ MessagePure <| ApplySpaceView view
                         ]
 
-                Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
-                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+                Ok (Mensam.Api.SpaceView.Success403Restricted _) ->
+                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission Mensam.Space.Role.MkPermissionViewSpace
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|

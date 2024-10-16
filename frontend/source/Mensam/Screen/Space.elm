@@ -1737,8 +1737,24 @@ spaceView auth model =
                                     RefreshDesks
                                 ]
 
-                Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
-                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+                Ok (Mensam.Api.SpaceView.Success403Restricted view) ->
+                    Messages
+                        [ MessagePure <|
+                            SetSpaceInfo
+                                { id = view.id
+                                , name = view.name
+                                , roles = view.roles
+                                , timezone = view.timezone
+                                , visibility = model.visibility
+                                , yourRole = view.yourRole
+                                }
+                        , case view.yourRole of
+                            Nothing ->
+                                MessageEffect OpenPageToJoin
+
+                            Just _ ->
+                                MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission Mensam.Space.Role.MkPermissionViewSpace
+                        ]
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|

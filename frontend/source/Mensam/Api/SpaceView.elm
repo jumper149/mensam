@@ -47,7 +47,26 @@ type Response
                 , permissions : Mensam.Space.Role.Permissions
                 }
         }
-    | ErrorInsufficientPermission Mensam.Space.Role.Permission
+    | Success403Restricted
+        { id : Mensam.Space.Identifier
+        , name : Mensam.Space.Name
+        , roles :
+            List
+                { accessibility : Mensam.Space.Role.Accessibility
+                , id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        , timezone : Mensam.Time.Timezone
+        , visibility : Mensam.Space.Visibility
+        , yourRole :
+            Maybe
+                { accessibility : Mensam.Space.Role.Accessibility
+                , id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        }
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -104,9 +123,9 @@ responseResult input httpResponse =
                             Err <| Http.BadBody <| Decode.errorToString err
 
                 403 ->
-                    case Decode.decodeString Mensam.Space.Role.http403BodyDecoder body of
-                        Ok permission ->
-                            Ok <| ErrorInsufficientPermission permission
+                    case Decode.decodeString decodeBody403 body of
+                        Ok response ->
+                            Ok <| Success403Restricted response
 
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err
@@ -259,3 +278,89 @@ decodeBody200 input =
 decodeBody400 : Decode.Decoder String
 decodeBody400 =
     Decode.field "error" Decode.string
+
+
+decodeBody403 :
+    Decode.Decoder
+        { id : Mensam.Space.Identifier
+        , name : Mensam.Space.Name
+        , roles :
+            List
+                { accessibility : Mensam.Space.Role.Accessibility
+                , id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        , timezone : Mensam.Time.Timezone
+        , visibility : Mensam.Space.Visibility
+        , yourRole :
+            Maybe
+                { accessibility : Mensam.Space.Role.Accessibility
+                , id : Mensam.Space.Role.Identifier
+                , name : Mensam.Space.Role.Name
+                , permissions : Mensam.Space.Role.Permissions
+                }
+        }
+decodeBody403 =
+    Decode.andThen
+        (\record ->
+            case record.yourRole of
+                Nothing ->
+                    Decode.fail "`your-role` does not refer to any known role"
+
+                Just yourRole ->
+                    Decode.succeed <|
+                        { id = record.id
+                        , name = record.name
+                        , roles = record.roles
+                        , timezone = record.timezone
+                        , visibility = record.visibility
+                        , yourRole = yourRole
+                        }
+        )
+    <|
+        Decode.map6
+            (\id name roles timezone visibility maybeYourRoleId ->
+                { id = id
+                , name = name
+                , roles = roles
+                , timezone = timezone
+                , visibility = visibility
+                , yourRole =
+                    case maybeYourRoleId of
+                        Nothing ->
+                            Just Nothing
+
+                        Just yourRoleId ->
+                            let
+                                unIdentifierRole (Mensam.Space.Role.MkIdentifier roleId) =
+                                    roleId
+                            in
+                            case Dict.get (unIdentifierRole yourRoleId) <| Dict.fromList <| List.map (\role -> ( unIdentifierRole role.id, role )) roles of
+                                Nothing ->
+                                    Just Nothing
+
+                                Just role ->
+                                    Just <| Just <| role
+                }
+            )
+            (Decode.field "id" Mensam.Space.identifierDecoder)
+            (Decode.field "name" Mensam.Space.nameDecoder)
+            (Decode.field "roles" <|
+                Decode.list <|
+                    Decode.map4
+                        (\accessibility id name permissions ->
+                            { accessibility = accessibility
+                            , id = id
+                            , name = name
+                            , permissions = permissions
+                            }
+                        )
+                        (Decode.field "accessibility" Mensam.Space.Role.accessibilityDecoder)
+                        (Decode.field "id" Mensam.Space.Role.identifierDecoder)
+                        (Decode.field "name" Mensam.Space.Role.nameDecoder)
+                        (Decode.field "permissions" <| Mensam.Space.Role.permissionsDecoder)
+            )
+            (Decode.field "timezone" Mensam.Time.timezoneDecoder)
+            (Decode.field "visibility" Mensam.Space.visibilityDecoder)
+            (Decode.field "your-role" <| Decode.nullable Mensam.Space.Role.identifierDecoder)

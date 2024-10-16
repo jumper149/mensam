@@ -668,8 +668,11 @@ spaceView auth id =
                         , MessagePure <| SetSpaceName view.name
                         ]
 
-                Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
-                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+                Ok (Mensam.Api.SpaceView.Success403Restricted view) ->
+                    Messages <|
+                        [ MessagePure <| SetSpaceName view.name
+                        , MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission Mensam.Space.Role.MkPermissionViewSpace
+                        ]
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
