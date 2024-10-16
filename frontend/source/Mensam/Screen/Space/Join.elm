@@ -301,20 +301,36 @@ spaceView auth model =
                             MessageEffect JoinedSuccessfully
 
                 Ok (Mensam.Api.SpaceView.ErrorInsufficientPermission permission) ->
-                    MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+                    case permission of
+                        Mensam.Space.Role.MkPermissionViewSpace ->
+                            MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+
+                        _ ->
+                            MessageEffect <|
+                                ReportError <|
+                                    Mensam.Error.message "Failed to get space information" <|
+                                        Mensam.Error.message "Unexpected permission required" <|
+                                            Mensam.Space.Role.errorInsufficientPermission permission
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Bad request body" <|
-                                Mensam.Error.message error <|
-                                    Mensam.Error.undefined
+                            Mensam.Error.message "Failed to get space information" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceView.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to get space information" <|
+                                Mensam.Auth.Bearer.error error
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to get space information" <|
+                                Mensam.Error.http error
 
 
 spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.Space.Role.Identifier -> Maybe String -> Cmd Message
