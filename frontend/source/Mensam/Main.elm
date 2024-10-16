@@ -13,6 +13,7 @@ import Mensam.Application
 import Mensam.Auth
 import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
+import Mensam.Clipboard
 import Mensam.Element
 import Mensam.Element.Dropdown
 import Mensam.Element.Footer
@@ -1806,6 +1807,16 @@ update message (MkModel model) =
 
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
+
+                Mensam.Screen.Space.Users.CopyUrlToClipboard content ->
+                    case model.screen of
+                        ScreenSpaceUsers _ ->
+                            ( MkModel model
+                            , Mensam.Clipboard.copyText content
+                            )
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Space.Users.ReturnToSpace ->
                     case model.screen of

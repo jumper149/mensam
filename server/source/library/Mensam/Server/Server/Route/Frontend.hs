@@ -89,7 +89,12 @@ handler segments = do
           \\
           \app.ports.setStorageJson.subscribe(function(state) {\
           \  localStorage.setItem(storageName, JSON.stringify(state));\
-          \});"
+          \});\
+          \\
+          \app.ports.copyTextToClipboard.subscribe(function(content) {\
+          \  navigator.clipboard.writeText(content);\
+          \});\
+          \"
 
 hrefWithDepth ::
   BaseUrl ->

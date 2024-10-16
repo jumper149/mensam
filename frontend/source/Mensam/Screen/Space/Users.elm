@@ -680,6 +680,18 @@ element model =
 
                 Just (PopupInvite popupModel) ->
                     Just <|
+                        let
+                            inviteUrl =
+                                -- TODO: BaseUrl is hardcoded.
+                                Url.Builder.custom
+                                    (Url.Builder.CrossOrigin "https://mens.am")
+                                    [ "join"
+                                    , "space"
+                                    , Mensam.Space.identifierToString model.spaceId
+                                    ]
+                                    []
+                                    Nothing
+                        in
                         Element.column
                             [ Element.spacing 20
                             , Element.width Element.fill
@@ -697,35 +709,44 @@ element model =
                                 ]
                                 [ Element.text "Invite new users by sharing a URL to join."
                                 ]
-                            , Element.el
+                            , Element.column
                                 [ Element.width Element.fill
-                                , Element.height <| Element.px 40
-                                , Element.Background.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
-                                , Element.Border.color <| Mensam.Element.Color.dark.white Mensam.Element.Color.Opaque100
-                                , Element.Border.width 2
-                                , Element.clipX
-                                , Element.scrollbarX
                                 ]
-                              <|
-                                Element.el
-                                    ([ Element.centerY
-                                     , Element.paddingXY 12 0
-                                     , Element.Font.size 16
-                                     , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque50
-                                     ]
-                                        ++ Mensam.Element.Font.font Mensam.Element.Font.Monospace400
-                                    )
-                                <|
-                                    Element.text <|
-                                        -- TODO: BaseUrl is hardcoded.
-                                        Url.Builder.custom
-                                            (Url.Builder.CrossOrigin "https://mens.am")
-                                            [ "join"
-                                            , "space"
-                                            , Mensam.Space.identifierToString model.spaceId
-                                            ]
-                                            []
-                                            Nothing
+                                [ Element.el
+                                    [ Element.width Element.fill
+                                    , Element.height <| Element.px 40
+                                    , Element.Background.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                    , Element.Border.color <| Mensam.Element.Color.dark.white Mensam.Element.Color.Opaque100
+                                    , Element.Border.width 2
+                                    , Element.clipX
+                                    , Element.scrollbarX
+                                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                                    , Element.Events.Pointer.onClick <| \_ -> MessageEffect <| CopyUrlToClipboard inviteUrl
+                                    ]
+                                  <|
+                                    Element.el
+                                        ([ Element.centerY
+                                         , Element.paddingXY 12 0
+                                         , Element.Font.size 16
+                                         , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque50
+                                         ]
+                                            ++ Mensam.Element.Font.font Mensam.Element.Font.Monospace400
+                                        )
+                                    <|
+                                        Element.text inviteUrl
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.alignRight, Element.alignTop ]
+                                        , color = Mensam.Element.Button.Transparent
+                                        , enabled = True
+                                        , label = Element.text "Copy to clipboard"
+                                        , message =
+                                            Just <|
+                                                MessageEffect <|
+                                                    CopyUrlToClipboard inviteUrl
+                                        , size = Mensam.Element.Button.Small
+                                        }
+                                ]
                             , Mensam.Element.Button.button <|
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.width Element.fill, Element.alignBottom ]
@@ -933,6 +954,7 @@ type MessageEffect
     | GetProfilePicture Mensam.User.Identifier
     | SubmitEditUser { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }
     | SubmitKickUser { user : Mensam.User.Identifier }
+    | CopyUrlToClipboard String
     | ReturnToSpace
     | OpenPageToProfile Mensam.User.Identifier
     | OpenPageSpaceRoles Mensam.Space.Identifier
