@@ -877,7 +877,7 @@ element model =
                             , Mensam.Element.Button.button <|
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.width Element.fill, Element.alignBottom ]
-                                    , color = Mensam.Element.Button.Yellow
+                                    , color = Mensam.Element.Button.Gray
                                     , enabled = True
                                     , label = Element.text "Go back"
                                     , message = Just <| MessagePure <| CloseDialogToInvite
