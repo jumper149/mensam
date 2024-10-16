@@ -1,9 +1,13 @@
 = Changelog
 
+== `0.13.0.1`
+
 * Frontend
   ** Fixed screen to join spaces when space is hidden.
 * API
   ** Add information to the HTTP 403 status response body of `/space/view`.
+* Backend
+  ** Improved reservation email notification.
 
 == `0.13.0.0`
 
