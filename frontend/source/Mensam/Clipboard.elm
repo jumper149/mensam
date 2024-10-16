@@ -1,9 +1,11 @@
 port module Mensam.Clipboard exposing (copyText)
 
+import Json.Encode as Encode
 
-port copyTextToClipboard : String -> Cmd msg
+
+port copyTextToClipboard : Encode.Value -> Cmd msg
 
 
 copyText : String -> Cmd msg
 copyText =
-    copyTextToClipboard
+    Encode.string >> copyTextToClipboard
