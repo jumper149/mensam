@@ -836,14 +836,15 @@ spaceView auth id =
     Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
-                Ok (Mensam.Api.SpaceView.Success _) ->
+                Ok (Mensam.Api.SpaceView.Success view) ->
                     Messages <|
-                        [ MessageEffect ReturnToSpace
+                        [ MessagePure <| SetSpaceName view.name
                         ]
 
                 Ok (Mensam.Api.SpaceView.Success403Restricted view) ->
                     Messages <|
                         [ MessagePure <| SetSpaceName view.name
+                        , MessageEffect ReturnToSpace
                         ]
 
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
