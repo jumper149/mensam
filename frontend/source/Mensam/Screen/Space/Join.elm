@@ -314,6 +314,13 @@ spaceView auth model =
                                 }
                         ]
 
+                Ok Mensam.Api.SpaceView.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to get space information" <|
+                                Mensam.Error.message "Space not found" <|
+                                    Mensam.Error.undefined
+
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
@@ -358,6 +365,13 @@ spaceJoin jwt spaceId roleId password =
                                 Mensam.Error.message "Bad request" <|
                                     Mensam.Error.message "Wrong password" <|
                                         Mensam.Error.undefined
+
+                Ok Mensam.Api.SpaceJoin.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to join" <|
+                                Mensam.Error.message "Space not found" <|
+                                    Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceJoin.ErrorBody error) ->
                     MessageEffect <|

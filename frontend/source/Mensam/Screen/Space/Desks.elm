@@ -847,6 +847,12 @@ spaceView auth id =
                         , MessageEffect ReturnToSpace
                         ]
 
+                Ok Mensam.Api.SpaceView.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Space not found" <|
+                                Mensam.Error.undefined
+
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
@@ -1007,6 +1013,12 @@ listDesks jwt spaceId =
 
                 Ok (Mensam.Api.DeskList.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+
+                Ok Mensam.Api.DeskList.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Space not found" <|
+                                Mensam.Error.undefined
 
                 Ok (Mensam.Api.DeskList.ErrorBody error) ->
                     MessageEffect <|

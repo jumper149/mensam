@@ -1120,18 +1120,32 @@ spaceView auth id =
                         , MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission Mensam.Space.Role.MkPermissionViewSpace
                         ]
 
+                Ok Mensam.Api.SpaceView.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to view space" <|
+                                Mensam.Error.message "Space not found" <|
+                                    Mensam.Error.undefined
+
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Bad request body" <|
-                                Mensam.Error.message error <|
-                                    Mensam.Error.undefined
+                            Mensam.Error.message "Failed to view space" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceView.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to view space" <|
+                                Mensam.Auth.Bearer.error error
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to view space" <|
+                                Mensam.Error.http error
 
 
 profile : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
@@ -1212,6 +1226,13 @@ editUserRole jwt spaceId userId roleId =
                 Ok (Mensam.Api.SpaceUserRole.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
+                Ok Mensam.Api.SpaceUserRole.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to edit role" <|
+                                Mensam.Error.message "Space not found" <|
+                                    Mensam.Error.undefined
+
                 Ok (Mensam.Api.SpaceUserRole.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
@@ -1251,6 +1272,13 @@ kickUser jwt spaceId userId =
 
                 Ok (Mensam.Api.SpaceKick.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
+
+                Ok Mensam.Api.SpaceKick.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to kick user" <|
+                                Mensam.Error.message "Space not found" <|
+                                    Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceKick.ErrorBody error) ->
                     MessageEffect <|

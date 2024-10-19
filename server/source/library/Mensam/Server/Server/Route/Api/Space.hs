@@ -328,6 +328,7 @@ joinSpace ::
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 403 (StaticTexts ["Role is inaccessible.", "Wrong role password."])) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -340,7 +341,7 @@ joinSpace auth eitherRequest =
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <-
           case requestSpaceJoinSpace request of
-            Identifier spaceId -> pure spaceId
+            Identifier spaceId -> spaceGetFromId spaceId >> pure spaceId
             Name name -> spaceLookupId name
         roleIdentifier <-
           case requestSpaceJoinRole request of
@@ -364,18 +365,23 @@ joinSpace auth eitherRequest =
             lift $ logDebug "Space-role is joinable. Joining."
         spaceUserAdd spaceIdentifier (userAuthenticatedId authenticated) roleIdentifier
       handleSeldaException
-        (Proxy @SqlErrorMensamRoleInaccessible)
-        (WithStatus @403 $ specificStaticText @["Role is inaccessible.", "Wrong role password."] $ MkStaticText @"Role is inaccessible.")
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
         seldaResult
-        $ \seldaResultAfter403 ->
+        $ \seldaResultAfter404 ->
           handleSeldaException
-            (Proxy @SqlErrorMensamRolePasswordCheckFail)
-            (WithStatus @403 $ specificStaticText @["Role is inaccessible.", "Wrong role password."] $ MkStaticText @"Wrong role password.")
-            seldaResultAfter403
-            $ \seldaResultAfter403' ->
-              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403' $ \() -> do
-                logInfo "Joined space."
-                respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
+            (Proxy @SqlErrorMensamRoleInaccessible)
+            (WithStatus @403 $ specificStaticText @["Role is inaccessible.", "Wrong role password."] $ MkStaticText @"Role is inaccessible.")
+            seldaResultAfter404
+            $ \seldaResultAfter403 ->
+              handleSeldaException
+                (Proxy @SqlErrorMensamRolePasswordCheckFail)
+                (WithStatus @403 $ specificStaticText @["Role is inaccessible.", "Wrong role password."] $ MkStaticText @"Wrong role password.")
+                seldaResultAfter403
+                $ \seldaResultAfter403' ->
+                  handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403' $ \() -> do
+                    logInfo "Joined space."
+                    respond $ WithStatus @200 MkResponseSpaceJoin {responseSpaceJoinUnit = ()}
 
 leaveSpace ::
   ( MonadLogger m
@@ -384,6 +390,7 @@ leaveSpace ::
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 403 (StaticText "Owner cannot leave space.")) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -396,7 +403,7 @@ leaveSpace auth eitherRequest =
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <-
           case requestSpaceLeaveSpace request of
-            Identifier spaceId -> pure spaceId
+            Identifier spaceId -> spaceGetFromId spaceId >> pure spaceId
             Name name -> spaceLookupId name
         isOwner <- spaceUserIsOwner spaceIdentifier (userAuthenticatedId authenticated)
         if isOwner
@@ -407,14 +414,19 @@ leaveSpace auth eitherRequest =
             lift $ logInfo "Removing user from space."
             spaceUserRemove spaceIdentifier (userAuthenticatedId authenticated)
             pure True
-      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \removed ->
-        if removed
-          then do
-            logInfo "Left space."
-            respond $ WithStatus @200 MkResponseSpaceLeave {responseSpaceLeaveUnit = ()}
-          else do
-            logInfo "Failed to leave space as owner."
-            respond $ WithStatus @403 $ MkStaticText @"Owner cannot leave space."
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
+        seldaResult
+        $ \seldaResultAfter404 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter404 $ \removed ->
+            if removed
+              then do
+                logInfo "Left space."
+                respond $ WithStatus @200 MkResponseSpaceLeave {responseSpaceLeaveUnit = ()}
+              else do
+                logInfo "Failed to leave space as owner."
+                respond $ WithStatus @403 $ MkStaticText @"Owner cannot leave space."
 
 kickUser ::
   ( MonadLogger m
@@ -423,6 +435,7 @@ kickUser ::
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -446,18 +459,23 @@ kickUser auth eitherRequest =
             lift $ logInfo "Removing user from space."
             spaceUserRemove (requestSpaceKickSpace request) (requestSpaceKickUser request)
             pure True
-      handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionEditUser)
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
         seldaResult
-        $ \seldaResultAfter403 ->
-          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \removed ->
-            if removed
-              then do
-                logInfo "Kicked from space."
-                respond $ WithStatus @200 MkResponseSpaceKick {responseSpaceKickUnit = ()}
-              else do
-                logInfo "Failed to kick owner from space."
-                respond $ WithStatus @500 () -- TODO: Use HTTP 403
+        $ \seldaResultAfter404 ->
+          handleSeldaException403InsufficientPermission
+            (Proxy @MkPermissionEditUser)
+            seldaResultAfter404
+            $ \seldaResultAfter403 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \removed ->
+                if removed
+                  then do
+                    logInfo "Kicked from space."
+                    respond $ WithStatus @200 MkResponseSpaceKick {responseSpaceKickUnit = ()}
+                  else do
+                    logInfo "Failed to kick owner from space."
+                    respond $ WithStatus @500 () -- TODO: Use HTTP 403
 
 setUserRole ::
   ( MonadLogger m
@@ -466,6 +484,7 @@ setUserRole ::
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -484,13 +503,18 @@ setUserRole auth eitherRequest =
           (requestSpaceUserRoleSpace request)
           (requestSpaceUserRoleUser request)
           (requestSpaceUserRoleRole request)
-      handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionEditUser)
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
         seldaResult
-        $ \seldaResultAfter403 ->
-          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
-            logInfo "Set new role successfully."
-            respond $ WithStatus @200 MkResponseSpaceUserRole {responseSpaceUserRoleUnit = ()}
+        $ \seldaResultAfter404 ->
+          handleSeldaException403InsufficientPermission
+            (Proxy @MkPermissionEditUser)
+            seldaResultAfter404
+            $ \seldaResultAfter403 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \() -> do
+                logInfo "Set new role successfully."
+                respond $ WithStatus @200 MkResponseSpaceUserRole {responseSpaceUserRoleUnit = ()}
 
 viewSpace ::
   ( MonadLogger m
@@ -499,6 +523,7 @@ viewSpace ::
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 403 ResponseSpaceView403) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -509,6 +534,7 @@ viewSpace auth eitherRequest =
     handleBadRequestBody eitherRequest $ \request -> do
       logDebug $ "Received request to view space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
+        _ <- spaceGetFromId $ requestSpaceViewId request -- Generate error when space doesn't exist
         spaceViewResult <- spaceView (userAuthenticatedId authenticated) (requestSpaceViewId request)
         let permissionCheck =
               checkPermission
@@ -518,33 +544,38 @@ viewSpace auth eitherRequest =
         catch (permissionCheck >> pure (Right spaceViewResult)) $ \case
           MkSqlErrorMensamPermissionNotSatisfied @MkPermissionViewSpace ->
             pure $ Left spaceViewResult
-      handleSeldaSomeException (WithStatus @500 ()) seldaResult $ \case
-        Left spaceViewResult -> do
-          logInfo "User not permitted to view space fully. Creating reduced space view."
-          respond $
-            WithStatus @403 $
-              MkResponseSpaceView403
-                { responseSpaceView403Id = spaceViewId spaceViewResult
-                , responseSpaceView403Name = spaceViewName spaceViewResult
-                , responseSpaceView403Timezone = spaceViewTimezone spaceViewResult
-                , responseSpaceView403Visibility = spaceViewVisibility spaceViewResult
-                , responseSpaceView403Roles = spaceViewRoles spaceViewResult
-                , responseSpaceView403YourRole = spaceViewYourRole spaceViewResult
-                }
-        Right spaceViewResult -> do
-          logInfo "Viewed space."
-          respond $
-            WithStatus @200
-              MkResponseSpaceView
-                { responseSpaceViewId = spaceViewId spaceViewResult
-                , responseSpaceViewName = spaceViewName spaceViewResult
-                , responseSpaceViewTimezone = spaceViewTimezone spaceViewResult
-                , responseSpaceViewVisibility = spaceViewVisibility spaceViewResult
-                , responseSpaceViewOwner = spaceViewOwner spaceViewResult
-                , responseSpaceViewRoles = spaceViewRoles spaceViewResult
-                , responseSpaceViewUsers = spaceViewUsers spaceViewResult
-                , responseSpaceViewYourRole = spaceViewYourRole spaceViewResult
-                }
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
+        seldaResult
+        $ \seldaResultAfter404 ->
+          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter404 $ \case
+            Left spaceViewResult -> do
+              logInfo "User not permitted to view space fully. Creating reduced space view."
+              respond $
+                WithStatus @403 $
+                  MkResponseSpaceView403
+                    { responseSpaceView403Id = spaceViewId spaceViewResult
+                    , responseSpaceView403Name = spaceViewName spaceViewResult
+                    , responseSpaceView403Timezone = spaceViewTimezone spaceViewResult
+                    , responseSpaceView403Visibility = spaceViewVisibility spaceViewResult
+                    , responseSpaceView403Roles = spaceViewRoles spaceViewResult
+                    , responseSpaceView403YourRole = spaceViewYourRole spaceViewResult
+                    }
+            Right spaceViewResult -> do
+              logInfo "Viewed space."
+              respond $
+                WithStatus @200
+                  MkResponseSpaceView
+                    { responseSpaceViewId = spaceViewId spaceViewResult
+                    , responseSpaceViewName = spaceViewName spaceViewResult
+                    , responseSpaceViewTimezone = spaceViewTimezone spaceViewResult
+                    , responseSpaceViewVisibility = spaceViewVisibility spaceViewResult
+                    , responseSpaceViewOwner = spaceViewOwner spaceViewResult
+                    , responseSpaceViewRoles = spaceViewRoles spaceViewResult
+                    , responseSpaceViewUsers = spaceViewUsers spaceViewResult
+                    , responseSpaceViewYourRole = spaceViewYourRole spaceViewResult
+                    }
 
 listSpaces ::
   ( MonadLogger m
@@ -830,6 +861,7 @@ listDesks ::
   , IsMember (WithStatus 400 ErrorParseBodyJson) responses
   , IsMember (WithStatus 401 ErrorBearerAuth) responses
   , IsMember (WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)) responses
+  , IsMember (WithStatus 404 (StaticText "Space not found.")) responses
   , IsMember (WithStatus 500 ()) responses
   ) =>
   AuthResult UserAuthenticated ->
@@ -842,8 +874,8 @@ listDesks auth eitherRequest =
       seldaResult <- runSeldaTransactionT $ do
         spaceIdentifier <-
           case requestDeskListSpace request of
+            Identifier spaceId -> spaceGetFromId spaceId >> pure spaceId
             Name spaceName -> spaceLookupId spaceName
-            Identifier spaceId -> pure spaceId
         checkPermission
           SMkPermissionViewSpace
           (userAuthenticatedId authenticated)
@@ -859,13 +891,18 @@ listDesks auth eitherRequest =
               { deskWithInfoDesk = desk
               , deskWithInfoReservations = reservations
               }
-      handleSeldaException403InsufficientPermission
-        (Proxy @MkPermissionViewSpace)
+      handleSeldaException
+        (Proxy @SqlErrorMensamSpaceNotFound)
+        (WithStatus @404 $ MkStaticText @"Space not found.")
         seldaResult
-        $ \seldaResultAfter403 ->
-          handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \desksWithInfo -> do
-            logInfo "Listed desks."
-            respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
+        $ \seldaResultAfter404 ->
+          handleSeldaException403InsufficientPermission
+            (Proxy @MkPermissionViewSpace)
+            seldaResultAfter404
+            $ \seldaResultAfter403 ->
+              handleSeldaSomeException (WithStatus @500 ()) seldaResultAfter403 $ \desksWithInfo -> do
+                logInfo "Listed desks."
+                respond $ WithStatus @200 MkResponseDeskList {responseDeskListDesks = desksWithInfo}
 
 handleBadRequestBody ::
   ( MonadLogger m

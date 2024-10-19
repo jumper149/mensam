@@ -67,6 +67,7 @@ type Response
                 , permissions : Mensam.Space.Role.Permissions
                 }
         }
+    | ErrorSpaceNotFound
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -126,6 +127,14 @@ responseResult input httpResponse =
                     case Decode.decodeString decodeBody403 body of
                         Ok response ->
                             Ok <| Success403Restricted response
+
+                        Err err ->
+                            Err <| Http.BadBody <| Decode.errorToString err
+
+                404 ->
+                    case Decode.decodeString decodeBody404 body of
+                        Ok () ->
+                            Ok <| ErrorSpaceNotFound
 
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err
@@ -364,3 +373,17 @@ decodeBody403 =
             (Decode.field "timezone" Mensam.Time.timezoneDecoder)
             (Decode.field "visibility" Mensam.Space.visibilityDecoder)
             (Decode.field "your-role" <| Decode.nullable Mensam.Space.Role.identifierDecoder)
+
+
+decodeBody404 : Decode.Decoder ()
+decodeBody404 =
+    Decode.string
+        |> Decode.andThen
+            (\string ->
+                case string of
+                    "Space not found." ->
+                        Decode.succeed ()
+
+                    _ ->
+                        Decode.fail <| "Unexpected HTTP 404 message: " ++ string
+            )

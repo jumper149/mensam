@@ -148,6 +148,7 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 (StaticTexts ["Role is inaccessible.", "Wrong role password."])
+              , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
   , routeSpaceLeave ::
@@ -166,6 +167,7 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 (StaticText "Owner cannot leave space.")
+              , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
   , routeSpaceKick ::
@@ -185,6 +187,7 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
+              , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
   , routeSpaceUserRole ::
@@ -205,6 +208,7 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
+              , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
   , routeSpaceView ::
@@ -223,6 +227,7 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 ResponseSpaceView403
+              , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
   , routeSpaceList ::
@@ -380,6 +385,7 @@ data Routes route = Routes
               , WithStatus 400 ErrorParseBodyJson
               , WithStatus 401 ErrorBearerAuth
               , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
+              , WithStatus 404 (StaticText "Space not found.")
               , WithStatus 500 ()
               ]
   }

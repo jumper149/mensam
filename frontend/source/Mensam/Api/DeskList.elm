@@ -46,6 +46,7 @@ type Response
                 }
         }
     | ErrorInsufficientPermission Mensam.Space.Role.Permission
+    | ErrorSpaceNotFound
     | ErrorBody String
     | ErrorAuth Mensam.Auth.Bearer.Error
 
@@ -105,6 +106,14 @@ responseResult httpResponse =
                     case Decode.decodeString Mensam.Space.Role.http403BodyDecoder body of
                         Ok permission ->
                             Ok <| ErrorInsufficientPermission permission
+
+                        Err err ->
+                            Err <| Http.BadBody <| Decode.errorToString err
+
+                404 ->
+                    case Decode.decodeString decodeBody404 body of
+                        Ok () ->
+                            Ok <| ErrorSpaceNotFound
 
                         Err err ->
                             Err <| Http.BadBody <| Decode.errorToString err
@@ -211,3 +220,17 @@ decodeBody200 =
 decodeBody400 : Decode.Decoder String
 decodeBody400 =
     Decode.field "error" Decode.string
+
+
+decodeBody404 : Decode.Decoder ()
+decodeBody404 =
+    Decode.string
+        |> Decode.andThen
+            (\string ->
+                case string of
+                    "Space not found." ->
+                        Decode.succeed ()
+
+                    _ ->
+                        Decode.fail <| "Unexpected HTTP 404 message: " ++ string
+            )

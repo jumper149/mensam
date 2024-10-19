@@ -1,5 +1,14 @@
 = Changelog
 
+* API
+  ** Add HTTP 404 "Space not found." status to some routes.
+    *** `/space/join`
+    *** `/space/leave`
+    *** `/space/kick`
+    *** `/space/user/role`
+    *** `/space/view`
+    *** `/desk/list`
+
 == `0.13.1.0`
 
 * Frontend

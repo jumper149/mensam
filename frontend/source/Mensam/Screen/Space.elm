@@ -1756,18 +1756,32 @@ spaceView auth model =
                                 MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission Mensam.Space.Role.MkPermissionViewSpace
                         ]
 
+                Ok Mensam.Api.SpaceView.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to view space" <|
+                                Mensam.Error.message "Space not found" <|
+                                    Mensam.Error.undefined
+
                 Ok (Mensam.Api.SpaceView.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Bad request body" <|
-                                Mensam.Error.message error <|
-                                    Mensam.Error.undefined
+                            Mensam.Error.message "Failed to view space" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceView.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to view space" <|
+                                Mensam.Auth.Bearer.error error
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to view space" <|
+                                Mensam.Error.http error
 
 
 spaceLeave : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
@@ -1785,18 +1799,32 @@ spaceLeave jwt spaceId =
                                 Mensam.Error.message "You could try deleting the space." <|
                                     Mensam.Error.undefined
 
+                Ok Mensam.Api.SpaceLeave.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to leave space" <|
+                                Mensam.Error.message "Space not found" <|
+                                    Mensam.Error.undefined
+
                 Ok (Mensam.Api.SpaceLeave.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Bad request body" <|
-                                Mensam.Error.message error <|
-                                    Mensam.Error.undefined
+                            Mensam.Error.message "Failed to leave space" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.SpaceLeave.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to leave space" <|
+                                Mensam.Auth.Bearer.error error
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to leave space" <|
+                                Mensam.Error.http error
 
 
 deskList : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
@@ -1819,18 +1847,32 @@ deskList jwt model =
                 Ok (Mensam.Api.DeskList.ErrorInsufficientPermission permission) ->
                     MessageEffect <| ReportError <| Mensam.Space.Role.errorInsufficientPermission permission
 
+                Ok Mensam.Api.DeskList.ErrorSpaceNotFound ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to list desks" <|
+                                Mensam.Error.message "Space not found" <|
+                                    Mensam.Error.undefined
+
                 Ok (Mensam.Api.DeskList.ErrorBody error) ->
                     MessageEffect <|
                         ReportError <|
-                            Mensam.Error.message "Bad request body" <|
-                                Mensam.Error.message error <|
-                                    Mensam.Error.undefined
+                            Mensam.Error.message "Failed to list desks" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
 
                 Ok (Mensam.Api.DeskList.ErrorAuth error) ->
-                    MessageEffect <| ReportError <| Mensam.Auth.Bearer.error error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to list desks" <|
+                                Mensam.Auth.Bearer.error error
 
                 Err error ->
-                    MessageEffect <| ReportError <| Mensam.Error.http error
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Failed to list desks" <|
+                                Mensam.Error.http error
 
 
 reservationCreate : Mensam.Auth.Bearer.Jwt -> Model -> { desk : { id : Mensam.Desk.Identifier } } -> Cmd Message

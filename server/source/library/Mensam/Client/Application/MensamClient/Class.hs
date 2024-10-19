@@ -234,6 +234,7 @@ endpointSpaceJoin ::
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (StaticTexts ["Role is inaccessible.", "Wrong role password."])
+         , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
     )
@@ -246,6 +247,7 @@ endpointSpaceLeave ::
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (StaticText "Owner cannot leave space.")
+         , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
     )
@@ -258,6 +260,7 @@ endpointSpaceKick ::
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
+         , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
     )
@@ -270,6 +273,7 @@ endpointSpaceUserRole ::
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
+         , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
     )
@@ -282,6 +286,7 @@ endpointSpaceView ::
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 Route.Api.Space.ResponseSpaceView403
+         , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
     )
@@ -381,6 +386,7 @@ endpointDeskList ::
          , WithStatus 400 ErrorParseBodyJson
          , WithStatus 401 ErrorBearerAuth
          , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
+         , WithStatus 404 (StaticText "Space not found.")
          , WithStatus 500 ()
          ]
     )
