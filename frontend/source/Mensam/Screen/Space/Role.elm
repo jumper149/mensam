@@ -19,6 +19,7 @@ import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
+import Mensam.Url
 import Mensam.User
 
 
@@ -775,9 +776,9 @@ type MessageEffect
     | ReturnToRoles
 
 
-spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
-spaceView auth id =
-    Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
+spaceView : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView baseUrl auth id =
+    Mensam.Api.SpaceView.request baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->
@@ -817,28 +818,30 @@ spaceView auth id =
 
 
 roleEdit :
-    { jwt : Mensam.Auth.Bearer.Jwt
-    , id : Mensam.Space.Role.Identifier
-    , name : Maybe Mensam.Space.Role.Name
-    , accessibilityAndPassword :
-        Maybe
-            { accessibility : Mensam.Space.Role.Accessibility
-            , maybePassword : Maybe String
-            }
-    , permissions :
-        Maybe
-            { viewSpace : Bool
-            , editDesk : Bool
-            , editUser : Bool
-            , editRole : Bool
-            , editSpace : Bool
-            , createReservation : Bool
-            , cancelReservation : Bool
-            }
-    }
+    Mensam.Url.BaseUrl
+    ->
+        { jwt : Mensam.Auth.Bearer.Jwt
+        , id : Mensam.Space.Role.Identifier
+        , name : Maybe Mensam.Space.Role.Name
+        , accessibilityAndPassword :
+            Maybe
+                { accessibility : Mensam.Space.Role.Accessibility
+                , maybePassword : Maybe String
+                }
+        , permissions :
+            Maybe
+                { viewSpace : Bool
+                , editDesk : Bool
+                , editUser : Bool
+                , editRole : Bool
+                , editSpace : Bool
+                , createReservation : Bool
+                , cancelReservation : Bool
+                }
+        }
     -> Cmd Message
-roleEdit args =
-    Mensam.Api.RoleEdit.request
+roleEdit baseUrl args =
+    Mensam.Api.RoleEdit.request baseUrl
         { jwt = args.jwt
         , id = args.id
         , name = args.name
@@ -921,13 +924,15 @@ roleEdit args =
 
 
 roleDelete :
-    { jwt : Mensam.Auth.Bearer.Jwt
-    , id : Mensam.Space.Role.Identifier
-    , fallbackId : Mensam.Space.Role.Identifier
-    }
+    Mensam.Url.BaseUrl
+    ->
+        { jwt : Mensam.Auth.Bearer.Jwt
+        , id : Mensam.Space.Role.Identifier
+        , fallbackId : Mensam.Space.Role.Identifier
+        }
     -> Cmd Message
-roleDelete requestArgs =
-    Mensam.Api.RoleDelete.request requestArgs <|
+roleDelete baseUrl requestArgs =
+    Mensam.Api.RoleDelete.request baseUrl requestArgs <|
         \result ->
             case result of
                 Ok Mensam.Api.RoleDelete.Success ->

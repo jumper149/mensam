@@ -1,5 +1,7 @@
 = Changelog
 
+* Frontend
+  ** Support base url with custom path.
 * API
   ** Add HTTP 404 "Space not found." status to some routes.
     *** `/space/join`

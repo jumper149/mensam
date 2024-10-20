@@ -940,8 +940,8 @@ type MessagePure
     | CloseDialogToInvite
 
 
-updatePure : MessagePure -> Model -> Model
-updatePure message model =
+updatePure : Mensam.Url.BaseUrl -> MessagePure -> Model -> Model
+updatePure baseUrl message model =
     case message of
         SetSpaceInfo info ->
             { model
@@ -962,7 +962,7 @@ updatePure message model =
                                   , role = user.role
                                   , info = Nothing
                                   , profilePictureUrl =
-                                        Url.Builder.absolute
+                                        Mensam.Url.absolute baseUrl
                                             [ "static"
                                             , "default-profile-picture.jpeg"
                                             ]
@@ -1006,7 +1006,7 @@ updatePure message model =
                                     , role = Nothing
                                     , selected = Nothing
                                     , profilePictureUrl =
-                                        Url.Builder.absolute
+                                        Mensam.Url.absolute baseUrl
                                             [ "static"
                                             , "default-profile-picture.jpeg"
                                             ]
@@ -1086,9 +1086,9 @@ type MessageEffect
     | OpenPageSpaceRoles Mensam.Space.Identifier
 
 
-spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
-spaceView auth id =
-    Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
+spaceView : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView baseUrl auth id =
+    Mensam.Api.SpaceView.request baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->
@@ -1147,9 +1147,9 @@ spaceView auth id =
                                 Mensam.Error.http error
 
 
-profile : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-profile jwt userId =
-    Mensam.Api.Profile.request
+profile : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+profile baseUrl jwt userId =
+    Mensam.Api.Profile.request baseUrl
         { jwt = jwt
         , id = userId
         }
@@ -1186,9 +1186,9 @@ profile jwt userId =
                                 Mensam.Error.http error
 
 
-profilePicture : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-profilePicture jwt userId =
-    Mensam.Api.PictureDownload.request
+profilePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+profilePicture baseUrl jwt userId =
+    Mensam.Api.PictureDownload.request baseUrl
         { jwt = jwt
         , user = userId
         }
@@ -1205,9 +1205,9 @@ profilePicture jwt userId =
                                 Mensam.Error.http error
 
 
-editUserRole : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Mensam.Space.Role.Identifier -> Cmd Message
-editUserRole jwt spaceId userId roleId =
-    Mensam.Api.SpaceUserRole.request
+editUserRole : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Mensam.Space.Role.Identifier -> Cmd Message
+editUserRole baseUrl jwt spaceId userId roleId =
+    Mensam.Api.SpaceUserRole.request baseUrl
         { jwt = jwt
         , space = spaceId
         , user = userId
@@ -1253,9 +1253,9 @@ editUserRole jwt spaceId userId roleId =
                                 Mensam.Error.http error
 
 
-kickUser : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Cmd Message
-kickUser jwt spaceId userId =
-    Mensam.Api.SpaceKick.request
+kickUser : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Cmd Message
+kickUser baseUrl jwt spaceId userId =
+    Mensam.Api.SpaceKick.request baseUrl
         { jwt = jwt
         , space = spaceId
         , user = userId

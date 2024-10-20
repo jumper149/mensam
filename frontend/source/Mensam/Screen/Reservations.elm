@@ -18,6 +18,7 @@ import Mensam.Reservation
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
+import Mensam.Url
 import Mensam.User
 import Mensam.Widget.Date
 import Time
@@ -735,9 +736,9 @@ type MessageEffect
     | CancelReservation Mensam.Reservation.Identifier
 
 
-reservationList : { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
-reservationList argument =
-    Mensam.Api.ReservationList.request
+reservationList : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
+reservationList baseUrl argument =
+    Mensam.Api.ReservationList.request baseUrl
         { jwt = argument.jwt
         , timeWindow =
             { start =
@@ -793,9 +794,9 @@ reservationList argument =
                                 Mensam.Error.http error
 
 
-reservationCancel : { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
-reservationCancel argument =
-    Mensam.Api.ReservationCancel.request
+reservationCancel : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
+reservationCancel baseUrl argument =
+    Mensam.Api.ReservationCancel.request baseUrl
         { jwt = argument.jwt
         , id = argument.id
         }

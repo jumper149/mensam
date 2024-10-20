@@ -4,8 +4,8 @@ import Http
 import Http.Extra
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Mensam.Url
 import Mensam.User
-import Url.Builder
 
 
 type alias Request =
@@ -25,13 +25,13 @@ type Response
     | ErrorBody String
 
 
-request : Request -> (Result Http.Error Response -> a) -> Cmd a
-request body handleResult =
+request : Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request baseUrl body handleResult =
     Http.request
         { method = "POST"
         , headers = []
         , url =
-            Url.Builder.absolute
+            Mensam.Url.absolute baseUrl
                 [ "api"
                 , "register"
                 ]

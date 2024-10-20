@@ -6,9 +6,9 @@ import Iso8601
 import Json.Decode as Decode
 import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
+import Mensam.Url
 import Mensam.User
 import Time
-import Url.Builder
 
 
 type Request
@@ -21,8 +21,8 @@ type Response
     | ErrorAuth Mensam.Auth.Basic.Error
 
 
-request : Request -> (Result Http.Error Response -> a) -> Cmd a
-request body handleResult =
+request : Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request baseUrl body handleResult =
     Http.request
         { method = "POST"
         , headers =
@@ -34,7 +34,7 @@ request body handleResult =
                     Mensam.Auth.Bearer.authorizationHeader jwt
             ]
         , url =
-            Url.Builder.absolute
+            Mensam.Url.absolute baseUrl
                 [ "api"
                 , "login"
                 ]

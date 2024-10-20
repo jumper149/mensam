@@ -8,7 +8,7 @@ import Mensam.Auth.Bearer
 import Mensam.NameOrIdentifier
 import Mensam.Space
 import Mensam.Space.Role
-import Url.Builder
+import Mensam.Url
 
 
 type alias Request =
@@ -28,15 +28,15 @@ type Response
     | ErrorAuth Mensam.Auth.Bearer.Error
 
 
-request : Request -> (Result Http.Error Response -> a) -> Cmd a
-request body handleResult =
+request : Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request baseUrl body handleResult =
     Http.request
         { method = "POST"
         , headers =
             [ Mensam.Auth.Bearer.authorizationHeader body.jwt
             ]
         , url =
-            Url.Builder.absolute
+            Mensam.Url.absolute baseUrl
                 [ "api"
                 , "space"
                 , "join"

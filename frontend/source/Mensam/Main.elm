@@ -124,35 +124,35 @@ type Route
     | RouteConfirm Mensam.User.ConfirmationSecret
 
 
-routeToUrl : Route -> String
-routeToUrl route =
+routeToUrl : Mensam.Url.BaseUrl -> Route -> String
+routeToUrl baseUrl route =
     case route of
         RouteLanding ->
-            Url.Builder.absolute [] []
+            Mensam.Url.absolute baseUrl [] []
 
         RouteLogin _ ->
-            Url.Builder.absolute [ "login" ] []
+            Mensam.Url.absolute baseUrl [ "login" ] []
 
         RouteRegister ->
-            Url.Builder.absolute [ "register" ] []
+            Mensam.Url.absolute baseUrl [ "register" ] []
 
         RouteTermsAndConditions ->
-            Url.Builder.absolute [ "terms" ] []
+            Mensam.Url.absolute baseUrl [ "terms" ] []
 
         RoutePrivacyPolicy ->
-            Url.Builder.absolute [ "privacy" ] []
+            Mensam.Url.absolute baseUrl [ "privacy" ] []
 
         RouteDashboard ->
-            Url.Builder.absolute [ "dashboard" ] []
+            Mensam.Url.absolute baseUrl [ "dashboard" ] []
 
         RouteSpaces ->
-            Url.Builder.absolute [ "spaces" ] []
+            Mensam.Url.absolute baseUrl [ "spaces" ] []
 
         RouteSpace identifier ->
-            Url.Builder.absolute [ "space", Mensam.Space.identifierToString identifier ] []
+            Mensam.Url.absolute baseUrl [ "space", Mensam.Space.identifierToString identifier ] []
 
         RouteSpaceJoin { spaceId, roleId, password } ->
-            Url.Builder.absolute
+            Mensam.Url.absolute baseUrl
                 [ "join"
                 , "space"
                 , Mensam.Space.identifierToString spaceId
@@ -164,31 +164,31 @@ routeToUrl route =
                     ]
 
         RouteSpaceRoles identifier ->
-            Url.Builder.absolute [ "roles", "space", Mensam.Space.identifierToString identifier ] []
+            Mensam.Url.absolute baseUrl [ "roles", "space", Mensam.Space.identifierToString identifier ] []
 
         RouteSpaceRole { spaceId, roleId } ->
-            Url.Builder.absolute [ "role", Mensam.Space.Role.identifierToString roleId, "space", Mensam.Space.identifierToString spaceId ] []
+            Mensam.Url.absolute baseUrl [ "role", Mensam.Space.Role.identifierToString roleId, "space", Mensam.Space.identifierToString spaceId ] []
 
         RouteSpaceUsers identifier ->
-            Url.Builder.absolute [ "users", "space", Mensam.Space.identifierToString identifier ] []
+            Mensam.Url.absolute baseUrl [ "users", "space", Mensam.Space.identifierToString identifier ] []
 
         RouteSpaceSettings identifier ->
-            Url.Builder.absolute [ "settings", "space", Mensam.Space.identifierToString identifier ] []
+            Mensam.Url.absolute baseUrl [ "settings", "space", Mensam.Space.identifierToString identifier ] []
 
         RouteSpaceDesks identifier ->
-            Url.Builder.absolute [ "desks", "space", Mensam.Space.identifierToString identifier ] []
+            Mensam.Url.absolute baseUrl [ "desks", "space", Mensam.Space.identifierToString identifier ] []
 
         RouteReservations ->
-            Url.Builder.absolute [ "reservations" ] []
+            Mensam.Url.absolute baseUrl [ "reservations" ] []
 
         RouteProfile identifier ->
-            Url.Builder.absolute [ "profile", Mensam.User.identifierToString identifier ] []
+            Mensam.Url.absolute baseUrl [ "profile", Mensam.User.identifierToString identifier ] []
 
         RouteUserSettings ->
-            Url.Builder.absolute [ "user", "settings" ] []
+            Mensam.Url.absolute baseUrl [ "user", "settings" ] []
 
         RouteConfirm (Mensam.User.MkConfirmationSecret secret) ->
-            Url.Builder.absolute [ "register", "confirm", secret ] []
+            Mensam.Url.absolute baseUrl [ "register", "confirm", secret ] []
 
 
 routeToModelUpdate : Route -> Model -> ( Model, Cmd Message )
@@ -281,7 +281,7 @@ routeToModelUpdate route (MkModel model) =
                     ]
                 )
             <|
-                MkModel { model | screen = ScreenSpaceSettings <| Mensam.Screen.Space.Settings.init { id = identifier } }
+                MkModel { model | screen = ScreenSpaceSettings <| Mensam.Screen.Space.Settings.init model.baseUrl { id = identifier } }
 
         RouteSpaceDesks identifier ->
             update
@@ -309,7 +309,7 @@ routeToModelUpdate route (MkModel model) =
                     { model
                         | screen =
                             ScreenProfile <|
-                                Mensam.Screen.Profile.init
+                                Mensam.Screen.Profile.init model.baseUrl
                                     { id = identifier
                                     , self =
                                         case model.authenticated of
@@ -338,7 +338,7 @@ routeToModelUpdate route (MkModel model) =
                             ]
                         )
                     <|
-                        MkModel { model | screen = ScreenUserSettings <| Mensam.Screen.UserSettings.init { id = authentication.user.id } }
+                        MkModel { model | screen = ScreenUserSettings <| Mensam.Screen.UserSettings.init model.baseUrl { id = authentication.user.id } }
 
         RouteConfirm secret ->
             case model.authenticated of
@@ -350,19 +350,19 @@ routeToModelUpdate route (MkModel model) =
                         MkModel { model | screen = ScreenConfirm <| Mensam.Screen.Confirm.init { secret = secret } }
 
 
-urlParser : Url.Parser.Parser (Route -> c) c
-urlParser =
+urlParser : Mensam.Url.BaseUrl -> Url.Parser.Parser (Route -> c) c
+urlParser baseUrl =
     Url.Parser.oneOf
-        [ Url.Parser.map RouteLanding <| Url.Parser.top
-        , Url.Parser.map (RouteLogin Nothing) <| Url.Parser.s "login"
-        , Url.Parser.map RouteConfirm <| Url.Parser.s "register" </> Url.Parser.s "confirm" </> Url.Parser.map Mensam.User.MkConfirmationSecret Url.Parser.string
-        , Url.Parser.map RouteRegister <| Url.Parser.s "register"
-        , Url.Parser.map RouteTermsAndConditions <| Url.Parser.s "terms"
-        , Url.Parser.map RoutePrivacyPolicy <| Url.Parser.s "privacy"
-        , Url.Parser.map RouteDashboard <| Url.Parser.s "dashboard"
-        , Url.Parser.map RouteReservations <| Url.Parser.s "reservations"
-        , Url.Parser.map RouteSpaces <| Url.Parser.s "spaces"
-        , Url.Parser.map RouteSpace <| Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
+        [ Url.Parser.map RouteLanding <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.top
+        , Url.Parser.map (RouteLogin Nothing) <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "login"
+        , Url.Parser.map RouteConfirm <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "register" </> Url.Parser.s "confirm" </> Url.Parser.map Mensam.User.MkConfirmationSecret Url.Parser.string
+        , Url.Parser.map RouteRegister <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "register"
+        , Url.Parser.map RouteTermsAndConditions <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "terms"
+        , Url.Parser.map RoutePrivacyPolicy <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "privacy"
+        , Url.Parser.map RouteDashboard <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "dashboard"
+        , Url.Parser.map RouteReservations <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "reservations"
+        , Url.Parser.map RouteSpaces <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "spaces"
+        , Url.Parser.map RouteSpace <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         , Url.Parser.map
             (\spaceId roleId password ->
                 RouteSpaceJoin
@@ -372,12 +372,13 @@ urlParser =
                     }
             )
           <|
-            Url.Parser.s "join"
+            Mensam.Url.parsePrefix baseUrl
+                </> Url.Parser.s "join"
                 </> Url.Parser.s "space"
                 </> Url.Parser.int
                 <?> Url.Parser.Query.int "role"
                 <?> Url.Parser.Query.string "password"
-        , Url.Parser.map RouteSpaceRoles <| Url.Parser.s "roles" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
+        , Url.Parser.map RouteSpaceRoles <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "roles" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
         , Url.Parser.map
             (\roleId spaceId ->
                 RouteSpaceRole
@@ -386,15 +387,16 @@ urlParser =
                     }
             )
           <|
-            Url.Parser.s "role"
+            Mensam.Url.parsePrefix baseUrl
+                </> Url.Parser.s "role"
                 </> Url.Parser.map Mensam.Space.Role.MkIdentifier Url.Parser.int
                 </> Url.Parser.s "space"
                 </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
-        , Url.Parser.map RouteSpaceUsers <| Url.Parser.s "users" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
-        , Url.Parser.map RouteSpaceSettings <| Url.Parser.s "settings" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
-        , Url.Parser.map RouteSpaceDesks <| Url.Parser.s "desks" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
-        , Url.Parser.map RouteProfile <| Url.Parser.s "profile" </> Url.Parser.map Mensam.User.MkIdentifierUnsafe Url.Parser.int
-        , Url.Parser.map RouteUserSettings <| Url.Parser.s "user" </> Url.Parser.s "settings"
+        , Url.Parser.map RouteSpaceUsers <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "users" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
+        , Url.Parser.map RouteSpaceSettings <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "settings" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
+        , Url.Parser.map RouteSpaceDesks <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "desks" </> Url.Parser.s "space" </> Url.Parser.map Mensam.Space.MkIdentifier Url.Parser.int
+        , Url.Parser.map RouteProfile <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "profile" </> Url.Parser.map Mensam.User.MkIdentifierUnsafe Url.Parser.int
+        , Url.Parser.map RouteUserSettings <| Mensam.Url.parsePrefix baseUrl </> Url.Parser.s "user" </> Url.Parser.s "settings"
         ]
 
 
@@ -503,7 +505,7 @@ update message (MkModel model) =
         FollowLink urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    case Url.Parser.parse urlParser url of
+                    case Url.Parser.parse (urlParser model.baseUrl) url of
                         Nothing ->
                             update
                                 (ReportError <|
@@ -528,7 +530,7 @@ update message (MkModel model) =
                         MkModel model
 
         ChangedUrl url ->
-            case Url.Parser.parse urlParser url of
+            case Url.Parser.parse (urlParser model.baseUrl) url of
                 Nothing ->
                     update
                         (ReportError <|
@@ -549,7 +551,7 @@ update message (MkModel model) =
                     , Auth <| RefreshUserInfo
                     , Raw <|
                         \(MkModel m) ->
-                            case Url.Parser.parse urlParser url of
+                            case Url.Parser.parse (urlParser model.baseUrl) url of
                                 Nothing ->
                                     update (SetUrl RouteLanding) (MkModel m)
 
@@ -577,7 +579,7 @@ update message (MkModel model) =
         SetUrl route ->
             update
                 (Messages
-                    [ Raw <| \m -> ( m, Browser.Navigation.pushUrl model.navigationKey <| routeToUrl route )
+                    [ Raw <| \m -> ( m, Browser.Navigation.pushUrl model.navigationKey <| routeToUrl model.baseUrl route )
                     ]
                 )
             <|
@@ -638,7 +640,7 @@ update message (MkModel model) =
 
         Auth (Login { username, password }) ->
             ( MkModel model
-            , Mensam.Api.Login.request
+            , Mensam.Api.Login.request model.baseUrl
                 (Mensam.Api.Login.BasicAuth <|
                     Mensam.Auth.Basic.MkCredentials
                         { username = Mensam.User.nameToString username
@@ -690,7 +692,7 @@ update message (MkModel model) =
 
                                 Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                                     ( MkModel m
-                                    , Mensam.Api.Logout.request { jwt = jwt } <|
+                                    , Mensam.Api.Logout.request model.baseUrl { jwt = jwt } <|
                                         \response ->
                                             case response of
                                                 Ok Mensam.Api.Logout.Success ->
@@ -732,7 +734,7 @@ update message (MkModel model) =
 
                 Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication authentication) ->
                     ( MkModel model
-                    , Mensam.Api.Profile.request
+                    , Mensam.Api.Profile.request model.baseUrl
                         { jwt = authentication.jwt
                         , id = authentication.user.id
                         }
@@ -821,7 +823,7 @@ update message (MkModel model) =
                     case model.screen of
                         ScreenRegister _ ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageRegister <| Mensam.Screen.Register.register args
+                            , Platform.Cmd.map MessageRegister <| Mensam.Screen.Register.register model.baseUrl args
                             )
 
                         _ ->
@@ -863,7 +865,7 @@ update message (MkModel model) =
                     case model.screen of
                         ScreenLogin screenModel ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageLogin <| Mensam.Screen.Login.login screenModel
+                            , Platform.Cmd.map MessageLogin <| Mensam.Screen.Login.login model.baseUrl screenModel
                             )
 
                         _ ->
@@ -915,7 +917,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenDashboard _ ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.spaceList jwt
+                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.spaceList model.baseUrl jwt
                                     )
 
                                 _ ->
@@ -930,7 +932,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenDashboard _ ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.ownerGetName { jwt = jwt, space = args.space, owner = args.owner }
+                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.ownerGetName model.baseUrl { jwt = jwt, space = args.space, owner = args.owner }
                                     )
 
                                 _ ->
@@ -945,7 +947,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenDashboard _ ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.downloadSpacePicture jwt space
+                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.downloadSpacePicture model.baseUrl jwt space
                                     )
 
                                 _ ->
@@ -963,7 +965,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenDashboard screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.reservationList { jwt = jwt, model = screenModel }
+                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.reservationList model.baseUrl { jwt = jwt, model = screenModel }
                                     )
 
                                 _ ->
@@ -978,7 +980,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenDashboard _ ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.reservationCancel { jwt = jwt, id = reservationId }
+                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.reservationCancel model.baseUrl { jwt = jwt, id = reservationId }
                                     )
 
                                 _ ->
@@ -1018,7 +1020,7 @@ update message (MkModel model) =
 
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageSpaces <| Mensam.Screen.Spaces.spaceList jwt
+                            , Platform.Cmd.map MessageSpaces <| Mensam.Screen.Spaces.spaceList model.baseUrl jwt
                             )
 
                 Mensam.Screen.Spaces.SubmitCreate formData ->
@@ -1036,7 +1038,7 @@ update message (MkModel model) =
                                         ]
                                 )
                               <|
-                                Mensam.Screen.Spaces.spaceCreate
+                                Mensam.Screen.Spaces.spaceCreate model.baseUrl
                                     { jwt = jwt
                                     , timezone = formData.timezone
                                     , name = formData.name
@@ -1089,7 +1091,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenSpace screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.spaceView { jwt = jwt, yourUserId = user.id } screenModel
+                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel
                                     )
 
                                 _ ->
@@ -1104,7 +1106,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenSpace screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.deskList jwt screenModel
+                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.deskList model.baseUrl jwt screenModel
                                     )
 
                                 _ ->
@@ -1161,7 +1163,7 @@ update message (MkModel model) =
                                                         ]
                                                 )
                                               <|
-                                                Mensam.Screen.Space.spaceLeave jwt screenModel.space
+                                                Mensam.Screen.Space.spaceLeave model.baseUrl jwt screenModel.space
                                             )
 
                                         _ ->
@@ -1181,7 +1183,7 @@ update message (MkModel model) =
                                     case screenModel.popup of
                                         Just (Mensam.Screen.Space.PopupReservation { desk }) ->
                                             ( MkModel model
-                                            , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.reservationCreate jwt screenModel { desk = { id = desk.id } }
+                                            , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.reservationCreate model.baseUrl jwt screenModel { desk = { id = desk.id } }
                                             )
 
                                         _ ->
@@ -1220,7 +1222,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenSpaceJoin screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceJoin <| Mensam.Screen.Space.Join.spaceView { jwt = jwt, yourUserId = user.id } screenModel
+                                    , Platform.Cmd.map MessageSpaceJoin <| Mensam.Screen.Space.Join.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel
                                     )
 
                                 _ ->
@@ -1241,7 +1243,7 @@ update message (MkModel model) =
                                         Just justRoleId ->
                                             ( MkModel model
                                             , Platform.Cmd.map MessageSpaceJoin <|
-                                                Mensam.Screen.Space.Join.spaceJoin jwt screenModel.spaceId justRoleId screenModel.password
+                                                Mensam.Screen.Space.Join.spaceJoin model.baseUrl jwt screenModel.spaceId justRoleId screenModel.password
                                             )
 
                                 _ ->
@@ -1286,7 +1288,7 @@ update message (MkModel model) =
                                 ScreenSpaceRoles screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceRoles <|
-                                        Mensam.Screen.Space.Roles.spaceView { jwt = jwt, yourUserId = user.id } screenModel.spaceId
+                                        Mensam.Screen.Space.Roles.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
                                     )
 
                                 _ ->
@@ -1310,7 +1312,7 @@ update message (MkModel model) =
                                 ScreenSpaceRoles screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceRoles <|
-                                        Mensam.Screen.Space.Roles.roleCreate
+                                        Mensam.Screen.Space.Roles.roleCreate model.baseUrl
                                             { jwt = jwt
                                             , space = screenModel.spaceId
                                             , name = args.name
@@ -1362,7 +1364,7 @@ update message (MkModel model) =
                                 ScreenSpaceRole screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceRole <|
-                                        Mensam.Screen.Space.Role.spaceView { jwt = jwt, yourUserId = user.id } screenModel.space.id
+                                        Mensam.Screen.Space.Role.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.space.id
                                     )
 
                                 _ ->
@@ -1378,7 +1380,7 @@ update message (MkModel model) =
                                 ScreenSpaceRole screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceRole <|
-                                        Mensam.Screen.Space.Role.roleEdit
+                                        Mensam.Screen.Space.Role.roleEdit model.baseUrl
                                             { jwt = jwt
                                             , id = screenModel.role.id
                                             , name = screenModel.new.name
@@ -1400,7 +1402,7 @@ update message (MkModel model) =
                                 ScreenSpaceRole screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceRole <|
-                                        Mensam.Screen.Space.Role.roleDelete
+                                        Mensam.Screen.Space.Role.roleDelete model.baseUrl
                                             { jwt = jwt
                                             , id = screenModel.role.id
                                             , fallbackId = fallback
@@ -1449,7 +1451,7 @@ update message (MkModel model) =
                                 ScreenSpaceSettings screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceSettings <|
-                                        Mensam.Screen.Space.Settings.spaceEdit
+                                        Mensam.Screen.Space.Settings.spaceEdit model.baseUrl
                                             { jwt = jwt
                                             , id = screenModel.id
                                             , name = Nothing
@@ -1471,7 +1473,7 @@ update message (MkModel model) =
                                 ScreenSpaceSettings screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceSettings <|
-                                        Mensam.Screen.Space.Settings.spaceEdit
+                                        Mensam.Screen.Space.Settings.spaceEdit model.baseUrl
                                             { jwt = jwt
                                             , id = screenModel.id
                                             , name = screenModel.new.name
@@ -1493,7 +1495,7 @@ update message (MkModel model) =
                                 ScreenSpaceSettings screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceSettings <|
-                                        Mensam.Screen.Space.Settings.spaceDelete
+                                        Mensam.Screen.Space.Settings.spaceDelete model.baseUrl
                                             { jwt = jwt
                                             , id = screenModel.id
                                             }
@@ -1522,7 +1524,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenSpaceSettings screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.downloadSpacePicture jwt screenModel.id
+                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.downloadSpacePicture model.baseUrl jwt screenModel.id
                                     )
 
                                 _ ->
@@ -1552,7 +1554,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenSpaceSettings screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.uploadSpacePicture jwt screenModel.id file
+                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.uploadSpacePicture model.baseUrl jwt screenModel.id file
                                     )
 
                                 _ ->
@@ -1567,7 +1569,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenSpaceSettings screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.deleteSpacePicture jwt screenModel.id
+                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.deleteSpacePicture model.baseUrl jwt screenModel.id
                                     )
 
                                 _ ->
@@ -1617,7 +1619,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.spaceView { jwt = jwt, yourUserId = user.id } screenModel.spaceId
+                                        Mensam.Screen.Space.Desks.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
                                     )
 
                                 _ ->
@@ -1633,7 +1635,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.listDesks jwt screenModel.spaceId
+                                        Mensam.Screen.Space.Desks.listDesks model.baseUrl jwt screenModel.spaceId
                                     )
 
                                 _ ->
@@ -1649,7 +1651,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.createDesk
+                                        Mensam.Screen.Space.Desks.createDesk model.baseUrl
                                             { jwt = jwt
                                             , space = screenModel.spaceId
                                             , name = args.name
@@ -1670,7 +1672,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks _ ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.deleteDesk
+                                        Mensam.Screen.Space.Desks.deleteDesk model.baseUrl
                                             { jwt = jwt
                                             , id = args.id
                                             }
@@ -1689,7 +1691,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks _ ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.editDesk
+                                        Mensam.Screen.Space.Desks.editDesk model.baseUrl
                                             { jwt = jwt
                                             , id = args.id
                                             , name = args.name
@@ -1722,7 +1724,7 @@ update message (MkModel model) =
         MessageSpaceUsers (Mensam.Screen.Space.Users.MessagePure m) ->
             case model.screen of
                 ScreenSpaceUsers screenModel ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenSpaceUsers <| Mensam.Screen.Space.Users.updatePure m screenModel }
+                    update EmptyMessage <| MkModel { model | screen = ScreenSpaceUsers <| Mensam.Screen.Space.Users.updatePure model.baseUrl m screenModel }
 
                 _ ->
                     update (ReportError errorScreen) <| MkModel model
@@ -1739,7 +1741,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.spaceView { jwt = jwt, yourUserId = user.id } screenModel.spaceId
+                                        Mensam.Screen.Space.Users.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
                                     )
 
                                 _ ->
@@ -1755,7 +1757,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers _ ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.profile jwt userId
+                                        Mensam.Screen.Space.Users.profile model.baseUrl jwt userId
                                     )
 
                                 _ ->
@@ -1771,7 +1773,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers _ ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.profilePicture jwt userId
+                                        Mensam.Screen.Space.Users.profilePicture model.baseUrl jwt userId
                                     )
 
                                 _ ->
@@ -1787,7 +1789,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.editUserRole jwt screenModel.spaceId args.user args.role
+                                        Mensam.Screen.Space.Users.editUserRole model.baseUrl jwt screenModel.spaceId args.user args.role
                                     )
 
                                 _ ->
@@ -1803,7 +1805,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers screenModel ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.kickUser jwt screenModel.spaceId args.user
+                                        Mensam.Screen.Space.Users.kickUser model.baseUrl jwt screenModel.spaceId args.user
                                     )
 
                                 _ ->
@@ -1876,7 +1878,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenReservations screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageReservations <| Mensam.Screen.Reservations.reservationList { jwt = jwt, model = screenModel }
+                                    , Platform.Cmd.map MessageReservations <| Mensam.Screen.Reservations.reservationList model.baseUrl { jwt = jwt, model = screenModel }
                                     )
 
                                 _ ->
@@ -1891,7 +1893,7 @@ update message (MkModel model) =
                                         Just _ ->
                                             ( MkModel model
                                             , Platform.Cmd.map (\regularM -> Messages [ MessageReservations regularM, MessageReservations <| Mensam.Screen.Reservations.MessagePure Mensam.Screen.Reservations.ClosePopup ]) <|
-                                                Mensam.Screen.Reservations.reservationList { jwt = jwt, model = screenModel }
+                                                Mensam.Screen.Reservations.reservationList model.baseUrl { jwt = jwt, model = screenModel }
                                             )
 
                                         _ ->
@@ -1912,7 +1914,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenReservations _ ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageReservations <| Mensam.Screen.Reservations.reservationCancel { jwt = jwt, id = reservationId }
+                                    , Platform.Cmd.map MessageReservations <| Mensam.Screen.Reservations.reservationCancel model.baseUrl { jwt = jwt, id = reservationId }
                                     )
 
                                 _ ->
@@ -1948,7 +1950,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenProfile screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.profile jwt screenModel.id
+                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.profile model.baseUrl jwt screenModel.id
                                     )
 
                                 _ ->
@@ -1963,7 +1965,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenProfile screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.downloadProfilePicture jwt screenModel.id
+                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.downloadProfilePicture model.baseUrl jwt screenModel.id
                                     )
 
                                 _ ->
@@ -2002,7 +2004,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenUserSettings screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.profile jwt screenModel.id
+                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.profile model.baseUrl jwt screenModel.id
                                     )
 
                                 _ ->
@@ -2018,7 +2020,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageUserSettings <|
-                                        Mensam.Screen.UserSettings.changePassword
+                                        Mensam.Screen.UserSettings.changePassword model.baseUrl
                                             { jwt = jwt
                                             , newPassword = submitData.newPassword
                                             }
@@ -2037,7 +2039,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageUserSettings <|
-                                        Mensam.Screen.UserSettings.confirmationRequest { jwt = jwt }
+                                        Mensam.Screen.UserSettings.confirmationRequest model.baseUrl { jwt = jwt }
                                     )
 
                                 _ ->
@@ -2053,7 +2055,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageUserSettings <|
-                                        Mensam.Screen.UserSettings.setNotificationPreferences { jwt = jwt, receiveEmailNotifications = Nothing }
+                                        Mensam.Screen.UserSettings.setNotificationPreferences model.baseUrl { jwt = jwt, receiveEmailNotifications = Nothing }
                                     )
 
                                 _ ->
@@ -2069,7 +2071,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     ( MkModel model
                                     , Platform.Cmd.map MessageUserSettings <|
-                                        Mensam.Screen.UserSettings.setNotificationPreferences { jwt = jwt, receiveEmailNotifications = Just notificationPreferences.receiveEmailNotifications }
+                                        Mensam.Screen.UserSettings.setNotificationPreferences model.baseUrl { jwt = jwt, receiveEmailNotifications = Just notificationPreferences.receiveEmailNotifications }
                                     )
 
                                 _ ->
@@ -2084,7 +2086,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenUserSettings screenModel ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.downloadProfilePicture jwt screenModel.id
+                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.downloadProfilePicture model.baseUrl jwt screenModel.id
                                     )
 
                                 _ ->
@@ -2114,7 +2116,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenUserSettings _ ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.uploadProfilePicture jwt file
+                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.uploadProfilePicture model.baseUrl jwt file
                                     )
 
                                 _ ->
@@ -2129,7 +2131,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenUserSettings _ ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.deleteProfilePicture jwt
+                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.deleteProfilePicture model.baseUrl jwt
                                     )
 
                                 _ ->
@@ -2168,7 +2170,7 @@ update message (MkModel model) =
                             case model.screen of
                                 ScreenConfirm _ ->
                                     ( MkModel model
-                                    , Platform.Cmd.map MessageConfirm <| Mensam.Screen.Confirm.confirm jwt secret
+                                    , Platform.Cmd.map MessageConfirm <| Mensam.Screen.Confirm.confirm model.baseUrl jwt secret
                                     )
 
                                 _ ->
@@ -2369,7 +2371,7 @@ view (MkModel model) =
                         Mensam.Element.screen MessagePrivacyPolicy <| Mensam.Screen.PrivacyPolicy.element screenModel
 
                     ScreenDashboard screenModel ->
-                        Mensam.Element.screen MessageDashboard <| Mensam.Screen.Dashboard.element screenModel
+                        Mensam.Element.screen MessageDashboard <| Mensam.Screen.Dashboard.element model.baseUrl screenModel
 
                     ScreenSpaces screenModel ->
                         Mensam.Element.screen MessageSpaces <| Mensam.Screen.Spaces.element screenModel

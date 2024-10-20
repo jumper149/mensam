@@ -10,6 +10,7 @@ import Mensam.Api.Register
 import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Error
+import Mensam.Url
 import Mensam.User
 
 
@@ -296,15 +297,17 @@ onEnter msg =
 
 
 register :
-    { username : Mensam.User.Name
-    , password : Mensam.User.Password
-    , email : Mensam.User.Email
-    , emailVisible : Bool
-    , emailNotifications : Bool
-    }
+    Mensam.Url.BaseUrl
+    ->
+        { username : Mensam.User.Name
+        , password : Mensam.User.Password
+        , email : Mensam.User.Email
+        , emailVisible : Bool
+        , emailNotifications : Bool
+        }
     -> Cmd Message
-register args =
-    Mensam.Api.Register.request
+register baseUrl args =
+    Mensam.Api.Register.request baseUrl
         { email = args.email
         , emailNotifications = args.emailNotifications
         , emailVisible = args.emailVisible

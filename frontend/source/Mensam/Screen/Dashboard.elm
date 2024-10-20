@@ -24,9 +24,9 @@ import Mensam.Reservation
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
+import Mensam.Url
 import Mensam.User
 import Time
-import Url.Builder
 
 
 type alias Model =
@@ -109,8 +109,8 @@ init value =
     }
 
 
-element : Model -> Element.Element Message
-element model =
+element : Mensam.Url.BaseUrl -> Model -> Element.Element Message
+element baseUrl model =
     Mensam.Element.Screen.element
         { main =
             Element.column
@@ -230,7 +230,7 @@ element model =
                                                                     model.pictureUrls
                                                             of
                                                                 Nothing ->
-                                                                    Url.Builder.absolute
+                                                                    Mensam.Url.absolute baseUrl
                                                                         [ "static"
                                                                         , "default-space-picture.jpeg"
                                                                         ]
@@ -784,9 +784,9 @@ type MessageEffect
     | OpenPageToViewReservations
 
 
-spaceList : Mensam.Auth.Bearer.Jwt -> Cmd Message
-spaceList jwt =
-    Mensam.Api.SpaceList.request { jwt = jwt, order = [], member = Just True } <|
+spaceList : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Cmd Message
+spaceList baseUrl jwt =
+    Mensam.Api.SpaceList.request baseUrl { jwt = jwt, order = [], member = Just True } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceList.Success value) ->
@@ -826,9 +826,9 @@ spaceList jwt =
                                 Mensam.Error.http error
 
 
-ownerGetName : { jwt : Mensam.Auth.Bearer.Jwt, space : Mensam.Space.Identifier, owner : Mensam.User.Identifier } -> Cmd Message
-ownerGetName args =
-    Mensam.Api.Profile.request { jwt = args.jwt, id = args.owner } <|
+ownerGetName : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, space : Mensam.Space.Identifier, owner : Mensam.User.Identifier } -> Cmd Message
+ownerGetName baseUrl args =
+    Mensam.Api.Profile.request baseUrl { jwt = args.jwt, id = args.owner } <|
         \result ->
             case result of
                 Ok (Mensam.Api.Profile.Success value) ->
@@ -862,9 +862,9 @@ ownerGetName args =
                                 Mensam.Error.http error
 
 
-reservationList : { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
-reservationList argument =
-    Mensam.Api.ReservationList.request
+reservationList : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
+reservationList baseUrl argument =
+    Mensam.Api.ReservationList.request baseUrl
         { jwt = argument.jwt
         , timeWindow =
             { start =
@@ -920,9 +920,9 @@ reservationList argument =
                                 Mensam.Error.http error
 
 
-reservationCancel : { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
-reservationCancel argument =
-    Mensam.Api.ReservationCancel.request
+reservationCancel : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
+reservationCancel baseUrl argument =
+    Mensam.Api.ReservationCancel.request baseUrl
         { jwt = argument.jwt
         , id = argument.id
         }
@@ -974,9 +974,9 @@ reservationCancel argument =
                                 Mensam.Error.http error
 
 
-downloadSpacePicture : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
-downloadSpacePicture jwt space =
-    Mensam.Api.SpacePictureDownload.request
+downloadSpacePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+downloadSpacePicture baseUrl jwt space =
+    Mensam.Api.SpacePictureDownload.request baseUrl
         { jwt = jwt
         , space = space
         }

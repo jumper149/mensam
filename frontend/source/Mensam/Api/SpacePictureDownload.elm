@@ -6,6 +6,7 @@ import Http
 import Http.Extra
 import Mensam.Auth.Bearer
 import Mensam.Space
+import Mensam.Url
 import Url.Builder
 
 
@@ -19,15 +20,15 @@ type Response
     = Success { url : String }
 
 
-request : Request -> (Result Http.Error Response -> a) -> Cmd a
-request body handleResult =
+request : Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request baseUrl body handleResult =
     Http.request
         { method = "GET"
         , headers =
             [ Mensam.Auth.Bearer.authorizationHeader body.jwt
             ]
         , url =
-            Url.Builder.absolute
+            Mensam.Url.absolute baseUrl
                 [ "api"
                 , "space"
                 , "picture"

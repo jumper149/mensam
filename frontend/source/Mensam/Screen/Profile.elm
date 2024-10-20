@@ -9,8 +9,8 @@ import Mensam.Auth.Bearer
 import Mensam.Element.Button
 import Mensam.Element.Screen
 import Mensam.Error
+import Mensam.Url
 import Mensam.User
-import Url.Builder
 
 
 type alias Model =
@@ -24,13 +24,13 @@ type alias Model =
     }
 
 
-init : { self : Bool, id : Mensam.User.Identifier } -> Model
-init value =
+init : Mensam.Url.BaseUrl -> { self : Bool, id : Mensam.User.Identifier } -> Model
+init baseUrl value =
     { self = value.self
     , id = value.id
     , name = Mensam.User.MkNameUnsafe ""
     , profilePictureUrl =
-        Url.Builder.absolute
+        Mensam.Url.absolute baseUrl
             [ "static"
             , "default-profile-picture.jpeg"
             ]
@@ -180,9 +180,9 @@ type MessageEffect
     | OpenPageUserSettings
 
 
-profile : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-profile jwt userId =
-    Mensam.Api.Profile.request
+profile : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+profile baseUrl jwt userId =
+    Mensam.Api.Profile.request baseUrl
         { jwt = jwt
         , id = userId
         }
@@ -223,9 +223,9 @@ profile jwt userId =
                                 Mensam.Error.http error
 
 
-downloadProfilePicture : Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-downloadProfilePicture jwt user =
-    Mensam.Api.PictureDownload.request
+downloadProfilePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+downloadProfilePicture baseUrl jwt user =
+    Mensam.Api.PictureDownload.request baseUrl
         { jwt = jwt
         , user = user
         }

@@ -4,10 +4,12 @@ module Mensam.Url exposing
     , decoder
     , full
     , mockUnsafe
+    , parsePrefix
     )
 
 import Json.Decode as Decode
 import Url.Builder
+import Url.Parser exposing ((</>))
 
 
 type BaseUrl
@@ -69,6 +71,20 @@ full (MkBaseUrl baseUrl) pathPieces queryParameters anchor =
 absolute : BaseUrl -> List String -> List Url.Builder.QueryParameter -> String
 absolute (MkBaseUrl baseUrl) pathPieces queryParameters =
     Url.Builder.absolute (baseUrl.path ++ pathPieces) queryParameters
+
+
+parsePrefix : BaseUrl -> Url.Parser.Parser a a
+parsePrefix (MkBaseUrl baseUrl) =
+    let
+        go pathPieces =
+            case pathPieces of
+                [] ->
+                    Url.Parser.top
+
+                p :: ps ->
+                    Url.Parser.s p </> go ps
+    in
+    go baseUrl.path
 
 
 mockUnsafe : BaseUrl

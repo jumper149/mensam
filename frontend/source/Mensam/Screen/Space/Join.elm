@@ -20,6 +20,7 @@ import Mensam.NameOrIdentifier
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
+import Mensam.Url
 import Mensam.User
 
 
@@ -280,9 +281,9 @@ onEnter msg =
         )
 
 
-spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
-spaceView auth model =
-    Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = model.spaceId } <|
+spaceView : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
+spaceView baseUrl auth model =
+    Mensam.Api.SpaceView.request baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = model.spaceId } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->
@@ -342,9 +343,9 @@ spaceView auth model =
                                 Mensam.Error.http error
 
 
-spaceJoin : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.Space.Role.Identifier -> Maybe String -> Cmd Message
-spaceJoin jwt spaceId roleId password =
-    Mensam.Api.SpaceJoin.request { jwt = jwt, role = Mensam.NameOrIdentifier.Identifier roleId, space = Mensam.NameOrIdentifier.Identifier spaceId, password = password } <|
+spaceJoin : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.Space.Role.Identifier -> Maybe String -> Cmd Message
+spaceJoin baseUrl jwt spaceId roleId password =
+    Mensam.Api.SpaceJoin.request baseUrl { jwt = jwt, role = Mensam.NameOrIdentifier.Identifier roleId, space = Mensam.NameOrIdentifier.Identifier spaceId, password = password } <|
         \result ->
             case result of
                 Ok Mensam.Api.SpaceJoin.Success ->

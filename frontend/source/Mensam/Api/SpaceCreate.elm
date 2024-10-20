@@ -7,7 +7,7 @@ import Json.Encode as Encode
 import Mensam.Auth.Bearer
 import Mensam.Space
 import Mensam.Time
-import Url.Builder
+import Mensam.Url
 
 
 type alias Request =
@@ -24,15 +24,15 @@ type Response
     | ErrorAuth Mensam.Auth.Bearer.Error
 
 
-request : Request -> (Result Http.Error Response -> a) -> Cmd a
-request body handleResult =
+request : Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request baseUrl body handleResult =
     Http.request
         { method = "PUT"
         , headers =
             [ Mensam.Auth.Bearer.authorizationHeader body.jwt
             ]
         , url =
-            Url.Builder.absolute
+            Mensam.Url.absolute baseUrl
                 [ "api"
                 , "space"
                 , "create"

@@ -27,6 +27,7 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Svg.Color
 import Mensam.Time
+import Mensam.Url
 import Mensam.User
 import Mensam.Widget.Date
 import Mensam.Widget.Time
@@ -1712,9 +1713,9 @@ type MessageEffect
     | SubmitReservation
 
 
-spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
-spaceView auth model =
-    Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = model.space } <|
+spaceView : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
+spaceView baseUrl auth model =
+    Mensam.Api.SpaceView.request baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = model.space } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->
@@ -1784,9 +1785,9 @@ spaceView auth model =
                                 Mensam.Error.http error
 
 
-spaceLeave : Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
-spaceLeave jwt spaceId =
-    Mensam.Api.SpaceLeave.request { jwt = jwt, space = Mensam.NameOrIdentifier.Identifier spaceId } <|
+spaceLeave : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+spaceLeave baseUrl jwt spaceId =
+    Mensam.Api.SpaceLeave.request baseUrl { jwt = jwt, space = Mensam.NameOrIdentifier.Identifier spaceId } <|
         \result ->
             case result of
                 Ok Mensam.Api.SpaceLeave.Success ->
@@ -1827,9 +1828,9 @@ spaceLeave jwt spaceId =
                                 Mensam.Error.http error
 
 
-deskList : Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
-deskList jwt model =
-    Mensam.Api.DeskList.request { jwt = jwt, space = model.space, timeWindow = { start = Nothing, end = Nothing } } <|
+deskList : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
+deskList baseUrl jwt model =
+    Mensam.Api.DeskList.request baseUrl { jwt = jwt, space = model.space, timeWindow = { start = Nothing, end = Nothing } } <|
         \result ->
             case result of
                 Ok (Mensam.Api.DeskList.Success value) ->
@@ -1875,9 +1876,9 @@ deskList jwt model =
                                 Mensam.Error.http error
 
 
-reservationCreate : Mensam.Auth.Bearer.Jwt -> Model -> { desk : { id : Mensam.Desk.Identifier } } -> Cmd Message
-reservationCreate jwt model { desk } =
-    Mensam.Api.ReservationCreate.request
+reservationCreate : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Model -> { desk : { id : Mensam.Desk.Identifier } } -> Cmd Message
+reservationCreate baseUrl jwt model { desk } =
+    Mensam.Api.ReservationCreate.request baseUrl
         { jwt = jwt
         , desk = desk
         , timeWindow =

@@ -16,6 +16,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
+import Mensam.Url
 import Mensam.User
 
 
@@ -657,9 +658,9 @@ type MessageEffect
     | ReturnToSpaceSettings
 
 
-spaceView : { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
-spaceView auth id =
-    Mensam.Api.SpaceView.request { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
+spaceView : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView baseUrl auth id =
+    Mensam.Api.SpaceView.request baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->
@@ -703,24 +704,26 @@ spaceView auth id =
 
 
 roleCreate :
-    { jwt : Mensam.Auth.Bearer.Jwt
-    , space : Mensam.Space.Identifier
-    , name : Mensam.Space.Role.Name
-    , accessibility : Mensam.Space.Role.Accessibility
-    , password : Maybe String
-    , permissions :
-        { viewSpace : Bool
-        , editDesk : Bool
-        , editUser : Bool
-        , editRole : Bool
-        , editSpace : Bool
-        , createReservation : Bool
-        , cancelReservation : Bool
+    Mensam.Url.BaseUrl
+    ->
+        { jwt : Mensam.Auth.Bearer.Jwt
+        , space : Mensam.Space.Identifier
+        , name : Mensam.Space.Role.Name
+        , accessibility : Mensam.Space.Role.Accessibility
+        , password : Maybe String
+        , permissions :
+            { viewSpace : Bool
+            , editDesk : Bool
+            , editUser : Bool
+            , editRole : Bool
+            , editSpace : Bool
+            , createReservation : Bool
+            , cancelReservation : Bool
+            }
         }
-    }
     -> Cmd Message
-roleCreate args =
-    Mensam.Api.RoleCreate.request
+roleCreate baseUrl args =
+    Mensam.Api.RoleCreate.request baseUrl
         { jwt = args.jwt
         , space = args.space
         , name = args.name
