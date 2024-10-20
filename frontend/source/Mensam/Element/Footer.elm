@@ -140,7 +140,7 @@ elementOpenApi =
 
 elementTermsAndConditions : Element.Element Message
 elementTermsAndConditions =
-    Element.newTabLink
+    Element.link
         [ Element.centerX
         , Element.centerY
         ]
@@ -168,7 +168,7 @@ elementTermsAndConditions =
 
 elementPrivacyPolicy : Element.Element Message
 elementPrivacyPolicy =
-    Element.newTabLink
+    Element.link
         [ Element.centerX
         , Element.centerY
         ]

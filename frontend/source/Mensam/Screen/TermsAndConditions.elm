@@ -82,7 +82,7 @@ element () =
                     [ Element.text "Your use of the Service is also governed by our Privacy Policy, which outlines how we collect, use, and protect your personal information."
                     , Element.text " "
                     , Element.text "Please review our "
-                    , Element.newTabLink []
+                    , Element.link []
                         { url = "./privacy"
                         , label =
                             Element.el
