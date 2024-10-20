@@ -21,6 +21,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
+import Mensam.Url
 import Mensam.User
 import Url.Builder
 
@@ -94,8 +95,8 @@ init args =
     }
 
 
-element : Model -> Element.Element Message
-element model =
+element : Mensam.Url.BaseUrl -> Model -> Element.Element Message
+element baseUrl model =
     Mensam.Element.Screen.element
         { main =
             Element.column
@@ -682,9 +683,7 @@ element model =
                     Just <|
                         let
                             inviteUrl =
-                                -- TODO: BaseUrl is hardcoded.
-                                Url.Builder.custom
-                                    (Url.Builder.CrossOrigin "https://mens.am")
+                                Mensam.Url.full baseUrl
                                     [ "join"
                                     , "space"
                                     , Mensam.Space.identifierToString model.spaceId

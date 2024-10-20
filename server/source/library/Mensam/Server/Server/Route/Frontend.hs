@@ -6,11 +6,13 @@ import Mensam.Server.Configuration
 import Mensam.Server.Configuration.BaseUrl
 
 import Control.Monad.Logger.CallStack
+import Data.Aeson.Text qualified as A
 import Data.Foldable
 import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
 import Data.Maybe qualified as M
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Numeric.Natural
 import Servant
 import Text.Blaze qualified as B
@@ -69,32 +71,39 @@ handler segments = do
         script ! src (withDepth baseUrl depth "static/frontend.js") $ ""
       body $ do
         H.div ! H.A.id "mensam-frontend" $ ""
-        script
-          "var storageName = 'mensam-frontend-storage';\
-          \var storageUnsafe = localStorage.getItem(storageName);\
-          \\
-          \var flags = \
-          \  { storage: storageUnsafe ? JSON.parse(storageUnsafe) : null\
-          \  , time: \
-          \    { now: Date.now()\
-          \    , zone: Intl.DateTimeFormat().resolvedOptions().timeZone\
-          \    }\
-          \  };\
-          \\
-          \var app = Elm.Main.init(\
-          \  { node: document.getElementById('mensam-frontend')\
-          \  , flags: flags\
-          \  }\
-          \);\
-          \\
-          \app.ports.setStorageJson.subscribe(function(state) {\
-          \  localStorage.setItem(storageName, JSON.stringify(state));\
-          \});\
-          \\
-          \app.ports.copyTextToClipboard.subscribe(function(content) {\
-          \  navigator.clipboard.writeText(content);\
-          \});\
-          \"
+        script $
+          fold
+            [ "\
+              \var storageName = 'mensam-frontend-storage';\
+              \var storageUnsafe = localStorage.getItem(storageName);\
+              \\
+              \var flags = \
+              \  { \"storage\": storageUnsafe ? JSON.parse(storageUnsafe) : null\
+              \  , \"time\": \
+              \    { \"now\": Date.now()\
+              \    , \"zone\": Intl.DateTimeFormat().resolvedOptions().timeZone\
+              \    }\
+              \  , \"base-url\": \
+              \"
+            , preEscapedText $ TL.toStrict $ A.encodeToLazyText baseUrl
+            , "\
+              \  };\
+              \\
+              \var app = Elm.Main.init(\
+              \  { \"node\": document.getElementById('mensam-frontend')\
+              \  , \"flags\": flags\
+              \  }\
+              \);\
+              \\
+              \app.ports.setStorageJson.subscribe(function(state) {\
+              \  localStorage.setItem(storageName, JSON.stringify(state));\
+              \});\
+              \\
+              \app.ports.copyTextToClipboard.subscribe(function(content) {\
+              \  navigator.clipboard.writeText(content);\
+              \});\
+              \"
+            ]
 
 hrefWithDepth ::
   BaseUrl ->

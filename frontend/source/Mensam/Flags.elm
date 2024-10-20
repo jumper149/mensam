@@ -9,6 +9,7 @@ import Json.Encode as Encode
 import Mensam.Error
 import Mensam.Storage
 import Mensam.Time
+import Mensam.Url
 import Time
 
 
@@ -19,6 +20,7 @@ type Flags
             { now : Time.Posix
             , zone : Mensam.Time.Timezone
             }
+        , baseUrl : Mensam.Url.BaseUrl
         }
 
 
@@ -36,10 +38,11 @@ parse flagsRaw =
 
 decoder : Decode.Decoder Flags
 decoder =
-    Decode.map2 (\storage time -> MkFlags { storage = storage, time = time })
+    Decode.map3 (\storage time baseUrl -> MkFlags { storage = storage, time = time, baseUrl = baseUrl })
         (Decode.field "storage" Mensam.Storage.decoder)
         (Decode.field "time" <|
             Decode.map2 (\now timezone -> { now = now, zone = timezone })
                 (Decode.field "now" (Decode.map Time.millisToPosix Decode.int))
                 (Decode.field "zone" Mensam.Time.timezoneDecoder)
         )
+        (Decode.field "base-url" Mensam.Url.decoder)

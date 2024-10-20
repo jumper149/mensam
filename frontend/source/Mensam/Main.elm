@@ -42,6 +42,7 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Storage
 import Mensam.Time
+import Mensam.Url
 import Mensam.User
 import Platform.Cmd
 import Platform.Sub
@@ -67,6 +68,7 @@ main =
 type Model
     = MkModel
         { navigationKey : Browser.Navigation.Key
+        , baseUrl : Mensam.Url.BaseUrl
         , screen : Screen
         , authenticated : Mensam.Auth.Model
         , errors : List Mensam.Error.Error
@@ -402,6 +404,7 @@ init flagsRaw url navigationKey =
         modelInit =
             MkModel
                 { navigationKey = navigationKey
+                , baseUrl = Mensam.Url.mockUnsafe
                 , screen = ScreenLanding Mensam.Screen.Landing.init
                 , authenticated = Mensam.Auth.SignedOut
                 , errors = []
@@ -422,6 +425,7 @@ init flagsRaw url navigationKey =
                             { model
                                 | authenticated = Mensam.Auth.init flags.storage
                                 , time = flags.time
+                                , baseUrl = flags.baseUrl
                             }
 
                     Err error ->
@@ -2383,7 +2387,7 @@ view (MkModel model) =
                         Mensam.Element.screen MessageSpaceRole <| Mensam.Screen.Space.Role.element screenModel
 
                     ScreenSpaceUsers screenModel ->
-                        Mensam.Element.screen MessageSpaceUsers <| Mensam.Screen.Space.Users.element screenModel
+                        Mensam.Element.screen MessageSpaceUsers <| Mensam.Screen.Space.Users.element model.baseUrl screenModel
 
                     ScreenSpaceSettings screenModel ->
                         Mensam.Element.screen MessageSpaceSettings <| Mensam.Screen.Space.Settings.element screenModel
