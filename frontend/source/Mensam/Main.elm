@@ -18,6 +18,7 @@ import Mensam.Element
 import Mensam.Element.Dropdown
 import Mensam.Element.Footer
 import Mensam.Element.Header
+import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Flags
 import Mensam.Screen.Confirm
@@ -71,6 +72,7 @@ type Model
         , baseUrl : Mensam.Url.BaseUrl
         , screen : Screen
         , authenticated : Mensam.Auth.Model
+        , dialogToSignIn : Maybe Mensam.Screen.Login.Model
         , errors : List Mensam.Error.Error
         , viewErrors : Bool
         , viewHamburgerMenu : Bool
@@ -409,6 +411,7 @@ init flagsRaw url navigationKey =
                 , baseUrl = Mensam.Url.mockUnsafe
                 , screen = ScreenLanding Mensam.Screen.Landing.init
                 , authenticated = Mensam.Auth.SignedOut
+                , dialogToSignIn = Nothing
                 , errors = []
                 , viewErrors = False
                 , viewHamburgerMenu = False
@@ -460,6 +463,9 @@ type Message
     | SetTimeNow Time.Posix
     | Auth MessageAuth
     | SetHttpStatus Http.Extra.Status
+    | OpenDialogToSignIn
+    | CloseDialogToSignIn
+    | MessageLoginPopup Mensam.Screen.Login.Message
     | MessageLanding Mensam.Screen.Landing.Message
     | MessageRegister Mensam.Screen.Register.Message
     | MessageTermsAndConditions Mensam.Screen.TermsAndConditions.Message
@@ -478,6 +484,7 @@ type Message
     | MessageProfile Mensam.Screen.Profile.Message
     | MessageUserSettings Mensam.Screen.UserSettings.Message
     | MessageConfirm Mensam.Screen.Confirm.Message
+    | RefreshScreen
 
 
 type MessageAuth
@@ -716,16 +723,81 @@ update message (MkModel model) =
                 MkModel model
 
         Auth (CheckExpirationExplicit now) ->
-            case model.authenticated of
-                Mensam.Auth.SignedOut ->
-                    update EmptyMessage <| MkModel model
+            let
+                f openDialog =
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            if openDialog then
+                                update OpenDialogToSignIn <| MkModel model
 
-                Mensam.Auth.SignedIn authentication ->
-                    if Mensam.Auth.isExpired authentication now then
-                        update (Auth UnsetSession) <| MkModel model
+                            else
+                                update EmptyMessage <| MkModel model
 
-                    else
-                        update EmptyMessage <| MkModel model
+                        Mensam.Auth.SignedIn authentication ->
+                            if Mensam.Auth.isExpired authentication now then
+                                if openDialog then
+                                    update (Messages [ Auth UnsetSession, OpenDialogToSignIn ]) <| MkModel model
+
+                                else
+                                    update (Auth UnsetSession) <| MkModel model
+
+                            else
+                                update EmptyMessage <| MkModel model
+            in
+            case model.screen of
+                ScreenLanding _ ->
+                    f False
+
+                ScreenRegister _ ->
+                    f False
+
+                ScreenLogin _ ->
+                    f False
+
+                ScreenTermsAndConditions _ ->
+                    f False
+
+                ScreenPrivacyPolicy _ ->
+                    f False
+
+                ScreenDashboard _ ->
+                    f True
+
+                ScreenSpaces _ ->
+                    f True
+
+                ScreenSpace _ ->
+                    f True
+
+                ScreenSpaceJoin _ ->
+                    f True
+
+                ScreenSpaceRoles _ ->
+                    f True
+
+                ScreenSpaceRole _ ->
+                    f True
+
+                ScreenSpaceUsers _ ->
+                    f True
+
+                ScreenSpaceSettings _ ->
+                    f True
+
+                ScreenSpaceDesks _ ->
+                    f True
+
+                ScreenReservations _ ->
+                    f True
+
+                ScreenProfile _ ->
+                    f True
+
+                ScreenUserSettings _ ->
+                    f True
+
+                ScreenConfirm _ ->
+                    f True
 
         Auth RefreshUserInfo ->
             case model.authenticated of
@@ -796,6 +868,55 @@ update message (MkModel model) =
 
         SetHttpStatus status ->
             update EmptyMessage <| MkModel { model | httpStatus = status }
+
+        OpenDialogToSignIn ->
+            case model.dialogToSignIn of
+                Nothing ->
+                    update EmptyMessage <| MkModel { model | dialogToSignIn = Just <| Mensam.Screen.Login.init }
+
+                Just _ ->
+                    update EmptyMessage <| MkModel model
+
+        CloseDialogToSignIn ->
+            update EmptyMessage <| MkModel { model | dialogToSignIn = Nothing }
+
+        MessageLoginPopup (Mensam.Screen.Login.MessagePure m) ->
+            case model.dialogToSignIn of
+                Nothing ->
+                    update (ReportError <| Mensam.Error.undefined) <| MkModel model
+
+                Just signInModel ->
+                    update EmptyMessage <| MkModel { model | dialogToSignIn = Just <| Mensam.Screen.Login.updatePure m signInModel }
+
+        MessageLoginPopup (Mensam.Screen.Login.MessageEffect m) ->
+            case m of
+                Mensam.Screen.Login.ReportError err ->
+                    update (ReportError err) <| MkModel model
+
+                Mensam.Screen.Login.SubmitLogin ->
+                    case model.dialogToSignIn of
+                        Nothing ->
+                            update (ReportError <| Mensam.Error.undefined) <| MkModel model
+
+                        Just signInModel ->
+                            ( MkModel model
+                            , Platform.Cmd.map MessageLoginPopup <| Mensam.Screen.Login.login model.baseUrl signInModel
+                            )
+
+                Mensam.Screen.Login.Register ->
+                    update (SetUrl RouteRegister) <| MkModel model
+
+                Mensam.Screen.Login.SetSession session ->
+                    update
+                        (Messages
+                            [ Auth <| SetSession session
+                            , Auth <| RefreshUserInfo
+                            , CloseDialogToSignIn
+                            , RefreshScreen
+                            ]
+                        )
+                    <|
+                        MkModel model
 
         MessageLanding (Mensam.Screen.Landing.MessageEffect m) ->
             case m of
@@ -2192,6 +2313,62 @@ update message (MkModel model) =
                 _ ->
                     update (ReportError errorScreen) <| MkModel model
 
+        RefreshScreen ->
+            case model.screen of
+                ScreenLanding _ ->
+                    routeToModelUpdate RouteLanding <| MkModel model
+
+                ScreenLogin _ ->
+                    routeToModelUpdate (RouteLogin Nothing) <| MkModel model
+
+                ScreenRegister _ ->
+                    routeToModelUpdate RouteRegister <| MkModel model
+
+                ScreenTermsAndConditions _ ->
+                    routeToModelUpdate RouteTermsAndConditions <| MkModel model
+
+                ScreenPrivacyPolicy _ ->
+                    routeToModelUpdate RoutePrivacyPolicy <| MkModel model
+
+                ScreenDashboard _ ->
+                    routeToModelUpdate RouteDashboard <| MkModel model
+
+                ScreenSpaces _ ->
+                    routeToModelUpdate RouteSpaces <| MkModel model
+
+                ScreenSpace m ->
+                    routeToModelUpdate (RouteSpace m.space) <| MkModel model
+
+                ScreenSpaceJoin m ->
+                    routeToModelUpdate (RouteSpaceJoin { spaceId = m.spaceId, roleId = m.roleIdSelected, password = m.password }) <| MkModel model
+
+                ScreenSpaceRoles m ->
+                    routeToModelUpdate (RouteSpaceRoles m.spaceId) <| MkModel model
+
+                ScreenSpaceRole m ->
+                    routeToModelUpdate (RouteSpaceRole { spaceId = m.space.id, roleId = m.role.id }) <| MkModel model
+
+                ScreenSpaceUsers m ->
+                    routeToModelUpdate (RouteSpaceUsers m.spaceId) <| MkModel model
+
+                ScreenSpaceSettings m ->
+                    routeToModelUpdate (RouteSpaceSettings m.id) <| MkModel model
+
+                ScreenSpaceDesks m ->
+                    routeToModelUpdate (RouteSpaceDesks m.spaceId) <| MkModel model
+
+                ScreenReservations _ ->
+                    routeToModelUpdate RouteReservations <| MkModel model
+
+                ScreenProfile m ->
+                    routeToModelUpdate (RouteProfile m.id) <| MkModel model
+
+                ScreenUserSettings _ ->
+                    routeToModelUpdate RouteUserSettings <| MkModel model
+
+                ScreenConfirm m ->
+                    routeToModelUpdate (RouteConfirm m.secret) <| MkModel model
+
 
 headerMessage : Model -> Mensam.Element.Header.Message -> Message
 headerMessage (MkModel model) message =
@@ -2354,60 +2531,65 @@ view (MkModel model) =
                             }
                 ]
               <|
-                case model.screen of
-                    ScreenLanding screenModel ->
-                        Mensam.Element.screen MessageLanding <| Mensam.Screen.Landing.element screenModel
+                Mensam.Element.Screen.element
+                    { main =
+                        case model.screen of
+                            ScreenLanding screenModel ->
+                                Mensam.Element.screen MessageLanding <| Mensam.Screen.Landing.element screenModel
 
-                    ScreenLogin screenModel ->
-                        Mensam.Element.screen MessageLogin <| Mensam.Screen.Login.element screenModel
+                            ScreenLogin screenModel ->
+                                Mensam.Element.screen MessageLogin <| Mensam.Screen.Login.element screenModel
 
-                    ScreenRegister screenModel ->
-                        Mensam.Element.screen MessageRegister <| Mensam.Screen.Register.element screenModel
+                            ScreenRegister screenModel ->
+                                Mensam.Element.screen MessageRegister <| Mensam.Screen.Register.element screenModel
 
-                    ScreenTermsAndConditions screenModel ->
-                        Mensam.Element.screen MessageTermsAndConditions <| Mensam.Screen.TermsAndConditions.element screenModel
+                            ScreenTermsAndConditions screenModel ->
+                                Mensam.Element.screen MessageTermsAndConditions <| Mensam.Screen.TermsAndConditions.element screenModel
 
-                    ScreenPrivacyPolicy screenModel ->
-                        Mensam.Element.screen MessagePrivacyPolicy <| Mensam.Screen.PrivacyPolicy.element screenModel
+                            ScreenPrivacyPolicy screenModel ->
+                                Mensam.Element.screen MessagePrivacyPolicy <| Mensam.Screen.PrivacyPolicy.element screenModel
 
-                    ScreenDashboard screenModel ->
-                        Mensam.Element.screen MessageDashboard <| Mensam.Screen.Dashboard.element model.baseUrl screenModel
+                            ScreenDashboard screenModel ->
+                                Mensam.Element.screen MessageDashboard <| Mensam.Screen.Dashboard.element model.baseUrl screenModel
 
-                    ScreenSpaces screenModel ->
-                        Mensam.Element.screen MessageSpaces <| Mensam.Screen.Spaces.element screenModel
+                            ScreenSpaces screenModel ->
+                                Mensam.Element.screen MessageSpaces <| Mensam.Screen.Spaces.element screenModel
 
-                    ScreenSpace screenModel ->
-                        Mensam.Element.screen MessageSpace <| Mensam.Screen.Space.element screenModel
+                            ScreenSpace screenModel ->
+                                Mensam.Element.screen MessageSpace <| Mensam.Screen.Space.element screenModel
 
-                    ScreenSpaceJoin screenModel ->
-                        Mensam.Element.screen MessageSpaceJoin <| Mensam.Screen.Space.Join.element screenModel
+                            ScreenSpaceJoin screenModel ->
+                                Mensam.Element.screen MessageSpaceJoin <| Mensam.Screen.Space.Join.element screenModel
 
-                    ScreenSpaceRoles screenModel ->
-                        Mensam.Element.screen MessageSpaceRoles <| Mensam.Screen.Space.Roles.element screenModel
+                            ScreenSpaceRoles screenModel ->
+                                Mensam.Element.screen MessageSpaceRoles <| Mensam.Screen.Space.Roles.element screenModel
 
-                    ScreenSpaceRole screenModel ->
-                        Mensam.Element.screen MessageSpaceRole <| Mensam.Screen.Space.Role.element screenModel
+                            ScreenSpaceRole screenModel ->
+                                Mensam.Element.screen MessageSpaceRole <| Mensam.Screen.Space.Role.element screenModel
 
-                    ScreenSpaceUsers screenModel ->
-                        Mensam.Element.screen MessageSpaceUsers <| Mensam.Screen.Space.Users.element model.baseUrl screenModel
+                            ScreenSpaceUsers screenModel ->
+                                Mensam.Element.screen MessageSpaceUsers <| Mensam.Screen.Space.Users.element model.baseUrl screenModel
 
-                    ScreenSpaceSettings screenModel ->
-                        Mensam.Element.screen MessageSpaceSettings <| Mensam.Screen.Space.Settings.element screenModel
+                            ScreenSpaceSettings screenModel ->
+                                Mensam.Element.screen MessageSpaceSettings <| Mensam.Screen.Space.Settings.element screenModel
 
-                    ScreenSpaceDesks screenModel ->
-                        Mensam.Element.screen MessageSpaceDesks <| Mensam.Screen.Space.Desks.element screenModel
+                            ScreenSpaceDesks screenModel ->
+                                Mensam.Element.screen MessageSpaceDesks <| Mensam.Screen.Space.Desks.element screenModel
 
-                    ScreenReservations screenModel ->
-                        Mensam.Element.screen MessageReservations <| Mensam.Screen.Reservations.element screenModel
+                            ScreenReservations screenModel ->
+                                Mensam.Element.screen MessageReservations <| Mensam.Screen.Reservations.element screenModel
 
-                    ScreenProfile screenModel ->
-                        Mensam.Element.screen MessageProfile <| Mensam.Screen.Profile.element screenModel
+                            ScreenProfile screenModel ->
+                                Mensam.Element.screen MessageProfile <| Mensam.Screen.Profile.element screenModel
 
-                    ScreenUserSettings screenModel ->
-                        Mensam.Element.screen MessageUserSettings <| Mensam.Screen.UserSettings.element screenModel
+                            ScreenUserSettings screenModel ->
+                                Mensam.Element.screen MessageUserSettings <| Mensam.Screen.UserSettings.element screenModel
 
-                    ScreenConfirm screenModel ->
-                        Mensam.Element.screen MessageConfirm <| Mensam.Screen.Confirm.element screenModel
+                            ScreenConfirm screenModel ->
+                                Mensam.Element.screen MessageConfirm <| Mensam.Screen.Confirm.element screenModel
+                    , popup = Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+                    , closePopup = Messages []
+                    }
             , Element.map (footerMessage <| MkModel model) <| Mensam.Element.Footer.element
             ]
 
@@ -2415,7 +2597,7 @@ view (MkModel model) =
 subscriptions : Model -> Sub Message
 subscriptions _ =
     Platform.Sub.batch
-        [ Time.every 100 SetTimeNow
+        [ Time.every 100 <| \time -> Messages [ SetTimeNow time, Auth <| CheckExpirationExplicit time ]
         , Http.track "http" (SetHttpStatus << Http.Extra.status)
         ]
 
