@@ -596,7 +596,14 @@ update message (MkModel model) =
             routeToModelUpdate route (MkModel model)
 
         ReportError error ->
-            update EmptyMessage <| MkModel { model | errors = error :: model.errors }
+            if
+                Mensam.Error.isSubError (Mensam.Auth.Bearer.error Mensam.Auth.Bearer.ErrorIndefinite) error
+                    || Mensam.Error.isSubError errorNoAuth error
+            then
+                update (Messages [ Auth UnsetSession, OpenDialogToSignIn ]) <| MkModel model
+
+            else
+                update EmptyMessage <| MkModel { model | errors = error :: model.errors }
 
         ClearErrors ->
             update EmptyMessage <| MkModel { model | errors = [] }

@@ -2,6 +2,7 @@ module Mensam.Error exposing
     ( Error
     , group
     , http
+    , isSubError
     , json
     , message
     , toElement
@@ -41,6 +42,20 @@ message string (MkError forest) =
 group : List Error -> Error
 group errors =
     MkError <| List.concat <| List.map unError errors
+
+
+isSubError : Error -> Error -> Bool
+isSubError (MkError subs) (MkError fulls) =
+    let
+        isSubTrees : List (Tree.Tree a) -> List (Tree.Tree a) -> Bool
+        isSubTrees s f =
+            if s == f then
+                True
+
+            else
+                List.any (isSubTrees s) (List.map Tree.children f)
+    in
+    isSubTrees subs fulls
 
 
 
