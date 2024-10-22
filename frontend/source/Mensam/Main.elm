@@ -3,6 +3,7 @@ module Mensam.Main exposing (..)
 import Browser
 import Browser.Navigation
 import Element
+import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
 import Http
@@ -2609,7 +2610,48 @@ view (MkModel model) =
                                 Element.none
 
                             Just el ->
-                                el
+                                Element.column
+                                    [ Element.width Element.fill
+                                    , Element.height Element.fill
+                                    , Element.padding 0
+                                    , Element.spacing 0
+                                    ]
+                                    [ Element.row
+                                        [ Element.width Element.fill
+                                        , Element.height <| Element.px 170
+                                        , Element.alignTop
+                                        , Element.Events.Pointer.onClick <| \_ -> EmptyMessage
+                                        ]
+                                        []
+                                    , Element.row
+                                        [ Element.width Element.fill
+                                        , Element.padding 0
+                                        , Element.spacing 0
+                                        ]
+                                        [ Element.column
+                                            [ Element.width Element.fill
+                                            , Element.height Element.fill
+                                            , Element.alignLeft
+                                            , Element.Events.Pointer.onClick <| \_ -> EmptyMessage
+                                            ]
+                                            []
+                                        , el
+                                        , Element.column
+                                            [ Element.width Element.fill
+                                            , Element.height Element.fill
+                                            , Element.alignRight
+                                            , Element.Events.Pointer.onClick <| \_ -> EmptyMessage
+                                            ]
+                                            []
+                                        ]
+                                    , Element.row
+                                        [ Element.width Element.fill
+                                        , Element.height Element.fill
+                                        , Element.alignBottom
+                                        , Element.Events.Pointer.onClick <| \_ -> EmptyMessage
+                                        ]
+                                        []
+                                    ]
                     ]
                 <|
                     Element.el

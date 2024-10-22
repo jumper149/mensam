@@ -40,7 +40,6 @@ element screen =
                             , Element.height <| Element.px 30
                             , Element.alignTop
                             , Element.Events.Pointer.onClick <| \_ -> screen.closePopup
-                            , Element.htmlAttribute <| Html.Attributes.style "filter" "blur(0)"
                             ]
                             []
                         , Element.row
