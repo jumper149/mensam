@@ -645,6 +645,7 @@ update message (MkModel model) =
                                     , info = Nothing
                                     }
                                 }
+                    , dialogToSignIn = Nothing
                 }
             , Mensam.Storage.set <| Mensam.Storage.MkStorage session
             )
@@ -2594,7 +2595,61 @@ view (MkModel model) =
 
                             ScreenConfirm screenModel ->
                                 Mensam.Element.screen MessageConfirm <| Mensam.Screen.Confirm.element screenModel
-                    , popup = Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+                    , popup =
+                        case model.screen of
+                            ScreenLanding _ ->
+                                Nothing
+
+                            ScreenLogin _ ->
+                                Nothing
+
+                            ScreenRegister _ ->
+                                Nothing
+
+                            ScreenTermsAndConditions _ ->
+                                Nothing
+
+                            ScreenPrivacyPolicy _ ->
+                                Nothing
+
+                            ScreenDashboard _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenSpaces _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenSpace _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenSpaceJoin _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenSpaceRoles _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenSpaceRole _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenSpaceUsers _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenSpaceSettings _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenSpaceDesks _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenReservations _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenProfile _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenUserSettings _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
+
+                            ScreenConfirm _ ->
+                                Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
                     , closePopup = Messages []
                     }
             , Element.map (footerMessage <| MkModel model) <| Mensam.Element.Footer.element
