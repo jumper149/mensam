@@ -1,7 +1,10 @@
 = Changelog
 
+== `0.13.2.0`
+
 * Frontend
   ** Support base url with custom path.
+  ** Automatically ask to sign in on any page.
 * API
   ** Add HTTP 404 "Space not found." status to some routes.
     *** `/space/join`
