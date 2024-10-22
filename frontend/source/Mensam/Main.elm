@@ -3,6 +3,8 @@ module Mensam.Main exposing (..)
 import Browser
 import Browser.Navigation
 import Element
+import Element.Font
+import Html.Attributes
 import Http
 import Http.Extra
 import Json.Encode as Encode
@@ -16,9 +18,9 @@ import Mensam.Auth.Bearer
 import Mensam.Clipboard
 import Mensam.Element
 import Mensam.Element.Dropdown
+import Mensam.Element.Font
 import Mensam.Element.Footer
 import Mensam.Element.Header
-import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Flags
 import Mensam.Screen.Confirm
@@ -2539,63 +2541,8 @@ view (MkModel model) =
                             }
                 ]
               <|
-                Mensam.Element.Screen.element
-                    { main =
-                        case model.screen of
-                            ScreenLanding screenModel ->
-                                Mensam.Element.screen MessageLanding <| Mensam.Screen.Landing.element screenModel
-
-                            ScreenLogin screenModel ->
-                                Mensam.Element.screen MessageLogin <| Mensam.Screen.Login.element screenModel
-
-                            ScreenRegister screenModel ->
-                                Mensam.Element.screen MessageRegister <| Mensam.Screen.Register.element screenModel
-
-                            ScreenTermsAndConditions screenModel ->
-                                Mensam.Element.screen MessageTermsAndConditions <| Mensam.Screen.TermsAndConditions.element screenModel
-
-                            ScreenPrivacyPolicy screenModel ->
-                                Mensam.Element.screen MessagePrivacyPolicy <| Mensam.Screen.PrivacyPolicy.element screenModel
-
-                            ScreenDashboard screenModel ->
-                                Mensam.Element.screen MessageDashboard <| Mensam.Screen.Dashboard.element model.baseUrl screenModel
-
-                            ScreenSpaces screenModel ->
-                                Mensam.Element.screen MessageSpaces <| Mensam.Screen.Spaces.element screenModel
-
-                            ScreenSpace screenModel ->
-                                Mensam.Element.screen MessageSpace <| Mensam.Screen.Space.element screenModel
-
-                            ScreenSpaceJoin screenModel ->
-                                Mensam.Element.screen MessageSpaceJoin <| Mensam.Screen.Space.Join.element screenModel
-
-                            ScreenSpaceRoles screenModel ->
-                                Mensam.Element.screen MessageSpaceRoles <| Mensam.Screen.Space.Roles.element screenModel
-
-                            ScreenSpaceRole screenModel ->
-                                Mensam.Element.screen MessageSpaceRole <| Mensam.Screen.Space.Role.element screenModel
-
-                            ScreenSpaceUsers screenModel ->
-                                Mensam.Element.screen MessageSpaceUsers <| Mensam.Screen.Space.Users.element model.baseUrl screenModel
-
-                            ScreenSpaceSettings screenModel ->
-                                Mensam.Element.screen MessageSpaceSettings <| Mensam.Screen.Space.Settings.element screenModel
-
-                            ScreenSpaceDesks screenModel ->
-                                Mensam.Element.screen MessageSpaceDesks <| Mensam.Screen.Space.Desks.element screenModel
-
-                            ScreenReservations screenModel ->
-                                Mensam.Element.screen MessageReservations <| Mensam.Screen.Reservations.element screenModel
-
-                            ScreenProfile screenModel ->
-                                Mensam.Element.screen MessageProfile <| Mensam.Screen.Profile.element screenModel
-
-                            ScreenUserSettings screenModel ->
-                                Mensam.Element.screen MessageUserSettings <| Mensam.Screen.UserSettings.element screenModel
-
-                            ScreenConfirm screenModel ->
-                                Mensam.Element.screen MessageConfirm <| Mensam.Screen.Confirm.element screenModel
-                    , popup =
+                let
+                    maybeSignInPopup =
                         case model.screen of
                             ScreenLanding _ ->
                                 Nothing
@@ -2650,8 +2597,89 @@ view (MkModel model) =
 
                             ScreenConfirm _ ->
                                 Maybe.map (Element.map MessageLoginPopup << Mensam.Screen.Login.element) model.dialogToSignIn
-                    , closePopup = Messages []
-                    }
+                in
+                Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.Font.size 16
+                    , Element.Font.family [ Mensam.Element.Font.sansSerif ]
+                    , Element.inFront <|
+                        case maybeSignInPopup of
+                            Nothing ->
+                                Element.none
+
+                            Just el ->
+                                el
+                    ]
+                <|
+                    Element.el
+                        ([ Element.width Element.fill
+                         , Element.height Element.fill
+                         ]
+                            ++ (case maybeSignInPopup of
+                                    Nothing ->
+                                        []
+
+                                    Just _ ->
+                                        [ Element.htmlAttribute <| Html.Attributes.style "filter" "blur(2px)"
+                                        ]
+                               )
+                        )
+                    <|
+                        case model.screen of
+                            ScreenLanding screenModel ->
+                                Mensam.Element.screen MessageLanding <| Mensam.Screen.Landing.element screenModel
+
+                            ScreenLogin screenModel ->
+                                Mensam.Element.screen MessageLogin <| Mensam.Screen.Login.element screenModel
+
+                            ScreenRegister screenModel ->
+                                Mensam.Element.screen MessageRegister <| Mensam.Screen.Register.element screenModel
+
+                            ScreenTermsAndConditions screenModel ->
+                                Mensam.Element.screen MessageTermsAndConditions <| Mensam.Screen.TermsAndConditions.element screenModel
+
+                            ScreenPrivacyPolicy screenModel ->
+                                Mensam.Element.screen MessagePrivacyPolicy <| Mensam.Screen.PrivacyPolicy.element screenModel
+
+                            ScreenDashboard screenModel ->
+                                Mensam.Element.screen MessageDashboard <| Mensam.Screen.Dashboard.element model.baseUrl screenModel
+
+                            ScreenSpaces screenModel ->
+                                Mensam.Element.screen MessageSpaces <| Mensam.Screen.Spaces.element screenModel
+
+                            ScreenSpace screenModel ->
+                                Mensam.Element.screen MessageSpace <| Mensam.Screen.Space.element screenModel
+
+                            ScreenSpaceJoin screenModel ->
+                                Mensam.Element.screen MessageSpaceJoin <| Mensam.Screen.Space.Join.element screenModel
+
+                            ScreenSpaceRoles screenModel ->
+                                Mensam.Element.screen MessageSpaceRoles <| Mensam.Screen.Space.Roles.element screenModel
+
+                            ScreenSpaceRole screenModel ->
+                                Mensam.Element.screen MessageSpaceRole <| Mensam.Screen.Space.Role.element screenModel
+
+                            ScreenSpaceUsers screenModel ->
+                                Mensam.Element.screen MessageSpaceUsers <| Mensam.Screen.Space.Users.element model.baseUrl screenModel
+
+                            ScreenSpaceSettings screenModel ->
+                                Mensam.Element.screen MessageSpaceSettings <| Mensam.Screen.Space.Settings.element screenModel
+
+                            ScreenSpaceDesks screenModel ->
+                                Mensam.Element.screen MessageSpaceDesks <| Mensam.Screen.Space.Desks.element screenModel
+
+                            ScreenReservations screenModel ->
+                                Mensam.Element.screen MessageReservations <| Mensam.Screen.Reservations.element screenModel
+
+                            ScreenProfile screenModel ->
+                                Mensam.Element.screen MessageProfile <| Mensam.Screen.Profile.element screenModel
+
+                            ScreenUserSettings screenModel ->
+                                Mensam.Element.screen MessageUserSettings <| Mensam.Screen.UserSettings.element screenModel
+
+                            ScreenConfirm screenModel ->
+                                Mensam.Element.screen MessageConfirm <| Mensam.Screen.Confirm.element screenModel
             , Element.map (footerMessage <| MkModel model) <| Mensam.Element.Footer.element
             ]
 
