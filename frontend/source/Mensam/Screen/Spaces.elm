@@ -269,6 +269,14 @@ element model =
                                             Element.map (MessagePure << TimezonePickerMessage) <|
                                                 Mensam.Widget.Timezone.elementPickTimezone timezonePickerModel
                                 ]
+                            , Element.paragraph
+                                [ Element.alignBottom
+                                , Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                , Element.Font.justify
+                                ]
+                                [ Element.text "You will be able to add desks later on. "
+                                , Element.text "Create this new space now?"
+                                ]
                             , Element.row
                                 [ Element.width Element.fill
                                 , Element.spacing 10
