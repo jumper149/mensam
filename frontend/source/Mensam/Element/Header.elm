@@ -239,24 +239,42 @@ elementTitle maybeTitle =
             Element.none
 
         Just text ->
-            Element.el
-                [ Element.width <| Element.px 140
+            Element.row
+                [ Element.width Element.fill
                 , Element.height Element.fill
-                , Element.centerX
-                , Element.Font.family [ Mensam.Element.Font.sansSerif ]
-                , Element.Font.size 17
-                , Element.Font.extraLight
-                , Element.Font.italic
-                , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
-                , Element.clip
                 ]
-            <|
-                Element.el
-                    [ Element.centerX
-                    , Element.centerY
+                [ Element.el
+                    [ Element.width <| Element.fillPortion 90
+                    , Element.height Element.fill
+                    , Element.alignLeft
                     ]
-                <|
-                    Element.text text
+                    Element.none
+                , Element.el
+                    [ Element.width <| Element.fillPortion 88
+                    , Element.height Element.fill
+                    , Element.centerX
+                    , Element.Font.family [ Mensam.Element.Font.sansSerif ]
+                    , Element.Font.size 17
+                    , Element.Font.extraLight
+                    , Element.Font.italic
+                    , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                    , Element.clip
+                    ]
+                  <|
+                    Element.el
+                        [ Element.centerY
+                        , Element.width Element.fill
+                        , Element.Font.center
+                        ]
+                    <|
+                        Element.text text
+                , Element.el
+                    [ Element.width <| Element.fillPortion 90
+                    , Element.height Element.fill
+                    , Element.alignRight
+                    ]
+                    Element.none
+                ]
 
 
 elementStatus : Http.Extra.Status -> Element.Element Message
