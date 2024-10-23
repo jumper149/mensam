@@ -18,6 +18,7 @@
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
+            "justgook/elm-image": "5.0.0",
             "justinmimbs/time-extra": "1.2.0",
             "justinmimbs/timezone-data": "10.1.1",
             "mdgriffith/elm-ui": "1.1.8",
@@ -35,7 +36,6 @@
             "elm/virtual-dom": "1.0.3",
             "elm-community/list-extra": "8.7.0",
             "folkertdev/elm-flate": "2.0.5",
-            "justgook/elm-image": "5.0.0",
             "justinmimbs/date": "4.1.0"
         }
     },

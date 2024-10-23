@@ -2022,6 +2022,16 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
+                Mensam.Screen.Space.Users.DownloadQRCodePng input ->
+                    case model.screen of
+                        ScreenSpaceUsers _ ->
+                            ( MkModel model
+                            , Mensam.Screen.Space.Users.downloadQRCode input
+                            )
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
         MessageSpaceUsers (Mensam.Screen.Space.Users.Messages ms) ->
             case model.screen of
                 ScreenSpaceUsers _ ->

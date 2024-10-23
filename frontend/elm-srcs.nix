@@ -60,6 +60,11 @@
         version = "1.0.0";
       };
 
+      "justgook/elm-image" = {
+        sha256 = "182x1yvd143g4r8kk75qnwf3sjs8lgkxqv5s94jn316avic4s0ja";
+        version = "5.0.0";
+      };
+
       "justinmimbs/time-extra" = {
         sha256 = "1innw81fv3cfdx40rggzr4b6lvv6r28prar2b9i5a7isy00yagkw";
         version = "1.2.0";
@@ -133,11 +138,6 @@
       "folkertdev/elm-flate" = {
         sha256 = "1an9ps405l1rv8xyzkn1chbs1wx0ymlws5lhxad9rl8rr4am9wgm";
         version = "2.0.5";
-      };
-
-      "justgook/elm-image" = {
-        sha256 = "182x1yvd143g4r8kk75qnwf3sjs8lgkxqv5s94jn316avic4s0ja";
-        version = "5.0.0";
       };
 
       "justinmimbs/date" = {

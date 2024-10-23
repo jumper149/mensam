@@ -6,7 +6,9 @@ import Element.Background
 import Element.Border
 import Element.Events.Pointer
 import Element.Font
+import File.Download
 import Html.Attributes
+import Image
 import List.Extra
 import Mensam.Api.PictureDownload
 import Mensam.Api.Profile
@@ -925,30 +927,51 @@ element baseUrl model =
                                 ]
                             , Element.el
                                 [ Element.width <| Element.px 270
-                                , Element.height <| Element.px 270
+                                , Element.height <| Element.px 310
                                 , Element.centerX
                                 , Element.centerY
                                 ]
                               <|
                                 case QRCode.fromString popupModel.url of
                                     Ok qrcode ->
-                                        Element.el
-                                            [ Element.width <| Element.px 270
-                                            , Element.height <| Element.px 270
-                                            , Element.centerX
+                                        Element.column
+                                            [ Element.width Element.fill
                                             , Element.centerY
-                                            , Element.Border.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
-                                            , Element.Border.width 6
-                                            , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                            , Element.spacing 10
                                             ]
-                                        <|
-                                            Element.html <|
-                                                QRCode.toSvg [] qrcode
+                                            [ Element.el
+                                                [ Element.width <| Element.px 270
+                                                , Element.height <| Element.px 270
+                                                , Element.centerX
+                                                , Element.Border.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                                , Element.Border.width 6
+                                                , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                                ]
+                                              <|
+                                                Element.html <|
+                                                    QRCode.toSvg [] qrcode
+                                            , Mensam.Element.Button.button <|
+                                                Mensam.Element.Button.MkButton
+                                                    { attributes = [ Element.centerX ]
+                                                    , color = Mensam.Element.Button.Blue
+                                                    , enabled = True
+                                                    , label = Element.text "Download QR-Code as File"
+                                                    , message =
+                                                        Just <|
+                                                            MessageEffect <|
+                                                                DownloadQRCodePng
+                                                                    { qrcode = qrcode
+                                                                    , filename = "mensam_invite-" ++ Mensam.Space.identifierToString model.spaceId ++ ".png"
+                                                                    }
+                                                    , size = Mensam.Element.Button.Small
+                                                    }
+                                            ]
 
                                     Err error ->
                                         Element.paragraph
                                             [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
                                             , Element.Font.justify
+                                            , Element.centerY
                                             ]
                                             [ Element.text "Encountered an error while creating the QR-Code: "
                                             , Element.text <|
@@ -1214,6 +1237,10 @@ type MessageEffect
     | ReturnToSpace
     | OpenPageToProfile Mensam.User.Identifier
     | OpenPageSpaceRoles Mensam.Space.Identifier
+    | DownloadQRCodePng
+        { qrcode : QRCode.QRCode
+        , filename : String
+        }
 
 
 spaceView : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
@@ -1428,3 +1455,8 @@ kickUser baseUrl jwt spaceId userId =
                         ReportError <|
                             Mensam.Error.message "Failed to kick user" <|
                                 Mensam.Error.http error
+
+
+downloadQRCode : { qrcode : QRCode.QRCode, filename : String } -> Cmd msg
+downloadQRCode input =
+    File.Download.bytes input.filename "image/png" <| Image.toPng <| QRCode.toImage input.qrcode
