@@ -9,7 +9,7 @@
 
 * Backend.
   ** [x] Send email on successful reservations.
-  ** [ ] `/space/view` route should return 404 when there is no such space.
+  ** [x] `/space/view` route should return 404 when there is no such space.
   ** [ ] File uploads.
     *** [x] Profile pictures.
     *** [x] Space pictures.
@@ -18,26 +18,25 @@
 
 * Frontend.
   ** [ ] Improve Dashboard UI.
-    *** [ ] Create space on dashboard.
+    *** [x] Create space on dashboard.
       **** When there are no space memberships there should be a big button to create a new space.
   ** [ ] Improve user settings UI.
-  ** [ ] Add editor for room layout.
   ** [ ] Improve look of user preview for users without `edit-user` permission.
   ** [ ] Add loading screen to HTML wrapper for frontend.
     *** This is harder than expected. Is it possible to start Elm from JS directly?
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
-  ** [ ] Add QR code generator for URLs to join space.
+  ** [x] Add QR code generator for URLs to join space.
   ** [ ] Light/Dark mode.
   ** [ ] Factor out duplicate code (buttons, styling and so on).
     *** [x] Buttons
   ** [ ] Automatically add desks when creating a space.
     *** This could be achieved with a selector of how many desks you want and then adding default desks.
-  ** [ ] Title in header will cut off titles that are too long. This looks broken. Maybe add "...".
+  ** [ ] Title in header will cut off titles that are too long. This looks broken. Maybe add ellipsis "...".
   ** [ ] Error messages are shitty. These should popup immediately to tell the user something is wrong.
     *** Maybe we want non-error popups as well.
   ** [ ] Filter "Your Reservations".
     *** [ ] Filter by space.
-  ** [ ] Show more info for spaces in "Your Dashboard" and "Browse Spaces"
+  ** [x] Show more info for spaces in "Your Dashboard" and "Browse Spaces"
     *** [ ] City.
     *** more?
 
@@ -51,13 +50,20 @@
   ** [ ] justinmimbs/timezone-data for Elm.
   ** [ ] Matching IANA database versions.
 
+* [x] Space invites.
+  ** [x] Create invite URLs.
+  ** [x] Sign in/up without redirect to login page.
+
 * Rooms.
   ** [ ] Desks can be assigned to rooms.
+    *** Desk location will always refer to the assigned room.
+    *** Can desks have a location without a room? Probably not.
   ** [ ] Whole rooms can be booked.
     *** [ ] Rooms can only be booked when no desk in the room is already booked.
     *** [ ] Booked rooms block all desks inside that room.
   ** [ ] Rooms are displayed nicely in the 2D room view.
-  ** [ ] Rooms are editable independently of desks.
+  ** [ ] Rooms can be edited independently of desks.
+  ** [ ] Add editor for room layout.
 
 * Smart desk assignment.
   ** Users can choose to reserve any desk (not a specific one).
