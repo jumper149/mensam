@@ -2,6 +2,7 @@
 
 * Frontend
   ** Add button to dashboard to create an initial space.
+  ** Added QR-Code invite generation.
 
 == `0.13.2.0`
 

@@ -23,6 +23,7 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Url
 import Mensam.User
+import QRCode
 import Url.Builder
 
 
@@ -74,6 +75,9 @@ type PopupModel
         { role : Maybe Mensam.Space.Role.Identifier
         , selected : Maybe Int
         , password : Maybe String
+        }
+    | PopupInviteQRCode
+        { url : String
         }
 
 
@@ -873,15 +877,121 @@ element baseUrl model =
                                         , size = Mensam.Element.Button.Small
                                         }
                                 ]
-                            , Mensam.Element.Button.button <|
-                                Mensam.Element.Button.MkButton
-                                    { attributes = [ Element.width Element.fill, Element.alignBottom ]
-                                    , color = Mensam.Element.Button.Gray
-                                    , enabled = True
-                                    , label = Element.text "Go back"
-                                    , message = Just <| MessagePure <| CloseDialogToInvite
-                                    , size = Mensam.Element.Button.Medium
-                                    }
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill, Element.alignBottom ]
+                                        , color = Mensam.Element.Button.Gray
+                                        , enabled = True
+                                        , label = Element.text "Go back"
+                                        , message = Just <| MessagePure <| CloseDialogToInvite
+                                        , size = Mensam.Element.Button.Medium
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill, Element.alignBottom ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
+                                        , label = Element.text "Show QR-Code"
+                                        , message = Just <| MessagePure <| OpenDialogToInviteQRCode inviteUrl
+                                        , size = Mensam.Element.Button.Medium
+                                        }
+                                ]
+                            ]
+
+                Just (PopupInviteQRCode popupModel) ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "QR-Code Invite"
+                            , Element.paragraph
+                                [ Element.alignTop
+                                , Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                , Element.Font.justify
+                                ]
+                                [ Element.text "Use this QR-Code to invite anyone to this space."
+                                ]
+                            , Element.el
+                                [ Element.width <| Element.px 270
+                                , Element.height <| Element.px 270
+                                , Element.centerX
+                                , Element.centerY
+                                ]
+                              <|
+                                case QRCode.fromString popupModel.url of
+                                    Ok qrcode ->
+                                        Element.el
+                                            [ Element.width <| Element.px 270
+                                            , Element.height <| Element.px 270
+                                            , Element.centerX
+                                            , Element.centerY
+                                            , Element.Border.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                            , Element.Border.width 6
+                                            , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                            ]
+                                        <|
+                                            Element.html <|
+                                                QRCode.toSvg [] qrcode
+
+                                    Err error ->
+                                        Element.paragraph
+                                            [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                            , Element.Font.justify
+                                            ]
+                                            [ Element.text "Encountered an error while creating the QR-Code: "
+                                            , Element.text <|
+                                                case error of
+                                                    QRCode.AlignmentPatternNotFound ->
+                                                        "Alignment Pattern Not Found"
+
+                                                    QRCode.InvalidNumericChar ->
+                                                        "Invalid Numeric Char"
+
+                                                    QRCode.InvalidAlphanumericChar ->
+                                                        "Invalid Alphanumeric Char"
+
+                                                    QRCode.InvalidUTF8Char ->
+                                                        "Invalid UTF-8 Char"
+
+                                                    QRCode.LogTableException n ->
+                                                        "Log Table Exception: " ++ String.fromInt n
+
+                                                    QRCode.PolynomialMultiplyException ->
+                                                        "Polynomial Multiply Exception"
+
+                                                    QRCode.PolynomialModException ->
+                                                        "Polynomial Mod Exception"
+
+                                                    QRCode.InputLengthOverflow ->
+                                                        "Input Length Overflow"
+                                            ]
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill, Element.alignBottom ]
+                                        , color = Mensam.Element.Button.Gray
+                                        , enabled = True
+                                        , label = Element.text "Go back"
+                                        , message = Just <| MessagePure CloseDialogToInviteQRCode
+                                        , size = Mensam.Element.Button.Medium
+                                        }
+                                ]
                             ]
         , closePopup = MessagePure ClosePopup
         }
@@ -938,6 +1048,8 @@ type MessagePure
     | CloseDialogToKick
     | OpenDialogToInvite
     | CloseDialogToInvite
+    | OpenDialogToInviteQRCode String
+    | CloseDialogToInviteQRCode
 
 
 updatePure : Mensam.Url.BaseUrl -> MessagePure -> Model -> Model
@@ -1035,6 +1147,9 @@ updatePure baseUrl message model =
                 Just (PopupInvite popupModel) ->
                     { model | popup = Just <| PopupInvite { popupModel | selected = maybeN } }
 
+                Just (PopupInviteQRCode popupModel) ->
+                    { model | popup = Just <| PopupInviteQRCode popupModel }
+
         ChooseNewRole roleId ->
             case model.popup of
                 Nothing ->
@@ -1049,6 +1164,9 @@ updatePure baseUrl message model =
                 Just (PopupInvite popupModel) ->
                     { model | popup = Just <| PopupInvite { popupModel | role = Just roleId } }
 
+                Just (PopupInviteQRCode popupModel) ->
+                    { model | popup = Just <| PopupInviteQRCode popupModel }
+
         CloseDialogToEditUser ->
             { model | popup = Nothing }
 
@@ -1062,7 +1180,7 @@ updatePure baseUrl message model =
             { model
                 | popup =
                     Just <|
-                        PopupInvite <|
+                        PopupInvite
                             { password = Nothing
                             , role = Nothing
                             , selected = Nothing
@@ -1070,6 +1188,18 @@ updatePure baseUrl message model =
             }
 
         CloseDialogToInvite ->
+            { model | popup = Nothing }
+
+        OpenDialogToInviteQRCode url ->
+            { model
+                | popup =
+                    Just <|
+                        PopupInviteQRCode
+                            { url = url
+                            }
+            }
+
+        CloseDialogToInviteQRCode ->
             { model | popup = Nothing }
 
 

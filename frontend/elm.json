@@ -22,14 +22,20 @@
             "justinmimbs/timezone-data": "10.1.1",
             "mdgriffith/elm-ui": "1.1.8",
             "mpizenberg/elm-pointer-events": "5.0.0",
+            "pablohirafuji/elm-qrcode": "4.0.2",
             "rtfeldman/elm-iso8601-date-strings": "1.1.4",
             "truqu/elm-base64": "2.0.4",
             "zwilias/elm-rosetree": "1.5.0"
         },
         "indirect": {
+            "avh4/elm-color": "1.0.0",
+            "danfishgold/base64-bytes": "1.1.0",
             "elm/parser": "1.1.0",
             "elm/regex": "1.0.0",
             "elm/virtual-dom": "1.0.3",
+            "elm-community/list-extra": "8.7.0",
+            "folkertdev/elm-flate": "2.0.5",
+            "justgook/elm-image": "5.0.0",
             "justinmimbs/date": "4.1.0"
         }
     },

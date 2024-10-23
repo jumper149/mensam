@@ -80,6 +80,11 @@
         version = "5.0.0";
       };
 
+      "pablohirafuji/elm-qrcode" = {
+        sha256 = "0584n7hgyd5v4ihkz67jshr2jrdxpppfm7c5svc5lcl043zlq32g";
+        version = "4.0.2";
+      };
+
       "rtfeldman/elm-iso8601-date-strings" = {
         sha256 = "1ah491kgyicgvy1c9myylqvhzb7ya9kgmn0hcsv23ymvqgaf6b1a";
         version = "1.1.4";
@@ -95,6 +100,21 @@
         version = "1.5.0";
       };
 
+      "avh4/elm-color" = {
+        sha256 = "0n16wnvp87x9az3m5qjrl6smsg7051m719xn5d244painx8xmpzq";
+        version = "1.0.0";
+      };
+
+      "danfishgold/base64-bytes" = {
+        sha256 = "1xw4kq7r4zpx484wcnwwkcgzmr4wdxsv3i0j90ynnrjc68ydwgj1";
+        version = "1.1.0";
+      };
+
+      "elm-community/list-extra" = {
+        sha256 = "02grd0p5hc2gvdy4n723d1s28pm1grn95jrzic6jcgb26qh16vcc";
+        version = "8.7.0";
+      };
+
       "elm/parser" = {
         sha256 = "0a3cxrvbm7mwg9ykynhp7vjid58zsw03r63qxipxp3z09qks7512";
         version = "1.1.0";
@@ -108,6 +128,16 @@
       "elm/virtual-dom" = {
         sha256 = "1yvb8px2z62xd578ag2q0r5hd1vkz9y7dfkx05355iiy1d7jwq4v";
         version = "1.0.3";
+      };
+
+      "folkertdev/elm-flate" = {
+        sha256 = "1an9ps405l1rv8xyzkn1chbs1wx0ymlws5lhxad9rl8rr4am9wgm";
+        version = "2.0.5";
+      };
+
+      "justgook/elm-image" = {
+        sha256 = "182x1yvd143g4r8kk75qnwf3sjs8lgkxqv5s94jn316avic4s0ja";
+        version = "5.0.0";
       };
 
       "justinmimbs/date" = {
