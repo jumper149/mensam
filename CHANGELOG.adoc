@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.13.3.0`
+
 * Frontend
   ** Add button to dashboard to create an initial space.
   ** Added QR-Code invite generation.
