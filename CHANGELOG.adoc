@@ -1,5 +1,8 @@
 = Changelog
 
+* Frontend
+  ** Add button to dashboard to create an initial space.
+
 == `0.13.2.0`
 
 * Frontend

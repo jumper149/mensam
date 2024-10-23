@@ -1030,7 +1030,23 @@ update message (MkModel model) =
         MessageDashboard (Mensam.Screen.Dashboard.MessagePure m) ->
             case model.screen of
                 ScreenDashboard screenModel ->
-                    update EmptyMessage <| MkModel { model | screen = ScreenDashboard <| Mensam.Screen.Dashboard.updatePure m screenModel }
+                    update EmptyMessage <|
+                        MkModel
+                            { model
+                                | screen =
+                                    ScreenDashboard <|
+                                        Mensam.Screen.Dashboard.updatePure m
+                                            { timezone = model.time.zone
+                                            , username =
+                                                case model.authenticated of
+                                                    Mensam.Auth.SignedOut ->
+                                                        Nothing
+
+                                                    Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication auth) ->
+                                                        Maybe.map .name auth.user.info
+                                            }
+                                            screenModel
+                            }
 
                 _ ->
                     update (ReportError errorScreen) <| MkModel model
@@ -1123,6 +1139,32 @@ update message (MkModel model) =
 
                 Mensam.Screen.Dashboard.OpenPageToViewReservations ->
                     update (SetUrl RouteReservations) <| MkModel model
+
+                Mensam.Screen.Dashboard.SubmitCreateFirstSpace spaceInfo ->
+                    case model.authenticated of
+                        Mensam.Auth.SignedOut ->
+                            update (ReportError errorNoAuth) <| MkModel model
+
+                        Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
+                            case model.screen of
+                                ScreenDashboard _ ->
+                                    ( MkModel model
+                                    , Platform.Cmd.map MessageDashboard <|
+                                        Mensam.Screen.Dashboard.spaceCreate model.baseUrl
+                                            { jwt = jwt
+                                            , name = spaceInfo.name
+                                            , timezone = spaceInfo.timezone
+                                            , visibility =
+                                                if spaceInfo.visible then
+                                                    Mensam.Space.MkVisibilityVisible
+
+                                                else
+                                                    Mensam.Space.MkVisibilityHidden
+                                            }
+                                    )
+
+                                _ ->
+                                    update (ReportError errorScreen) <| MkModel model
 
         MessageDashboard (Mensam.Screen.Dashboard.Messages ms) ->
             case model.screen of

@@ -6,11 +6,13 @@ import Element.Background
 import Element.Border
 import Element.Events.Pointer
 import Element.Font
+import Element.Input
 import Html.Attributes
 import List.Extra
 import Mensam.Api.Profile
 import Mensam.Api.ReservationCancel
 import Mensam.Api.ReservationList
+import Mensam.Api.SpaceCreate
 import Mensam.Api.SpaceList
 import Mensam.Api.SpacePictureDownload
 import Mensam.Auth.Bearer
@@ -26,6 +28,7 @@ import Mensam.Space.Role
 import Mensam.Time
 import Mensam.Url
 import Mensam.User
+import Mensam.Widget.Timezone
 import Time
 
 
@@ -69,12 +72,25 @@ type alias Model =
     , timezone : Mensam.Time.Timezone
     , modelDateBegin : Mensam.Time.Date
     , modelDateEnd : Mensam.Time.Date
+    , enableButtonForInitWizard : Bool
     , popup : Maybe PopupModel
     }
 
 
 type PopupModel
     = PopupViewReservation Mensam.Reservation.Identifier
+    | PopupCreateFirstSpace
+        { name : Mensam.Space.Name
+        , timezone : Mensam.Time.Timezone
+        , visible : Bool
+        , timezonePicker : Maybe Mensam.Widget.Timezone.Model
+        }
+
+
+type alias MainModelAccess =
+    { timezone : Mensam.Time.Timezone
+    , username : Maybe Mensam.User.Name
+    }
 
 
 init : { time : { now : Time.Posix, zone : Mensam.Time.Timezone } } -> Model
@@ -105,6 +121,7 @@ init value =
     , timezone = value.time.zone
     , modelDateBegin = initialDateModel.begin
     , modelDateEnd = initialDateModel.end
+    , enableButtonForInitWizard = False
     , popup = Nothing
     }
 
@@ -162,6 +179,37 @@ element baseUrl model =
                         , Element.clipY
                         , Element.scrollbarY
                         , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
+                        , Element.inFront <|
+                            if model.enableButtonForInitWizard then
+                                Element.column
+                                    [ Element.spacing 10
+                                    , Element.centerY
+                                    , Element.width Element.fill
+                                    ]
+                                    [ Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.centerX ]
+                                            , enabled = True
+                                            , color = Mensam.Element.Button.Blue
+                                            , label = Element.text "Create new Space"
+                                            , message = Just <| MessagePure OpenDialogToCreate
+                                            , size = Mensam.Element.Button.Medium
+                                            }
+                                    , Element.paragraph
+                                        [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                        , Element.Font.center
+                                        , Element.width <| Element.px 300
+                                        , Element.centerX
+                                        , Element.paddingXY 40 0
+                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
+                                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                                        ]
+                                        [ Element.text "or join an existing space via a URL, QR-Code or by browsing public spaces"
+                                        ]
+                                    ]
+
+                            else
+                                Element.none
                         ]
                         { data = model.spaces
                         , columns =
@@ -667,6 +715,114 @@ element baseUrl model =
                                                 }
                                         ]
                                     ]
+
+                Just (PopupCreateFirstSpace popupModel) ->
+                    Just <|
+                        Element.column
+                            [ Element.spacing 20
+                            , Element.width Element.fill
+                            , Element.height Element.fill
+                            ]
+                            [ Element.el
+                                [ Element.Font.size 30
+                                , Element.Font.hairline
+                                ]
+                              <|
+                                Element.text "Create space"
+                            , Element.Input.text
+                                [ Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                ]
+                                { onChange = MessagePure << DialogToCreateEnterSpaceName << Mensam.Space.MkName
+                                , text = Mensam.Space.nameToString popupModel.name
+                                , placeholder = Just <| Element.Input.placeholder [] <| Element.text "Name"
+                                , label = Element.Input.labelAbove [] <| Element.text "Name"
+                                }
+                            , Element.column
+                                [ Element.width Element.fill
+                                ]
+                                [ Element.row [ Element.width Element.fill ]
+                                    [ Element.el [ Element.alignLeft, Element.alignBottom, Element.paddingXY 0 5 ] <| Element.text "Timezone"
+                                    , Mensam.Element.Button.button <|
+                                        Mensam.Element.Button.MkButton
+                                            { attributes = [ Element.alignRight, Element.alignBottom ]
+                                            , color = Mensam.Element.Button.Transparent
+                                            , enabled = True
+                                            , label = Element.text "Reset"
+                                            , message =
+                                                Just <|
+                                                    Messages
+                                                        [ MessagePure DialogToCreateTimezonePickerClose
+                                                        , MessagePure DialogToCreateSetTimezoneToLocalTimezone
+                                                        ]
+                                            , size = Mensam.Element.Button.Small
+                                            }
+                                    ]
+                                , case popupModel.timezonePicker of
+                                    Nothing ->
+                                        Mensam.Element.Button.button <|
+                                            Mensam.Element.Button.MkButton
+                                                { attributes = [ Element.width Element.fill ]
+                                                , color = Mensam.Element.Button.Yellow
+                                                , enabled = True
+                                                , label =
+                                                    Element.el
+                                                        [ Element.paddingXY 0 4
+                                                        ]
+                                                    <|
+                                                        Element.text <|
+                                                            Mensam.Time.timezoneToString popupModel.timezone
+                                                , message = Just <| MessagePure <| DialogToCreateTimezonePickerOpen
+                                                , size = Mensam.Element.Button.Small
+                                                }
+
+                                    Just timezonePickerModel ->
+                                        Element.el
+                                            [ Element.width <| Element.px 250
+                                            ]
+                                        <|
+                                            Element.map (MessagePure << DialogToCreateTimezonePickerMessage) <|
+                                                Mensam.Widget.Timezone.elementPickTimezone timezonePickerModel
+                                ]
+                            , Element.paragraph
+                                [ Element.alignBottom
+                                , Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                , Element.Font.justify
+                                ]
+                                [ Element.text "You will be able to add desks later on. "
+                                , Element.text "Create this new space now?"
+                                ]
+                            , Element.row
+                                [ Element.width Element.fill
+                                , Element.spacing 10
+                                , Element.alignBottom
+                                ]
+                                [ Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Gray
+                                        , enabled = True
+                                        , label = Element.text "Abort"
+                                        , message = Just <| MessagePure <| CloseDialogToCreate
+                                        , size = Mensam.Element.Button.Medium
+                                        }
+                                , Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.width Element.fill ]
+                                        , color = Mensam.Element.Button.Blue
+                                        , enabled = True
+                                        , label = Element.text "Submit"
+                                        , message =
+                                            Just <|
+                                                MessageEffect <|
+                                                    SubmitCreateFirstSpace
+                                                        { name = popupModel.name
+                                                        , timezone = popupModel.timezone
+                                                        , visible = popupModel.visible
+                                                        }
+                                        , size = Mensam.Element.Button.Medium
+                                        }
+                                ]
+                            ]
         , closePopup = MessagePure ClosePopup
         }
 
@@ -724,10 +880,18 @@ type MessagePure
     | SetHoveringReservation (Maybe Int)
     | ChooseReservation Mensam.Reservation.Identifier
     | ClosePopup
+    | EnableButtonForInitWizard Bool
+    | OpenDialogToCreate
+    | CloseDialogToCreate
+    | DialogToCreateEnterSpaceName Mensam.Space.Name
+    | DialogToCreateSetTimezoneToLocalTimezone
+    | DialogToCreateTimezonePickerOpen
+    | DialogToCreateTimezonePickerClose
+    | DialogToCreateTimezonePickerMessage Mensam.Widget.Timezone.Message
 
 
-updatePure : MessagePure -> Model -> Model
-updatePure message model =
+updatePure : MessagePure -> MainModelAccess -> Model -> Model
+updatePure message mainModel model =
     case message of
         SetSpaces spaces ->
             { model | spaces = spaces }
@@ -771,6 +935,110 @@ updatePure message model =
         ClosePopup ->
             { model | popup = Nothing }
 
+        EnableButtonForInitWizard enable ->
+            { model | enableButtonForInitWizard = enable }
+
+        OpenDialogToCreate ->
+            { model
+                | popup =
+                    Just <|
+                        PopupCreateFirstSpace
+                            { name =
+                                case mainModel.username of
+                                    Nothing ->
+                                        Mensam.Space.MkName ""
+
+                                    Just username ->
+                                        Mensam.Space.MkName <| Mensam.User.nameToString username ++ "'s Space"
+                            , timezone = mainModel.timezone
+                            , visible = False
+                            , timezonePicker = Nothing
+                            }
+            }
+
+        CloseDialogToCreate ->
+            { model | popup = Nothing }
+
+        DialogToCreateEnterSpaceName name ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupViewReservation _) ->
+                    model
+
+                Just (PopupCreateFirstSpace popupModel) ->
+                    { model | popup = Just <| PopupCreateFirstSpace { popupModel | name = name } }
+
+        DialogToCreateSetTimezoneToLocalTimezone ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupViewReservation _) ->
+                    model
+
+                Just (PopupCreateFirstSpace popupModel) ->
+                    { model
+                        | popup =
+                            Just <|
+                                PopupCreateFirstSpace
+                                    { popupModel
+                                        | timezone = mainModel.timezone
+                                    }
+                    }
+
+        DialogToCreateTimezonePickerOpen ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupViewReservation _) ->
+                    model
+
+                Just (PopupCreateFirstSpace popupModel) ->
+                    { model | popup = Just <| PopupCreateFirstSpace { popupModel | timezonePicker = Just <| Mensam.Widget.Timezone.init popupModel.timezone } }
+
+        DialogToCreateTimezonePickerClose ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupViewReservation _) ->
+                    model
+
+                Just (PopupCreateFirstSpace popupModel) ->
+                    case popupModel.timezonePicker of
+                        Nothing ->
+                            model
+
+                        Just (Mensam.Widget.Timezone.MkModel timezonePickerModel) ->
+                            { model | popup = Just <| PopupCreateFirstSpace { popupModel | timezone = timezonePickerModel.selected, timezonePicker = Nothing } }
+
+        DialogToCreateTimezonePickerMessage msg ->
+            case model.popup of
+                Nothing ->
+                    model
+
+                Just (PopupViewReservation _) ->
+                    model
+
+                Just (PopupCreateFirstSpace popupModel) ->
+                    case popupModel.timezonePicker of
+                        Nothing ->
+                            model
+
+                        Just timezonePickerModel ->
+                            case msg of
+                                Mensam.Widget.Timezone.Select _ ->
+                                    updatePure
+                                        DialogToCreateTimezonePickerClose
+                                        mainModel
+                                        { model | popup = Just <| PopupCreateFirstSpace { popupModel | timezonePicker = Just <| Mensam.Widget.Timezone.update msg timezonePickerModel } }
+
+                                Mensam.Widget.Timezone.Hover _ ->
+                                    { model | popup = Just <| PopupCreateFirstSpace { popupModel | timezonePicker = Just <| Mensam.Widget.Timezone.update msg timezonePickerModel } }
+
 
 type MessageEffect
     = ReportError Mensam.Error.Error
@@ -780,6 +1048,11 @@ type MessageEffect
     | ChooseSpace Mensam.Space.Identifier
     | RefreshReservations
     | CancelReservation Mensam.Reservation.Identifier
+    | SubmitCreateFirstSpace
+        { name : Mensam.Space.Name
+        , timezone : Mensam.Time.Timezone
+        , visible : Bool
+        }
     | OpenPageToBrowseSpaces
     | OpenPageToViewReservations
 
@@ -790,20 +1063,26 @@ spaceList baseUrl jwt =
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceList.Success value) ->
-                    Messages <|
-                        (MessagePure <| SetSpaces value.spaces)
-                            :: (List.map
-                                    (\space ->
-                                        MessageEffect <|
-                                            RefreshOwnerName
-                                                { space = space.id
-                                                , owner = space.owner
-                                                }
-                                    )
-                                    value.spaces
-                                    ++ List.map (\space -> MessageEffect <| RefreshSpacePicture space.id)
-                                        value.spaces
-                               )
+                    case value.spaces of
+                        [] ->
+                            MessagePure <| EnableButtonForInitWizard True
+
+                        _ ->
+                            Messages <|
+                                (MessagePure <| EnableButtonForInitWizard False)
+                                    :: (MessagePure <| SetSpaces value.spaces)
+                                    :: (List.map
+                                            (\space ->
+                                                MessageEffect <|
+                                                    RefreshOwnerName
+                                                        { space = space.id
+                                                        , owner = space.owner
+                                                        }
+                                            )
+                                            value.spaces
+                                            ++ List.map (\space -> MessageEffect <| RefreshSpacePicture space.id)
+                                                value.spaces
+                                       )
 
                 Ok (Mensam.Api.SpaceList.ErrorBody error) ->
                     MessageEffect <|
@@ -971,6 +1250,46 @@ reservationCancel baseUrl argument =
                     MessageEffect <|
                         ReportError <|
                             Mensam.Error.message "Requesting reservations failed" <|
+                                Mensam.Error.http error
+
+
+spaceCreate :
+    Mensam.Url.BaseUrl
+    ->
+        { jwt : Mensam.Auth.Bearer.Jwt
+        , name : Mensam.Space.Name
+        , timezone : Mensam.Time.Timezone
+        , visibility : Mensam.Space.Visibility
+        }
+    -> Cmd Message
+spaceCreate baseUrl req =
+    Mensam.Api.SpaceCreate.request baseUrl req <|
+        \result ->
+            case result of
+                Ok (Mensam.Api.SpaceCreate.Success _) ->
+                    Messages
+                        [ MessagePure CloseDialogToCreate
+                        , MessageEffect RefreshSpaces
+                        ]
+
+                Ok (Mensam.Api.SpaceCreate.ErrorBody error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Creating space failed" <|
+                                Mensam.Error.message "Bad request body" <|
+                                    Mensam.Error.message error <|
+                                        Mensam.Error.undefined
+
+                Ok (Mensam.Api.SpaceCreate.ErrorAuth error) ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Creating space failed" <|
+                                Mensam.Auth.Bearer.error error
+
+                Err error ->
+                    MessageEffect <|
+                        ReportError <|
+                            Mensam.Error.message "Creating space failed" <|
                                 Mensam.Error.http error
 
 
