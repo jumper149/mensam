@@ -3,10 +3,10 @@
   "automatically created by": "elm-review suppress",
   "learn more": "elm-review suppress --help",
   "suppressions": [
-    { "count": 2, "filePath": "source/Mensam/Error.elm" },
-    { "count": 2, "filePath": "source/Mensam/User.elm" },
-    { "count": 1, "filePath": "source/Mensam/Reservation.elm" },
-    { "count": 1, "filePath": "source/Mensam/Svg/Color.elm" },
-    { "count": 1, "filePath": "source/Mensam/Time.elm" }
+    { "count": 2, "filePath": "src/Mensam/Error.elm" },
+    { "count": 2, "filePath": "src/Mensam/User.elm" },
+    { "count": 1, "filePath": "src/Mensam/Reservation.elm" },
+    { "count": 1, "filePath": "src/Mensam/Svg/Color.elm" },
+    { "count": 1, "filePath": "src/Mensam/Time.elm" }
   ]
 }

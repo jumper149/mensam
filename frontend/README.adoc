@@ -11,7 +11,7 @@ Use `elm-format` to format Elm.
 [source,bash]
 ----
 # Format Elm.
-elm-format --yes source
+elm-format --yes src
 ----
 
 === Linting
