@@ -3,10 +3,7 @@
 { "name": "mensam-devcontainer"
 , "dockerFile": "Dockerfile"
 , "context": "${localWorkspaceFolder}"
-, "onCreateCommand":
-  { "cache-dependencies": "nix flake check --print-build-logs"
-  , "fix-cabal": "nix develop --print-build-logs --command cabal update"
-  }
+, "onCreateCommand": "nix develop --print-build-logs --command cabal update"
 , "customizations" :
   { "vscode":
     { "extensions":
