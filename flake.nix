@@ -69,6 +69,8 @@
         name = "mensam-devcontainer";
         fromImage = docker-nixpkgs-pkgs.docker-nixpkgs.devcontainer;
         contents = [
+          pkgs.cacert
+          pkgs.direnv
           (writeTextFile {
             name = "nix.conf";
             destination = "/etc/nix/nix.conf";
@@ -79,7 +81,6 @@
               trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= jumper149-mensam.cachix.org-1:9502wAOm00GdLxZM8uTE4goaBGCpHb+d1jUt3dhR8ZM=
             '';
           })
-          pkgs.direnv
         ];
       };
 

@@ -1,1 +1,1 @@
-FROM mensam-devcontainer:b5hxn1ahyrc5wj27d60h5c3wq1wxfgrr
+FROM mensam-devcontainer:d6iyf3c7kgnkxjn8i03m8j8cfas8h0b5
