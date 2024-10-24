@@ -1,2 +1,1 @@
-FROM ghcr.io/xtruder/nix-devcontainer:v1
-COPY .devcontainer/nix.conf /etc/nix/
+FROM mensam-devcontainer:b5hxn1ahyrc5wj27d60h5c3wq1wxfgrr

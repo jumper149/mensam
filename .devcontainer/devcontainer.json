@@ -1,44 +1,25 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json or the definition README at
 // https://github.com/microsoft/vscode-dev-containers/tree/master/containers/docker-existing-dockerfile
-{ "name": "devcontainer-project"
+{ "name": "mensam-devcontainer"
 , "dockerFile": "Dockerfile"
 , "context": "${localWorkspaceFolder}"
-, "build":
-  { "args":
-    { "USER_UID": "${localEnv:USER_UID}"
-    , "USER_GID": "${localEnv:USER_GID}"
+, "onCreateCommand":
+  { "cache-dependencies": "nix flake check --print-build-logs"
+  , "fix-cabal": "nix develop --print-build-logs --command cabal update"
+  }
+, "customizations" :
+  { "vscode":
+    { "extensions":
+      [ "asciidoctor.asciidoctor-vscode"
+      , "elmTooling.elm-ls-vscode"
+      , "haskell.haskell"
+      , "mkhl.direnv"
+      ]
+    , "settings":
+      { "direnv.path.executable": "/bin/direnv"
+      , "haskell.formattingProvider": "fourmolu"
+      , "haskell.manageHLS": "PATH"
+      }
     }
   }
-
-  // Run arguments passed to docker.
-, "runArgs":
-  [ "--security-opt"
-  , "label=disable"
-  ]
-
-, "containerEnv":
-  { "PRELOAD_EXTENSIONS": "mkhl.direnv"
-  }
-
-  // Disable command overriding and updating remote user ID.
-, "overrideCommand": false
-, "userEnvProbe": "loginShell"
-, "updateRemoteUserUID": false
-
-  // Cache the development environment in the devcontainer image.
-, "onCreateCommand": "nix-shell --command 'echo Hello from the development environment!'"
-
-  // Add the IDs of extensions you want installed when the container is created.
-, "extensions":
-  [ "asciidoctor.asciidoctor-vscode"
-  , "elmTooling.elm-ls-vscode"
-  , "haskell.haskell"
-  , "mkhl.direnv"
-  ]
-
-  // Use 'forwardPorts' to make a list of ports inside the container available locally.
-, "forwardPorts": []
-
-  // Use 'postCreateCommand' to run commands after the container is created.
-  //, "postCreateCommand": "go version"
 }
