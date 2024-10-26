@@ -1,1 +1,1 @@
-FROM mensam-devcontainer:d6iyf3c7kgnkxjn8i03m8j8cfas8h0b5
+FROM mensam-devcontainer:liq2y17492djmqifrijf5x1rsy0a3lkg

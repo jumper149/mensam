@@ -72,6 +72,14 @@
           pkgs.cacert
           pkgs.direnv
           (writeTextFile {
+            name = "direnv.toml";
+            destination = "/root/.config/direnv/direnv.toml";
+            text = ''
+              [whitelist]
+                prefix = [ "/" ]
+            '';
+          })
+          (writeTextFile {
             name = "nix.conf";
             destination = "/etc/nix/nix.conf";
             text = ''
