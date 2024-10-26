@@ -71,6 +71,14 @@
         contents = [
           pkgs.cacert
           pkgs.direnv
+          pkgs.nix-direnv
+          (writeTextFile {
+            name = "direnvrc";
+            destination = "/root/.config/direnv/direnvrc";
+            text = ''
+              source /share/nix-direnv/direnvrc
+            '';
+          })
           (writeTextFile {
             name = "direnv.toml";
             destination = "/root/.config/direnv/direnv.toml";
