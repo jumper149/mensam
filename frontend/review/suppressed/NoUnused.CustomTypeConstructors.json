@@ -3,11 +3,11 @@
   "automatically created by": "elm-review suppress",
   "learn more": "elm-review suppress --help",
   "suppressions": [
-    { "count": 8, "filePath": "src/Mensam/Element/Font.elm" },
-    { "count": 1, "filePath": "src/Mensam/Api/Login.elm" },
-    { "count": 1, "filePath": "src/Mensam/Element/Color.elm" },
-    { "count": 1, "filePath": "src/Mensam/NameOrIdentifier.elm" },
-    { "count": 1, "filePath": "src/Mensam/Screen/PrivacyPolicy.elm" },
-    { "count": 1, "filePath": "src/Mensam/Screen/TermsAndConditions.elm" }
+    { "count": 8, "filePath": "source/Mensam/Element/Font.elm" },
+    { "count": 1, "filePath": "source/Mensam/Api/Login.elm" },
+    { "count": 1, "filePath": "source/Mensam/Element/Color.elm" },
+    { "count": 1, "filePath": "source/Mensam/NameOrIdentifier.elm" },
+    { "count": 1, "filePath": "source/Mensam/Screen/PrivacyPolicy.elm" },
+    { "count": 1, "filePath": "source/Mensam/Screen/TermsAndConditions.elm" }
   ]
 }

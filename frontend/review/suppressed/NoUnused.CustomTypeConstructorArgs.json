@@ -3,9 +3,9 @@
   "automatically created by": "elm-review suppress",
   "learn more": "elm-review suppress --help",
   "suppressions": [
-    { "count": 1, "filePath": "src/Mensam/Api/DeskCreate.elm" },
-    { "count": 1, "filePath": "src/Mensam/Api/ReservationCreate.elm" },
-    { "count": 1, "filePath": "src/Mensam/Api/RoleCreate.elm" },
-    { "count": 1, "filePath": "src/Mensam/Api/SpaceCreate.elm" }
+    { "count": 1, "filePath": "source/Mensam/Api/DeskCreate.elm" },
+    { "count": 1, "filePath": "source/Mensam/Api/ReservationCreate.elm" },
+    { "count": 1, "filePath": "source/Mensam/Api/RoleCreate.elm" },
+    { "count": 1, "filePath": "source/Mensam/Api/SpaceCreate.elm" }
   ]
 }
