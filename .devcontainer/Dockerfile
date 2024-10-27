@@ -1,1 +1,1 @@
-FROM jumper149/mensam-devcontainer:f816ba78f0a30a9afcaf5ac67af511f6c6706470
+FROM jumper149/mensam-devcontainer:32787e8deb415605ec8c372e14c2e278a4ccef60
