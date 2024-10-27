@@ -4,6 +4,7 @@
 , "dockerFile": "Dockerfile"
 , "context": "${localWorkspaceFolder}"
 , "onCreateCommand": "nix develop --print-build-logs --command cabal update"
+, "overrideCommand": false // Run CMD and ENTRYPOINT from Docker image
 , "customizations" :
   { "vscode":
     { "extensions":

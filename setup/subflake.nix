@@ -30,7 +30,8 @@
       name = "mensam-devcontainer";
       fromImage = docker-nixpkgs-pkgs.docker-nixpkgs.devcontainer;
       contents = [
-        pkgs.cacert
+        pkgs.bashInteractive
+        pkgs.bash-completion
         pkgs.direnv
         pkgs.nix-direnv
         (writeTextFile {
@@ -48,6 +49,12 @@
               prefix = [ "/" ]
           '';
         })
+        pkgs.git
+        (writeTextFile {
+          name = "bashrc";
+          destination = "/etc/bashrc";
+          text = builtins.readFile ./bashrc;
+        })
         (writeTextFile {
           name = "nix.conf";
           destination = "/etc/nix/nix.conf";
@@ -58,7 +65,28 @@
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= jumper149-mensam.cachix.org-1:9502wAOm00GdLxZM8uTE4goaBGCpHb+d1jUt3dhR8ZM=
           '';
         })
+        (pkgs.writeTextFile {
+          name = "docker-entrypoint.sh";
+          destination = "/etc/docker-entrypoint.sh";
+          executable = true;
+          text = ''
+            #!/bin/bash
+
+            # GitHub Codespaces fix: https://github.com/xtruder/nix-devcontainer/blob/42d11ec3fdac6cda5342b4dc83adbcb54d587038/src/docker-entrypoint.sh#L3
+            if [ "$\{CODESPACES\}" = true ]; then
+              # vscode codespaces set default permissions on /tmp. These will
+              # produce invalid permissions on files built with nix. This fix
+              # removes default permissions set on /tmp
+              sudo setfacl --remove-default /tmp
+            fi
+
+            sleep infinity
+          '';
+        })
       ];
+      config = {
+        Entrypoint = [ "/etc/docker-entrypoint.sh" ];
+      };
     };
 
 }
