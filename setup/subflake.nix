@@ -32,6 +32,7 @@
       contents = [
         pkgs.bashInteractive
         pkgs.bash-completion
+        pkgs.cacert
         pkgs.direnv
         pkgs.nix-direnv
         (writeTextFile {
