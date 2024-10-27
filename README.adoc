@@ -141,17 +141,10 @@ link:./final[Final]:: Configuration, wrapper and NixOS module
         └─────────────────────┘
 ----
 
-=== GitHub Codespaces
+=== Development Container
 
-You can use a GitHub Codespace to quickly spin up a development environment in your browser.
-
-A prebuilt devcontainer image is available for the `main` branch.
-This devcontainer includes a cached nix-shell.
-You can use the VSCode direnv extension to reload the nix-shell.
-
-* The direnv extension might require a restart to actually work.
-* The Haskell and Elm extensions might ask for a compiler or language server executable. Stick to the defaults. If anything seems to be missing in the environment, just reload the direnv extension.
-* The Haskell language server in particular takes quite a bit of time to start.
+VSCode supports devcontainers, which will allow you to quickly spin up a docker container with dependencies.
+Use the VSCode direnv extension to reload the dependencies.
 
 === Binary Cache
 
