@@ -11,12 +11,13 @@ import Mensam.Auth
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
+import Mensam.Time
 import Svg
 import Svg.Attributes
 
 
 type alias Content =
-    { errors : List Mensam.Error.Error
+    { errors : List { time : Mensam.Time.Timestamp, error : Mensam.Error.Error }
     , unfoldErrors : Bool
     , unfoldHamburgerDropDown : Bool
     , authenticated : Mensam.Auth.Model
@@ -164,7 +165,7 @@ elementHamburger unfoldDropDownMenu authenticated =
                     }
 
 
-elementErrors : List Mensam.Error.Error -> Bool -> Element.Element Message
+elementErrors : List { time : Mensam.Time.Timestamp, error : Mensam.Error.Error } -> Bool -> Element.Element Message
 elementErrors errors unfoldErrors =
     case errors of
         [] ->
@@ -218,7 +219,19 @@ elementErrors errors unfoldErrors =
                                 ]
                             ]
                         <|
-                            List.map Mensam.Error.toElement errors
+                            let
+                                toElement err =
+                                    Element.column
+                                        [ Element.spacing 2
+                                        , Element.Font.family [ Mensam.Element.Font.monospace ]
+                                        , Element.Font.size 10
+                                        , Element.Font.alignLeft
+                                        ]
+                                        [ Element.text <| Mensam.Time.timestampToString err.time
+                                        , Mensam.Error.toElement err.error
+                                        ]
+                            in
+                            List.map toElement errors
 
                     else
                         Element.none

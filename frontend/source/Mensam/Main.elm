@@ -23,6 +23,7 @@ import Mensam.Element.Font
 import Mensam.Element.Footer
 import Mensam.Element.Header
 import Mensam.Error
+import Mensam.Error.Incorporation
 import Mensam.Flags
 import Mensam.Screen.Confirm
 import Mensam.Screen.Dashboard
@@ -76,7 +77,7 @@ type Model
         , screen : Screen
         , authenticated : Mensam.Auth.Model
         , dialogToSignIn : Maybe Mensam.Screen.Login.Model
-        , errors : List Mensam.Error.Error
+        , errors : Mensam.Error.Incorporation.IncorporatedErrors
         , viewErrors : Bool
         , viewHamburgerMenu : Bool
         , time :
@@ -415,7 +416,7 @@ init flagsRaw url navigationKey =
                 , screen = ScreenLanding Mensam.Screen.Landing.init
                 , authenticated = Mensam.Auth.SignedOut
                 , dialogToSignIn = Nothing
-                , errors = []
+                , errors = Mensam.Error.Incorporation.init
                 , viewErrors = False
                 , viewHamburgerMenu = False
                 , time =
@@ -439,7 +440,7 @@ init flagsRaw url navigationKey =
                     Err error ->
                         MkModel
                             { model
-                                | errors = error :: model.errors
+                                | errors = Mensam.Error.Incorporation.incorporate model.time.now error model.errors
                             }
 
         modelFinal =
@@ -606,10 +607,10 @@ update message (MkModel model) =
                 update (Messages [ Auth UnsetSession, OpenDialogToSignIn ]) <| MkModel model
 
             else
-                update EmptyMessage <| MkModel { model | errors = error :: model.errors }
+                update EmptyMessage <| MkModel { model | errors = Mensam.Error.Incorporation.incorporate model.time.now error model.errors }
 
         ClearErrors ->
-            update EmptyMessage <| MkModel { model | errors = [] }
+            update EmptyMessage <| MkModel { model | errors = Mensam.Error.Incorporation.init }
 
         ViewErrors ->
             update EmptyMessage <| MkModel { model | viewErrors = True }
@@ -2467,7 +2468,14 @@ headerMessage (MkModel model) message =
 
 headerContent : Model -> Mensam.Element.Header.Content
 headerContent (MkModel model) =
-    { errors = model.errors
+    { errors =
+        let
+            calculateTime err =
+                { error = err.error
+                , time = Mensam.Time.fromPosix model.time.zone err.time
+                }
+        in
+        List.map calculateTime <| Mensam.Error.Incorporation.select Nothing model.errors
     , unfoldErrors = model.viewErrors
     , unfoldHamburgerDropDown = model.viewHamburgerMenu
     , authenticated = model.authenticated
