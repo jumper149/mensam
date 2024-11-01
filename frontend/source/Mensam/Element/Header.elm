@@ -11,6 +11,7 @@ import Mensam.Auth
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
+import Mensam.Svg.Color
 import Mensam.Time
 import Svg
 import Svg.Attributes
@@ -122,31 +123,44 @@ elementHamburger unfoldDropDownMenu authenticated =
                     ]
                     { onPress = Just ClickHamburger
                     , label =
-                        Element.column
-                            [ Element.centerX
+                        Element.el
+                            [ Element.width <| Element.px 15
+                            , Element.height <| Element.px 15
+                            , Element.centerX
                             , Element.centerY
-                            , Element.width <| Element.px 14
-                            , Element.spacing 4
                             ]
-                            [ Element.el
-                                [ Element.width Element.fill
-                                , Element.height <| Element.px 1
-                                , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
-                                ]
-                                Element.none
-                            , Element.el
-                                [ Element.width Element.fill
-                                , Element.height <| Element.px 1
-                                , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
-                                ]
-                                Element.none
-                            , Element.el
-                                [ Element.width Element.fill
-                                , Element.height <| Element.px 1
-                                , Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
-                                ]
-                                Element.none
-                            ]
+                        <|
+                            Element.html <|
+                                Svg.svg
+                                    [ Svg.Attributes.viewBox "0 0 15 15"
+                                    , Svg.Attributes.width "100%"
+                                    ]
+                                <|
+                                    [ Svg.rect
+                                        [ Svg.Attributes.x "0"
+                                        , Svg.Attributes.y "2"
+                                        , Svg.Attributes.width "100%"
+                                        , Svg.Attributes.height "1"
+                                        , Svg.Attributes.fill <| Mensam.Svg.Color.bright.white
+                                        ]
+                                        []
+                                    , Svg.rect
+                                        [ Svg.Attributes.x "0"
+                                        , Svg.Attributes.y "7"
+                                        , Svg.Attributes.width "100%"
+                                        , Svg.Attributes.height "1"
+                                        , Svg.Attributes.fill <| Mensam.Svg.Color.bright.white
+                                        ]
+                                        []
+                                    , Svg.rect
+                                        [ Svg.Attributes.x "0"
+                                        , Svg.Attributes.y "12"
+                                        , Svg.Attributes.width "100%"
+                                        , Svg.Attributes.height "1"
+                                        , Svg.Attributes.fill <| Mensam.Svg.Color.bright.white
+                                        ]
+                                        []
+                                    ]
                     }
 
             Mensam.Auth.SignedOut ->
