@@ -610,7 +610,7 @@ update message (MkModel model) =
                 update EmptyMessage <| MkModel { model | errors = Mensam.Error.Incorporation.incorporate model.time.now error model.errors }
 
         ClearErrors ->
-            update EmptyMessage <| MkModel { model | errors = Mensam.Error.Incorporation.init }
+            update HideErrors <| MkModel { model | errors = Mensam.Error.Incorporation.init }
 
         ViewErrors ->
             update EmptyMessage <| MkModel { model | viewErrors = True }
@@ -2464,6 +2464,9 @@ headerMessage (MkModel model) message =
 
             else
                 ViewErrors
+
+        Mensam.Element.Header.ClearErrors ->
+            ClearErrors
 
 
 headerContent : Model -> Mensam.Element.Header.Content

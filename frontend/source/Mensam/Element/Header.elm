@@ -8,6 +8,7 @@ import Element.Input
 import Html.Attributes
 import Http.Extra
 import Mensam.Auth
+import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Element.Font
 import Mensam.Error
@@ -33,6 +34,7 @@ type Message
     | ClickOutsideOfHamburger
     | SignIn
     | ClickErrors
+    | ClearErrors
 
 
 element : Content -> Element.Element Message
@@ -211,42 +213,59 @@ elementErrors errors unfoldErrors =
                         else
                             Element.rgba 1 1 1 0.1
                     ]
-                , Element.Events.Pointer.onClick <| \_ -> ClickErrors
+                , Element.inFront <|
+                    Element.el
+                        [ Element.width Element.fill
+                        , Element.height Element.fill
+                        , Element.Events.Pointer.onClick <| \_ -> ClickErrors
+                        ]
+                        Element.none
                 , Element.below <|
                     if unfoldErrors then
                         Element.column
                             [ Element.width <| Element.px 200
+                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
                             , Element.height <| Element.minimum 100 <| Element.maximum 300 <| Element.shrink
                             , Element.htmlAttribute <| Html.Attributes.style "overflow-x" "hidden"
                             , Element.alignRight
                             , Element.paddingEach
-                                { top = 19
-                                , right = 12
+                                { top = 0
+                                , right = 0
                                 , bottom = 12
-                                , left = 12
+                                , left = 0
                                 }
-                            , Element.spacing 10
                             , Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100
                             , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
-                            , Element.mouseOver
-                                [ Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
-                                , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
-                                ]
                             ]
                         <|
                             let
                                 toElement err =
                                     Element.column
-                                        [ Element.spacing 2
+                                        [ Element.paddingXY 12 5
+                                        , Element.spacing 2
                                         , Element.Font.family [ Mensam.Element.Font.monospace ]
                                         , Element.Font.size 10
                                         , Element.Font.alignLeft
+                                        , Element.mouseOver
+                                            [ Element.Background.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                                            , Element.Font.color <| Mensam.Element.Color.dark.black Mensam.Element.Color.Opaque100
+                                            ]
                                         ]
                                         [ Element.text <| Mensam.Time.timestampToString err.time
                                         , Mensam.Error.toElement err.error
                                         ]
                             in
-                            List.map toElement errors
+                            (Mensam.Element.Button.button <|
+                                Mensam.Element.Button.MkButton
+                                    { attributes = [ Element.centerX, Element.alignTop ]
+                                    , color = Mensam.Element.Button.Transparent
+                                    , enabled = True
+                                    , label = Element.text "Clear Errors"
+                                    , message = Just ClearErrors
+                                    , size = Mensam.Element.Button.Small
+                                    }
+                            )
+                                :: List.map toElement errors
 
                     else
                         Element.none
