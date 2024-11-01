@@ -252,11 +252,33 @@ elementErrors errors unfoldErrors =
                 ]
             <|
                 Element.el
-                    [ Element.centerX
+                    [ Element.width <| Element.px 15
+                    , Element.height <| Element.px 15
+                    , Element.centerX
                     , Element.centerY
                     ]
                 <|
-                    Element.text "!"
+                    Element.html <|
+                        Svg.svg
+                            [ Svg.Attributes.viewBox "0 0 15 15"
+                            , Svg.Attributes.width "100%"
+                            ]
+                        <|
+                            [ Svg.g
+                                [ Svg.Attributes.fillRule "evenodd"
+                                , Svg.Attributes.fill <| Mensam.Svg.Color.bright.white
+                                ]
+                                [ Svg.path
+                                    [ Svg.Attributes.d <|
+                                        String.concat
+                                            [ "M 0,15 L 7.5,2 L 15,15 Z" -- Triangle
+                                            , "M 8.25,5 L 6.75,5 L 6.75,11 L 8.25,11 Z" -- Upper part of "!"
+                                            , "M 8.25,12.5 L 6.75,12.5 L 6.75,14 L 8.25,14 Z" -- Lower part of "!"
+                                            ]
+                                    ]
+                                    []
+                                ]
+                            ]
 
 
 elementTitle : Maybe String -> Element.Element msg
