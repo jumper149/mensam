@@ -112,7 +112,7 @@ elementHamburger unfoldDropDownMenu authenticated =
                 Mensam.Element.Color.transparent
         , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
         , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-        , Element.mouseOver [ Element.Background.color <| Element.rgba 1 1 1 0.1 ]
+        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100 ]
         ]
     <|
         case authenticated of
@@ -206,7 +206,7 @@ elementErrors errors unfoldErrors =
                 , Element.mouseOver
                     [ Element.Background.color <|
                         if unfoldErrors then
-                            Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
+                            Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100
 
                         else
                             Element.rgba 1 1 1 0.1
@@ -216,6 +216,7 @@ elementErrors errors unfoldErrors =
                     if unfoldErrors then
                         Element.column
                             [ Element.width <| Element.px 200
+                            , Element.height <| Element.minimum 100 <| Element.maximum 300 <| Element.shrink
                             , Element.htmlAttribute <| Html.Attributes.style "overflow-x" "hidden"
                             , Element.alignRight
                             , Element.paddingEach

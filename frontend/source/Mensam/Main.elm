@@ -616,7 +616,7 @@ update message (MkModel model) =
             update EmptyMessage <| MkModel { model | viewErrors = True }
 
         HideErrors ->
-            update ClearErrors <| MkModel { model | viewErrors = False }
+            update EmptyMessage <| MkModel { model | viewErrors = False }
 
         ViewHamburgerMenu ->
             update EmptyMessage <| MkModel { model | viewHamburgerMenu = True }
