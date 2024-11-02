@@ -228,12 +228,6 @@ elementErrors errors unfoldErrors =
                             , Element.height <| Element.minimum 100 <| Element.maximum 300 <| Element.shrink
                             , Element.htmlAttribute <| Html.Attributes.style "overflow-x" "hidden"
                             , Element.alignRight
-                            , Element.paddingEach
-                                { top = 0
-                                , right = 0
-                                , bottom = 12
-                                , left = 0
-                                }
                             , Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque100
                             , Element.Font.color <| Mensam.Element.Color.bright.white Mensam.Element.Color.Opaque100
                             ]
