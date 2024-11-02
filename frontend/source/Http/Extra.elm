@@ -8,6 +8,9 @@ type Status
     | Done
 
 
+-- TODO: Does not work currently.
+-- After adding the ability to cancel requests on screen changes we had to use `tracker` field for that.
+-- Now `status` will never be called.
 status : Http.Progress -> Status
 status progress =
     case progress of
@@ -29,8 +32,3 @@ status progress =
 
                     else
                         Loading
-
-
-tracker : Maybe String
-tracker =
-    Just "http"
