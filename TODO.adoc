@@ -3,9 +3,10 @@
 * Continuous integration.
   ** [ ] Use `nixosConfigurations` to test the `nixosModule`.
 
-* Developer Experience.
-  ** [ ] Support Nix flakes with in GitHub Codespaces.
-    *** [ ] `direnv` from https://github.com/xtruder/nix-devcontainer is outdated.
+* Developer experience.
+  ** [ ] Support GitHub Codespaces.
+    *** The devcontainer works locally with Docker.
+    *** Currently there is a bug with Nix in Codespaces: https://github.com/NixOS/nix/issues/6680
 
 * Backend.
   ** [ ] File uploads.
@@ -28,14 +29,6 @@
   ** [ ] Title in header will cut off titles that are too long. This looks broken. Maybe add ellipsis "...".
   ** [ ] Filter "Your Reservations".
     *** [ ] Filter by space.
-  ** [ ] Add metadata to spaces.
-    *** [ ] City.
-    *** more?
-  ** [ ] Add metadata to desks.
-    *** [ ] Power outlet.
-    *** [ ] Monitor.
-    *** [ ] Window.
-    *** more?
 
 * Wording and explanation.
   ** [ ] A space is just an environment for desks and not the desk itself.
@@ -46,6 +39,18 @@
   ** [ ] tzdata library for Haskell.
   ** [ ] justinmimbs/timezone-data for Elm.
   ** [ ] Matching IANA database versions.
+  ** The currently used elm library seems to be missing some identifiers such as `Atlantic/Reykjavik`.
+
+* Password forgotten.
+  ** [ ] Backend implementation.
+  ** [ ] Frontend implementation.
+  ** Idea for an implementation:
+    *** Send an email to the owner of the account.
+    *** In the email is a link to set a new password.
+    *** Only after following the link and giving a new password the password will be overwritten.
+    *** The link will only be valid for a short time.
+  ** Thoughts on the current idea:
+    *** If anyone can guess that link, they can reset the password for other accounts.
 
 * Rooms.
   ** [ ] Desks can be assigned to rooms.
@@ -57,6 +62,16 @@
   ** [ ] Rooms are displayed nicely in the 2D room view.
   ** [ ] Rooms can be edited independently of desks.
   ** [ ] Add editor for room layout.
+
+* Metadata
+  ** [ ] Add metadata to spaces.
+    *** [ ] City.
+    *** more?
+  ** [ ] Add metadata to desks.
+    *** [ ] Power outlet.
+    *** [ ] Monitor.
+    *** [ ] Window.
+    *** more?
 
 * Smart desk assignment.
   ** Users can choose to reserve any desk (not a specific one).
