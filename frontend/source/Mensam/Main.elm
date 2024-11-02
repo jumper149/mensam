@@ -47,6 +47,7 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Storage
 import Mensam.Time
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 import Platform.Cmd
@@ -75,6 +76,7 @@ type Model
         { navigationKey : Browser.Navigation.Key
         , baseUrl : Mensam.Url.BaseUrl
         , screen : Screen
+        , screenRequestTracker : Mensam.Tracker.State
         , authenticated : Mensam.Auth.Model
         , dialogToSignIn : Maybe Mensam.Screen.Login.Model
         , errors : Mensam.Error.Incorporation.IncorporatedErrors
@@ -414,6 +416,7 @@ init flagsRaw url navigationKey =
                 { navigationKey = navigationKey
                 , baseUrl = Mensam.Url.mockUnsafe
                 , screen = ScreenLanding Mensam.Screen.Landing.init
+                , screenRequestTracker = Mensam.Tracker.init
                 , authenticated = Mensam.Auth.SignedOut
                 , dialogToSignIn = Nothing
                 , errors = Mensam.Error.Incorporation.init
