@@ -26,8 +26,6 @@
   ** [ ] Automatically add desks when creating a space.
     *** This could be achieved with a selector of how many desks you want and then adding default desks.
   ** [ ] Title in header will cut off titles that are too long. This looks broken. Maybe add ellipsis "...".
-  ** [ ] Error messages are shitty. These should popup immediately to tell the user something is wrong.
-    *** Maybe we want non-error popups as well.
   ** [ ] Filter "Your Reservations".
     *** [ ] Filter by space.
   ** [ ] Add metadata to spaces.
