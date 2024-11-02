@@ -23,6 +23,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 import QRCode
@@ -1243,9 +1244,9 @@ type MessageEffect
         }
 
 
-spaceView : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
-spaceView baseUrl auth id =
-    Mensam.Api.SpaceView.request baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
+spaceView : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView tracker baseUrl auth id =
+    Mensam.Api.SpaceView.request tracker baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->
@@ -1304,9 +1305,10 @@ spaceView baseUrl auth id =
                                 Mensam.Error.http error
 
 
-profile : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-profile baseUrl jwt userId =
-    Mensam.Api.Profile.request baseUrl
+profile : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+profile tracker baseUrl jwt userId =
+    Mensam.Api.Profile.request tracker
+        baseUrl
         { jwt = jwt
         , id = userId
         }
@@ -1343,9 +1345,10 @@ profile baseUrl jwt userId =
                                 Mensam.Error.http error
 
 
-profilePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-profilePicture baseUrl jwt userId =
-    Mensam.Api.PictureDownload.request baseUrl
+profilePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+profilePicture tracker baseUrl jwt userId =
+    Mensam.Api.PictureDownload.request tracker
+        baseUrl
         { jwt = jwt
         , user = userId
         }
@@ -1362,9 +1365,10 @@ profilePicture baseUrl jwt userId =
                                 Mensam.Error.http error
 
 
-editUserRole : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Mensam.Space.Role.Identifier -> Cmd Message
-editUserRole baseUrl jwt spaceId userId roleId =
-    Mensam.Api.SpaceUserRole.request baseUrl
+editUserRole : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Mensam.Space.Role.Identifier -> Cmd Message
+editUserRole tracker baseUrl jwt spaceId userId roleId =
+    Mensam.Api.SpaceUserRole.request tracker
+        baseUrl
         { jwt = jwt
         , space = spaceId
         , user = userId
@@ -1410,9 +1414,10 @@ editUserRole baseUrl jwt spaceId userId roleId =
                                 Mensam.Error.http error
 
 
-kickUser : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Cmd Message
-kickUser baseUrl jwt spaceId userId =
-    Mensam.Api.SpaceKick.request baseUrl
+kickUser : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.User.Identifier -> Cmd Message
+kickUser tracker baseUrl jwt spaceId userId =
+    Mensam.Api.SpaceKick.request tracker
+        baseUrl
         { jwt = jwt
         , space = spaceId
         , user = userId

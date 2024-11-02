@@ -23,6 +23,7 @@ import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
+import Mensam.Tracker
 import Mensam.Url
 
 
@@ -635,7 +636,8 @@ type MessageEffect
 
 
 spaceEdit :
-    Mensam.Url.BaseUrl
+    Maybe Mensam.Tracker.Tracker
+    -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
         , id : Mensam.Space.Identifier
@@ -644,8 +646,8 @@ spaceEdit :
         , visibility : Maybe Mensam.Space.Visibility
         }
     -> Cmd Message
-spaceEdit baseUrl requestArgs =
-    Mensam.Api.SpaceEdit.request baseUrl requestArgs <|
+spaceEdit tracker baseUrl requestArgs =
+    Mensam.Api.SpaceEdit.request tracker baseUrl requestArgs <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceEdit.Success args) ->
@@ -679,14 +681,15 @@ spaceEdit baseUrl requestArgs =
 
 
 spaceDelete :
-    Mensam.Url.BaseUrl
+    Maybe Mensam.Tracker.Tracker
+    -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
         , id : Mensam.Space.Identifier
         }
     -> Cmd Message
-spaceDelete baseUrl requestArgs =
-    Mensam.Api.SpaceDelete.request baseUrl requestArgs <|
+spaceDelete tracker baseUrl requestArgs =
+    Mensam.Api.SpaceDelete.request tracker baseUrl requestArgs <|
         \result ->
             case result of
                 Ok Mensam.Api.SpaceDelete.Success ->
@@ -726,9 +729,10 @@ selectSpacePictureToUpload =
     File.Select.file [ "image/jpeg" ] <| \file -> MessageEffect <| UploadSpacePictureUpload file
 
 
-downloadSpacePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
-downloadSpacePicture baseUrl jwt space =
-    Mensam.Api.SpacePictureDownload.request baseUrl
+downloadSpacePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+downloadSpacePicture tracker baseUrl jwt space =
+    Mensam.Api.SpacePictureDownload.request tracker
+        baseUrl
         { jwt = jwt
         , space = space
         }
@@ -745,9 +749,10 @@ downloadSpacePicture baseUrl jwt space =
                                 Mensam.Error.http error
 
 
-uploadSpacePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> File.File -> Cmd Message
-uploadSpacePicture baseUrl jwt space file =
-    Mensam.Api.SpacePictureUpload.request baseUrl
+uploadSpacePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> File.File -> Cmd Message
+uploadSpacePicture tracker baseUrl jwt space file =
+    Mensam.Api.SpacePictureUpload.request tracker
+        baseUrl
         { jwt = jwt
         , space = space
         , picture = file
@@ -794,9 +799,10 @@ uploadSpacePicture baseUrl jwt space file =
                                     Mensam.Error.http error
 
 
-deleteSpacePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
-deleteSpacePicture baseUrl jwt space =
-    Mensam.Api.SpacePictureDelete.request baseUrl
+deleteSpacePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+deleteSpacePicture tracker baseUrl jwt space =
+    Mensam.Api.SpacePictureDelete.request tracker
+        baseUrl
         { jwt = jwt
         , space = space
         }

@@ -12,6 +12,7 @@ import Mensam.Auth.Bearer
 import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Error
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 import Time
@@ -159,9 +160,10 @@ onEnter msg =
         )
 
 
-login : Mensam.Url.BaseUrl -> Model -> Cmd Message
-login baseUrl model =
-    Mensam.Api.Login.request baseUrl
+login : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Model -> Cmd Message
+login tracker baseUrl model =
+    Mensam.Api.Login.request tracker
+        baseUrl
         (Mensam.Api.Login.BasicAuth <|
             Mensam.Auth.Basic.MkCredentials
                 { username = model.username

@@ -3,9 +3,9 @@ module Mensam.Api.SpacePictureDownload exposing (..)
 import Base64.Encode
 import Bytes
 import Http
-import Http.Extra
 import Mensam.Auth.Bearer
 import Mensam.Space
+import Mensam.Tracker
 import Mensam.Url
 import Url.Builder
 
@@ -20,8 +20,8 @@ type Response
     = Success { url : String }
 
 
-request : Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
-request baseUrl body handleResult =
+request : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request tracker baseUrl body handleResult =
     Http.request
         { method = "GET"
         , headers =
@@ -37,7 +37,7 @@ request baseUrl body handleResult =
         , body = Http.emptyBody
         , expect = Http.expectBytesResponse handleResult responseResult
         , timeout = Nothing
-        , tracker = Http.Extra.tracker
+        , tracker = Maybe.map Mensam.Tracker.toHttp tracker
         }
 
 

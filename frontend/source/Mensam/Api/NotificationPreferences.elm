@@ -1,10 +1,10 @@
 module Mensam.Api.NotificationPreferences exposing (..)
 
 import Http
-import Http.Extra
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Mensam.Auth.Bearer
+import Mensam.Tracker
 import Mensam.Url
 
 
@@ -23,8 +23,8 @@ type Response
     | ErrorAuth Mensam.Auth.Bearer.Error
 
 
-request : Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
-request baseUrl body handleResult =
+request : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request tracker baseUrl body handleResult =
     Http.request
         { method = "POST"
         , headers =
@@ -39,7 +39,7 @@ request baseUrl body handleResult =
         , body = Http.jsonBody <| encodeBody body
         , expect = Http.expectStringResponse handleResult responseResult
         , timeout = Nothing
-        , tracker = Http.Extra.tracker
+        , tracker = Maybe.map Mensam.Tracker.toHttp tracker
         }
 
 

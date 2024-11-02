@@ -16,6 +16,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Time
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 import Mensam.Widget.Timezone
@@ -434,9 +435,9 @@ type MessageEffect
         }
 
 
-spaceList : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Cmd Message
-spaceList baseUrl jwt =
-    Mensam.Api.SpaceList.request baseUrl { jwt = jwt, order = [], member = Nothing } <|
+spaceList : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Cmd Message
+spaceList tracker baseUrl jwt =
+    Mensam.Api.SpaceList.request tracker baseUrl { jwt = jwt, order = [], member = Nothing } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceList.Success value) ->
@@ -464,7 +465,8 @@ spaceList baseUrl jwt =
 
 
 spaceCreate :
-    Mensam.Url.BaseUrl
+    Maybe Mensam.Tracker.Tracker
+    -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
         , name : Mensam.Space.Name
@@ -472,8 +474,8 @@ spaceCreate :
         , visibility : Mensam.Space.Visibility
         }
     -> Cmd Message
-spaceCreate baseUrl req =
-    Mensam.Api.SpaceCreate.request baseUrl req <|
+spaceCreate tracker baseUrl req =
+    Mensam.Api.SpaceCreate.request tracker baseUrl req <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceCreate.Success _) ->

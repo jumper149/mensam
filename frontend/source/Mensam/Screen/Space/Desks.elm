@@ -20,6 +20,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 
@@ -832,9 +833,9 @@ type MessageEffect
     | ReturnToSpace
 
 
-spaceView : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
-spaceView baseUrl auth id =
-    Mensam.Api.SpaceView.request baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
+spaceView : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView tracker baseUrl auth id =
+    Mensam.Api.SpaceView.request tracker baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->
@@ -869,7 +870,8 @@ spaceView baseUrl auth id =
 
 
 createDesk :
-    Mensam.Url.BaseUrl
+    Maybe Mensam.Tracker.Tracker
+    -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
         , space : Mensam.Space.Identifier
@@ -877,8 +879,9 @@ createDesk :
         , location : Maybe Mensam.Desk.Location
         }
     -> Cmd Message
-createDesk baseUrl args =
-    Mensam.Api.DeskCreate.request baseUrl
+createDesk tracker baseUrl args =
+    Mensam.Api.DeskCreate.request tracker
+        baseUrl
         { jwt = args.jwt
         , space = args.space
         , name = args.name
@@ -917,14 +920,16 @@ createDesk baseUrl args =
 
 
 deleteDesk :
-    Mensam.Url.BaseUrl
+    Maybe Mensam.Tracker.Tracker
+    -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
         , id : Mensam.Desk.Identifier
         }
     -> Cmd Message
-deleteDesk baseUrl args =
-    Mensam.Api.DeskDelete.request baseUrl
+deleteDesk tracker baseUrl args =
+    Mensam.Api.DeskDelete.request tracker
+        baseUrl
         { jwt = args.jwt
         , id = args.id
         }
@@ -961,7 +966,8 @@ deleteDesk baseUrl args =
 
 
 editDesk :
-    Mensam.Url.BaseUrl
+    Maybe Mensam.Tracker.Tracker
+    -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
         , id : Mensam.Desk.Identifier
@@ -969,8 +975,9 @@ editDesk :
         , location : Maybe (Maybe Mensam.Desk.Location)
         }
     -> Cmd Message
-editDesk baseUrl args =
-    Mensam.Api.DeskEdit.request baseUrl
+editDesk tracker baseUrl args =
+    Mensam.Api.DeskEdit.request tracker
+        baseUrl
         { jwt = args.jwt
         , id = args.id
         , name = args.name
@@ -1008,9 +1015,9 @@ editDesk baseUrl args =
                     MessageEffect <| ReportError <| Mensam.Error.http error
 
 
-listDesks : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
-listDesks baseUrl jwt spaceId =
-    Mensam.Api.DeskList.request baseUrl { jwt = jwt, space = spaceId, timeWindow = { start = Nothing, end = Nothing } } <|
+listDesks : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+listDesks tracker baseUrl jwt spaceId =
+    Mensam.Api.DeskList.request tracker baseUrl { jwt = jwt, space = spaceId, timeWindow = { start = Nothing, end = Nothing } } <|
         \result ->
             case result of
                 Ok (Mensam.Api.DeskList.Success value) ->

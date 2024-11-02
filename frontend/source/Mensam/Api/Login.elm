@@ -1,11 +1,11 @@
 module Mensam.Api.Login exposing (..)
 
 import Http
-import Http.Extra
 import Iso8601
 import Json.Decode as Decode
 import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 import Time
@@ -21,8 +21,8 @@ type Response
     | ErrorAuth Mensam.Auth.Basic.Error
 
 
-request : Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
-request baseUrl body handleResult =
+request : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request tracker baseUrl body handleResult =
     Http.request
         { method = "POST"
         , headers =
@@ -42,7 +42,7 @@ request baseUrl body handleResult =
         , body = Http.emptyBody
         , expect = Http.expectStringResponse handleResult responseResult
         , timeout = Nothing
-        , tracker = Http.Extra.tracker
+        , tracker = Maybe.map Mensam.Tracker.toHttp tracker
         }
 
 

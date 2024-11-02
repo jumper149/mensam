@@ -20,6 +20,7 @@ import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Element.Screen
 import Mensam.Error
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 
@@ -629,9 +630,10 @@ onEnter msg =
         )
 
 
-profile : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-profile baseUrl jwt userId =
-    Mensam.Api.Profile.request baseUrl
+profile : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+profile tracker baseUrl jwt userId =
+    Mensam.Api.Profile.request tracker
+        baseUrl
         { jwt = jwt
         , id = userId
         }
@@ -673,9 +675,10 @@ profile baseUrl jwt userId =
                                 Mensam.Error.http error
 
 
-changePassword : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, newPassword : Mensam.User.Password } -> Cmd Message
-changePassword baseUrl args =
-    Mensam.Api.PasswordChange.request baseUrl
+changePassword : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, newPassword : Mensam.User.Password } -> Cmd Message
+changePassword tracker baseUrl args =
+    Mensam.Api.PasswordChange.request tracker
+        baseUrl
         { jwt = args.jwt
         , newPassword = args.newPassword
         }
@@ -707,9 +710,10 @@ changePassword baseUrl args =
                                 Mensam.Error.http error
 
 
-confirmationRequest : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt } -> Cmd Message
-confirmationRequest baseUrl args =
-    Mensam.Api.ConfirmationRequest.request baseUrl
+confirmationRequest : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt } -> Cmd Message
+confirmationRequest tracker baseUrl args =
+    Mensam.Api.ConfirmationRequest.request tracker
+        baseUrl
         { jwt = args.jwt
         }
     <|
@@ -732,9 +736,10 @@ confirmationRequest baseUrl args =
                                 Mensam.Error.http error
 
 
-setNotificationPreferences : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, receiveEmailNotifications : Maybe Bool } -> Cmd Message
-setNotificationPreferences baseUrl args =
-    Mensam.Api.NotificationPreferences.request baseUrl
+setNotificationPreferences : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, receiveEmailNotifications : Maybe Bool } -> Cmd Message
+setNotificationPreferences tracker baseUrl args =
+    Mensam.Api.NotificationPreferences.request tracker
+        baseUrl
         { jwt = args.jwt
         , receiveEmailNotifications = args.receiveEmailNotifications
         }
@@ -781,9 +786,10 @@ selectProfilePictureToUpload =
     File.Select.file [ "image/jpeg" ] <| \file -> MessageEffect <| UploadProfilePictureUpload file
 
 
-downloadProfilePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-downloadProfilePicture baseUrl jwt user =
-    Mensam.Api.PictureDownload.request baseUrl
+downloadProfilePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+downloadProfilePicture tracker baseUrl jwt user =
+    Mensam.Api.PictureDownload.request tracker
+        baseUrl
         { jwt = jwt
         , user = user
         }
@@ -800,9 +806,10 @@ downloadProfilePicture baseUrl jwt user =
                                 Mensam.Error.http error
 
 
-uploadProfilePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> File.File -> Cmd Message
-uploadProfilePicture baseUrl jwt file =
-    Mensam.Api.PictureUpload.request baseUrl
+uploadProfilePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> File.File -> Cmd Message
+uploadProfilePicture tracker baseUrl jwt file =
+    Mensam.Api.PictureUpload.request tracker
+        baseUrl
         { jwt = jwt
         , picture = file
         }
@@ -835,9 +842,10 @@ uploadProfilePicture baseUrl jwt file =
                                     Mensam.Error.http error
 
 
-deleteProfilePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Cmd Message
-deleteProfilePicture baseUrl jwt =
-    Mensam.Api.PictureDelete.request baseUrl
+deleteProfilePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Cmd Message
+deleteProfilePicture tracker baseUrl jwt =
+    Mensam.Api.PictureDelete.request tracker
+        baseUrl
         { jwt = jwt
         }
     <|

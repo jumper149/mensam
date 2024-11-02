@@ -662,7 +662,8 @@ update message (MkModel model) =
 
         Auth (Login { username, password }) ->
             ( MkModel model
-            , Mensam.Api.Login.request model.baseUrl
+            , Mensam.Api.Login.request Nothing
+                model.baseUrl
                 (Mensam.Api.Login.BasicAuth <|
                     Mensam.Auth.Basic.MkCredentials
                         { username = Mensam.User.nameToString username
@@ -714,7 +715,7 @@ update message (MkModel model) =
 
                                 Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                                     ( MkModel m
-                                    , Mensam.Api.Logout.request model.baseUrl { jwt = jwt } <|
+                                    , Mensam.Api.Logout.request Nothing model.baseUrl { jwt = jwt } <|
                                         \response ->
                                             case response of
                                                 Ok Mensam.Api.Logout.Success ->
@@ -821,7 +822,8 @@ update message (MkModel model) =
 
                 Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication authentication) ->
                     ( MkModel model
-                    , Mensam.Api.Profile.request model.baseUrl
+                    , Mensam.Api.Profile.request Nothing
+                        model.baseUrl
                         { jwt = authentication.jwt
                         , id = authentication.user.id
                         }
@@ -915,7 +917,7 @@ update message (MkModel model) =
 
                         Just signInModel ->
                             ( MkModel model
-                            , Platform.Cmd.map MessageLoginPopup <| Mensam.Screen.Login.login model.baseUrl signInModel
+                            , Platform.Cmd.map MessageLoginPopup <| Mensam.Screen.Login.login Nothing model.baseUrl signInModel
                             )
 
                 Mensam.Screen.Login.Register ->
@@ -958,8 +960,13 @@ update message (MkModel model) =
                 Mensam.Screen.Register.Submit args ->
                     case model.screen of
                         ScreenRegister _ ->
-                            ( MkModel model
-                            , Platform.Cmd.map MessageRegister <| Mensam.Screen.Register.register model.baseUrl args
+                            let
+                                ( trackerState, request ) =
+                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                        \tracker -> Mensam.Screen.Register.register (Just tracker) model.baseUrl args
+                            in
+                            ( MkModel { model | screenRequestTracker = trackerState }
+                            , Platform.Cmd.map MessageRegister request
                             )
 
                         _ ->
@@ -1000,8 +1007,13 @@ update message (MkModel model) =
                 Mensam.Screen.Login.SubmitLogin ->
                     case model.screen of
                         ScreenLogin screenModel ->
-                            ( MkModel model
-                            , Platform.Cmd.map MessageLogin <| Mensam.Screen.Login.login model.baseUrl screenModel
+                            let
+                                ( trackerState, request ) =
+                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                        \tracker -> Mensam.Screen.Login.login (Just tracker) model.baseUrl screenModel
+                            in
+                            ( MkModel { model | screenRequestTracker = trackerState }
+                            , Platform.Cmd.map MessageLogin request
                             )
 
                         _ ->
@@ -1068,8 +1080,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenDashboard _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.spaceList model.baseUrl jwt
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Dashboard.spaceList (Just tracker) model.baseUrl jwt
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageDashboard request
                                     )
 
                                 _ ->
@@ -1083,8 +1100,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenDashboard _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.ownerGetName model.baseUrl { jwt = jwt, space = args.space, owner = args.owner }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Dashboard.ownerGetName (Just tracker) model.baseUrl { jwt = jwt, space = args.space, owner = args.owner }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageDashboard request
                                     )
 
                                 _ ->
@@ -1098,8 +1120,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenDashboard _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.downloadSpacePicture model.baseUrl jwt space
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Dashboard.downloadSpacePicture (Just tracker) model.baseUrl jwt space
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageDashboard request
                                     )
 
                                 _ ->
@@ -1116,8 +1143,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenDashboard screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.reservationList model.baseUrl { jwt = jwt, model = screenModel }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Dashboard.reservationList (Just tracker) model.baseUrl { jwt = jwt, model = screenModel }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageDashboard request
                                     )
 
                                 _ ->
@@ -1131,8 +1163,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenDashboard _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <| Mensam.Screen.Dashboard.reservationCancel model.baseUrl { jwt = jwt, id = reservationId }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Dashboard.reservationCancel (Just tracker) model.baseUrl { jwt = jwt, id = reservationId }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageDashboard request
                                     )
 
                                 _ ->
@@ -1152,19 +1189,25 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenDashboard _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageDashboard <|
-                                        Mensam.Screen.Dashboard.spaceCreate model.baseUrl
-                                            { jwt = jwt
-                                            , name = spaceInfo.name
-                                            , timezone = spaceInfo.timezone
-                                            , visibility =
-                                                if spaceInfo.visible then
-                                                    Mensam.Space.MkVisibilityVisible
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Dashboard.spaceCreate (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , name = spaceInfo.name
+                                                        , timezone = spaceInfo.timezone
+                                                        , visibility =
+                                                            if spaceInfo.visible then
+                                                                Mensam.Space.MkVisibilityVisible
 
-                                                else
-                                                    Mensam.Space.MkVisibilityHidden
-                                            }
+                                                            else
+                                                                Mensam.Space.MkVisibilityHidden
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageDashboard request
                                     )
 
                                 _ ->
@@ -1197,8 +1240,13 @@ update message (MkModel model) =
                             update (ReportError errorNoAuth) <| MkModel model
 
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
-                            ( MkModel model
-                            , Platform.Cmd.map MessageSpaces <| Mensam.Screen.Spaces.spaceList model.baseUrl jwt
+                            let
+                                ( trackerState, request ) =
+                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                        \tracker -> Mensam.Screen.Spaces.spaceList (Just tracker) model.baseUrl jwt
+                            in
+                            ( MkModel { model | screenRequestTracker = trackerState }
+                            , Platform.Cmd.map MessageSpaces request
                             )
 
                 Mensam.Screen.Spaces.SubmitCreate formData ->
@@ -1207,26 +1255,33 @@ update message (MkModel model) =
                             update (ReportError errorNoAuth) <| MkModel model
 
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
-                            ( MkModel model
+                            let
+                                ( trackerState, request ) =
+                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                        \tracker ->
+                                            Mensam.Screen.Spaces.spaceCreate (Just tracker)
+                                                model.baseUrl
+                                                { jwt = jwt
+                                                , timezone = formData.timezone
+                                                , name = formData.name
+                                                , visibility =
+                                                    if formData.visible then
+                                                        Mensam.Space.MkVisibilityVisible
+
+                                                    else
+                                                        Mensam.Space.MkVisibilityHidden
+                                                }
+                            in
+                            ( MkModel { model | screenRequestTracker = trackerState }
                             , Platform.Cmd.map
                                 (\msg ->
                                     Messages
+                                        -- TODO: Does this make sense with cancelled requests?
                                         [ MessageSpaces msg
                                         , MessageSpaces <| Mensam.Screen.Spaces.MessageEffect Mensam.Screen.Spaces.RefreshSpaces
                                         ]
                                 )
-                              <|
-                                Mensam.Screen.Spaces.spaceCreate model.baseUrl
-                                    { jwt = jwt
-                                    , timezone = formData.timezone
-                                    , name = formData.name
-                                    , visibility =
-                                        if formData.visible then
-                                            Mensam.Space.MkVisibilityVisible
-
-                                        else
-                                            Mensam.Space.MkVisibilityHidden
-                                    }
+                                request
                             )
 
                 Mensam.Screen.Spaces.ChooseSpace identifier ->
@@ -1268,8 +1323,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpace screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpace request
                                     )
 
                                 _ ->
@@ -1283,8 +1343,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpace screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.deskList model.baseUrl jwt screenModel
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.deskList (Just tracker) model.baseUrl jwt screenModel
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpace request
                                     )
 
                                 _ ->
@@ -1332,7 +1397,13 @@ update message (MkModel model) =
                                 ScreenSpace screenModel ->
                                     case screenModel.popup of
                                         Just Mensam.Screen.Space.PopupLeave ->
-                                            ( MkModel model
+                                            let
+                                                ( trackerState, request ) =
+                                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                                        \tracker -> Mensam.Screen.Space.spaceLeave (Just tracker) model.baseUrl jwt screenModel.space
+                                            in
+                                            ( MkModel { model | screenRequestTracker = trackerState }
+                                              -- TODO: Does this work well with cancelled requests?
                                             , Platform.Cmd.map
                                                 (\msg ->
                                                     Messages
@@ -1340,8 +1411,7 @@ update message (MkModel model) =
                                                         , MessageSpace <| Mensam.Screen.Space.MessageEffect Mensam.Screen.Space.RefreshSpace
                                                         ]
                                                 )
-                                              <|
-                                                Mensam.Screen.Space.spaceLeave model.baseUrl jwt screenModel.space
+                                                request
                                             )
 
                                         _ ->
@@ -1360,8 +1430,13 @@ update message (MkModel model) =
                                 ScreenSpace screenModel ->
                                     case screenModel.popup of
                                         Just (Mensam.Screen.Space.PopupReservation { desk }) ->
-                                            ( MkModel model
-                                            , Platform.Cmd.map MessageSpace <| Mensam.Screen.Space.reservationCreate model.baseUrl jwt screenModel { desk = { id = desk.id } }
+                                            let
+                                                ( trackerState, request ) =
+                                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                                        \tracker -> Mensam.Screen.Space.reservationCreate (Just tracker) model.baseUrl jwt screenModel { desk = { id = desk.id } }
+                                            in
+                                            ( MkModel { model | screenRequestTracker = trackerState }
+                                            , Platform.Cmd.map MessageSpace request
                                             )
 
                                         _ ->
@@ -1399,8 +1474,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceJoin screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceJoin <| Mensam.Screen.Space.Join.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Join.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceJoin request
                                     )
 
                                 _ ->
@@ -1419,9 +1499,13 @@ update message (MkModel model) =
                                             update (ReportError errorScreen) <| MkModel model
 
                                         Just justRoleId ->
-                                            ( MkModel model
-                                            , Platform.Cmd.map MessageSpaceJoin <|
-                                                Mensam.Screen.Space.Join.spaceJoin model.baseUrl jwt screenModel.spaceId justRoleId screenModel.password
+                                            let
+                                                ( trackerState, request ) =
+                                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                                        \tracker -> Mensam.Screen.Space.Join.spaceJoin (Just tracker) model.baseUrl jwt screenModel.spaceId justRoleId screenModel.password
+                                            in
+                                            ( MkModel { model | screenRequestTracker = trackerState }
+                                            , Platform.Cmd.map MessageSpaceJoin request
                                             )
 
                                 _ ->
@@ -1464,9 +1548,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceRoles screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceRoles <|
-                                        Mensam.Screen.Space.Roles.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Roles.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceRoles request
                                     )
 
                                 _ ->
@@ -1488,16 +1576,22 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceRoles screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceRoles <|
-                                        Mensam.Screen.Space.Roles.roleCreate model.baseUrl
-                                            { jwt = jwt
-                                            , space = screenModel.spaceId
-                                            , name = args.name
-                                            , accessibility = args.accessibility
-                                            , password = args.password
-                                            , permissions = args.permissions
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Roles.roleCreate (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , space = screenModel.spaceId
+                                                        , name = args.name
+                                                        , accessibility = args.accessibility
+                                                        , password = args.password
+                                                        , permissions = args.permissions
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceRoles request
                                     )
 
                                 _ ->
@@ -1540,9 +1634,14 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceRole screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceRole <|
-                                        Mensam.Screen.Space.Role.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.space.id
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Role.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.space.id
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceRole request
                                     )
 
                                 _ ->
@@ -1556,15 +1655,21 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceRole screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceRole <|
-                                        Mensam.Screen.Space.Role.roleEdit model.baseUrl
-                                            { jwt = jwt
-                                            , id = screenModel.role.id
-                                            , name = screenModel.new.name
-                                            , accessibilityAndPassword = screenModel.new.accessibilityAndPassword
-                                            , permissions = screenModel.new.permissions
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Role.roleEdit (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , id = screenModel.role.id
+                                                        , name = screenModel.new.name
+                                                        , accessibilityAndPassword = screenModel.new.accessibilityAndPassword
+                                                        , permissions = screenModel.new.permissions
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceRole request
                                     )
 
                                 _ ->
@@ -1578,13 +1683,19 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceRole screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceRole <|
-                                        Mensam.Screen.Space.Role.roleDelete model.baseUrl
-                                            { jwt = jwt
-                                            , id = screenModel.role.id
-                                            , fallbackId = fallback
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Role.roleDelete (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , id = screenModel.role.id
+                                                        , fallbackId = fallback
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceRole request
                                     )
 
                                 _ ->
@@ -1627,15 +1738,21 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceSettings screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceSettings <|
-                                        Mensam.Screen.Space.Settings.spaceEdit model.baseUrl
-                                            { jwt = jwt
-                                            , id = screenModel.id
-                                            , name = Nothing
-                                            , timezone = Nothing
-                                            , visibility = Nothing
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Settings.spaceEdit (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , id = screenModel.id
+                                                        , name = Nothing
+                                                        , timezone = Nothing
+                                                        , visibility = Nothing
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceSettings request
                                     )
 
                                 _ ->
@@ -1649,15 +1766,21 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceSettings screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceSettings <|
-                                        Mensam.Screen.Space.Settings.spaceEdit model.baseUrl
-                                            { jwt = jwt
-                                            , id = screenModel.id
-                                            , name = screenModel.new.name
-                                            , timezone = Maybe.map .selected screenModel.new.timezone
-                                            , visibility = screenModel.new.visibility
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Settings.spaceEdit (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , id = screenModel.id
+                                                        , name = screenModel.new.name
+                                                        , timezone = Maybe.map .selected screenModel.new.timezone
+                                                        , visibility = screenModel.new.visibility
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceSettings request
                                     )
 
                                 _ ->
@@ -1671,12 +1794,18 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceSettings screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceSettings <|
-                                        Mensam.Screen.Space.Settings.spaceDelete model.baseUrl
-                                            { jwt = jwt
-                                            , id = screenModel.id
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Settings.spaceDelete (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , id = screenModel.id
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceSettings request
                                     )
 
                                 _ ->
@@ -1701,8 +1830,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceSettings screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.downloadSpacePicture model.baseUrl jwt screenModel.id
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Settings.downloadSpacePicture (Just tracker) model.baseUrl jwt screenModel.id
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceSettings request
                                     )
 
                                 _ ->
@@ -1731,8 +1865,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceSettings screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.uploadSpacePicture model.baseUrl jwt screenModel.id file
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Settings.uploadSpacePicture (Just tracker) model.baseUrl jwt screenModel.id file
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceSettings request
                                     )
 
                                 _ ->
@@ -1746,8 +1885,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceSettings screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceSettings <| Mensam.Screen.Space.Settings.deleteSpacePicture model.baseUrl jwt screenModel.id
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Settings.deleteSpacePicture (Just tracker) model.baseUrl jwt screenModel.id
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceSettings request
                                     )
 
                                 _ ->
@@ -1795,9 +1939,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceDesks screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Desks.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceDesks request
                                     )
 
                                 _ ->
@@ -1811,9 +1959,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceDesks screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.listDesks model.baseUrl jwt screenModel.spaceId
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Desks.listDesks (Just tracker) model.baseUrl jwt screenModel.spaceId
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceDesks request
                                     )
 
                                 _ ->
@@ -1827,14 +1979,20 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceDesks screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.createDesk model.baseUrl
-                                            { jwt = jwt
-                                            , space = screenModel.spaceId
-                                            , name = args.name
-                                            , location = Nothing -- TODO: Should we set the location on creation?
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Desks.createDesk (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , space = screenModel.spaceId
+                                                        , name = args.name
+                                                        , location = Nothing -- TODO: Should we set the location on creation?
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceDesks request
                                     )
 
                                 _ ->
@@ -1848,12 +2006,18 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceDesks _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.deleteDesk model.baseUrl
-                                            { jwt = jwt
-                                            , id = args.id
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Desks.deleteDesk (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , id = args.id
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceDesks request
                                     )
 
                                 _ ->
@@ -1867,14 +2031,20 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceDesks _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceDesks <|
-                                        Mensam.Screen.Space.Desks.editDesk model.baseUrl
-                                            { jwt = jwt
-                                            , id = args.id
-                                            , name = args.name
-                                            , location = args.location
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.Space.Desks.editDesk (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , id = args.id
+                                                        , name = args.name
+                                                        , location = args.location
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceDesks request
                                     )
 
                                 _ ->
@@ -1917,9 +2087,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt, user }) ->
                             case model.screen of
                                 ScreenSpaceUsers screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.spaceView model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Users.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceUsers request
                                     )
 
                                 _ ->
@@ -1933,9 +2107,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceUsers _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.profile model.baseUrl jwt userId
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Users.profile (Just tracker) model.baseUrl jwt userId
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceUsers request
                                     )
 
                                 _ ->
@@ -1949,9 +2127,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceUsers _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.profilePicture model.baseUrl jwt userId
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Users.profilePicture (Just tracker) model.baseUrl jwt userId
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceUsers request
                                     )
 
                                 _ ->
@@ -1965,9 +2147,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceUsers screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.editUserRole model.baseUrl jwt screenModel.spaceId args.user args.role
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Users.editUserRole (Just tracker) model.baseUrl jwt screenModel.spaceId args.user args.role
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceUsers request
                                     )
 
                                 _ ->
@@ -1981,9 +2167,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenSpaceUsers screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageSpaceUsers <|
-                                        Mensam.Screen.Space.Users.kickUser model.baseUrl jwt screenModel.spaceId args.user
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Space.Users.kickUser (Just tracker) model.baseUrl jwt screenModel.spaceId args.user
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageSpaceUsers request
                                     )
 
                                 _ ->
@@ -2065,8 +2255,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenReservations screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageReservations <| Mensam.Screen.Reservations.reservationList model.baseUrl { jwt = jwt, model = screenModel }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Reservations.reservationList (Just tracker) model.baseUrl { jwt = jwt, model = screenModel }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageReservations request
                                     )
 
                                 _ ->
@@ -2079,9 +2274,21 @@ update message (MkModel model) =
                                 ScreenReservations screenModel ->
                                     case screenModel.popup of
                                         Just _ ->
-                                            ( MkModel model
-                                            , Platform.Cmd.map (\regularM -> Messages [ MessageReservations regularM, MessageReservations <| Mensam.Screen.Reservations.MessagePure Mensam.Screen.Reservations.ClosePopup ]) <|
-                                                Mensam.Screen.Reservations.reservationList model.baseUrl { jwt = jwt, model = screenModel }
+                                            let
+                                                ( trackerState, request ) =
+                                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                                        \tracker -> Mensam.Screen.Reservations.reservationList (Just tracker) model.baseUrl { jwt = jwt, model = screenModel }
+                                            in
+                                            ( MkModel { model | screenRequestTracker = trackerState }
+                                              -- TODO: Does this work well with cancelled requests?
+                                            , Platform.Cmd.map
+                                                (\regularM ->
+                                                    Messages
+                                                        [ MessageReservations regularM
+                                                        , MessageReservations <| Mensam.Screen.Reservations.MessagePure Mensam.Screen.Reservations.ClosePopup
+                                                        ]
+                                                )
+                                                request
                                             )
 
                                         _ ->
@@ -2101,8 +2308,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenReservations _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageReservations <| Mensam.Screen.Reservations.reservationCancel model.baseUrl { jwt = jwt, id = reservationId }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Reservations.reservationCancel (Just tracker) model.baseUrl { jwt = jwt, id = reservationId }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageReservations request
                                     )
 
                                 _ ->
@@ -2137,8 +2349,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenProfile screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.profile model.baseUrl jwt screenModel.id
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Profile.profile (Just tracker) model.baseUrl jwt screenModel.id
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageProfile request
                                     )
 
                                 _ ->
@@ -2152,8 +2369,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenProfile screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageProfile <| Mensam.Screen.Profile.downloadProfilePicture model.baseUrl jwt screenModel.id
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Profile.downloadProfilePicture (Just tracker) model.baseUrl jwt screenModel.id
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageProfile request
                                     )
 
                                 _ ->
@@ -2191,8 +2413,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenUserSettings screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.profile model.baseUrl jwt screenModel.id
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.UserSettings.profile (Just tracker) model.baseUrl jwt screenModel.id
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageUserSettings request
                                     )
 
                                 _ ->
@@ -2206,12 +2433,18 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenUserSettings _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <|
-                                        Mensam.Screen.UserSettings.changePassword model.baseUrl
-                                            { jwt = jwt
-                                            , newPassword = submitData.newPassword
-                                            }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker ->
+                                                    Mensam.Screen.UserSettings.changePassword (Just tracker)
+                                                        model.baseUrl
+                                                        { jwt = jwt
+                                                        , newPassword = submitData.newPassword
+                                                        }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageUserSettings request
                                     )
 
                                 _ ->
@@ -2225,9 +2458,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenUserSettings _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <|
-                                        Mensam.Screen.UserSettings.confirmationRequest model.baseUrl { jwt = jwt }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.UserSettings.confirmationRequest (Just tracker) model.baseUrl { jwt = jwt }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageUserSettings request
                                     )
 
                                 _ ->
@@ -2241,9 +2478,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenUserSettings _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <|
-                                        Mensam.Screen.UserSettings.setNotificationPreferences model.baseUrl { jwt = jwt, receiveEmailNotifications = Nothing }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.UserSettings.setNotificationPreferences (Just tracker) model.baseUrl { jwt = jwt, receiveEmailNotifications = Nothing }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageUserSettings request
                                     )
 
                                 _ ->
@@ -2257,9 +2498,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenUserSettings _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <|
-                                        Mensam.Screen.UserSettings.setNotificationPreferences model.baseUrl { jwt = jwt, receiveEmailNotifications = Just notificationPreferences.receiveEmailNotifications }
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.UserSettings.setNotificationPreferences (Just tracker) model.baseUrl { jwt = jwt, receiveEmailNotifications = Just notificationPreferences.receiveEmailNotifications }
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageUserSettings request
                                     )
 
                                 _ ->
@@ -2273,8 +2518,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenUserSettings screenModel ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.downloadProfilePicture model.baseUrl jwt screenModel.id
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.UserSettings.downloadProfilePicture (Just tracker) model.baseUrl jwt screenModel.id
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageUserSettings request
                                     )
 
                                 _ ->
@@ -2303,8 +2553,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenUserSettings _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.uploadProfilePicture model.baseUrl jwt file
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.UserSettings.uploadProfilePicture (Just tracker) model.baseUrl jwt file
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageUserSettings request
                                     )
 
                                 _ ->
@@ -2318,8 +2573,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenUserSettings _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageUserSettings <| Mensam.Screen.UserSettings.deleteProfilePicture model.baseUrl jwt
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.UserSettings.deleteProfilePicture (Just tracker) model.baseUrl jwt
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageUserSettings request
                                     )
 
                                 _ ->
@@ -2357,8 +2617,13 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             case model.screen of
                                 ScreenConfirm _ ->
-                                    ( MkModel model
-                                    , Platform.Cmd.map MessageConfirm <| Mensam.Screen.Confirm.confirm model.baseUrl jwt secret
+                                    let
+                                        ( trackerState, request ) =
+                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                                \tracker -> Mensam.Screen.Confirm.confirm (Just tracker) model.baseUrl jwt secret
+                                    in
+                                    ( MkModel { model | screenRequestTracker = trackerState }
+                                    , Platform.Cmd.map MessageConfirm request
                                     )
 
                                 _ ->

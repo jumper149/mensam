@@ -9,6 +9,7 @@ import Mensam.Auth.Bearer
 import Mensam.Element.Button
 import Mensam.Element.Screen
 import Mensam.Error
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 
@@ -180,9 +181,10 @@ type MessageEffect
     | OpenPageUserSettings
 
 
-profile : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-profile baseUrl jwt userId =
-    Mensam.Api.Profile.request baseUrl
+profile : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+profile tracker baseUrl jwt userId =
+    Mensam.Api.Profile.request tracker
+        baseUrl
         { jwt = jwt
         , id = userId
         }
@@ -223,9 +225,10 @@ profile baseUrl jwt userId =
                                 Mensam.Error.http error
 
 
-downloadProfilePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
-downloadProfilePicture baseUrl jwt user =
-    Mensam.Api.PictureDownload.request baseUrl
+downloadProfilePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.Identifier -> Cmd Message
+downloadProfilePicture tracker baseUrl jwt user =
+    Mensam.Api.PictureDownload.request tracker
+        baseUrl
         { jwt = jwt
         , user = user
         }

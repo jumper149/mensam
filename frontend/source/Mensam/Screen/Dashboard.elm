@@ -26,6 +26,7 @@ import Mensam.Reservation
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 import Mensam.Widget.Timezone
@@ -1057,9 +1058,9 @@ type MessageEffect
     | OpenPageToViewReservations
 
 
-spaceList : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Cmd Message
-spaceList baseUrl jwt =
-    Mensam.Api.SpaceList.request baseUrl { jwt = jwt, order = [], member = Just True } <|
+spaceList : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Cmd Message
+spaceList tracker baseUrl jwt =
+    Mensam.Api.SpaceList.request tracker baseUrl { jwt = jwt, order = [], member = Just True } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceList.Success value) ->
@@ -1105,9 +1106,9 @@ spaceList baseUrl jwt =
                                 Mensam.Error.http error
 
 
-ownerGetName : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, space : Mensam.Space.Identifier, owner : Mensam.User.Identifier } -> Cmd Message
-ownerGetName baseUrl args =
-    Mensam.Api.Profile.request baseUrl { jwt = args.jwt, id = args.owner } <|
+ownerGetName : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, space : Mensam.Space.Identifier, owner : Mensam.User.Identifier } -> Cmd Message
+ownerGetName tracker baseUrl args =
+    Mensam.Api.Profile.request tracker baseUrl { jwt = args.jwt, id = args.owner } <|
         \result ->
             case result of
                 Ok (Mensam.Api.Profile.Success value) ->
@@ -1141,9 +1142,10 @@ ownerGetName baseUrl args =
                                 Mensam.Error.http error
 
 
-reservationList : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
-reservationList baseUrl argument =
-    Mensam.Api.ReservationList.request baseUrl
+reservationList : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
+reservationList tracker baseUrl argument =
+    Mensam.Api.ReservationList.request tracker
+        baseUrl
         { jwt = argument.jwt
         , timeWindow =
             { start =
@@ -1199,9 +1201,10 @@ reservationList baseUrl argument =
                                 Mensam.Error.http error
 
 
-reservationCancel : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
-reservationCancel baseUrl argument =
-    Mensam.Api.ReservationCancel.request baseUrl
+reservationCancel : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
+reservationCancel tracker baseUrl argument =
+    Mensam.Api.ReservationCancel.request tracker
+        baseUrl
         { jwt = argument.jwt
         , id = argument.id
         }
@@ -1254,7 +1257,8 @@ reservationCancel baseUrl argument =
 
 
 spaceCreate :
-    Mensam.Url.BaseUrl
+    Maybe Mensam.Tracker.Tracker
+    -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
         , name : Mensam.Space.Name
@@ -1262,8 +1266,8 @@ spaceCreate :
         , visibility : Mensam.Space.Visibility
         }
     -> Cmd Message
-spaceCreate baseUrl req =
-    Mensam.Api.SpaceCreate.request baseUrl req <|
+spaceCreate tracker baseUrl req =
+    Mensam.Api.SpaceCreate.request tracker baseUrl req <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceCreate.Success _) ->
@@ -1293,9 +1297,10 @@ spaceCreate baseUrl req =
                                 Mensam.Error.http error
 
 
-downloadSpacePicture : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
-downloadSpacePicture baseUrl jwt space =
-    Mensam.Api.SpacePictureDownload.request baseUrl
+downloadSpacePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+downloadSpacePicture tracker baseUrl jwt space =
+    Mensam.Api.SpacePictureDownload.request tracker
+        baseUrl
         { jwt = jwt
         , space = space
         }

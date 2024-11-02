@@ -7,6 +7,7 @@ import Mensam.Auth.Bearer
 import Mensam.Element.Button
 import Mensam.Element.Screen
 import Mensam.Error
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 
@@ -91,9 +92,10 @@ type MessageEffect
     | LeaveConfirmationPage
 
 
-confirm : Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.ConfirmationSecret -> Cmd Message
-confirm baseUrl jwt secret =
-    Mensam.Api.Confirm.request baseUrl
+confirm : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.User.ConfirmationSecret -> Cmd Message
+confirm tracker baseUrl jwt secret =
+    Mensam.Api.Confirm.request tracker
+        baseUrl
         { jwt = jwt
         , secret = secret
         }

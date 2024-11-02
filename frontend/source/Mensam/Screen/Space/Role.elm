@@ -19,6 +19,7 @@ import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
+import Mensam.Tracker
 import Mensam.Url
 import Mensam.User
 
@@ -776,9 +777,9 @@ type MessageEffect
     | ReturnToRoles
 
 
-spaceView : Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
-spaceView baseUrl auth id =
-    Mensam.Api.SpaceView.request baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
+spaceView : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView tracker baseUrl auth id =
+    Mensam.Api.SpaceView.request tracker baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
             case result of
                 Ok (Mensam.Api.SpaceView.Success view) ->
@@ -818,7 +819,8 @@ spaceView baseUrl auth id =
 
 
 roleEdit :
-    Mensam.Url.BaseUrl
+    Maybe Mensam.Tracker.Tracker
+    -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
         , id : Mensam.Space.Role.Identifier
@@ -840,8 +842,9 @@ roleEdit :
                 }
         }
     -> Cmd Message
-roleEdit baseUrl args =
-    Mensam.Api.RoleEdit.request baseUrl
+roleEdit tracker baseUrl args =
+    Mensam.Api.RoleEdit.request tracker
+        baseUrl
         { jwt = args.jwt
         , id = args.id
         , name = args.name
@@ -924,15 +927,16 @@ roleEdit baseUrl args =
 
 
 roleDelete :
-    Mensam.Url.BaseUrl
+    Maybe Mensam.Tracker.Tracker
+    -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
         , id : Mensam.Space.Role.Identifier
         , fallbackId : Mensam.Space.Role.Identifier
         }
     -> Cmd Message
-roleDelete baseUrl requestArgs =
-    Mensam.Api.RoleDelete.request baseUrl requestArgs <|
+roleDelete tracker baseUrl requestArgs =
+    Mensam.Api.RoleDelete.request tracker baseUrl requestArgs <|
         \result ->
             case result of
                 Ok Mensam.Api.RoleDelete.Success ->
