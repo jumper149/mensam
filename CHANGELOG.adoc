@@ -1,5 +1,11 @@
 = Changelog
 
+== `0.13.4.0`
+
+* Frontend
+  ** Improve error visualization.
+  ** Cancel remaining requests when switching page.
+
 == `0.13.3.0`
 
 * Frontend
