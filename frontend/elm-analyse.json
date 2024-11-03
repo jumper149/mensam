@@ -1,0 +1,8 @@
+{ "checks" :
+    { "TriggerWords": false
+    , "ExposeAll": false
+    , "MapNothingToNothing": false
+    , "MultiLineRecordFormatting": false
+    , "SingleFieldRecord": false
+    }
+}

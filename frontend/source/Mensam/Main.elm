@@ -325,11 +325,7 @@ routeToModelUpdate route (MkModel model) =
                                                 False
 
                                             Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication auth) ->
-                                                if auth.user.id == identifier then
-                                                    True
-
-                                                else
-                                                    False
+                                                auth.user.id == identifier
                                     }
                     }
 

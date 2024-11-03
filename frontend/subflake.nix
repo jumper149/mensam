@@ -65,6 +65,7 @@
     mkShell {
       packages = [
         pkgs.elmPackages.elm
+        pkgs.elmPackages.elm-analyse
         pkgs.elmPackages.elm-format
         pkgs.elmPackages.elm-language-server
         packages.x86_64-linux.elm-review
