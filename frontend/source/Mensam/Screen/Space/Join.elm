@@ -14,6 +14,7 @@ import Mensam.Api.SpaceView
 import Mensam.Auth.Bearer
 import Mensam.Element.Button
 import Mensam.Element.Color
+import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Http.Tracker
@@ -87,6 +88,13 @@ element model =
                             ]
                           <|
                             Element.text "Join Space"
+                        , Element.paragraph
+                            [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                            ]
+                            [ Element.text "You are about to join "
+                            , Element.text <| Mensam.Space.nameToString model.spaceName
+                            , Element.text ". "
+                            ]
                         , let
                             roleElement =
                                 \role ->
@@ -160,6 +168,24 @@ element model =
 
                           else
                             Element.none
+                        , Element.el
+                            [ Element.width Element.fill
+                            , Element.height <| Element.px 20
+                            ]
+                          <|
+                            case model.roleIdSelected of
+                                Nothing ->
+                                    Element.el
+                                        [ Element.centerX
+                                        , Element.centerY
+                                        , Element.Font.size 14
+                                        , Element.Font.color <| Mensam.Element.Color.bright.red Mensam.Element.Color.Opaque100
+                                        ]
+                                    <|
+                                        Element.text "Choose a role to join."
+
+                                Just _ ->
+                                    Element.none
                         , Element.row
                             [ Element.width Element.fill
                             , Element.spacing 10
@@ -169,11 +195,16 @@ element model =
                                 Mensam.Element.Button.MkButton
                                     { attributes = [ Element.width Element.fill ]
                                     , color = Mensam.Element.Button.Yellow
-                                    , enabled = True
-                                    , label = Element.text "Submit"
+                                    , enabled =
+                                        case model.roleIdSelected of
+                                            Nothing ->
+                                                False
+
+                                            Just _ ->
+                                                True
+                                    , label = Element.text "Join"
                                     , message =
                                         case model.roleIdSelected of
-                                            -- TODO: Show a help text in this case.
                                             Nothing ->
                                                 Nothing
 
@@ -218,6 +249,7 @@ type MessagePure
                 }
         }
     | SetRoleToJoin Mensam.Space.Role.Identifier
+    | ChooseOnlyRoleIfPossible
     | EnterSpacePasswordToJoin (Maybe String)
     | ClosePopup
 
@@ -250,6 +282,19 @@ updatePure message model =
 
         SetRoleToJoin roleId ->
             { model | roleIdSelected = Just roleId, password = Nothing }
+
+        ChooseOnlyRoleIfPossible ->
+            case model.roles of
+                [ onlyRole ] ->
+                    case model.roleIdSelected of
+                        Nothing ->
+                            updatePure (SetRoleToJoin onlyRole.id) model
+
+                        Just _ ->
+                            model
+
+                _ ->
+                    model
 
         EnterSpacePasswordToJoin password ->
             { model | password = password }
@@ -314,6 +359,7 @@ spaceView tracker baseUrl auth model =
                                 , visibility = view.visibility
                                 , yourRole = view.yourRole
                                 }
+                        , MessagePure ChooseOnlyRoleIfPossible
                         ]
 
                 Ok Mensam.Api.SpaceView.ErrorSpaceNotFound ->
