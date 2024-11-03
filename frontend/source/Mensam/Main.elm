@@ -7,7 +7,6 @@ import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
 import Http
-import Mensam.Http.Status
 import Json.Encode as Encode
 import Mensam.Api.Login
 import Mensam.Api.Logout
@@ -25,6 +24,8 @@ import Mensam.Element.Header
 import Mensam.Error
 import Mensam.Error.Incorporation
 import Mensam.Flags
+import Mensam.Http.Status
+import Mensam.Http.Tracker
 import Mensam.Screen.Confirm
 import Mensam.Screen.Dashboard
 import Mensam.Screen.Landing
@@ -47,7 +48,6 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Storage
 import Mensam.Time
-import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 import Platform.Cmd
