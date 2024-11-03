@@ -1,4 +1,4 @@
-module Http.Extra exposing (..)
+module Mensam.Http.Status exposing (..)
 
 import Http
 

@@ -7,7 +7,7 @@ import Element.Events.Pointer
 import Element.Font
 import Html.Attributes
 import Http
-import Http.Extra
+import Mensam.Http.Status
 import Json.Encode as Encode
 import Mensam.Api.Login
 import Mensam.Api.Logout
@@ -86,7 +86,7 @@ type Model
             { now : Time.Posix
             , zone : Mensam.Time.Timezone
             }
-        , httpStatus : Http.Extra.Status
+        , httpStatus : Mensam.Http.Status.Status
         }
 
 
@@ -426,7 +426,7 @@ init flagsRaw url navigationKey =
                     { now = Time.millisToPosix 0
                     , zone = Mensam.Time.timezoneEtcUtc
                     }
-                , httpStatus = Http.Extra.Done
+                , httpStatus = Mensam.Http.Status.Done
                 }
 
         withFlags =
@@ -470,7 +470,7 @@ type Message
     | HideHamburgerMenu
     | SetTimeNow Time.Posix
     | Auth MessageAuth
-    | SetHttpStatus Http.Extra.Status
+    | SetHttpStatus Mensam.Http.Status.Status
     | OpenDialogToSignIn
     | CloseDialogToSignIn
     | MessageLoginPopup Mensam.Screen.Login.Message
@@ -3082,7 +3082,7 @@ subscriptions : Model -> Sub Message
 subscriptions _ =
     Platform.Sub.batch
         [ Time.every 100 <| \time -> Messages [ SetTimeNow time, Auth <| CheckExpirationExplicit time ]
-        , Http.track "http" (SetHttpStatus << Http.Extra.status)
+        , Http.track "http" (SetHttpStatus << Mensam.Http.Status.status)
         ]
 
 

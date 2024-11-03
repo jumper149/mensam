@@ -6,7 +6,7 @@ import Element.Events.Pointer
 import Element.Font
 import Element.Input
 import Html.Attributes
-import Http.Extra
+import Mensam.Http.Status
 import Mensam.Auth
 import Mensam.Element.Button
 import Mensam.Element.Color
@@ -24,7 +24,7 @@ type alias Content =
     , unfoldHamburgerDropDown : Bool
     , authenticated : Mensam.Auth.Model
     , title : Maybe String
-    , httpStatus : Http.Extra.Status
+    , httpStatus : Mensam.Http.Status.Status
     }
 
 
@@ -340,13 +340,13 @@ elementTitle maybeTitle =
                 ]
 
 
-elementStatus : Http.Extra.Status -> Element.Element Message
+elementStatus : Mensam.Http.Status.Status -> Element.Element Message
 elementStatus status =
     case status of
-        Http.Extra.Done ->
+        Mensam.Http.Status.Done ->
             Element.none
 
-        Http.Extra.Loading ->
+        Mensam.Http.Status.Loading ->
             Element.el
                 [ Element.width <| Element.px 30
                 , Element.height <| Element.fill
