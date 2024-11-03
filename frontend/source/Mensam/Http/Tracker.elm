@@ -1,4 +1,4 @@
-module Mensam.Tracker exposing
+module Mensam.Http.Tracker exposing
     ( State
     , Tracker
     , clear

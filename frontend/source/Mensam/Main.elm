@@ -47,7 +47,7 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Storage
 import Mensam.Time
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 import Platform.Cmd
@@ -76,7 +76,7 @@ type Model
         { navigationKey : Browser.Navigation.Key
         , baseUrl : Mensam.Url.BaseUrl
         , screen : Screen
-        , screenRequestTracker : Mensam.Tracker.State
+        , screenRequestTracker : Mensam.Http.Tracker.State
         , authenticated : Mensam.Auth.Model
         , dialogToSignIn : Maybe Mensam.Screen.Login.Model
         , errors : Mensam.Error.Incorporation.IncorporatedErrors
@@ -416,7 +416,7 @@ init flagsRaw url navigationKey =
                 { navigationKey = navigationKey
                 , baseUrl = Mensam.Url.mockUnsafe
                 , screen = ScreenLanding Mensam.Screen.Landing.init
-                , screenRequestTracker = Mensam.Tracker.init
+                , screenRequestTracker = Mensam.Http.Tracker.init
                 , authenticated = Mensam.Auth.SignedOut
                 , dialogToSignIn = Nothing
                 , errors = Mensam.Error.Incorporation.init
@@ -607,7 +607,7 @@ update message (MkModel model) =
                         \(MkModel m) ->
                             let
                                 ( trackerState, cancellations ) =
-                                    Mensam.Tracker.clear m.screenRequestTracker
+                                    Mensam.Http.Tracker.clear m.screenRequestTracker
                             in
                             ( MkModel { m | screenRequestTracker = trackerState }
                             , Cmd.batch
@@ -983,7 +983,7 @@ update message (MkModel model) =
                         ScreenRegister _ ->
                             let
                                 ( trackerState, request ) =
-                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                    Mensam.Http.Tracker.register model.screenRequestTracker <|
                                         \tracker -> Mensam.Screen.Register.register (Just tracker) model.baseUrl args
                             in
                             ( MkModel { model | screenRequestTracker = trackerState }
@@ -1030,7 +1030,7 @@ update message (MkModel model) =
                         ScreenLogin screenModel ->
                             let
                                 ( trackerState, request ) =
-                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                    Mensam.Http.Tracker.register model.screenRequestTracker <|
                                         \tracker -> Mensam.Screen.Login.login (Just tracker) model.baseUrl screenModel
                             in
                             ( MkModel { model | screenRequestTracker = trackerState }
@@ -1103,7 +1103,7 @@ update message (MkModel model) =
                                 ScreenDashboard _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Dashboard.spaceList (Just tracker) model.baseUrl jwt
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1123,7 +1123,7 @@ update message (MkModel model) =
                                 ScreenDashboard _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Dashboard.ownerGetName (Just tracker) model.baseUrl { jwt = jwt, space = args.space, owner = args.owner }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1143,7 +1143,7 @@ update message (MkModel model) =
                                 ScreenDashboard _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Dashboard.downloadSpacePicture (Just tracker) model.baseUrl jwt space
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1166,7 +1166,7 @@ update message (MkModel model) =
                                 ScreenDashboard screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Dashboard.reservationList (Just tracker) model.baseUrl { jwt = jwt, model = screenModel }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1186,7 +1186,7 @@ update message (MkModel model) =
                                 ScreenDashboard _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Dashboard.reservationCancel (Just tracker) model.baseUrl { jwt = jwt, id = reservationId }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1212,7 +1212,7 @@ update message (MkModel model) =
                                 ScreenDashboard _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Dashboard.spaceCreate (Just tracker)
                                                         model.baseUrl
@@ -1263,7 +1263,7 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             let
                                 ( trackerState, request ) =
-                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                    Mensam.Http.Tracker.register model.screenRequestTracker <|
                                         \tracker -> Mensam.Screen.Spaces.spaceList (Just tracker) model.baseUrl jwt
                             in
                             ( MkModel { model | screenRequestTracker = trackerState }
@@ -1278,7 +1278,7 @@ update message (MkModel model) =
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
                             let
                                 ( trackerState, request ) =
-                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                    Mensam.Http.Tracker.register model.screenRequestTracker <|
                                         \tracker ->
                                             Mensam.Screen.Spaces.spaceCreate (Just tracker)
                                                 model.baseUrl
@@ -1346,7 +1346,7 @@ update message (MkModel model) =
                                 ScreenSpace screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1366,7 +1366,7 @@ update message (MkModel model) =
                                 ScreenSpace screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.deskList (Just tracker) model.baseUrl jwt screenModel
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1420,7 +1420,7 @@ update message (MkModel model) =
                                         Just Mensam.Screen.Space.PopupLeave ->
                                             let
                                                 ( trackerState, request ) =
-                                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                                    Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                         \tracker -> Mensam.Screen.Space.spaceLeave (Just tracker) model.baseUrl jwt screenModel.space
                                             in
                                             ( MkModel { model | screenRequestTracker = trackerState }
@@ -1453,7 +1453,7 @@ update message (MkModel model) =
                                         Just (Mensam.Screen.Space.PopupReservation { desk }) ->
                                             let
                                                 ( trackerState, request ) =
-                                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                                    Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                         \tracker -> Mensam.Screen.Space.reservationCreate (Just tracker) model.baseUrl jwt screenModel { desk = { id = desk.id } }
                                             in
                                             ( MkModel { model | screenRequestTracker = trackerState }
@@ -1497,7 +1497,7 @@ update message (MkModel model) =
                                 ScreenSpaceJoin screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Join.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1522,7 +1522,7 @@ update message (MkModel model) =
                                         Just justRoleId ->
                                             let
                                                 ( trackerState, request ) =
-                                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                                    Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                         \tracker -> Mensam.Screen.Space.Join.spaceJoin (Just tracker) model.baseUrl jwt screenModel.spaceId justRoleId screenModel.password
                                             in
                                             ( MkModel { model | screenRequestTracker = trackerState }
@@ -1571,7 +1571,7 @@ update message (MkModel model) =
                                 ScreenSpaceRoles screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Roles.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1599,7 +1599,7 @@ update message (MkModel model) =
                                 ScreenSpaceRoles screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Roles.roleCreate (Just tracker)
                                                         model.baseUrl
@@ -1657,7 +1657,7 @@ update message (MkModel model) =
                                 ScreenSpaceRole screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Role.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.space.id
                                     in
@@ -1678,7 +1678,7 @@ update message (MkModel model) =
                                 ScreenSpaceRole screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Role.roleEdit (Just tracker)
                                                         model.baseUrl
@@ -1706,7 +1706,7 @@ update message (MkModel model) =
                                 ScreenSpaceRole screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Role.roleDelete (Just tracker)
                                                         model.baseUrl
@@ -1761,7 +1761,7 @@ update message (MkModel model) =
                                 ScreenSpaceSettings screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Settings.spaceEdit (Just tracker)
                                                         model.baseUrl
@@ -1789,7 +1789,7 @@ update message (MkModel model) =
                                 ScreenSpaceSettings screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Settings.spaceEdit (Just tracker)
                                                         model.baseUrl
@@ -1817,7 +1817,7 @@ update message (MkModel model) =
                                 ScreenSpaceSettings screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Settings.spaceDelete (Just tracker)
                                                         model.baseUrl
@@ -1853,7 +1853,7 @@ update message (MkModel model) =
                                 ScreenSpaceSettings screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Settings.downloadSpacePicture (Just tracker) model.baseUrl jwt screenModel.id
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1888,7 +1888,7 @@ update message (MkModel model) =
                                 ScreenSpaceSettings screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Settings.uploadSpacePicture (Just tracker) model.baseUrl jwt screenModel.id file
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1908,7 +1908,7 @@ update message (MkModel model) =
                                 ScreenSpaceSettings screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Settings.deleteSpacePicture (Just tracker) model.baseUrl jwt screenModel.id
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1962,7 +1962,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Desks.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1982,7 +1982,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Desks.listDesks (Just tracker) model.baseUrl jwt screenModel.spaceId
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2002,7 +2002,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Desks.createDesk (Just tracker)
                                                         model.baseUrl
@@ -2029,7 +2029,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Desks.deleteDesk (Just tracker)
                                                         model.baseUrl
@@ -2054,7 +2054,7 @@ update message (MkModel model) =
                                 ScreenSpaceDesks _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.Space.Desks.editDesk (Just tracker)
                                                         model.baseUrl
@@ -2110,7 +2110,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Users.spaceView (Just tracker) model.baseUrl { jwt = jwt, yourUserId = user.id } screenModel.spaceId
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2130,7 +2130,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Users.profile (Just tracker) model.baseUrl jwt userId
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2150,7 +2150,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Users.profilePicture (Just tracker) model.baseUrl jwt userId
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2170,7 +2170,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Users.editUserRole (Just tracker) model.baseUrl jwt screenModel.spaceId args.user args.role
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2190,7 +2190,7 @@ update message (MkModel model) =
                                 ScreenSpaceUsers screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Space.Users.kickUser (Just tracker) model.baseUrl jwt screenModel.spaceId args.user
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2278,7 +2278,7 @@ update message (MkModel model) =
                                 ScreenReservations screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Reservations.reservationList (Just tracker) model.baseUrl { jwt = jwt, model = screenModel }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2297,7 +2297,7 @@ update message (MkModel model) =
                                         Just _ ->
                                             let
                                                 ( trackerState, request ) =
-                                                    Mensam.Tracker.register model.screenRequestTracker <|
+                                                    Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                         \tracker -> Mensam.Screen.Reservations.reservationList (Just tracker) model.baseUrl { jwt = jwt, model = screenModel }
                                             in
                                             ( MkModel { model | screenRequestTracker = trackerState }
@@ -2331,7 +2331,7 @@ update message (MkModel model) =
                                 ScreenReservations _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Reservations.reservationCancel (Just tracker) model.baseUrl { jwt = jwt, id = reservationId }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2372,7 +2372,7 @@ update message (MkModel model) =
                                 ScreenProfile screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Profile.profile (Just tracker) model.baseUrl jwt screenModel.id
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2392,7 +2392,7 @@ update message (MkModel model) =
                                 ScreenProfile screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Profile.downloadProfilePicture (Just tracker) model.baseUrl jwt screenModel.id
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2436,7 +2436,7 @@ update message (MkModel model) =
                                 ScreenUserSettings screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.UserSettings.profile (Just tracker) model.baseUrl jwt screenModel.id
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2456,7 +2456,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker ->
                                                     Mensam.Screen.UserSettings.changePassword (Just tracker)
                                                         model.baseUrl
@@ -2481,7 +2481,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.UserSettings.confirmationRequest (Just tracker) model.baseUrl { jwt = jwt }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2501,7 +2501,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.UserSettings.setNotificationPreferences (Just tracker) model.baseUrl { jwt = jwt, receiveEmailNotifications = Nothing }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2521,7 +2521,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.UserSettings.setNotificationPreferences (Just tracker) model.baseUrl { jwt = jwt, receiveEmailNotifications = Just notificationPreferences.receiveEmailNotifications }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2541,7 +2541,7 @@ update message (MkModel model) =
                                 ScreenUserSettings screenModel ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.UserSettings.downloadProfilePicture (Just tracker) model.baseUrl jwt screenModel.id
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2576,7 +2576,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.UserSettings.uploadProfilePicture (Just tracker) model.baseUrl jwt file
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2596,7 +2596,7 @@ update message (MkModel model) =
                                 ScreenUserSettings _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.UserSettings.deleteProfilePicture (Just tracker) model.baseUrl jwt
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -2640,7 +2640,7 @@ update message (MkModel model) =
                                 ScreenConfirm _ ->
                                     let
                                         ( trackerState, request ) =
-                                            Mensam.Tracker.register model.screenRequestTracker <|
+                                            Mensam.Http.Tracker.register model.screenRequestTracker <|
                                                 \tracker -> Mensam.Screen.Confirm.confirm (Just tracker) model.baseUrl jwt secret
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }

@@ -10,7 +10,7 @@ import Mensam.Api.Register
 import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Error
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 
@@ -298,7 +298,7 @@ onEnter msg =
 
 
 register :
-    Maybe Mensam.Tracker.Tracker
+    Maybe Mensam.Http.Tracker.Tracker
     -> Mensam.Url.BaseUrl
     ->
         { username : Mensam.User.Name

@@ -18,7 +18,7 @@ import Mensam.Reservation
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 import Mensam.Widget.Date
@@ -737,7 +737,7 @@ type MessageEffect
     | CancelReservation Mensam.Reservation.Identifier
 
 
-reservationList : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
+reservationList : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
 reservationList tracker baseUrl argument =
     Mensam.Api.ReservationList.request tracker
         baseUrl
@@ -796,7 +796,7 @@ reservationList tracker baseUrl argument =
                                 Mensam.Error.http error
 
 
-reservationCancel : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
+reservationCancel : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
 reservationCancel tracker baseUrl argument =
     Mensam.Api.ReservationCancel.request tracker
         baseUrl

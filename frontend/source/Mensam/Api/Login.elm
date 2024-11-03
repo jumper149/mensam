@@ -5,7 +5,7 @@ import Iso8601
 import Json.Decode as Decode
 import Mensam.Auth.Basic
 import Mensam.Auth.Bearer
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 import Time
@@ -21,7 +21,7 @@ type Response
     | ErrorAuth Mensam.Auth.Basic.Error
 
 
-request : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
 request tracker baseUrl body handleResult =
     Http.request
         { method = "POST"
@@ -42,7 +42,7 @@ request tracker baseUrl body handleResult =
         , body = Http.emptyBody
         , expect = Http.expectStringResponse handleResult responseResult
         , timeout = Nothing
-        , tracker = Maybe.map Mensam.Tracker.toHttp tracker
+        , tracker = Maybe.map Mensam.Http.Tracker.toHttp tracker
         }
 
 

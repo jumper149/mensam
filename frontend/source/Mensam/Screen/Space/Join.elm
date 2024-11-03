@@ -20,7 +20,7 @@ import Mensam.NameOrIdentifier
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 
@@ -282,7 +282,7 @@ onEnter msg =
         )
 
 
-spaceView : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
+spaceView : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
 spaceView tracker baseUrl auth model =
     Mensam.Api.SpaceView.request tracker baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = model.spaceId } <|
         \result ->
@@ -344,7 +344,7 @@ spaceView tracker baseUrl auth model =
                                 Mensam.Error.http error
 
 
-spaceJoin : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.Space.Role.Identifier -> Maybe String -> Cmd Message
+spaceJoin : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Mensam.Space.Role.Identifier -> Maybe String -> Cmd Message
 spaceJoin tracker baseUrl jwt spaceId roleId password =
     Mensam.Api.SpaceJoin.request tracker baseUrl { jwt = jwt, role = Mensam.NameOrIdentifier.Identifier roleId, space = Mensam.NameOrIdentifier.Identifier spaceId, password = password } <|
         \result ->

@@ -23,7 +23,7 @@ import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 
 
@@ -636,7 +636,7 @@ type MessageEffect
 
 
 spaceEdit :
-    Maybe Mensam.Tracker.Tracker
+    Maybe Mensam.Http.Tracker.Tracker
     -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
@@ -681,7 +681,7 @@ spaceEdit tracker baseUrl requestArgs =
 
 
 spaceDelete :
-    Maybe Mensam.Tracker.Tracker
+    Maybe Mensam.Http.Tracker.Tracker
     -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
@@ -729,7 +729,7 @@ selectSpacePictureToUpload =
     File.Select.file [ "image/jpeg" ] <| \file -> MessageEffect <| UploadSpacePictureUpload file
 
 
-downloadSpacePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+downloadSpacePicture : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
 downloadSpacePicture tracker baseUrl jwt space =
     Mensam.Api.SpacePictureDownload.request tracker
         baseUrl
@@ -749,7 +749,7 @@ downloadSpacePicture tracker baseUrl jwt space =
                                 Mensam.Error.http error
 
 
-uploadSpacePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> File.File -> Cmd Message
+uploadSpacePicture : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> File.File -> Cmd Message
 uploadSpacePicture tracker baseUrl jwt space file =
     Mensam.Api.SpacePictureUpload.request tracker
         baseUrl
@@ -799,7 +799,7 @@ uploadSpacePicture tracker baseUrl jwt space file =
                                     Mensam.Error.http error
 
 
-deleteSpacePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+deleteSpacePicture : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
 deleteSpacePicture tracker baseUrl jwt space =
     Mensam.Api.SpacePictureDelete.request tracker
         baseUrl

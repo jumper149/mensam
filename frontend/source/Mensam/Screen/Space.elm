@@ -27,7 +27,7 @@ import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Svg.Color
 import Mensam.Time
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 import Mensam.Widget.Date
@@ -1714,7 +1714,7 @@ type MessageEffect
     | SubmitReservation
 
 
-spaceView : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
+spaceView : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Model -> Cmd Message
 spaceView tracker baseUrl auth model =
     Mensam.Api.SpaceView.request tracker baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = model.space } <|
         \result ->
@@ -1786,7 +1786,7 @@ spaceView tracker baseUrl auth model =
                                 Mensam.Error.http error
 
 
-spaceLeave : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+spaceLeave : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
 spaceLeave tracker baseUrl jwt spaceId =
     Mensam.Api.SpaceLeave.request tracker baseUrl { jwt = jwt, space = Mensam.NameOrIdentifier.Identifier spaceId } <|
         \result ->
@@ -1829,7 +1829,7 @@ spaceLeave tracker baseUrl jwt spaceId =
                                 Mensam.Error.http error
 
 
-deskList : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
+deskList : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Model -> Cmd Message
 deskList tracker baseUrl jwt model =
     Mensam.Api.DeskList.request tracker baseUrl { jwt = jwt, space = model.space, timeWindow = { start = Nothing, end = Nothing } } <|
         \result ->
@@ -1877,7 +1877,7 @@ deskList tracker baseUrl jwt model =
                                 Mensam.Error.http error
 
 
-reservationCreate : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Model -> { desk : { id : Mensam.Desk.Identifier } } -> Cmd Message
+reservationCreate : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Model -> { desk : { id : Mensam.Desk.Identifier } } -> Cmd Message
 reservationCreate tracker baseUrl jwt model { desk } =
     Mensam.Api.ReservationCreate.request tracker
         baseUrl

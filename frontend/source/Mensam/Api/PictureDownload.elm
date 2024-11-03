@@ -4,7 +4,7 @@ import Base64.Encode
 import Bytes
 import Http
 import Mensam.Auth.Bearer
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 import Url.Builder
@@ -20,7 +20,7 @@ type Response
     = Success { url : String }
 
 
-request : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
+request : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Request -> (Result Http.Error Response -> a) -> Cmd a
 request tracker baseUrl body handleResult =
     Http.request
         { method = "GET"
@@ -36,7 +36,7 @@ request tracker baseUrl body handleResult =
         , body = Http.emptyBody
         , expect = Http.expectBytesResponse handleResult responseResult
         , timeout = Nothing
-        , tracker = Maybe.map Mensam.Tracker.toHttp tracker
+        , tracker = Maybe.map Mensam.Http.Tracker.toHttp tracker
         }
 
 

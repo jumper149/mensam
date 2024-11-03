@@ -20,7 +20,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 
@@ -833,7 +833,7 @@ type MessageEffect
     | ReturnToSpace
 
 
-spaceView : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
 spaceView tracker baseUrl auth id =
     Mensam.Api.SpaceView.request tracker baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
@@ -870,7 +870,7 @@ spaceView tracker baseUrl auth id =
 
 
 createDesk :
-    Maybe Mensam.Tracker.Tracker
+    Maybe Mensam.Http.Tracker.Tracker
     -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
@@ -920,7 +920,7 @@ createDesk tracker baseUrl args =
 
 
 deleteDesk :
-    Maybe Mensam.Tracker.Tracker
+    Maybe Mensam.Http.Tracker.Tracker
     -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
@@ -966,7 +966,7 @@ deleteDesk tracker baseUrl args =
 
 
 editDesk :
-    Maybe Mensam.Tracker.Tracker
+    Maybe Mensam.Http.Tracker.Tracker
     -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
@@ -1015,7 +1015,7 @@ editDesk tracker baseUrl args =
                     MessageEffect <| ReportError <| Mensam.Error.http error
 
 
-listDesks : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+listDesks : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
 listDesks tracker baseUrl jwt spaceId =
     Mensam.Api.DeskList.request tracker baseUrl { jwt = jwt, space = spaceId, timeWindow = { start = Nothing, end = Nothing } } <|
         \result ->

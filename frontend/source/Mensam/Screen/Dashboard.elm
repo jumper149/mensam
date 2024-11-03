@@ -26,7 +26,7 @@ import Mensam.Reservation
 import Mensam.Space
 import Mensam.Space.Role
 import Mensam.Time
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 import Mensam.Widget.Timezone
@@ -1058,7 +1058,7 @@ type MessageEffect
     | OpenPageToViewReservations
 
 
-spaceList : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Cmd Message
+spaceList : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Cmd Message
 spaceList tracker baseUrl jwt =
     Mensam.Api.SpaceList.request tracker baseUrl { jwt = jwt, order = [], member = Just True } <|
         \result ->
@@ -1106,7 +1106,7 @@ spaceList tracker baseUrl jwt =
                                 Mensam.Error.http error
 
 
-ownerGetName : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, space : Mensam.Space.Identifier, owner : Mensam.User.Identifier } -> Cmd Message
+ownerGetName : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, space : Mensam.Space.Identifier, owner : Mensam.User.Identifier } -> Cmd Message
 ownerGetName tracker baseUrl args =
     Mensam.Api.Profile.request tracker baseUrl { jwt = args.jwt, id = args.owner } <|
         \result ->
@@ -1142,7 +1142,7 @@ ownerGetName tracker baseUrl args =
                                 Mensam.Error.http error
 
 
-reservationList : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
+reservationList : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, model : Model } -> Cmd Message
 reservationList tracker baseUrl argument =
     Mensam.Api.ReservationList.request tracker
         baseUrl
@@ -1201,7 +1201,7 @@ reservationList tracker baseUrl argument =
                                 Mensam.Error.http error
 
 
-reservationCancel : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
+reservationCancel : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, id : Mensam.Reservation.Identifier } -> Cmd Message
 reservationCancel tracker baseUrl argument =
     Mensam.Api.ReservationCancel.request tracker
         baseUrl
@@ -1257,7 +1257,7 @@ reservationCancel tracker baseUrl argument =
 
 
 spaceCreate :
-    Maybe Mensam.Tracker.Tracker
+    Maybe Mensam.Http.Tracker.Tracker
     -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
@@ -1297,7 +1297,7 @@ spaceCreate tracker baseUrl req =
                                 Mensam.Error.http error
 
 
-downloadSpacePicture : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
+downloadSpacePicture : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Mensam.Auth.Bearer.Jwt -> Mensam.Space.Identifier -> Cmd Message
 downloadSpacePicture tracker baseUrl jwt space =
     Mensam.Api.SpacePictureDownload.request tracker
         baseUrl

@@ -12,7 +12,7 @@ import Mensam.Auth.Bearer
 import Mensam.Element.Button
 import Mensam.Element.Color
 import Mensam.Error
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 import Time
@@ -160,7 +160,7 @@ onEnter msg =
         )
 
 
-login : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> Model -> Cmd Message
+login : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> Model -> Cmd Message
 login tracker baseUrl model =
     Mensam.Api.Login.request tracker
         baseUrl

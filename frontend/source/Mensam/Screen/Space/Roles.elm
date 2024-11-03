@@ -16,7 +16,7 @@ import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Space
 import Mensam.Space.Role
-import Mensam.Tracker
+import Mensam.Http.Tracker
 import Mensam.Url
 import Mensam.User
 
@@ -659,7 +659,7 @@ type MessageEffect
     | ReturnToSpaceSettings
 
 
-spaceView : Maybe Mensam.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
+spaceView : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
 spaceView tracker baseUrl auth id =
     Mensam.Api.SpaceView.request tracker baseUrl { jwt = auth.jwt, yourUserId = auth.yourUserId, id = id } <|
         \result ->
@@ -705,7 +705,7 @@ spaceView tracker baseUrl auth id =
 
 
 roleCreate :
-    Maybe Mensam.Tracker.Tracker
+    Maybe Mensam.Http.Tracker.Tracker
     -> Mensam.Url.BaseUrl
     ->
         { jwt : Mensam.Auth.Bearer.Jwt
