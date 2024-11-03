@@ -16,6 +16,7 @@
       ]
     , "settings":
       { "direnv.path.executable": "/bin/direnv"
+      , "elmLS.elmReviewDiagnostics": "warning"
       , "haskell.formattingProvider": "fourmolu"
       , "haskell.manageHLS": "PATH"
       }
