@@ -169,6 +169,7 @@ library
     , Mensam.Client.UI.Menu
     , Mensam.Client.UI.Register
     , Mensam.Client.UI.Spaces
+    , Mensam.Main
     , Mensam.Server
     , Mensam.Server.Application
     , Mensam.Server.Application.Configured
@@ -234,6 +235,17 @@ library
     , Text.Email.Text
   hs-source-dirs: source/library
 
+executable mensam
+  build-depends:
+    , mensam
+  main-is: Main.hs
+  hs-source-dirs: source/executable
+  default-language: GHC2021
+  default-extensions:
+    NoImplicitPrelude
+  ghc-options:
+    -threaded
+
 executable mensam-test
   import:
     , dependencies
@@ -278,7 +290,7 @@ executable mensam-client
   ghc-options:
     -threaded
 
-test-suite mensam
+test-suite mensam-testsuite
   import:
     , dependencies
     , language
