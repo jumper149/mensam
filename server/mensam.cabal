@@ -182,8 +182,6 @@ library
     , Mensam.Server.Application.Environment.Class
     , Mensam.Server.Application.LoggerCustom
     , Mensam.Server.Application.LoggerCustom.Class
-    , Mensam.Server.Application.Options
-    , Mensam.Server.Application.Options.Class
     , Mensam.Server.Application.Secret
     , Mensam.Server.Application.Secret.Class
     , Mensam.Server.Application.SeldaPool
@@ -201,6 +199,7 @@ library
     , Mensam.Server.Environment
     , Mensam.Server.Jpeg
     , Mensam.Server.OpenApi
+    , Mensam.Server.Options
     , Mensam.Server.Reservation
     , Mensam.Server.Secrets
     , Mensam.Server.Server

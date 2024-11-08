@@ -4,6 +4,7 @@ module Mensam.Main where
 
 import Mensam.Client qualified
 import Mensam.Server qualified
+import Mensam.Server.Options qualified
 
 import Data.Foldable
 import Data.Kind
@@ -15,8 +16,10 @@ main :: IO ()
 main = do
   options <- customExecParser parserPrefs parserInfoOptions
   case optionExecute options of
-    MkExecutableServer () -> Mensam.Server.main
-    MkExecutableClient () -> Mensam.Client.main
+    MkExecutableServer serverOptions ->
+      Mensam.Server.mainWithOptions serverOptions
+    MkExecutableClient () ->
+      Mensam.Client.main
 
 parserPrefs :: ParserPrefs
 parserPrefs =
@@ -40,15 +43,14 @@ data Options = MkOptions
 
 type Executable :: Type
 data Executable
-  = MkExecutableServer ()
+  = MkExecutableServer Mensam.Server.Options.Options
   | MkExecutableClient ()
 
 parserInfoOptions :: ParserInfo Options
 parserInfoOptions =
   info parserOptions $
     fold
-      [ fullDesc
-      , header "Mensam"
+      [ header "Mensam"
       ]
 
 parserOptions :: Parser Options
@@ -57,7 +59,7 @@ parserOptions =
     execute <-
       subparser $
         fold
-          [ command "server" (MkExecutableServer <$> parserServerOptions)
+          [ command "server" (MkExecutableServer <$> Mensam.Server.Options.parserInfoOptions)
           , command "client" (MkExecutableClient <$> parserClientOptions)
           ]
     pure $
@@ -65,15 +67,6 @@ parserOptions =
         { optionUnit = ()
         , optionExecute = execute
         }
-
-parserServerOptions :: ParserInfo ()
-parserServerOptions =
-  info
-    (parserAddHelper <*> pure ())
-    ( fold
-        [ progDesc "host a webserver"
-        ]
-    )
 
 parserClientOptions :: ParserInfo ()
 parserClientOptions =

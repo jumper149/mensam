@@ -11,8 +11,6 @@ import Mensam.Server.Application.Environment.Acquisition
 import Mensam.Server.Application.Environment.Class
 import Mensam.Server.Application.LoggerCustom
 import Mensam.Server.Application.LoggerCustom.Class
-import Mensam.Server.Application.Options
-import Mensam.Server.Application.Options.Class
 import Mensam.Server.Application.Secret
 import Mensam.Server.Application.Secret.Class
 import Mensam.Server.Application.SeldaPool
@@ -33,7 +31,6 @@ type Transformers :: Stack
 type Transformers =
   NilT
     :.|> EnvironmentT
-    :.|> OptionsT
     :.|> CustomLoggingT
     :.|> ConfiguredT
     :.|> SeldaPoolT
@@ -48,7 +45,6 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadIO, MonadUnliftIO)
   deriving newtype (MonadThrow, MonadCatch, MonadMask)
   deriving newtype (MonadEnvironment)
-  deriving newtype (MonadOptions)
   deriving newtype (MonadLogger, MonadLoggerCustom)
   deriving newtype (MonadConfigured)
   deriving newtype (MonadSeldaPool)
@@ -67,7 +63,6 @@ runApplicationT app = do
   let runTransformers =
         RunNilT
           :..> runEnvironmentT env
-          :..> runAppOptionsT
           :..> runAppCustomLoggingT
             . (traverse_ logLine preLog >>)
           :..> runAppConfiguredT
