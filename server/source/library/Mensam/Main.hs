@@ -36,9 +36,8 @@ parserPrefs =
     }
 
 type Options :: Type
-data Options = MkOptions
-  { optionUnit :: ()
-  , optionExecute :: Executable
+newtype Options = MkOptions
+  { optionExecute :: Executable
   }
 
 type Executable :: Type
@@ -55,7 +54,7 @@ parserInfoOptions =
 
 parserOptions :: Parser Options
 parserOptions =
-  parserAddHelper <*> do
+  parserAddHelper <*> parserAddVersion <*> do
     execute <-
       subparser $
         fold
@@ -64,8 +63,7 @@ parserOptions =
           ]
     pure $
       MkOptions
-        { optionUnit = ()
-        , optionExecute = execute
+        { optionExecute = execute
         }
 
 parserClientOptions :: ParserInfo ()
@@ -76,6 +74,15 @@ parserClientOptions =
         [ progDesc "connect to a webserver"
         ]
     )
+
+parserAddVersion :: Parser (a -> a)
+parserAddVersion =
+  abortOption (InfoMsg "TODO: Add Version.") $
+    fold
+      [ short 'v'
+      , long "version"
+      , help "display version"
+      ]
 
 parserAddHelper :: Parser (a -> a)
 parserAddHelper =
