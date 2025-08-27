@@ -19,4 +19,4 @@ cradle:
       component: "mensam:exe:mensam-client"
 
     - path: "source/test"
-      component: "mensam:test:mensam"
+      component: "mensam:test:mensam-testsuite"
