@@ -107,7 +107,7 @@ newtype ConstrainedDouble constraints = MkConstrainedDoubleUnsafe {unConstrained
 instance A.FromJSON (ConstrainedDouble '[]) where
   parseJSON val = do
     parsedDouble <- A.parseJSON val
-    if parsedDouble < (1 / 0) && parsedDouble > (-1 / 0)
+    if parsedDouble < (1 / 0) && parsedDouble > ((-1) / 0)
       then pure MkConstrainedDoubleUnsafe {unConstrainedDouble = parsedDouble}
       else fail "Parsing constrained double failed: Not a number"
 instance (A.FromJSON (ConstrainedDouble cs), KnownNat n) => A.FromJSON (ConstrainedDouble (MkConstraintDoubleGreaterEqual n : cs)) where

@@ -74,8 +74,7 @@ login auth =
     maybeTimeout <- do
       durationValid <- authTimeoutSeconds . configAuth <$> configuration
       let maybeTimeExpiration =
-            (`T.addUTCTime` timeCurrent)
-              <$> (T.secondsToNominalDiffTime . fromInteger <$> durationValid)
+            (`T.addUTCTime` timeCurrent) . T.secondsToNominalDiffTime . fromInteger <$> durationValid
       pure maybeTimeExpiration
     logDebug "Creating session."
     seldaResult <-
