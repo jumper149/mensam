@@ -153,6 +153,11 @@
       servant-client = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-client" (source.servant.outPath + "/servant-client") {});
       servant-client-core = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-client-core" (source.servant.outPath + "/servant-client-core") {});
       servant-server = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-server" (source.servant.outPath + "/servant-server") {});
+      tzdata = haskellPrev.callHackageDirect {
+        pkg = "tzdata";
+        ver = "0.2.20240201.0";
+        sha256 = "sha256-cN4SiPNS6Be5TYNfqW93pa5cGG+AxVCkI5dx+S8agrU=";
+      } {};
       wai-control = haskellPrev.callCabal2nix "wai-control" source.wai-control.outPath {};
     });
   };
