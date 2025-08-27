@@ -3,12 +3,14 @@
   packages.x86_64-linux.default =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-server-full" ''
+      #!${pkgs.bash}/bin/bash
       MENSAM_CONFIG_FILE="${packages.x86_64-linux.config}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server
     '';
 
   packages.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-test-full" ''
+      #!${pkgs.bash}/bin/bash
       export MENSAM_CONFIG_FILE="${packages.x86_64-linux.config}"
       export MENSAM_LOG_LEVEL=LevelWarn
       ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-test
@@ -17,12 +19,14 @@
   packages.x86_64-linux.mensam-openapi =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-openapi-full" ''
+      #!${pkgs.bash}/bin/bash
       ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-openapi
     '';
 
   packages.x86_64-linux.mensam-client =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-client-full" ''
+      #!${pkgs.bash}/bin/bash
       ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-client $@
     '';
 
