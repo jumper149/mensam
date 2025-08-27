@@ -131,8 +131,8 @@
       };
 
       "elm/virtual-dom" = {
-        sha256 = "1yvb8px2z62xd578ag2q0r5hd1vkz9y7dfkx05355iiy1d7jwq4v";
-        version = "1.0.3";
+        sha256 = "1brihc087l8bd30vjl5vg1yg4mgxrngh9854qsjs5lrp026h517l";
+        version = "1.0.4";
       };
 
       "folkertdev/elm-flate" = {
