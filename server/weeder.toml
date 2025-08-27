@@ -1,13 +1,15 @@
 roots = [
   "^Main.main$",
+  "^Mensam.Main.main$",
   "^Mensam.Client.main$",
-  "^Mensam.Server.main$",
   # TODO: Work in progress:
   "^Mensam.Client.Application.Event.runAppEventT$",
   "^Mensam.Client.Application.MensamClient.*$",
   "^Mensam.Client.Debug.runF$",
+  "^Mensam.Server.main$",
   "^Mensam.Server.Database.Extra.updateUnique$",
   "^Mensam.Server.Database.Space.spaceListDesks$",
+  "^Mensam.Server.OpenApi.openapiJsonStdout$",
   "^Mensam.Server.User.userSessionGet$",
   "^Mensam.Server.User.userEmailPreferencesGet$",
 ]
