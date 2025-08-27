@@ -54,8 +54,6 @@
           pkgs.curl
           pkgs.jq
           pkgs.openapi-generator-cli
-          pkgs.nix-tree
-          pkgs.nil
         ];
         shells =
           let

@@ -19,6 +19,7 @@ common language
     NumDecimals
     OverloadedStrings
     RoleAnnotations
+    TypeAbstractions
     TypeData
     TypeFamilies
   ghc-options:
@@ -28,7 +29,9 @@ common language
     -Wno-missed-specialisations
     -Wno-missing-export-lists
     -Wno-missing-import-lists
+    -Wno-missing-role-annotations
     -Wno-missing-safe-haskell-mode
+    -Wno-term-variable-capture
     -Wno-unsafe
     -Wno-unticked-promoted-constructors
   if flag(cabal2nix)

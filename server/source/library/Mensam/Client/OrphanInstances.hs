@@ -4,6 +4,7 @@ module Mensam.Client.OrphanInstances where
 
 import Mensam.API.Route.Api.User
 
+import Data.Base64.Types qualified as Base64
 import Data.ByteString qualified as B
 import Data.Kind
 import Data.Proxy
@@ -53,7 +54,7 @@ data Credentials = MkCredentials {credentialsUsername :: T.Text, credentialsPass
 
 credentialsAuthorizationHeader :: Credentials -> Header
 credentialsAuthorizationHeader MkCredentials {credentialsUsername, credentialsPassword} =
-  (hAuthorization,) $ ("Basic " <>) $ T.encodeUtf8 $ T.encodeBase64 $ credentialsUsername <> ":" <> credentialsPassword
+  (hAuthorization,) $ ("Basic " <>) $ T.encodeUtf8 $ Base64.extractBase64 $ T.encodeBase64 $ credentialsUsername <> ":" <> credentialsPassword
 
 jwTokenAuthorizationHeader :: Jwt -> Header
 jwTokenAuthorizationHeader MkJwt {unJwt = jwt} =

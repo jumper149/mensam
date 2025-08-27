@@ -129,7 +129,8 @@ type instance BasicAuthCfg = RunLoginInIO
 type instance SessionCfg = RunLoginInIO
 
 type RunLoginInIO :: Type
-data RunLoginInIO = forall m.
+data RunLoginInIO
+  = forall m.
   (MonadIO m, MonadLogger m, MonadSeldaPool m, MonadThrow m) =>
   MkRunLoginInIO {runLoginInIO :: m (AuthResult UserAuthenticated) -> IO (AuthResult UserAuthenticated)}
 

@@ -125,16 +125,22 @@
     let
       source = {
         selda = prev.fetchFromGitHub {
-          owner  = "teto";
-          repo   = "selda";
-          rev    = "c6790f1a3d5edfe547594206860bb49733bc0e48";
-          sha256 = "sha256-jmMBFs5GVihyH7DqLAWTeT6EBDChYeNBKxuUJNWYe+w=";
+          owner  = "jumper149";
+          repo   = "selda-teto";
+          rev    = "6fd2b969032b144e69633b136a84be1f7f7f5111";
+          sha256 = "sha256-IJCv8I1iTOCcnKVvLuavn2I/RedVWGJ4plBx7inJk4M=";
         };
         servant = prev.fetchFromGitHub {
           owner  = "haskell-servant";
           repo   = "servant";
           rev    = "v0.20.2";
           sha256 = "sha256-OW5R6RYRZ3i+xSKUILPDPNjt+yB8YJKlrIQ5TW3N3ho=";
+        };
+        wai-control = prev.fetchFromGitHub {
+          owner  = "jumper149";
+          repo   = "wai-control";
+          rev    = "829c252c284e1153fc60b8a4358185d9d932959b";
+          sha256 = "sha256-2lFwVyeF45x1PO1VKjbJJdR3Q6QTArcqxgURjT8Khmc=";
         };
       };
     in {
@@ -147,6 +153,7 @@
       servant-client = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-client" (source.servant.outPath + "/servant-client") {});
       servant-client-core = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-client-core" (source.servant.outPath + "/servant-client-core") {});
       servant-server = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-server" (source.servant.outPath + "/servant-server") {});
+      wai-control = haskellPrev.callCabal2nix "wai-control" source.wai-control.outPath {};
     });
   };
 
