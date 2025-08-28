@@ -33,7 +33,7 @@ The files link:./registry.dat[registry.dat] and link:./versions.dat[versions.dat
 [source,bash]
 ----
 # Update `elm-srcs.nix`.
-elm2nix convert > elm-srcs.nix
+elm2nix convert > elm-srcs-mensam.nix
 
 # Update `registry.dat` and `versions.dat`.
 elm2nix snapshot

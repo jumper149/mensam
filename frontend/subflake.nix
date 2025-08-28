@@ -36,10 +36,10 @@
      src = pkgs.fetchFromGitHub {
        owner  = "jfmengels";
        repo   = "node-elm-review";
-       rev    = "9ab7d07703ba0b51370bdb8b862a8949e81ca82f";
-       sha256 = "sha256-YB8i2AEAecu2/488IgQSVYTQVm7hTY+rccH9SETFU6Y=";
+       rev    = "v2.13.4";
+       sha256 = "sha256-rhNLIShZERxrzdTdrPcthTQ+gHUikgR0jchBfcBDGTo=";
      };
-     npmDepsHash = "sha256-BnvEdkKiFbUtEFGom9ZaCqZzId4ViGU3PlZ/BJCmX4A=";
+     npmDepsHash = "sha256-mI94fYNKZ9Jx1Iyo/VjZqaXQ64tZA2S8mtn5l6TtCSc=";
      nativeBuildInputs = [ pkgs.coreutils ];
      buildInputs = [ elmPackages.elm elmPackages. elm-format ];
      buildPhase = ''
@@ -103,7 +103,7 @@
       name = "elm-review"; # TODO: Necessary to avoid segmentation fault.
       src = ./.;
       buildPhase = pkgs.elmPackages.fetchElmDeps {
-        elmPackages = import ./elm-srcs.nix // import ./review/elm-srcs.nix;
+        elmPackages = import ./elm-srcs.nix;
         elmVersion = "0.19.1";
         registryDat = ./registry.dat;
       };
