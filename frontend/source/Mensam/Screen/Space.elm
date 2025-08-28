@@ -6,6 +6,7 @@ import Element.Background
 import Element.Border
 import Element.Events.Pointer
 import Element.Font
+import Element.Input
 import Element.Window
 import Html.Attributes
 import List.Extra
@@ -1176,6 +1177,37 @@ deskRoom model =
         , Element.Border.width 1
         , Element.Background.color <| Mensam.Element.Color.dark.white Mensam.Element.Color.Opaque100
         , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
+        , Element.inFront <|
+            Element.row
+                [ Element.alignTop
+                , Element.alignRight
+                , Element.spacing 15
+                , Element.padding 20
+                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                ]
+                [ Element.Input.button
+                    [ Element.width <| Element.px 30
+                    , Element.height <| Element.px 30
+                    , Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque25
+                    , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque50 ]
+                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                    ]
+                    { onPress = Just <| MessagePure <| MessageWindow Element.Window.MessageZoomIn
+                    , label =
+                        Element.el [ Element.centerX, Element.centerY ] <| Element.text "+"
+                    }
+                , Element.Input.button
+                    [ Element.width <| Element.px 30
+                    , Element.height <| Element.px 30
+                    , Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque25
+                    , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque50 ]
+                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                    ]
+                    { onPress = Just <| MessagePure <| MessageWindow Element.Window.MessageZoomOut
+                    , label =
+                        Element.el [ Element.centerX, Element.centerY ] <| Element.text "-"
+                    }
+                ]
         ]
     <|
         Element.Window.view model.window
@@ -1186,6 +1218,7 @@ deskRoom model =
                 , Element.Window.onDown <| MessagePure << MessageWindow
                 , Element.Window.onMove <| MessagePure << MessageWindow
                 , Element.Window.onUp <| MessagePure << MessageWindow
+                , Element.Window.onLeave <| MessagePure << MessageWindow
                 , Element.Border.width 2
                 , Element.htmlAttribute <| Html.Attributes.style "touch-action" "pinch-zoom"
                 ]

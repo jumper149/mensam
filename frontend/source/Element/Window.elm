@@ -12,6 +12,7 @@ init config { position } =
     , state =
         State
             { position = position |> toViewportCoordinates config
+            , zoom = MkZoomLevel config.viewportInitialZoom
             , draggingPointerPosition = Nothing
             }
     }
@@ -27,6 +28,8 @@ type Message
     = MessageDown PointerPosition
     | MessageMove PointerPosition
     | MessageUp
+    | MessageZoomIn
+    | MessageZoomOut
 
 
 update : Message -> Model -> Model
@@ -56,6 +59,12 @@ update mouseEvent model =
         MessageUp ->
             { model | state = model.state |> setDraggingPointerPosition Nothing }
 
+        MessageZoomIn ->
+            { model | state = zoom { minZoom = MkZoomLevel <| 1 / model.config.viewportZoomMaximumMagnification, maxZoom = MkZoomLevel model.config.viewportZoomMaximumMagnification, step = model.config.viewportZoomStep } model.state }
+
+        MessageZoomOut ->
+            { model | state = zoom { minZoom = MkZoomLevel <| 1 / model.config.viewportZoomMaximumMagnification, maxZoom = MkZoomLevel model.config.viewportZoomMaximumMagnification, step = 1 / model.config.viewportZoomStep } model.state }
+
 
 view : Model -> { viewportAttributes : List (Element.Attribute msg), contentAttributes : List (Element.Attribute msg) } -> Element.Element msg -> Element.Element msg
 view model { viewportAttributes, contentAttributes } content =
@@ -69,9 +78,12 @@ view model { viewportAttributes, contentAttributes } content =
                 String.join " " <|
                     -- Center the content box
                     "translate(-50%, -50%)"
-                        :: listWhen (x /= 0 || y /= 0)
-                            -- Move center point to position
-                            [ "translate(" ++ String.fromFloat x ++ "px ," ++ String.fromFloat y ++ "px)" ]
+                        :: (listWhen (x /= 0 || y /= 0)
+                                -- Move center point to position
+                                [ "translate(" ++ String.fromFloat x ++ "px ," ++ String.fromFloat y ++ "px)" ]
+                                ++ -- Set the zoom level
+                                   [ "scale(" ++ String.fromFloat (zoomFactor state.zoom) ++ ")" ]
+                           )
     in
     Element.el
         ([ Element.htmlAttribute <| HA.style "overflow" "hidden"
@@ -96,6 +108,7 @@ view model { viewportAttributes, contentAttributes } content =
 type State
     = State
         { position : Coordinate -- Position in viewport coordinate system
+        , zoom : ZoomLevel
         , draggingPointerPosition : Maybe PointerPosition
         }
 
@@ -108,6 +121,26 @@ movePositionByDelta delta (State state) =
 setDraggingPointerPosition : Maybe PointerPosition -> State -> State
 setDraggingPointerPosition mMousePosition (State state) =
     State { state | draggingPointerPosition = mMousePosition }
+
+
+zoom : { minZoom : ZoomLevel, maxZoom : ZoomLevel, step : Float } -> State -> State
+zoom { minZoom, maxZoom, step } (State state) =
+    State
+        { state
+            | zoom =
+                let
+                    newZoom =
+                        zoomFactor state.zoom * step
+                in
+                if newZoom < zoomFactor minZoom then
+                    minZoom
+
+                else if newZoom > zoomFactor maxZoom then
+                    maxZoom
+
+                else
+                    MkZoomLevel newZoom
+        }
 
 
 
@@ -157,14 +190,26 @@ pointerPositionToTranslation positions =
             coordinateMinus new old
 
 
+type ZoomLevel
+    = MkZoomLevel Float
+
+
+zoomFactor : ZoomLevel -> Float
+zoomFactor (MkZoomLevel zoomLevel) =
+    zoomLevel
+
+
 type alias Config =
     { viewportOffset : { x : Float, y : Float }
+    , viewportInitialZoom : Float
+    , viewportZoomStep : Float -- A factor that is applied to the zoom level.
+    , viewportZoomMaximumMagnification : Float
     }
 
 
 defaultConfig : Config
 defaultConfig =
-    { viewportOffset = { x = 0, y = 0 } }
+    { viewportOffset = { x = 0, y = 0 }, viewportInitialZoom = 1, viewportZoomStep = 1.1, viewportZoomMaximumMagnification = 4 }
 
 
 onDown : (Message -> msg) -> Element.Attribute msg
@@ -184,5 +229,12 @@ onMove handler =
 onUp : (Message -> msg) -> Element.Attribute msg
 onUp handler =
     Element.Events.Pointer.onUp <|
+        \_ ->
+            handler MessageUp
+
+
+onLeave : (Message -> msg) -> Element.Attribute msg
+onLeave handler =
+    Element.Events.Pointer.onLeave <|
         \_ ->
             handler MessageUp

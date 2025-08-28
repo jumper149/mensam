@@ -1,5 +1,8 @@
 = Changelog
 
+* Frontend
+  ** Add zoom buttons to room view.
+
 == `0.13.4.0`
 
 * Frontend
