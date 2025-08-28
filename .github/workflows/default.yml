@@ -30,7 +30,7 @@ jobs:
     - name: "Set up Nix"
       uses: cachix/install-nix-action@v27
       with:
-        extra_nix_config: sandbox = false
+        extra_nix_config: sandbox = relaxed
     - name: "Set up Cachix"
       uses: cachix/cachix-action@v15
       with:
