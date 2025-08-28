@@ -1,7 +1,13 @@
 = Changelog
 
+== `0.14.0.0`
+
 * Frontend
+  ** Updated dependencies.
+  ** Automatically select the single role, when only one role is available when joining a space.
   ** Add zoom buttons to room view.
+* Backend
+  ** Updated dependencies.
 
 == `0.13.4.0`
 
