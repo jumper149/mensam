@@ -112,7 +112,14 @@
               isBrokenCheck = matrix:
                 matrix.deployment == "nixpublic" && matrix.attr == "githubActions.checks.x86_64-linux.\"subflake-final-mensam-test\"";
               removeBrokenChecks = __filter (matrix: ! isBrokenCheck matrix);
-            in removeBrokenChecks includeWithAllDimensions;
+              requiresSandboxFalse = matrix:
+                matrix.attr == "githubActions.checks.x86_64-linux.\"subflake-frontend-elm-review\"";
+              setSandboxField = matrix:
+                if requiresSandboxFalse matrix
+                then matrix // { sandbox = false; }
+                else matrix // { sandbox = true; };
+              setSandboxFields = map setSandboxField;
+            in setSandboxFields (removeBrokenChecks includeWithAllDimensions);
         };
       };
 

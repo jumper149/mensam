@@ -40,6 +40,10 @@ jobs:
       run: echo "\"${{ matrix.deployment }}\"" > final/deployment.json
     - name: "Check"
       run: nix build ".#${{ matrix.attr }}" --print-build-logs
+      if: ${{ matrix.sandbox }}
+    - name: "Check (without sandbox)"
+      run: nix build ".#${{ matrix.attr }}" --print-build-logs --option sandbox false
+      if: ${{ ! matrix.sandbox }}
     strategy:
       fail-fast: false
       matrix: ${{fromJSON(needs.check-matrix.outputs.matrix)}}
