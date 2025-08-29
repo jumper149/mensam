@@ -778,7 +778,7 @@ element baseUrl model =
 
                                     Just timezonePickerModel ->
                                         Element.el
-                                            [ Element.width <| Element.px 250
+                                            [ Element.width Element.fill
                                             ]
                                         <|
                                             Element.map (MessagePure << DialogToCreateTimezonePickerMessage) <|
