@@ -456,7 +456,7 @@ type Message
     | ChangedUrl Url.Url
     | InitModel { url : Url.Url }
     | SetUrl Route
-    | SetUrlAfterCancellingRequests Route
+    | SetUrlAfterCancellingRequests { target : Route, addCurrentPageToHistory : Bool }
     | SetModel Route
     | ReportError Mensam.Error.Error
     | ClearErrors
@@ -596,7 +596,7 @@ update message (MkModel model) =
             <|
                 MkModel model
 
-        SetUrlAfterCancellingRequests route ->
+        SetUrlAfterCancellingRequests { target, addCurrentPageToHistory } ->
             update
                 (Messages
                     [ Raw <|
@@ -607,7 +607,11 @@ update message (MkModel model) =
                             in
                             ( MkModel { m | screenRequestTracker = trackerState }
                             , Cmd.batch
-                                [ Browser.Navigation.pushUrl model.navigationKey <| routeToUrl model.baseUrl route
+                                [ if addCurrentPageToHistory then
+                                    Browser.Navigation.pushUrl model.navigationKey <| routeToUrl model.baseUrl target
+
+                                  else
+                                    Browser.Navigation.replaceUrl model.navigationKey <| routeToUrl model.baseUrl target
                                 , cancellations
                                 ]
                             )
@@ -938,7 +942,7 @@ update message (MkModel model) =
                             )
 
                 Mensam.Screen.Login.Register ->
-                    update (SetUrlAfterCancellingRequests RouteRegister) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteRegister, addCurrentPageToHistory = True }) <| MkModel model
 
                 Mensam.Screen.Login.SetSession session ->
                     update
@@ -955,10 +959,10 @@ update message (MkModel model) =
         MessageLanding (Mensam.Screen.Landing.MessageEffect m) ->
             case m of
                 Mensam.Screen.Landing.Login ->
-                    update (SetUrlAfterCancellingRequests <| RouteLogin Nothing) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteLogin Nothing, addCurrentPageToHistory = True }) <| MkModel model
 
                 Mensam.Screen.Landing.Register ->
-                    update (SetUrlAfterCancellingRequests RouteRegister) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteRegister, addCurrentPageToHistory = True }) <| MkModel model
 
         MessageRegister (Mensam.Screen.Register.MessagePure m) ->
             case model.screen of
@@ -1037,14 +1041,14 @@ update message (MkModel model) =
                             update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Login.Register ->
-                    update (SetUrlAfterCancellingRequests RouteRegister) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteRegister, addCurrentPageToHistory = True }) <| MkModel model
 
                 Mensam.Screen.Login.SetSession session ->
                     update
                         (Messages
                             [ Auth <| SetSession session
                             , Auth <| RefreshUserInfo
-                            , SetUrlAfterCancellingRequests RouteDashboard
+                            , SetUrlAfterCancellingRequests { target = RouteDashboard, addCurrentPageToHistory = True }
                             ]
                         )
                     <|
@@ -1150,7 +1154,7 @@ update message (MkModel model) =
                                     update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Dashboard.ChooseSpace identifier ->
-                    update (SetUrlAfterCancellingRequests <| RouteSpace identifier) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteSpace identifier, addCurrentPageToHistory = True }) <| MkModel model
 
                 Mensam.Screen.Dashboard.RefreshReservations ->
                     case model.authenticated of
@@ -1193,10 +1197,10 @@ update message (MkModel model) =
                                     update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Dashboard.OpenPageToBrowseSpaces ->
-                    update (SetUrlAfterCancellingRequests RouteSpaces) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteSpaces, addCurrentPageToHistory = True }) <| MkModel model
 
                 Mensam.Screen.Dashboard.OpenPageToViewReservations ->
-                    update (SetUrlAfterCancellingRequests RouteReservations) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteReservations, addCurrentPageToHistory = True }) <| MkModel model
 
                 Mensam.Screen.Dashboard.SubmitCreateFirstSpace spaceInfo ->
                     case model.authenticated of
@@ -1302,7 +1306,7 @@ update message (MkModel model) =
                             )
 
                 Mensam.Screen.Spaces.ChooseSpace identifier ->
-                    update (SetUrlAfterCancellingRequests <| RouteSpace identifier) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteSpace identifier, addCurrentPageToHistory = True }) <| MkModel model
 
         MessageSpaces (Mensam.Screen.Spaces.Messages ms) ->
             case model.screen of
@@ -1378,7 +1382,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.OpenPageToJoin ->
                     case model.screen of
                         ScreenSpace screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpaceJoin { spaceId = screenModel.space, roleId = Nothing, password = Nothing }) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceJoin { spaceId = screenModel.space, roleId = Nothing, password = Nothing }, addCurrentPageToHistory = False }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1386,7 +1390,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.OpenPageToUsers ->
                     case model.screen of
                         ScreenSpace screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpaceUsers screenModel.space) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceUsers screenModel.space, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1394,7 +1398,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.OpenPageToSettings ->
                     case model.screen of
                         ScreenSpace screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpaceSettings screenModel.space) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceSettings screenModel.space, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1402,7 +1406,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.OpenPageToDesks ->
                     case model.screen of
                         ScreenSpace screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpaceDesks screenModel.space) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceDesks screenModel.space, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1534,7 +1538,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Join.JoinedSuccessfully ->
                     case model.screen of
                         ScreenSpaceJoin screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpace screenModel.spaceId) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpace screenModel.spaceId, addCurrentPageToHistory = False }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1583,7 +1587,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Roles.ChooseRole roleId ->
                     case model.screen of
                         ScreenSpaceRoles screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpaceRole { spaceId = screenModel.spaceId, roleId = roleId }) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceRole { spaceId = screenModel.spaceId, roleId = roleId }, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1620,7 +1624,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Roles.ReturnToSpaceSettings ->
                     case model.screen of
                         ScreenSpaceRoles screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpaceSettings screenModel.spaceId) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceSettings screenModel.spaceId, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1724,7 +1728,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Role.ReturnToRoles ->
                     case model.screen of
                         ScreenSpaceRole screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpaceRoles screenModel.space.id) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceRoles screenModel.space.id, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1834,7 +1838,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Settings.ReturnToSpace ->
                     case model.screen of
                         ScreenSpaceSettings screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpace screenModel.id) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpace screenModel.id, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1917,7 +1921,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Settings.ReturnToSpaces ->
                     case model.screen of
                         ScreenSpaceSettings _ ->
-                            update (SetUrlAfterCancellingRequests RouteSpaces) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaces, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -1925,7 +1929,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Settings.OpenPageToRoles ->
                     case model.screen of
                         ScreenSpaceSettings screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpaceRoles screenModel.id) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceRoles screenModel.id, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -2073,7 +2077,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Desks.ReturnToSpace ->
                     case model.screen of
                         ScreenSpaceDesks screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpace screenModel.spaceId) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpace screenModel.spaceId, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -2212,7 +2216,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Users.ReturnToSpace ->
                     case model.screen of
                         ScreenSpaceUsers screenModel ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpace screenModel.spaceId) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpace screenModel.spaceId, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -2220,7 +2224,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Users.OpenPageToProfile userId ->
                     case model.screen of
                         ScreenSpaceUsers _ ->
-                            update (SetUrlAfterCancellingRequests <| RouteProfile userId) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteProfile userId, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -2228,7 +2232,7 @@ update message (MkModel model) =
                 Mensam.Screen.Space.Users.OpenPageSpaceRoles spaceId ->
                     case model.screen of
                         ScreenSpaceUsers _ ->
-                            update (SetUrlAfterCancellingRequests <| RouteSpaceRoles spaceId) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceRoles spaceId, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -2399,7 +2403,7 @@ update message (MkModel model) =
                                     update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.Profile.OpenPageUserSettings ->
-                    update (SetUrlAfterCancellingRequests RouteUserSettings) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteUserSettings, addCurrentPageToHistory = True }) <| MkModel model
 
         MessageProfile (Mensam.Screen.Profile.Messages ms) ->
             case model.screen of
@@ -2603,7 +2607,7 @@ update message (MkModel model) =
                                     update (ReportError errorScreen) <| MkModel model
 
                 Mensam.Screen.UserSettings.OpenPageUserProfile user ->
-                    update (SetUrlAfterCancellingRequests <| RouteProfile user.id) <| MkModel model
+                    update (SetUrlAfterCancellingRequests { target = RouteProfile user.id, addCurrentPageToHistory = True }) <| MkModel model
 
         MessageUserSettings (Mensam.Screen.UserSettings.Messages ms) ->
             case model.screen of
@@ -2649,7 +2653,7 @@ update message (MkModel model) =
                 Mensam.Screen.Confirm.LeaveConfirmationPage ->
                     case model.screen of
                         ScreenConfirm _ ->
-                            update (SetUrlAfterCancellingRequests RouteDashboard) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteDashboard, addCurrentPageToHistory = False }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
@@ -2725,10 +2729,10 @@ headerMessage (MkModel model) message =
         Mensam.Element.Header.ClickMensam ->
             case model.authenticated of
                 Mensam.Auth.SignedOut ->
-                    SetUrlAfterCancellingRequests RouteLanding
+                    SetUrlAfterCancellingRequests { target = RouteLanding, addCurrentPageToHistory = True }
 
                 Mensam.Auth.SignedIn _ ->
-                    SetUrlAfterCancellingRequests RouteDashboard
+                    SetUrlAfterCancellingRequests { target = RouteDashboard, addCurrentPageToHistory = True }
 
         Mensam.Element.Header.ClickHamburger ->
             if model.viewHamburgerMenu then
@@ -2741,7 +2745,7 @@ headerMessage (MkModel model) message =
             HideHamburgerMenu
 
         Mensam.Element.Header.SignIn ->
-            SetUrlAfterCancellingRequests <| RouteLogin Nothing
+            SetUrlAfterCancellingRequests { target = RouteLogin Nothing, addCurrentPageToHistory = True }
 
         Mensam.Element.Header.ClickErrors ->
             if model.viewErrors then
@@ -2842,25 +2846,25 @@ dropdownMessage (MkModel _) message =
         Mensam.Element.Dropdown.YourProfile id ->
             Messages
                 [ HideHamburgerMenu
-                , SetUrlAfterCancellingRequests <| RouteProfile id
+                , SetUrlAfterCancellingRequests { target = RouteProfile id, addCurrentPageToHistory = True }
                 ]
 
         Mensam.Element.Dropdown.YourDashboard ->
             Messages
                 [ HideHamburgerMenu
-                , SetUrlAfterCancellingRequests RouteDashboard
+                , SetUrlAfterCancellingRequests { target = RouteDashboard, addCurrentPageToHistory = True }
                 ]
 
         Mensam.Element.Dropdown.YourReservations ->
             Messages
                 [ HideHamburgerMenu
-                , SetUrlAfterCancellingRequests RouteReservations
+                , SetUrlAfterCancellingRequests { target = RouteReservations, addCurrentPageToHistory = True }
                 ]
 
         Mensam.Element.Dropdown.UserSettings ->
             Messages
                 [ HideHamburgerMenu
-                , SetUrlAfterCancellingRequests RouteUserSettings
+                , SetUrlAfterCancellingRequests { target = RouteUserSettings, addCurrentPageToHistory = True }
                 ]
 
         Mensam.Element.Dropdown.SignOut ->
