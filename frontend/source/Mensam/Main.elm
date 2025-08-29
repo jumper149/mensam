@@ -2792,7 +2792,7 @@ headerContent (MkModel model) =
                 Just "Your Dashboard"
 
             ScreenSpaces _ ->
-                Just "Spaces"
+                Just "Public Spaces"
 
             ScreenSpace screenModel ->
                 Just <| Mensam.Space.nameToString screenModel.name
