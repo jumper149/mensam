@@ -1,5 +1,7 @@
 = Changelog
 
+== `0.15.0.0`
+
 * API, Frontend, Backend, Database
   ** Renamed space `Visibility` to `Discoverability`.
     *** Renamed `visible` to `public`.
