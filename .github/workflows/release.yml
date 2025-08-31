@@ -21,9 +21,13 @@ jobs:
       run: nix build ".#dockerImages.default" --print-build-logs
     - name: "Load Docker Image"
       run: docker load --input result
-    - name: "Set Docker Image Tag"
+    - name: "Set Docker Image Tag (git commit hash)"
+      run: docker tag mensam:${GITHUB_SHA} jumper149/mensam:${GITHUB_SHA}
+    - name: "Push Docker Image to Docker Hub (git commit hash)"
+      run: docker push jumper149/mensam:${GITHUB_SHA}
+    - name: "Set Docker Image Tag (version tag)"
       run: docker tag mensam:${GITHUB_SHA} jumper149/mensam:${GITHUB_REF#refs/tags/}
-    - name: "Push Docker Image to Docker Hub"
+    - name: "Push Docker Image to Docker Hub (version tag)"
       run: docker push jumper149/mensam:${GITHUB_REF#refs/tags/}
 name: "Release"
 on:
