@@ -36,7 +36,7 @@
 
   packages.x86_64-linux.fallback =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    self.subflakes.static.packages.x86_64-linux.default;
+    self.subflakes.fallback.packages.x86_64-linux.default;
 
   deployment = builtins.fromJSON (builtins.readFile ./deployment.json);
 

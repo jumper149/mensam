@@ -34,8 +34,9 @@
           setup = importSubflake ./setup/subflake.nix { inherit nixpkgs; } { };
           server = importSubflake ./server/subflake.nix { inherit nixpkgs weeder-nix; } { inherit setup; };
           frontend = importSubflake ./frontend/subflake.nix { inherit nixpkgs; } { inherit setup; };
-          static = importSubflake ./static/subflake.nix { inherit nixpkgs; } { inherit setup frontend; };
-          final = importSubflake ./final/subflake.nix { inherit nixpkgs; } { inherit setup server static; };
+          fallback = importSubflake ./fallback/subflake.nix { inherit nixpkgs; } { inherit setup; };
+          static = importSubflake ./static/subflake.nix { inherit nixpkgs; } { inherit setup fallback frontend; };
+          final = importSubflake ./final/subflake.nix { inherit nixpkgs; } { inherit setup fallback server static; };
         };
 
     packages.x86_64-linux.default = self.subflakes.final.packages.x86_64-linux.default;

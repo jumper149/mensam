@@ -14,6 +14,7 @@
 
         sed -i 's|https://cdn.redoc.ly/redoc/logo-mini.svg|static/favicon.png|g' build/redoc.standalone.js
 
+        cp --target-directory=build --recursive ${self.subflakes.fallback.packages.x86_64-linux.default.outPath}/*
         cp --target-directory=build --recursive ${self.subflakes.frontend.packages.x86_64-linux.default.outPath}/*
       '';
       installPhase = ''

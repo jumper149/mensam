@@ -132,8 +132,8 @@ link:./final[Final]:: Configuration, wrapper and NixOS module
   │                  │
   │           ┌──▶server
   │           │
-  │     ┌── final
-  │     │     │
+  │     ┌── final   ┌──▶fallback
+  │     │     │     │
   │     │     └──▶static──▶frontend
   │     ▼           │         │
   └──▶setup◀────────┘         │
