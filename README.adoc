@@ -122,6 +122,7 @@ These are just regular nix files, but follow the naming conventions of flakes.
 link:./setup[Setup]:: Nix overlay
 link:./server[Server]:: HTTP API, Server executable, CLI-client executable
 link:./frontend[Frontend]:: Single page web application
+link:./fallback[Fallback]:: Fallback web page to be served during downtime
 link:./static[Static]:: Static files served by the server
 link:./final[Final]:: Configuration, wrapper and NixOS module
 
