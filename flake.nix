@@ -54,6 +54,7 @@
           pkgs.asciidoctor
           pkgs.curl
           pkgs.jq
+          pkgs.nil
           pkgs.openapi-generator-cli
         ];
         shells =
