@@ -68,12 +68,15 @@ handler segments = do
           ! type_ "text/css"
           ! hrefWithDepth baseUrl depth "static/fonts.css"
         sequence_ $ M.mapMaybe (fontPreloadLinkMaybe baseUrl depth) fontConfigs
-        script ! src (withDepth baseUrl depth "static/frontend.js") $ ""
+        script ! src (withDepth baseUrl depth "static/frontend.js") ! defer "" $ ""
       body $ do
-        H.div ! H.A.id "mensam-frontend" $ ""
+        H.div ! H.A.id "mensam-frontend" $ loading
         script $
           fold
             [ "\
+              \window.addEventListener(\"load\", () => {\
+              \"
+            , "\
               \var storageName = 'mensam-frontend-storage';\
               \var storageUnsafe = localStorage.getItem(storageName);\
               \\
@@ -103,7 +106,31 @@ handler segments = do
               \  navigator.clipboard.writeText(content);\
               \});\
               \"
+            , "\
+              \});\
+              \"
             ]
+ where
+  loading :: Html
+  loading = do
+    H.div ! H.A.style cssInline $ H.div $ do
+      H.div ! H.A.style "color: rgba(240,198,116,1);font-size: 40px;font-weight: 200;" $ "Mensam"
+      H.div ! H.A.style "color: rgba(197,200,198,1);font-size: 17px;font-weight: 300;" $ "is loading"
+   where
+    cssInline :: AttributeValue
+    cssInline =
+      "\
+      \margin: 0;\
+      \padding: 0;\
+      \border: 0;\
+      \height: 90vh;\
+      \display: flex;\
+      \justify-content: center;\
+      \align-items: center;\
+      \font-family: sans-serif;\
+      \text-align: center;\
+      \text-shadow: 0px 0px 20px rgba(40,42,46,1);\
+      \"
 
 hrefWithDepth ::
   BaseUrl ->

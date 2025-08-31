@@ -20,8 +20,6 @@
   ** [ ] Improve Dashboard UI.
   ** [ ] Improve user settings UI.
   ** [ ] Improve look of user preview for users without `edit-user` permission.
-  ** [ ] Add loading screen to HTML wrapper for frontend.
-    *** This is harder than expected. Is it possible to start Elm from JS directly?
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
   ** [ ] Light/Dark mode.
   ** [ ] Factor out duplicate code (buttons, styling and so on).
