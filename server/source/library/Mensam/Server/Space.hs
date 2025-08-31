@@ -101,7 +101,7 @@ spaceInternalGetFromId identifier = do
       { spaceInternalId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
       , spaceInternalName = MkNameSpace $ dbSpace_name dbSpace
       , spaceInternalTimezone = dbSpace_timezone dbSpace
-      , spaceInternalDiscoverability = spaceDiscoverabilityDbToApi $ dbSpace_visibility dbSpace
+      , spaceInternalDiscoverability = spaceDiscoverabilityDbToApi $ dbSpace_discoverability dbSpace
       , spaceInternalOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
       }
 
@@ -171,7 +171,7 @@ spaceView userIdentifier spaceIdentifier = do
       { spaceViewId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
       , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
       , spaceViewTimezone = dbSpace_timezone dbSpace
-      , spaceViewDiscoverability = spaceDiscoverabilityDbToApi $ dbSpace_visibility dbSpace
+      , spaceViewDiscoverability = spaceDiscoverabilityDbToApi $ dbSpace_discoverability dbSpace
       , spaceViewOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
       , spaceViewRoles = S.fromList roles
       , spaceViewUsers = S.fromList spaceUsers
@@ -214,7 +214,7 @@ spaceListVisible userIdentifier spaceOrder maybeIsMember = do
       Just True -> Selda.restrict $ Selda.not_ $ Selda.isNull $ dbSpaceUser Selda.? #dbSpaceUser_id
       Just False -> Selda.restrict $ Selda.isNull $ dbSpaceUser Selda.? #dbSpaceUser_id
     Selda.restrict $
-      dbSpace Selda.! #dbSpace_visibility Selda..== Selda.literal MkDbSpaceVisibility_visible
+      dbSpace Selda.! #dbSpace_discoverability Selda..== Selda.literal MkDbSpaceDiscoverability_public
         Selda..|| Selda.not_ (Selda.isNull $ dbSpaceUser Selda.? #dbSpaceUser_id)
     let categorySelector = \case
           SpaceOrderCategoryId -> Selda.MkSomeCol $ dbSpace Selda.! #dbSpace_id
@@ -307,7 +307,7 @@ spaceCreate name owner timezoneLabel discoverability = do
           { dbSpace_id = Selda.def
           , dbSpace_name = unNameSpace name
           , dbSpace_timezone = timezoneLabel
-          , dbSpace_visibility = spaceDiscoverabilityApiToDb discoverability
+          , dbSpace_discoverability = spaceDiscoverabilityApiToDb discoverability
           , dbSpace_owner = Selda.toId @DbUser $ unIdentifierUser owner
           , dbSpace_picture_jpeg = Nothing
           }
@@ -379,7 +379,7 @@ spaceDiscoverabilitySet identifier discoverability = do
   Selda.updateOne
     tableSpace
     (#dbSpace_id `Selda.is` Selda.toId @DbSpace (unIdentifierSpace identifier))
-    (\rowSpace -> rowSpace `Selda.with` [#dbSpace_visibility Selda.:= Selda.literal (spaceDiscoverabilityApiToDb discoverability)])
+    (\rowSpace -> rowSpace `Selda.with` [#dbSpace_discoverability Selda.:= Selda.literal (spaceDiscoverabilityApiToDb discoverability)])
   lift $ logInfo "Set discoverability successfully."
 
 spaceSetPicture ::
@@ -800,7 +800,7 @@ deskList spaceIdentifier userIdentifier = do
     dbSpace <- Selda.select tableSpace
     Selda.restrict $ dbSpace Selda.! #dbSpace_id Selda..== Selda.literal (Selda.toId @DbSpace $ unIdentifierSpace spaceIdentifier)
     Selda.restrict $
-      (dbSpace Selda.! #dbSpace_visibility Selda..== Selda.literal MkDbSpaceVisibility_visible)
+      (dbSpace Selda.! #dbSpace_discoverability Selda..== Selda.literal MkDbSpaceDiscoverability_public)
         Selda..|| (dbSpace Selda.! #dbSpace_id Selda..== dbSpaceUser Selda.! #dbSpaceUser_space)
 
     dbDesk <- Selda.select tableDesk
@@ -910,15 +910,15 @@ deskLocationSet identifier location = do
     )
   lift $ logInfo "Set desk location successfully."
 
-spaceDiscoverabilityApiToDb :: DiscoverabilitySpace -> DbSpaceVisibility
+spaceDiscoverabilityApiToDb :: DiscoverabilitySpace -> DbSpaceDiscoverability
 spaceDiscoverabilityApiToDb = \case
-  MkDiscoverabilitySpacePublic -> MkDbSpaceVisibility_visible
-  MkDiscoverabilitySpacePrivate -> MkDbSpaceVisibility_hidden
+  MkDiscoverabilitySpacePublic -> MkDbSpaceDiscoverability_public
+  MkDiscoverabilitySpacePrivate -> MkDbSpaceDiscoverability_private
 
-spaceDiscoverabilityDbToApi :: DbSpaceVisibility -> DiscoverabilitySpace
+spaceDiscoverabilityDbToApi :: DbSpaceDiscoverability -> DiscoverabilitySpace
 spaceDiscoverabilityDbToApi = \case
-  MkDbSpaceVisibility_visible -> MkDiscoverabilitySpacePublic
-  MkDbSpaceVisibility_hidden -> MkDiscoverabilitySpacePrivate
+  MkDbSpaceDiscoverability_public -> MkDiscoverabilitySpacePublic
+  MkDbSpaceDiscoverability_private -> MkDiscoverabilitySpacePrivate
 
 roleAccessibilityApiToDb :: AccessibilityRole -> DbRoleAccessibility
 roleAccessibilityApiToDb = \case

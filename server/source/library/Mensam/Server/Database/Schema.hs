@@ -128,19 +128,19 @@ data DbSpace = MkDbSpace
   { dbSpace_id :: ~(Selda.ID DbSpace)
   , dbSpace_name :: Selda.Text
   , dbSpace_timezone :: Time.TZLabel
-  , dbSpace_visibility :: DbSpaceVisibility
+  , dbSpace_discoverability :: DbSpaceDiscoverability
   , dbSpace_owner :: Selda.ID DbUser
   , dbSpace_picture_jpeg :: Maybe BS.ByteString
   }
   deriving stock (Generic, Show)
   deriving anyclass (Selda.Relational, Selda.SqlRow)
 
-type DbSpaceVisibility :: Type
-data DbSpaceVisibility
-  = MkDbSpaceVisibility_visible
-  | MkDbSpaceVisibility_hidden
+type DbSpaceDiscoverability :: Type
+data DbSpaceDiscoverability
+  = MkDbSpaceDiscoverability_public
+  | MkDbSpaceDiscoverability_private
   deriving stock (Bounded, Enum, Read, Show)
-  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceVisibility_" DbSpaceVisibility)
+  deriving (Selda.SqlEnum) via (SqlEnumStripPrefix "MkDbSpaceDiscoverability_" DbSpaceDiscoverability)
   deriving anyclass (Selda.SqlType)
 
 tableSpace :: Selda.Table DbSpace

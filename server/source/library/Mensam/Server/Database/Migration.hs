@@ -415,6 +415,24 @@ migrations =
             "ALTER TABLE space_role_permission\n\
             \RENAME TO role_permission"
       }
+  , MkMigration
+      { migrationId = Selda.toId 18
+      , migrationName = "renameSpaceVisibilityToDiscoverability"
+      , migrationWork = do
+          lift $ logDebug "Renaming space 'visibility' column to 'discoverability'."
+          Selda.Unsafe.rawStm
+            "ALTER TABLE space\n\
+            \RENAME COLUMN visibility TO discoverability"
+          lift $ logDebug "Discoverabilities will be renamed: 'public' instead of 'visible' and 'private' instead of 'hidden'."
+          Selda.Unsafe.rawStm
+            "UPDATE space\n\
+            \SET discoverability = 'public'\n\
+            \WHERE space.discoverability = 'visible'"
+          Selda.Unsafe.rawStm
+            "UPDATE space\n\
+            \SET discoverability = 'private'\n\
+            \WHERE space.discoverability = 'hidden'"
+      }
   ]
 
 createDatabase ::

@@ -1,5 +1,10 @@
 = Changelog
 
+* API, Frontend, Backend, Database
+  ** Renamed space `Visibility` to `Discoverability`.
+    *** Renamed `visible` to `public`.
+    *** Renamed `hidden` to `private`.
+
 == `0.14.0.0`
 
 * Frontend
