@@ -78,7 +78,7 @@ createSpace auth eitherRequest =
       logDebug $ "Received request to create space: " <> T.pack (show request)
       seldaResult <- runSeldaTransactionT $ do
         lift $ logInfo "Create space."
-        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (userAuthenticatedId authenticated) (requestSpaceCreateTimezone request) (requestSpaceCreateVisibility request)
+        spaceIdentifier <- spaceCreate (requestSpaceCreateName request) (userAuthenticatedId authenticated) (requestSpaceCreateTimezone request) (requestSpaceCreateDiscoverability request)
 
         do
           lift $ logInfo "Create admin role and add user."
@@ -168,9 +168,9 @@ editSpace auth eitherRequest =
         case requestSpaceEditTimezone request of
           Preserve -> pure ()
           Overwrite timezone -> spaceTimezoneSet (requestSpaceEditId request) timezone
-        case requestSpaceEditVisibility request of
+        case requestSpaceEditDiscoverability request of
           Preserve -> pure ()
-          Overwrite visibility -> spaceVisibilitySet (requestSpaceEditId request) visibility
+          Overwrite discoverability -> spaceDiscoverabilitySet (requestSpaceEditId request) discoverability
         spaceInternalGetFromId (requestSpaceEditId request)
       handleSeldaException
         (Proxy @SqlErrorMensamSpaceNotFound)
@@ -189,7 +189,7 @@ editSpace auth eitherRequest =
                       { responseSpaceEditId = spaceInternalId spaceInternal
                       , responseSpaceEditName = spaceInternalName spaceInternal
                       , responseSpaceEditTimezone = spaceInternalTimezone spaceInternal
-                      , responseSpaceEditVisibility = spaceInternalVisibility spaceInternal
+                      , responseSpaceEditDiscoverability = spaceInternalDiscoverability spaceInternal
                       }
 
 pictureUpload ::
@@ -558,7 +558,7 @@ viewSpace auth eitherRequest =
                     { responseSpaceView403Id = spaceViewId spaceViewResult
                     , responseSpaceView403Name = spaceViewName spaceViewResult
                     , responseSpaceView403Timezone = spaceViewTimezone spaceViewResult
-                    , responseSpaceView403Visibility = spaceViewVisibility spaceViewResult
+                    , responseSpaceView403Discoverability = spaceViewDiscoverability spaceViewResult
                     , responseSpaceView403Roles = spaceViewRoles spaceViewResult
                     , responseSpaceView403YourRole = spaceViewYourRole spaceViewResult
                     }
@@ -570,7 +570,7 @@ viewSpace auth eitherRequest =
                     { responseSpaceViewId = spaceViewId spaceViewResult
                     , responseSpaceViewName = spaceViewName spaceViewResult
                     , responseSpaceViewTimezone = spaceViewTimezone spaceViewResult
-                    , responseSpaceViewVisibility = spaceViewVisibility spaceViewResult
+                    , responseSpaceViewDiscoverability = spaceViewDiscoverability spaceViewResult
                     , responseSpaceViewOwner = spaceViewOwner spaceViewResult
                     , responseSpaceViewRoles = spaceViewRoles spaceViewResult
                     , responseSpaceViewUsers = spaceViewUsers spaceViewResult

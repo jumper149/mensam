@@ -50,7 +50,7 @@ type alias Model =
             , permissions : Mensam.Space.Role.Permissions
             }
     , timezone : Mensam.Time.Timezone
-    , visibility : Mensam.Space.Visibility
+    , discoverability : Mensam.Space.Discoverability
     , yourRole :
         Maybe
             { accessibility : Mensam.Space.Role.Accessibility
@@ -127,7 +127,7 @@ init args =
     , name = Mensam.Space.MkName ""
     , roles = []
     , timezone = Mensam.Time.timezoneEtcUtc
-    , visibility = Mensam.Space.MkVisibilityHidden
+    , discoverability = Mensam.Space.MkDiscoverabilityPrivate
     , yourRole = Nothing
     , desks = []
     , selected = Nothing
@@ -1276,7 +1276,7 @@ type MessagePure
                 , permissions : Mensam.Space.Role.Permissions
                 }
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         , yourRole :
             Maybe
                 { accessibility : Mensam.Space.Role.Accessibility
@@ -1363,7 +1363,7 @@ updatePure message model =
                 , name = space.name
                 , roles = space.roles
                 , timezone = space.timezone
-                , visibility = space.visibility
+                , discoverability = space.discoverability
                 , yourRole = space.yourRole
             }
 
@@ -1765,7 +1765,7 @@ spaceView tracker baseUrl auth model =
                                         , name = view.name
                                         , roles = view.roles
                                         , timezone = view.timezone
-                                        , visibility = view.visibility
+                                        , discoverability = view.discoverability
                                         , yourRole = view.yourRole
                                         }
                                 , MessageEffect
@@ -1780,7 +1780,7 @@ spaceView tracker baseUrl auth model =
                                 , name = view.name
                                 , roles = view.roles
                                 , timezone = view.timezone
-                                , visibility = model.visibility
+                                , discoverability = model.discoverability
                                 , yourRole = view.yourRole
                                 }
                         , case view.yourRole of

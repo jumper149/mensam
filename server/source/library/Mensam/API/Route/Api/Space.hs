@@ -395,7 +395,7 @@ type RequestSpaceCreate :: Type
 data RequestSpaceCreate = MkRequestSpaceCreate
   { requestSpaceCreateName :: NameSpace
   , requestSpaceCreateTimezone :: T.TZLabel
-  , requestSpaceCreateVisibility :: VisibilitySpace
+  , requestSpaceCreateDiscoverability :: DiscoverabilitySpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -434,7 +434,7 @@ data RequestSpaceEdit = MkRequestSpaceEdit
   { requestSpaceEditId :: IdentifierSpace
   , requestSpaceEditName :: Updatable NameSpace
   , requestSpaceEditTimezone :: Updatable T.TZLabel
-  , requestSpaceEditVisibility :: Updatable VisibilitySpace
+  , requestSpaceEditDiscoverability :: Updatable DiscoverabilitySpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -446,7 +446,7 @@ data ResponseSpaceEdit = MkResponseSpaceEdit
   { responseSpaceEditId :: IdentifierSpace
   , responseSpaceEditName :: NameSpace
   , responseSpaceEditTimezone :: T.TZLabel
-  , responseSpaceEditVisibility :: VisibilitySpace
+  , responseSpaceEditDiscoverability :: DiscoverabilitySpace
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving
@@ -544,7 +544,7 @@ data ResponseSpaceView = MkResponseSpaceView
   { responseSpaceViewId :: IdentifierSpace
   , responseSpaceViewName :: NameSpace
   , responseSpaceViewTimezone :: T.TZLabel
-  , responseSpaceViewVisibility :: VisibilitySpace
+  , responseSpaceViewDiscoverability :: DiscoverabilitySpace
   , responseSpaceViewOwner :: IdentifierUser
   , responseSpaceViewRoles :: S.Set Role
   , responseSpaceViewUsers :: S.Set SpaceUser
@@ -560,7 +560,7 @@ data ResponseSpaceView403 = MkResponseSpaceView403
   { responseSpaceView403Id :: IdentifierSpace
   , responseSpaceView403Name :: NameSpace
   , responseSpaceView403Timezone :: T.TZLabel
-  , responseSpaceView403Visibility :: VisibilitySpace
+  , responseSpaceView403Discoverability :: DiscoverabilitySpace
   , responseSpaceView403Roles :: S.Set Role
   , responseSpaceView403YourRole :: Maybe IdentifierRole
   }

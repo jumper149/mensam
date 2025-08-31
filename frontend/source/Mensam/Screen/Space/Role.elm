@@ -569,7 +569,7 @@ type MessagePure
                 }
         , users : List { user : Mensam.User.Identifier, role : Mensam.Space.Role.Identifier }
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         , owner : Mensam.User.Identifier
         , yourRole :
             Maybe

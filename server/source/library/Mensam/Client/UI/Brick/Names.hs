@@ -16,7 +16,7 @@ data ClientName
   | ClientNameSpacesList
   | ClientNameSpacesNewSpaceName
   | ClientNameSpacesNewSpaceTimezone T.TZLabel
-  | ClientNameSpacesNewSpaceVisibility VisibilitySpace
+  | ClientNameSpacesNewSpaceDiscoverability DiscoverabilitySpace
   | ClientNameDesksNewDeskName
   | ClientNameDesksReservationsViewport
   | ClientNameDesksNewReservationDesk

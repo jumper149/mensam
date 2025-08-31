@@ -37,7 +37,7 @@ type Response
                 , role : Mensam.Space.Role.Identifier
                 }
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         , owner : Mensam.User.Identifier
         , yourRole :
             Maybe
@@ -58,7 +58,7 @@ type Response
                 , permissions : Mensam.Space.Role.Permissions
                 }
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         , yourRole :
             Maybe
                 { accessibility : Mensam.Space.Role.Accessibility
@@ -184,7 +184,7 @@ decodeBody200 :
                     , role : Mensam.Space.Role.Identifier
                     }
             , timezone : Mensam.Time.Timezone
-            , visibility : Mensam.Space.Visibility
+            , discoverability : Mensam.Space.Discoverability
             , owner : Mensam.User.Identifier
             , yourRole :
                 Maybe
@@ -208,20 +208,20 @@ decodeBody200 input =
                         , roles = record.roles
                         , users = record.users
                         , timezone = record.timezone
-                        , visibility = record.visibility
+                        , discoverability = record.discoverability
                         , owner = record.owner
                         , yourRole = yourRole
                         }
         )
     <|
         Decode.map8
-            (\id name roles users timezone visibility owner maybeYourRoleId ->
+            (\id name roles users timezone discoverability owner maybeYourRoleId ->
                 { id = id
                 , name = name
                 , roles = roles
                 , users = users
                 , timezone = timezone
-                , visibility = visibility
+                , discoverability = discoverability
                 , owner = owner
                 , yourRole =
                     case maybeYourRoleId of
@@ -279,7 +279,7 @@ decodeBody200 input =
                         (Decode.field "role" Mensam.Space.Role.identifierDecoder)
             )
             (Decode.field "timezone" Mensam.Time.timezoneDecoder)
-            (Decode.field "visibility" Mensam.Space.visibilityDecoder)
+            (Decode.field "discoverability" Mensam.Space.discoverabilityDecoder)
             (Decode.field "owner" Mensam.User.identifierDecoder)
             (Decode.field "your-role" <| Decode.nullable Mensam.Space.Role.identifierDecoder)
 
@@ -301,7 +301,7 @@ decodeBody403 :
                 , permissions : Mensam.Space.Role.Permissions
                 }
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         , yourRole :
             Maybe
                 { accessibility : Mensam.Space.Role.Accessibility
@@ -323,18 +323,18 @@ decodeBody403 =
                         , name = record.name
                         , roles = record.roles
                         , timezone = record.timezone
-                        , visibility = record.visibility
+                        , discoverability = record.discoverability
                         , yourRole = yourRole
                         }
         )
     <|
         Decode.map6
-            (\id name roles timezone visibility maybeYourRoleId ->
+            (\id name roles timezone discoverability maybeYourRoleId ->
                 { id = id
                 , name = name
                 , roles = roles
                 , timezone = timezone
-                , visibility = visibility
+                , discoverability = discoverability
                 , yourRole =
                     case maybeYourRoleId of
                         Nothing ->
@@ -371,7 +371,7 @@ decodeBody403 =
                         (Decode.field "permissions" <| Mensam.Space.Role.permissionsDecoder)
             )
             (Decode.field "timezone" Mensam.Time.timezoneDecoder)
-            (Decode.field "visibility" Mensam.Space.visibilityDecoder)
+            (Decode.field "discoverability" Mensam.Space.discoverabilityDecoder)
             (Decode.field "your-role" <| Decode.nullable Mensam.Space.Role.identifierDecoder)
 
 

@@ -32,7 +32,7 @@ type alias Model =
     , old :
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         }
     , new :
         { name : Maybe Mensam.Space.Name
@@ -41,7 +41,7 @@ type alias Model =
                 { selected : Mensam.Time.Timezone
                 , hovering : Maybe Int
                 }
-        , visibility : Maybe Mensam.Space.Visibility
+        , discoverability : Maybe Mensam.Space.Discoverability
         }
     , spacePictureUrl : String
     , popup : Maybe PopupModel
@@ -59,12 +59,12 @@ init baseUrl args =
     , old =
         { name = Mensam.Space.MkName ""
         , timezone = Mensam.Time.timezoneEtcUtc
-        , visibility = Mensam.Space.MkVisibilityVisible
+        , discoverability = Mensam.Space.MkDiscoverabilityPublic
         }
     , new =
         { name = Nothing
         , timezone = Nothing
-        , visibility = Nothing
+        , discoverability = Nothing
         }
     , spacePictureUrl =
         Mensam.Url.absolute baseUrl
@@ -321,8 +321,8 @@ element model =
                             , Element.width Element.fill
                             , Element.height <| Element.px 25
                             ]
-                            [ Element.el [] <| Element.text "Current Visibility:"
-                            , Element.el [] <| Element.text <| Mensam.Space.visibilityToString model.old.visibility
+                            [ Element.el [] <| Element.text "Current Discoverability:"
+                            , Element.el [] <| Element.text <| Mensam.Space.discoverabilityToString model.old.discoverability
                             ]
                         , Element.el
                             [ Element.paddingXY 30 5
@@ -330,19 +330,19 @@ element model =
                             , Element.height <| Element.px 115
                             ]
                           <|
-                            case model.new.visibility of
+                            case model.new.discoverability of
                                 Nothing ->
                                     Mensam.Element.Button.button <|
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.width Element.fill ]
                                             , color = Mensam.Element.Button.Yellow
                                             , enabled = True
-                                            , label = Element.text "Edit Visibility"
-                                            , message = Just <| MessagePure <| SetVisibility <| Just <| model.old.visibility
+                                            , label = Element.text "Edit Discoverability"
+                                            , message = Just <| MessagePure <| SetDiscoverability <| Just <| model.old.discoverability
                                             , size = Mensam.Element.Button.Medium
                                             }
 
-                                Just visibility ->
+                                Just discoverability ->
                                     Element.row
                                         [ Element.spacing 20
                                         , Element.width Element.fill
@@ -350,7 +350,7 @@ element model =
                                         ]
                                         -- TODO: Use `Mensam.Element.Button.button`.
                                         [ Element.Input.button
-                                            [ if visibility == Mensam.Space.MkVisibilityVisible then
+                                            [ if discoverability == Mensam.Space.MkDiscoverabilityPublic then
                                                 Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
                                               else
@@ -360,7 +360,7 @@ element model =
                                             , Element.width Element.fill
                                             , Element.padding 10
                                             ]
-                                            { onPress = Just <| MessagePure <| SetVisibility <| Just <| Mensam.Space.MkVisibilityVisible
+                                            { onPress = Just <| MessagePure <| SetDiscoverability <| Just <| Mensam.Space.MkDiscoverabilityPublic
                                             , label =
                                                 Element.el
                                                     [ Element.centerX
@@ -368,10 +368,10 @@ element model =
                                                     , Element.Font.family [ Mensam.Element.Font.condensed ]
                                                     ]
                                                 <|
-                                                    Element.text "visible"
+                                                    Element.text "public"
                                             }
                                         , Element.Input.button
-                                            [ if visibility == Mensam.Space.MkVisibilityHidden then
+                                            [ if discoverability == Mensam.Space.MkDiscoverabilityPrivate then
                                                 Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque100
 
                                               else
@@ -381,7 +381,7 @@ element model =
                                             , Element.width Element.fill
                                             , Element.padding 10
                                             ]
-                                            { onPress = Just <| MessagePure <| SetVisibility <| Just <| Mensam.Space.MkVisibilityHidden
+                                            { onPress = Just <| MessagePure <| SetDiscoverability <| Just <| Mensam.Space.MkDiscoverabilityPrivate
                                             , label =
                                                 Element.el
                                                     [ Element.centerX
@@ -389,7 +389,7 @@ element model =
                                                     , Element.Font.family [ Mensam.Element.Font.condensed ]
                                                     ]
                                                 <|
-                                                    Element.text "hidden"
+                                                    Element.text "private"
                                             }
                                         ]
                         ]
@@ -530,13 +530,13 @@ type MessagePure
     | SetOldSettings
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         }
     | ResetNewSettings
     | EnterName (Maybe Mensam.Space.Name)
     | SetTimezone (Maybe Mensam.Time.Timezone)
     | SetHoveringTimezone (Maybe Int)
-    | SetVisibility (Maybe Mensam.Space.Visibility)
+    | SetDiscoverability (Maybe Mensam.Space.Discoverability)
     | SetSpacePicture { url : String }
     | OpenDialogToDeleteSpace
     | CloseDialogToDeleteSpace
@@ -554,7 +554,7 @@ updatePure message model =
             { model | old = args }
 
         ResetNewSettings ->
-            { model | new = { name = Nothing, timezone = Nothing, visibility = Nothing } }
+            { model | new = { name = Nothing, timezone = Nothing, discoverability = Nothing } }
 
         EnterName name ->
             let
@@ -598,12 +598,12 @@ updatePure message model =
                 Just newTimezone ->
                     { model | new = { newSettings | timezone = Just { newTimezone | hovering = maybeN } } }
 
-        SetVisibility visibility ->
+        SetDiscoverability discoverability ->
             let
                 newSettings =
                     model.new
             in
-            { model | new = { newSettings | visibility = visibility } }
+            { model | new = { newSettings | discoverability = discoverability } }
 
         SetSpacePicture picture ->
             { model | spacePictureUrl = picture.url }
@@ -643,7 +643,7 @@ spaceEdit :
         , id : Mensam.Space.Identifier
         , name : Maybe Mensam.Space.Name
         , timezone : Maybe Mensam.Time.Timezone
-        , visibility : Maybe Mensam.Space.Visibility
+        , discoverability : Maybe Mensam.Space.Discoverability
         }
     -> Cmd Message
 spaceEdit tracker baseUrl requestArgs =
@@ -652,7 +652,7 @@ spaceEdit tracker baseUrl requestArgs =
             case result of
                 Ok (Mensam.Api.SpaceEdit.Success args) ->
                     Messages
-                        [ MessagePure <| SetOldSettings { name = args.name, timezone = args.timezone, visibility = args.visibility }
+                        [ MessagePure <| SetOldSettings { name = args.name, timezone = args.timezone, discoverability = args.discoverability }
                         , MessagePure ResetNewSettings
                         ]
 

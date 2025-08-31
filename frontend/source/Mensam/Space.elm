@@ -43,44 +43,44 @@ nameDecoder =
     Decode.map MkName Decode.string
 
 
-type Visibility
-    = MkVisibilityVisible
-    | MkVisibilityHidden
+type Discoverability
+    = MkDiscoverabilityPublic
+    | MkDiscoverabilityPrivate
 
 
-visibilityToString : Visibility -> String
-visibilityToString visibility =
-    case visibility of
-        MkVisibilityVisible ->
-            "visible"
+discoverabilityToString : Discoverability -> String
+discoverabilityToString discoverability =
+    case discoverability of
+        MkDiscoverabilityPublic ->
+            "public"
 
-        MkVisibilityHidden ->
-            "hidden"
+        MkDiscoverabilityPrivate ->
+            "private"
 
 
-visibilityEncode : Visibility -> Encode.Value
-visibilityEncode visibility =
+discoverabilityEncode : Discoverability -> Encode.Value
+discoverabilityEncode discoverability =
     Encode.string <|
-        case visibility of
-            MkVisibilityVisible ->
-                "visible"
+        case discoverability of
+            MkDiscoverabilityPublic ->
+                "public"
 
-            MkVisibilityHidden ->
-                "hidden"
+            MkDiscoverabilityPrivate ->
+                "private"
 
 
-visibilityDecoder : Decode.Decoder Visibility
-visibilityDecoder =
+discoverabilityDecoder : Decode.Decoder Discoverability
+discoverabilityDecoder =
     Decode.andThen
         (\string ->
             case string of
-                "visible" ->
-                    Decode.succeed MkVisibilityVisible
+                "public" ->
+                    Decode.succeed MkDiscoverabilityPublic
 
-                "hidden" ->
-                    Decode.succeed MkVisibilityHidden
+                "private" ->
+                    Decode.succeed MkDiscoverabilityPrivate
 
                 _ ->
-                    Decode.fail <| "Trying to decode visibility, but this option is not supported: " ++ string
+                    Decode.fail <| "Trying to decode discoverability, but this option is not supported: " ++ string
         )
         Decode.string

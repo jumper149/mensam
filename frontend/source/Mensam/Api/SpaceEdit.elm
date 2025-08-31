@@ -16,7 +16,7 @@ type alias Request =
     , id : Mensam.Space.Identifier
     , name : Maybe Mensam.Space.Name
     , timezone : Maybe Mensam.Time.Timezone
-    , visibility : Maybe Mensam.Space.Visibility
+    , discoverability : Maybe Mensam.Space.Discoverability
     }
 
 
@@ -25,7 +25,7 @@ type Response
         { id : Mensam.Space.Identifier
         , name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         }
     | ErrorInsufficientPermission Mensam.Space.Role.Permission
     | ErrorSpaceNotFound
@@ -149,17 +149,17 @@ encodeBody body =
                         , ( "value", Mensam.Time.timezoneEncode timezone )
                         ]
           )
-        , ( "visibility"
-          , case body.visibility of
+        , ( "discoverability"
+          , case body.discoverability of
                 Nothing ->
                     Encode.object
                         [ ( "update", Encode.bool False )
                         ]
 
-                Just visibility ->
+                Just discoverability ->
                     Encode.object
                         [ ( "update", Encode.bool True )
-                        , ( "value", Mensam.Space.visibilityEncode visibility )
+                        , ( "value", Mensam.Space.discoverabilityEncode discoverability )
                         ]
           )
         ]
@@ -170,21 +170,21 @@ decodeBody200 :
         { id : Mensam.Space.Identifier
         , name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         }
 decodeBody200 =
     Decode.map4
-        (\id name timezone visibility ->
+        (\id name timezone discoverability ->
             { id = id
             , name = name
             , timezone = timezone
-            , visibility = visibility
+            , discoverability = discoverability
             }
         )
         (Decode.field "id" Mensam.Space.identifierDecoder)
         (Decode.field "name" Mensam.Space.nameDecoder)
         (Decode.field "timezone" Mensam.Time.timezoneDecoder)
-        (Decode.field "visibility" Mensam.Space.visibilityDecoder)
+        (Decode.field "discoverability" Mensam.Space.discoverabilityDecoder)
 
 
 decodeBody400 : Decode.Decoder String

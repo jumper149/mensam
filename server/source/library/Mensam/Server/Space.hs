@@ -101,7 +101,7 @@ spaceInternalGetFromId identifier = do
       { spaceInternalId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
       , spaceInternalName = MkNameSpace $ dbSpace_name dbSpace
       , spaceInternalTimezone = dbSpace_timezone dbSpace
-      , spaceInternalVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
+      , spaceInternalDiscoverability = spaceDiscoverabilityDbToApi $ dbSpace_visibility dbSpace
       , spaceInternalOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
       }
 
@@ -110,7 +110,7 @@ data SpaceInternal = MkSpaceInternal
   { spaceInternalId :: IdentifierSpace
   , spaceInternalName :: NameSpace
   , spaceInternalTimezone :: T.TZLabel
-  , spaceInternalVisibility :: VisibilitySpace
+  , spaceInternalDiscoverability :: DiscoverabilitySpace
   , spaceInternalOwner :: IdentifierUser
   }
   deriving stock (Eq, Generic, Ord, Read, Show)
@@ -171,7 +171,7 @@ spaceView userIdentifier spaceIdentifier = do
       { spaceViewId = MkIdentifierSpace $ Selda.fromId @DbSpace $ dbSpace_id dbSpace
       , spaceViewName = MkNameSpace $ dbSpace_name dbSpace
       , spaceViewTimezone = dbSpace_timezone dbSpace
-      , spaceViewVisibility = spaceVisibilityDbToApi $ dbSpace_visibility dbSpace
+      , spaceViewDiscoverability = spaceDiscoverabilityDbToApi $ dbSpace_visibility dbSpace
       , spaceViewOwner = MkIdentifierUser $ Selda.fromId @DbUser $ dbSpace_owner dbSpace
       , spaceViewRoles = S.fromList roles
       , spaceViewUsers = S.fromList spaceUsers
@@ -183,7 +183,7 @@ data SpaceView = MkSpaceView
   { spaceViewId :: IdentifierSpace
   , spaceViewName :: NameSpace
   , spaceViewTimezone :: T.TZLabel
-  , spaceViewVisibility :: VisibilitySpace
+  , spaceViewDiscoverability :: DiscoverabilitySpace
   , spaceViewOwner :: IdentifierUser
   , spaceViewRoles :: S.Set Role
   , spaceViewUsers :: S.Set SpaceUser
@@ -199,7 +199,7 @@ spaceListVisible ::
   Maybe Bool ->
   SeldaTransactionT m [Space]
 spaceListVisible userIdentifier spaceOrder maybeIsMember = do
-  lift $ logDebug $ "Looking up spaces visible by user: " <> T.pack (show userIdentifier)
+  lift $ logDebug $ "Looking up spaces visible by user: " <> T.pack (show (userIdentifier, maybeIsMember))
   dbSpaces <- Selda.query $ do
     dbSpace <- Selda.select tableSpace
     dbSpaceUser <-
@@ -298,16 +298,16 @@ spaceCreate ::
   NameSpace ->
   IdentifierUser ->
   T.TZLabel ->
-  VisibilitySpace ->
+  DiscoverabilitySpace ->
   SeldaTransactionT m IdentifierSpace
-spaceCreate name owner timezoneLabel visibility = do
+spaceCreate name owner timezoneLabel discoverability = do
   lift $ logDebug $ "Creating space: " <> T.pack (show name)
   let dbSpace =
         MkDbSpace
           { dbSpace_id = Selda.def
           , dbSpace_name = unNameSpace name
           , dbSpace_timezone = timezoneLabel
-          , dbSpace_visibility = spaceVisibilityApiToDb visibility
+          , dbSpace_visibility = spaceDiscoverabilityApiToDb discoverability
           , dbSpace_owner = Selda.toId @DbUser $ unIdentifierUser owner
           , dbSpace_picture_jpeg = Nothing
           }
@@ -369,18 +369,18 @@ spaceTimezoneSet identifier timezone = do
     (\rowSpace -> rowSpace `Selda.with` [#dbSpace_timezone Selda.:= Selda.literal timezone])
   lift $ logInfo "Set timezone successfully."
 
-spaceVisibilitySet ::
+spaceDiscoverabilitySet ::
   (MonadLogger m, MonadSeldaPool m) =>
   IdentifierSpace ->
-  VisibilitySpace ->
+  DiscoverabilitySpace ->
   SeldaTransactionT m ()
-spaceVisibilitySet identifier visibility = do
-  lift $ logDebug $ "Setting visibility " <> T.pack (show visibility) <> " of space " <> T.pack (show identifier) <> "."
+spaceDiscoverabilitySet identifier discoverability = do
+  lift $ logDebug $ "Setting discoverability " <> T.pack (show discoverability) <> " of space " <> T.pack (show identifier) <> "."
   Selda.updateOne
     tableSpace
     (#dbSpace_id `Selda.is` Selda.toId @DbSpace (unIdentifierSpace identifier))
-    (\rowSpace -> rowSpace `Selda.with` [#dbSpace_visibility Selda.:= Selda.literal (spaceVisibilityApiToDb visibility)])
-  lift $ logInfo "Set visibility successfully."
+    (\rowSpace -> rowSpace `Selda.with` [#dbSpace_visibility Selda.:= Selda.literal (spaceDiscoverabilityApiToDb discoverability)])
+  lift $ logInfo "Set discoverability successfully."
 
 spaceSetPicture ::
   (MonadLogger m, MonadSeldaPool m) =>
@@ -910,15 +910,15 @@ deskLocationSet identifier location = do
     )
   lift $ logInfo "Set desk location successfully."
 
-spaceVisibilityApiToDb :: VisibilitySpace -> DbSpaceVisibility
-spaceVisibilityApiToDb = \case
-  MkVisibilitySpaceVisible -> MkDbSpaceVisibility_visible
-  MkVisibilitySpaceHidden -> MkDbSpaceVisibility_hidden
+spaceDiscoverabilityApiToDb :: DiscoverabilitySpace -> DbSpaceVisibility
+spaceDiscoverabilityApiToDb = \case
+  MkDiscoverabilitySpacePublic -> MkDbSpaceVisibility_visible
+  MkDiscoverabilitySpacePrivate -> MkDbSpaceVisibility_hidden
 
-spaceVisibilityDbToApi :: DbSpaceVisibility -> VisibilitySpace
-spaceVisibilityDbToApi = \case
-  MkDbSpaceVisibility_visible -> MkVisibilitySpaceVisible
-  MkDbSpaceVisibility_hidden -> MkVisibilitySpaceHidden
+spaceDiscoverabilityDbToApi :: DbSpaceVisibility -> DiscoverabilitySpace
+spaceDiscoverabilityDbToApi = \case
+  MkDbSpaceVisibility_visible -> MkDiscoverabilitySpacePublic
+  MkDbSpaceVisibility_hidden -> MkDiscoverabilitySpacePrivate
 
 roleAccessibilityApiToDb :: AccessibilityRole -> DbRoleAccessibility
 roleAccessibilityApiToDb = \case

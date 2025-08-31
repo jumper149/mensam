@@ -34,7 +34,7 @@ type NewSpaceInfo :: Type
 data NewSpaceInfo = MkLoginInfo
   { _newSpaceInfoName :: T.Text
   , _newSpaceInfoTimezone :: T.TZLabel
-  , _newSpaceInfoVisibility :: VisibilitySpace
+  , _newSpaceInfoDiscoverability :: DiscoverabilitySpace
   }
 makeLenses ''NewSpaceInfo
 
@@ -43,12 +43,12 @@ newSpaceFormInitial =
   newForm
     [ (str "Name: " <+>) @@= editTextField newSpaceInfoName ClientNameSpacesNewSpaceName (Just 1)
     , (str "Timezone: " <+>) @@= radioField newSpaceInfoTimezone (map (\x -> (x, ClientNameSpacesNewSpaceTimezone x, T.pack $ show x)) [T.Etc__UTC, T.Europe__Berlin])
-    , (str "Visibility: " <+>) @@= radioField newSpaceInfoVisibility (map (\x -> (x, ClientNameSpacesNewSpaceVisibility x, T.pack $ show x)) [minBound @VisibilitySpace .. maxBound])
+    , (str "Discoverability: " <+>) @@= radioField newSpaceInfoDiscoverability (map (\x -> (x, ClientNameSpacesNewSpaceDiscoverability x, T.pack $ show x)) [minBound @DiscoverabilitySpace .. maxBound])
     ]
     MkLoginInfo
       { _newSpaceInfoName = ""
       , _newSpaceInfoTimezone = T.Etc__UTC
-      , _newSpaceInfoVisibility = MkVisibilitySpaceVisible
+      , _newSpaceInfoDiscoverability = MkDiscoverabilitySpacePublic
       }
 
 type ScreenSpacesState :: Type
@@ -110,6 +110,6 @@ spacesHandleEvent event = do
               Route.Space.MkRequestSpaceCreate
                 { Route.Space.requestSpaceCreateName = MkNameSpace $ newSpaceInfo ^. newSpaceInfoName
                 , Route.Space.requestSpaceCreateTimezone = newSpaceInfo ^. newSpaceInfoTimezone
-                , Route.Space.requestSpaceCreateVisibility = newSpaceInfo ^. newSpaceInfoVisibility
+                , Route.Space.requestSpaceCreateDiscoverability = newSpaceInfo ^. newSpaceInfoDiscoverability
                 }
         _ -> lift $ zoom (screenStateSpacesNewSpaceForm . _Just) $ handleFormEvent event

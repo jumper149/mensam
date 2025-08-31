@@ -37,7 +37,7 @@ type alias Model =
             , permissions : Mensam.Space.Role.Permissions
             }
     , timezone : Mensam.Time.Timezone
-    , visibility : Mensam.Space.Visibility
+    , discoverability : Mensam.Space.Discoverability
     , yourRole :
         Maybe
             { accessibility : Mensam.Space.Role.Accessibility
@@ -56,7 +56,7 @@ init args =
     , spaceName = Mensam.Space.MkName ""
     , roles = []
     , timezone = Mensam.Time.timezoneEtcUtc
-    , visibility = Mensam.Space.MkVisibilityHidden
+    , discoverability = Mensam.Space.MkDiscoverabilityPrivate
     , yourRole = Nothing
     , roleIdSelected = args.roleIdSelected
     , password = args.password
@@ -239,7 +239,7 @@ type MessagePure
                 , permissions : Mensam.Space.Role.Permissions
                 }
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         , yourRole :
             Maybe
                 { accessibility : Mensam.Space.Role.Accessibility
@@ -276,7 +276,7 @@ updatePure message model =
                         )
                         view.roles
                 , timezone = view.timezone
-                , visibility = view.visibility
+                , discoverability = view.discoverability
                 , yourRole = view.yourRole
             }
 
@@ -341,7 +341,7 @@ spaceView tracker baseUrl auth model =
                                     , name = view.name
                                     , roles = view.roles
                                     , timezone = view.timezone
-                                    , visibility = view.visibility
+                                    , discoverability = view.discoverability
                                     , yourRole = view.yourRole
                                     }
 
@@ -356,7 +356,7 @@ spaceView tracker baseUrl auth model =
                                 , name = view.name
                                 , roles = view.roles
                                 , timezone = view.timezone
-                                , visibility = view.visibility
+                                , discoverability = view.discoverability
                                 , yourRole = view.yourRole
                                 }
                         , MessagePure ChooseOnlyRoleIfPossible

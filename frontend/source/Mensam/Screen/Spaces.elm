@@ -41,7 +41,7 @@ type PopupModel
     = PopupCreateSpace
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visible : Bool
+        , discoverable : Bool
         , timezonePicker : Maybe Mensam.Widget.Timezone.Model
         }
 
@@ -304,7 +304,7 @@ element model =
                                                     SubmitCreate
                                                         { name = popupModel.name
                                                         , timezone = popupModel.timezone
-                                                        , visible = popupModel.visible
+                                                        , discoverable = popupModel.discoverable
                                                         }
                                         , size = Mensam.Element.Button.Medium
                                         }
@@ -357,7 +357,7 @@ updatePure message mainModel model =
                         PopupCreateSpace
                             { name = Mensam.Space.MkName ""
                             , timezone = mainModel.timezone
-                            , visible = False
+                            , discoverable = False
                             , timezonePicker = Nothing
                             }
             }
@@ -431,7 +431,7 @@ type MessageEffect
     | SubmitCreate
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visible : Bool
+        , discoverable : Bool
         }
 
 
@@ -471,7 +471,7 @@ spaceCreate :
         { jwt : Mensam.Auth.Bearer.Jwt
         , name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         }
     -> Cmd Message
 spaceCreate tracker baseUrl req =

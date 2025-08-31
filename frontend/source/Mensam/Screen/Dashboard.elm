@@ -83,7 +83,7 @@ type PopupModel
     | PopupCreateFirstSpace
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visible : Bool
+        , discoverable : Bool
         , timezonePicker : Maybe Mensam.Widget.Timezone.Model
         }
 
@@ -818,7 +818,7 @@ element baseUrl model =
                                                     SubmitCreateFirstSpace
                                                         { name = popupModel.name
                                                         , timezone = popupModel.timezone
-                                                        , visible = popupModel.visible
+                                                        , discoverable = popupModel.discoverable
                                                         }
                                         , size = Mensam.Element.Button.Medium
                                         }
@@ -952,7 +952,7 @@ updatePure message mainModel model =
                                     Just username ->
                                         Mensam.Space.MkName <| Mensam.User.nameToString username ++ "'s Space"
                             , timezone = mainModel.timezone
-                            , visible = False
+                            , discoverable = False
                             , timezonePicker = Nothing
                             }
             }
@@ -1052,7 +1052,7 @@ type MessageEffect
     | SubmitCreateFirstSpace
         { name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visible : Bool
+        , discoverable : Bool
         }
     | OpenPageToBrowseSpaces
     | OpenPageToViewReservations
@@ -1263,7 +1263,7 @@ spaceCreate :
         { jwt : Mensam.Auth.Bearer.Jwt
         , name : Mensam.Space.Name
         , timezone : Mensam.Time.Timezone
-        , visibility : Mensam.Space.Visibility
+        , discoverability : Mensam.Space.Discoverability
         }
     -> Cmd Message
 spaceCreate tracker baseUrl req =

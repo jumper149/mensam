@@ -1219,12 +1219,12 @@ update message (MkModel model) =
                                                         { jwt = jwt
                                                         , name = spaceInfo.name
                                                         , timezone = spaceInfo.timezone
-                                                        , visibility =
-                                                            if spaceInfo.visible then
-                                                                Mensam.Space.MkVisibilityVisible
+                                                        , discoverability =
+                                                            if spaceInfo.discoverable then
+                                                                Mensam.Space.MkDiscoverabilityPublic
 
                                                             else
-                                                                Mensam.Space.MkVisibilityHidden
+                                                                Mensam.Space.MkDiscoverabilityPublic
                                                         }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1285,12 +1285,12 @@ update message (MkModel model) =
                                                 { jwt = jwt
                                                 , timezone = formData.timezone
                                                 , name = formData.name
-                                                , visibility =
-                                                    if formData.visible then
-                                                        Mensam.Space.MkVisibilityVisible
+                                                , discoverability =
+                                                    if formData.discoverable then
+                                                        Mensam.Space.MkDiscoverabilityPublic
 
                                                     else
-                                                        Mensam.Space.MkVisibilityHidden
+                                                        Mensam.Space.MkDiscoverabilityPrivate
                                                 }
                             in
                             ( MkModel { model | screenRequestTracker = trackerState }
@@ -1769,7 +1769,7 @@ update message (MkModel model) =
                                                         , id = screenModel.id
                                                         , name = Nothing
                                                         , timezone = Nothing
-                                                        , visibility = Nothing
+                                                        , discoverability = Nothing
                                                         }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }
@@ -1797,7 +1797,7 @@ update message (MkModel model) =
                                                         , id = screenModel.id
                                                         , name = screenModel.new.name
                                                         , timezone = Maybe.map .selected screenModel.new.timezone
-                                                        , visibility = screenModel.new.visibility
+                                                        , discoverability = screenModel.new.discoverability
                                                         }
                                     in
                                     ( MkModel { model | screenRequestTracker = trackerState }

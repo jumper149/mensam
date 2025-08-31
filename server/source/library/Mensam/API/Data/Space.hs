@@ -47,14 +47,14 @@ newtype NameSpace = MkNameSpace {unNameSpace :: T.Text}
 deriving via PrettyTextViaShow T.Text instance ToPrettyText NameSpace
 deriving via PrettyHtml5ViaPrettyText NameSpace instance ToPrettyHtml5 NameSpace
 
-type VisibilitySpace :: Type
-data VisibilitySpace
-  = MkVisibilitySpaceVisible
-  | MkVisibilitySpaceHidden
+type DiscoverabilitySpace :: Type
+data DiscoverabilitySpace
+  = MkDiscoverabilitySpacePublic
+  | MkDiscoverabilitySpacePrivate
   deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
   deriving
     (A.FromJSON, A.ToJSON)
-    via A.CustomJSON (JSONSettings "MkVisibilitySpace" "") VisibilitySpace
+    via A.CustomJSON (JSONSettings "MkDiscoverabilitySpace" "") DiscoverabilitySpace
 
 type Role :: Type
 data Role = MkRole

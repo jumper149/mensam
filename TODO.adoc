@@ -14,6 +14,7 @@
     *** [x] Space pictures.
     *** [ ] Desk pictures.
   ** [ ] Forbid creating reservations in the past. Maybe this should be configurable for each space (or role?).
+  ** [ ] Check `deskList`: It looks like this also works when you are not a member, but the space is discoverable.
 
 * Frontend.
   ** [ ] Improve Dashboard UI.
@@ -32,7 +33,6 @@
 
 * Wording and explanation.
   ** [ ] A space is just an environment for desks and not the desk itself.
-  ** [ ] Visibility: hidden and visible or private and public?
   ** [ ] Roles and permissions are complicated. This needs some better description, tooltips (info icon) and interface.
 
 * Pin timezone libraries.
