@@ -36,10 +36,14 @@
   ** [ ] Roles and permissions are complicated. This needs some better description, tooltips (info icon) and interface.
 
 * Pin timezone libraries.
-  ** [ ] tzdata library for Haskell.
-  ** [ ] justinmimbs/timezone-data for Elm.
-  ** [ ] Matching IANA database versions.
-  ** The currently used elm library seems to be missing some identifiers such as `Atlantic/Reykjavik`.
+  ** [x] tzdata library for Haskell.
+    *** Is pinned in `server/subflake.nix`.
+  ** [x] justinmimbs/timezone-data for Elm.
+    *** Is pinned in `frontend/{elm.json,elm-srcs.nix,registry.dat}`.
+  ** [x] Matching IANA database versions.
+  ** [ ] Make sure, that justinmimbs/timezone-data (Elm) actually covers all identifiers.
+    *** The currently used elm library seems to be missing some identifiers such as:
+      **** `Atlantic/Reykjavik`
 
 * Password forgotten.
   ** [ ] Backend implementation.
