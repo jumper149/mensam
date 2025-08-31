@@ -1,7 +1,6 @@
 { self, nixpkgs }: rec {
 
   overlays.default = final: prev: {
-    nix = prev.nixVersions.nix_2_19;
   };
 
   dockerImages.devcontainer =
@@ -12,8 +11,8 @@
           docker-nixpkgs = pkgs.fetchFromGitHub {
             owner  = "nix-community";
             repo   = "docker-nixpkgs";
-            rev    = "bccad7f19ef17f19aa39f23ea9b5b4ad2031b505";
-            sha256 = "sha256-CGXnLRVAo0hN62PfLEnNfB6jaTQAupDLS+1ZCHDTPiE=";
+            rev    = "64a3352bbfcca09a04774880951b0030e8f01409";
+            sha256 = "sha256-637nBKXQmFcYV/gg+ivWOBcPTdwPTlI8aBsUZ9vYYLI=";
           };
         };
       docker-nixpkgs-pkgs = import nixpkgs {

@@ -3,7 +3,7 @@
 # if not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-source "/share/bash-completion/completions/git-prompt.sh"
+source "$(dirname $(readlink $(which git)))/../share/bash-completion/completions/git-prompt.sh"
 
 # shell prompt
 __red_ps="$(tput setaf 1)"
