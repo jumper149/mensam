@@ -2,7 +2,6 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/master/containers/docker-existing-dockerfile
 { "name": "mensam-devcontainer"
 , "dockerFile": "Dockerfile"
-, "context": "${localWorkspaceFolder}"
 , "overrideCommand": false // Run CMD and ENTRYPOINT from Docker image
 , "customizations" :
   { "vscode":
