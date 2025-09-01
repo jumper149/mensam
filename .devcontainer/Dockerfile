@@ -19,7 +19,7 @@ RUN git clone https://github.com/nix-community/nix-direnv.git /usr/share/nix-dir
 RUN echo 'source /usr/share/nix-direnv-source/direnvrc' > /root/.config/direnv/direnvrc
 
 # Choose bash as the default shell
-RUN chsh --shell bash root
+RUN chsh --shell /bin/bash root
 
 # Run the Nix daemon in the background
 ENTRYPOINT ["/nix/var/nix/profiles/default/bin/nix-daemon"]
