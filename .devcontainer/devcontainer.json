@@ -2,7 +2,8 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/master/containers/docker-existing-dockerfile
 { "name": "mensam-devcontainer"
 , "dockerFile": "Dockerfile"
-, "overrideCommand": false // Run CMD and ENTRYPOINT from Docker image
+, "overrideCommand": false // Use the ENTRYPOINT and CMD from the Dockerfile
+, "remoteUser": "root"
 , "customizations" :
   { "vscode":
     { "extensions":
@@ -13,8 +14,7 @@
       , "mkhl.direnv"
       ]
     , "settings":
-      { "direnv.path.executable": "/bin/direnv"
-      , "elmLS.elmReviewDiagnostics": "warning"
+      { "elmLS.elmReviewDiagnostics": "warning"
       , "haskell.formattingProvider": "fourmolu"
       , "haskell.manageHLS": "PATH"
       }
