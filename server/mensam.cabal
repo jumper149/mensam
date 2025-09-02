@@ -8,16 +8,23 @@ flag cabal2nix
 common language
   default-language: GHC2021
   default-extensions:
+    -- DataKinds will be part of GHC2024
     DataKinds
     DeriveAnyClass
+    -- DerivingStrategies will be part of GHC2024
     DerivingStrategies
     DerivingVia
+    -- ExplicitNamespaces will be part of GHC2024
+    ExplicitNamespaces
     FunctionalDependencies
+    -- GADTs will be part of GHC2024
     GADTs
+    -- LambdaCase will be part of GHC2024
     LambdaCase
     LexicalNegation
     NumDecimals
     OverloadedStrings
+    -- RoleAnnotation will be part of GHC2024
     RoleAnnotations
     TypeAbstractions
     TypeData
