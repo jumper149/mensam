@@ -57,7 +57,7 @@ checkPermission sPermission userIdentifier spaceIdentifier = do
         else do
           lift $ logInfo "Permission was not satisfied."
           case sPermission of
-            (_ :: SPermission permission) -> throwM $ MkSqlErrorMensamPermissionNotSatisfied @permission
+            (_ :: SPermission permissionKindLevel) -> throwM $ MkSqlErrorMensamPermissionNotSatisfied @permissionKindLevel
 
 spaceLookupId ::
   (MonadLogger m, MonadSeldaPool m) =>

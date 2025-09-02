@@ -31,7 +31,6 @@ common language
     -Wno-missing-import-lists
     -Wno-missing-role-annotations
     -Wno-missing-safe-haskell-mode
-    -Wno-term-variable-capture
     -Wno-unsafe
     -Wno-unticked-promoted-constructors
   if flag(cabal2nix)
