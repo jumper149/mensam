@@ -5,8 +5,10 @@
 
 * Developer experience.
   ** [ ] Support GitHub Codespaces.
-    *** The devcontainer works locally with Docker.
     *** Currently there is a bug with Nix in Codespaces: https://github.com/NixOS/nix/issues/6680
+      **** [x] Doesn't matter, now that we are using Alpine with Nix.
+    *** Using Nix installed on top of the official Alpine Image seems to work well.
+    *** Still ran into issues with GitHub Codespaces: I think I'm just running out of disk space.
 
 * Backend.
   ** [ ] File uploads.
