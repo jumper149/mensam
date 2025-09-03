@@ -14,6 +14,7 @@ import GHC.Generics
 import GHC.TypeLits
 
 type StaticText :: Symbol -> Type
+type role StaticText nominal
 data StaticText text = MkStaticText
   deriving stock (Eq, Generic, Ord, Read, Show)
 
@@ -30,6 +31,7 @@ instance KnownSymbol text => A.ToJSON (StaticText text) where
   toJSON MkStaticText = A.String $ T.pack $ symbolVal (Proxy @text)
 
 type StaticTexts :: [Symbol] -> Type
+type role StaticTexts nominal
 newtype StaticTexts texts = MkStaticTexts {unStaticTexts :: Union.Union (Union.Map StaticText texts)}
 
 deriving stock instance SOP.All (SOP.Compose Eq SOP.I) (Union.Map StaticText texts) => Eq (StaticTexts texts)

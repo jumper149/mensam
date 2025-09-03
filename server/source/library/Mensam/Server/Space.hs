@@ -34,6 +34,7 @@ import Mensam.Server.Jpeg
 import Numeric.Natural
 
 type SqlErrorMensamPermissionNotSatisfied :: Permission -> Type
+type role SqlErrorMensamPermissionNotSatisfied nominal
 data SqlErrorMensamPermissionNotSatisfied permission = MkSqlErrorMensamPermissionNotSatisfied
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving anyclass (Exception)

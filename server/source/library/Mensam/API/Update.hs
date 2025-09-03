@@ -5,6 +5,7 @@ import Data.Kind
 import GHC.Generics
 
 type Updatable :: Type -> Type
+type role Updatable _
 data Updatable a
   = Preserve
   | Overwrite a

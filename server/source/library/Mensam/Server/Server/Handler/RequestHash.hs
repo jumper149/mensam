@@ -33,6 +33,7 @@ requestHash :: Request -> Hash
 requestHash = MkHash . fromIntegral . Data.Hashable.hash . show
 
 type RequestHashT :: (Type -> Type) -> Type -> Type
+type role RequestHashT _ _
 newtype RequestHashT m a = RequestHashT {unRequestHashT :: ReaderT Hash m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

@@ -25,6 +25,7 @@ import Servant.Auth
 import Servant.Auth.JWT.WithSession
 
 type Routes :: Type -> Type
+type role Routes _
 data Routes route = Routes
   { routeSpaceCreate ::
       route

@@ -17,12 +17,14 @@ class ToPrettyHtml5 a where
   toPrettyHtml5 :: a -> Html5.Html
 
 type PrettyTextViaShow :: Type -> Type
+type role PrettyTextViaShow _
 newtype PrettyTextViaShow a = MkPrettyTextViaShow {unPrettyTextViaShow :: a}
 
 instance Show a => ToPrettyText (PrettyTextViaShow a) where
   toPrettyText = Text.pack . show . unPrettyTextViaShow
 
 type PrettyHtml5ViaPrettyText :: Type -> Type
+type role PrettyHtml5ViaPrettyText _
 newtype PrettyHtml5ViaPrettyText a = MkPrettyHtml5ViaPrettyText {unPrettyHtml5ViaPrettyText :: a}
 
 instance ToPrettyText a => ToPrettyHtml5 (PrettyHtml5ViaPrettyText a) where

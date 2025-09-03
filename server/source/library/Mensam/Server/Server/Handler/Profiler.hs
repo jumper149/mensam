@@ -16,6 +16,7 @@ import Data.Text qualified as T
 import Data.Time.Clock.POSIX qualified as Clock
 
 type ProfilerT :: (Type -> Type) -> Type -> Type
+type role ProfilerT _ _
 newtype ProfilerT m a = ProfilerT {unProfilerT :: ReaderT Clock.POSIXTime m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

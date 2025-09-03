@@ -92,6 +92,7 @@ newtype SqlErrorMensamNotOneUpdate = MkSqlErrorMensamNotOneUpdate (Maybe SqlErro
   deriving anyclass (Exception)
 
 type SomeCol :: Type -> Type
+type role SomeCol _
 data SomeCol t = forall a. SqlType a => MkSomeCol (Col t a)
 
 orderFlexible ::
@@ -112,6 +113,7 @@ orderFlexible categoryToCol (MkOrderByCategories (c : cs)) =
     Descending -> descending
 
 type SqlEnumStripPrefix :: Symbol -> Type -> Type
+type role SqlEnumStripPrefix nominal _
 newtype SqlEnumStripPrefix prefix a = MkSqlEnumStripPrefix {unSqlEnumStripPrefix :: a}
   deriving newtype (Bounded, Enum)
 

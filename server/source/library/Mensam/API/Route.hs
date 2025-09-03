@@ -11,6 +11,7 @@ import Servant
 import Servant.API.Generic
 
 type Routes :: Type -> Type
+type role Routes _
 data Routes route = Routes
   { routeApi :: route :- "api" :> NamedRoutes Mensam.API.Route.Api.Routes
   , routeOpenApi :: route :- "openapi" :> NamedRoutes Mensam.API.Route.OpenApi.Routes

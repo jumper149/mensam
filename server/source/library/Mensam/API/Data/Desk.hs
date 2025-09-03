@@ -101,6 +101,7 @@ newtype Direction = MkDirectionDegrees {unDirectionDegrees :: ConstrainedDouble 
   deriving newtype (A.FromJSON, A.ToJSON)
 
 type ConstrainedDouble :: [ConstraintDouble] -> Type
+type role ConstrainedDouble nominal
 newtype ConstrainedDouble constraints = MkConstrainedDoubleUnsafe {unConstrainedDouble :: Double}
   deriving stock (Eq, Generic, Ord, Read, Show)
 

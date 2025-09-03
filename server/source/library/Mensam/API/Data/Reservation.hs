@@ -47,6 +47,7 @@ data StatusReservation
     via A.CustomJSON (JSONSettings "MkStatusReservation" "") StatusReservation
 
 type Interval :: Type -> Type
+type role Interval _
 data Interval a = MkIntervalUnsafe
   { intervalStart :: a
   , intervalEnd :: a
@@ -74,6 +75,7 @@ intervalIsDegenerate :: Ord a => Interval a -> Bool
 intervalIsDegenerate interval = intervalStart interval == intervalEnd interval
 
 type IntervalNonDegenerate :: Type -> Type
+type role IntervalNonDegenerate _
 newtype IntervalNonDegenerate a = MkIntervalNonDegenerateUnsafe {unIntervalNonDegenerate :: Interval a}
   deriving stock (Eq, Generic, Ord, Read, Show)
 
@@ -86,6 +88,7 @@ instance (A.FromJSON a, Ord a) => A.FromJSON (IntervalNonDegenerate a) where
 deriving newtype instance A.ToJSON a => A.ToJSON (IntervalNonDegenerate a)
 
 type IntervalUnbounded :: Type -> Type
+type role IntervalUnbounded _
 data IntervalUnbounded a = MkIntervalUnboundedUnsafe
   { intervalUnboundedStart :: MaybeUnboundedLow a
   , intervalUnboundedEnd :: MaybeUnboundedHigh a
@@ -139,6 +142,7 @@ intervalUnboundedIsDegenerate :: Ord a => IntervalUnbounded a -> Bool
 intervalUnboundedIsDegenerate intervalUnbounded = MkMaybeUnboundedLow (intervalUnboundedStart intervalUnbounded) == MkMaybeUnboundedHigh (intervalUnboundedEnd intervalUnbounded)
 
 type IntervalUnboundedNonDegenerate :: Type -> Type
+type role IntervalUnboundedNonDegenerate _
 newtype IntervalUnboundedNonDegenerate a = MkIntervalUnboundedNonDegenerateUnsafe {unIntervalUnboundedNonDegenerate :: IntervalUnbounded a}
   deriving stock (Eq, Generic, Ord, Read, Show)
 
@@ -151,6 +155,7 @@ instance (A.FromJSON a, Ord a) => A.FromJSON (IntervalUnboundedNonDegenerate a) 
 deriving newtype instance A.ToJSON a => A.ToJSON (IntervalUnboundedNonDegenerate a)
 
 type MaybeUnbounded :: Type -> Type
+type role MaybeUnbounded _
 data MaybeUnbounded a
   = MkMaybeUnboundedLow (MaybeUnboundedLow a)
   | MkMaybeUnboundedHigh (MaybeUnboundedHigh a)
@@ -178,6 +183,7 @@ instance Ord a => Ord (MaybeUnbounded a) where
     (MkMaybeUnboundedHigh (JustUnboundedHigh x)) (MkMaybeUnboundedLow (JustUnboundedLow y)) -> compare x y
 
 type MaybeUnboundedLow :: Type -> Type
+type role MaybeUnboundedLow _
 data MaybeUnboundedLow a
   = NothingUnboundedLow
   | JustUnboundedLow a
@@ -191,6 +197,7 @@ instance Ord a => Ord (MaybeUnboundedLow a) where
     (JustUnboundedLow _) NothingUnboundedLow -> GT
 
 type MaybeUnboundedHigh :: Type -> Type
+type role MaybeUnboundedHigh _
 data MaybeUnboundedHigh a
   = NothingUnboundedHigh
   | JustUnboundedHigh a

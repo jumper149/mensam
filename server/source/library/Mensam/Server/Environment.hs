@@ -19,6 +19,7 @@ data EnvVar
   deriving stock (Bounded, Enum, Eq, Generic, Ord, Read, Show)
 
 genSingletons [''EnvVar]
+type role SEnvVar _
 
 type EnvVarName :: EnvVar -> Symbol
 type family EnvVarName envVar = name | name -> envVar where

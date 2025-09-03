@@ -16,6 +16,7 @@ import Data.Kind
 import Servant.Client
 
 type MensamClientT :: (Type -> Type) -> Type -> Type
+type role MensamClientT _ _
 newtype MensamClientT m a = MkMensamClientT {unMensamClientT :: ReaderT ClientEnv m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

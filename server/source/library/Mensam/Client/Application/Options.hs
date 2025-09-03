@@ -16,6 +16,7 @@ import Options.Applicative
 import Servant.Client
 
 type OptionsT :: (Type -> Type) -> Type -> Type
+type role OptionsT _ _
 newtype OptionsT m a = MkOptionsT {unOptionsT :: ReaderT Options m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

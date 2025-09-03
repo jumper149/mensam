@@ -17,6 +17,7 @@ import Control.Monad.Trans.Reader
 import Data.Kind
 
 type ConfiguredT :: (Type -> Type) -> Type -> Type
+type role ConfiguredT _ _
 newtype ConfiguredT m a = ConfiguredT {unConfiguredT :: ReaderT Configuration m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

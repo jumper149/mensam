@@ -27,6 +27,7 @@ type Transformers =
     :.|> ProfilerT
 
 type HandlerT :: (Type -> Type) -> Type -> Type
+type role HandlerT _ _
 newtype HandlerT m a = HandlerT {unHandlerT :: StackT Transformers m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

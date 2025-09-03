@@ -15,6 +15,7 @@ import Control.Monad.Trans.Reader
 import Data.Kind
 
 type EventT :: (Type -> Type) -> Type -> Type
+type role EventT _ _
 newtype EventT m a = MkEventT {unEventT :: ReaderT (BChan ClientEvent) m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

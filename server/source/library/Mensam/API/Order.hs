@@ -15,6 +15,7 @@ data Order = Ascending | Descending
     via A.CustomJSON (JSONSettings "" "") Order
 
 type OrderByCategory :: Type -> Type
+type role OrderByCategory _
 data OrderByCategory a = MkOrderByCategory
   { orderByCategoryCategory :: a
   , orderByCategoryOrder :: Order
@@ -25,6 +26,7 @@ data OrderByCategory a = MkOrderByCategory
     via A.CustomJSON (JSONSettings "Mk" "orderByCategory") (OrderByCategory a)
 
 type OrderByCategories :: Type -> Type
+type role OrderByCategories _
 newtype OrderByCategories a = MkOrderByCategories {unOrderByCategories :: [OrderByCategory a]}
   deriving stock (Eq, Generic, Ord, Read, Show)
   deriving newtype (A.FromJSON, A.ToJSON)

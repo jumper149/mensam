@@ -15,6 +15,7 @@ import Network.HTTP.Client qualified as Network
 import Network.HTTP.Client.TLS qualified as Network
 
 type HttpClientT :: (Type -> Type) -> Type -> Type
+type role HttpClientT _ _
 newtype HttpClientT m a = MkHttpClientT {unHttpClientT :: ReaderT Network.Manager m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

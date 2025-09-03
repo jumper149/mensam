@@ -26,6 +26,7 @@ import Database.Selda.SQLite
 import System.Posix.Files
 
 type SeldaPoolT :: (Type -> Type) -> Type -> Type
+type role SeldaPoolT _ _
 newtype SeldaPoolT m a = SeldaPoolT {unSeldaPoolT :: ReaderT SeldaPoolContext m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

@@ -17,6 +17,7 @@ import Data.Kind
 import Data.Text qualified as T
 
 type SecretT :: (Type -> Type) -> Type -> Type
+type role SecretT _ _
 newtype SecretT m a = SecretT {unSecretT :: ReaderT Secrets m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

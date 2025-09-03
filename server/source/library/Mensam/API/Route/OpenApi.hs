@@ -7,6 +7,7 @@ import Servant.HTML.Blaze
 import Text.Blaze.Html
 
 type Routes :: Type -> Type
+type role Routes _
 newtype Routes route = Routes
   { routeRender ::
       route

@@ -21,6 +21,7 @@ import Servant.Client
 import Servant.Client.Core qualified as Core
 
 type AuthData :: [Type] -> Type
+type role AuthData nominal
 data AuthData xs :: Type where
   DataBasicAuth :: Credentials -> AuthData (BasicAuth ': auths)
   DataJWT :: Jwt -> AuthData (JWT ': auths)

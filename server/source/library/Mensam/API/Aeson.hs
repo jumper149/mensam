@@ -21,6 +21,7 @@ type JSONSettings constructorPrefix fieldPrefix =
    ]
 
 type NameOrIdentifier :: Type -> Type -> Type
+type role NameOrIdentifier _ _
 data NameOrIdentifier name identifier
   = Name name
   | Identifier identifier

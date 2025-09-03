@@ -28,6 +28,7 @@ data Permission
     via A.CustomJSON (JSONSettings "MkPermission" "") Permission
 
 type ErrorInsufficientPermission :: Permission -> Type
+type role ErrorInsufficientPermission _
 data ErrorInsufficientPermission p = MkErrorInsufficientPermission
   deriving stock (Eq, Generic, Ord, Read, Show)
 
@@ -51,3 +52,4 @@ instance Typeable p => A.ToJSON (ErrorInsufficientPermission p) where
     permissionName = tyConName (typeRepTyCon (typeRep $ Proxy @p))
 
 genSingletons [''Permission]
+type role SPermission _

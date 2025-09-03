@@ -37,4 +37,5 @@ deriving via
     MonadEnvironment (ComposeT t1 t2 m)
 
 type ProxyEnvVarName :: Symbol -> Type
+type role ProxyEnvVarName _
 data ProxyEnvVarName name = EnvVar

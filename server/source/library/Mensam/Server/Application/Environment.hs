@@ -14,6 +14,7 @@ import Data.Kind
 import Data.Singletons
 
 type EnvironmentT :: (Type -> Type) -> Type -> Type
+type role EnvironmentT _ _
 newtype EnvironmentT m a = EnvironmentT {unEnvironmentT :: ReaderT Environment m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

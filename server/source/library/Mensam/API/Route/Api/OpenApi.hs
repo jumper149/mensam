@@ -6,6 +6,7 @@ import GHC.Generics
 import Servant.API
 
 type Routes :: Type -> Type
+type role Routes _
 newtype Routes route = Routes
   { routeJson ::
       route

@@ -49,6 +49,7 @@ deriving via
     MonadSeldaPool (ComposeT t1 t2 m)
 
 type SeldaTransactionT :: (Type -> Type) -> Type -> Type
+type role SeldaTransactionT _ _
 newtype SeldaTransactionT m a = MkSeldaTransactionT {unSeldaTransactionT :: SeldaT SQLite m a}
   deriving newtype (Functor, Applicative, Monad)
   deriving newtype (MonadTrans)
@@ -60,6 +61,7 @@ mapSeldaTransactionT :: (m a -> n b) -> SeldaTransactionT m a -> SeldaTransactio
 mapSeldaTransactionT f = MkSeldaTransactionT . S . mapReaderT f . unS . unSeldaTransactionT
 
 type SeldaResult :: Type -> Type
+type role SeldaResult _
 data SeldaResult a
   = SeldaSuccess a
   | SeldaFailure SomeException

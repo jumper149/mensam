@@ -22,6 +22,7 @@ import Network.Mail.SMTP
 import Text.Email.Text
 
 type EmailT :: (Type -> Type) -> Type -> Type
+type role EmailT _ _
 newtype EmailT m a = MkEmailT {unEmailT :: ReaderT (Maybe EmailConfig) m a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)

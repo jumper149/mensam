@@ -19,6 +19,7 @@ import Servant.Auth.JWT.WithSession
 import Text.Email.Parser
 
 type Routes :: Type -> Type
+type role Routes _
 data Routes route = Routes
   { routeLogin ::
       route
