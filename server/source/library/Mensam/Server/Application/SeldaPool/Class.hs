@@ -1,6 +1,4 @@
 {-# LANGUAGE UndecidableInstances #-}
--- TODO: Fix with new GHC version, that doesn't complain.
-{-# OPTIONS_GHC -Wno-simplifiable-class-constraints #-}
 
 module Mensam.Server.Application.SeldaPool.Class where
 
