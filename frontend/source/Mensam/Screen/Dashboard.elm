@@ -429,6 +429,43 @@ element baseUrl model =
                         , Element.clipY
                         , Element.scrollbarY
                         , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
+                        , Element.inFront <|
+                            if List.isEmpty model.reservations then
+                                Element.column
+                                    [ Element.spacing 30
+                                    , Element.centerY
+                                    , Element.width Element.fill
+                                    ]
+                                    [ Element.paragraph
+                                        [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                        , Element.Font.center
+                                        , Element.width <| Element.px 300
+                                        , Element.centerX
+                                        , Element.paddingXY 40 0
+                                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
+                                        , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                                        ]
+                                        [ Element.text "your upcoming reservations will show up here"
+                                        ]
+                                    , if model.enableButtonForInitWizard then
+                                        Element.paragraph
+                                            [ Mensam.Element.Font.fontWeight Mensam.Element.Font.Light300
+                                            , Element.Font.center
+                                            , Element.width <| Element.px 300
+                                            , Element.centerX
+                                            , Element.paddingXY 40 0
+                                            , Element.htmlAttribute <| Html.Attributes.style "cursor" "default"
+                                            , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
+                                            ]
+                                            [ Element.text "to submit reservations you must first join a space though"
+                                            ]
+
+                                      else
+                                        Element.none
+                                    ]
+
+                            else
+                                Element.none
                         ]
                         { data = model.reservations
                         , columns =
