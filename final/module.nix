@@ -83,7 +83,7 @@
         };
         virtualisation.podman.enable = true;
         virtualisation.oci-containers.backend = "podman";
-        services.systemd."mensam".serviceConfig = {
+        systemd.services."mensam".serviceConfig = {
             LogsDirectory = "mensam";
             StateDirectory = "mensam";
             User = "mensam";
