@@ -17,6 +17,10 @@
     *** [ ] Desk pictures.
   ** [ ] Forbid creating reservations in the past. Maybe this should be configurable for each space (or role?).
   ** [ ] Check `deskList`: It looks like this also works when you are not a member, but the space is discoverable.
+  ** [x] Is it possible to call `/space/view` without the `view-space` permission?
+    *** This should not be possible.
+    *** It is indeed possible to do so and you get a HTTP 403 answer.
+    *** Should this functionality be split out into a `/space/preview` route?
 
 * Frontend.
   ** [ ] Improve Dashboard UI.
