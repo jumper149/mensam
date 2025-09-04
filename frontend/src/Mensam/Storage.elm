@@ -1,4 +1,4 @@
-port module Mensam.Storage exposing
+module Mensam.Storage exposing
     ( Storage(..)
     , StorageRaw
     , decoder
@@ -22,7 +22,8 @@ type Storage
         }
 
 
-port setStorageJson : Encode.Value -> Cmd msg
+setStorageJson : Encode.Value -> Cmd msg
+setStorageJson _ = Cmd.none
 
 
 set : Storage -> Cmd msg

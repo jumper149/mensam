@@ -1,4 +1,15 @@
-module Mensam.Main exposing (..)
+module Mensam.Main exposing (main, Message, Model (..))
+
+{-|
+
+# Def
+@docs main
+
+# Other
+@docs Message
+@docs Model
+
+-}
 
 import Browser
 import Browser.Navigation
@@ -59,10 +70,12 @@ import Url.Parser exposing ((</>), (<?>))
 import Url.Parser.Query
 
 
+{-| asdhlaksjhd
+-}
 main : Program Encode.Value Model Message
 main =
-    Browser.application
-        { init = init
+Browser.application
+{ init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -71,6 +84,8 @@ main =
         }
 
 
+{-| laksjhdlk
+-}
 type Model
     = MkModel
         { navigationKey : Browser.Navigation.Key
@@ -448,6 +463,8 @@ init flagsRaw url navigationKey =
     update (InitModel { url = url }) modelFinal
 
 
+{-| lkasjhdlkahsjdl
+-}
 type Message
     = EmptyMessage
     | Messages (List Message)
