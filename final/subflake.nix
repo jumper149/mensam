@@ -60,6 +60,8 @@
         fallback = packages.x86_64-linux.fallback;
       };
       config.default = config;
+      config.docker = builtins.fromJSON (builtins.readFile ./configurations/docker.json);
+      revision = if self ? rev then self.rev else null;
     };
   };
 
