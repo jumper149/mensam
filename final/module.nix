@@ -40,6 +40,7 @@
             group = "mensam";
             description = "Mensam user";
             home = "/var/lib/mensam";
+            linger = true;
           };
         };
         users.groups = {
