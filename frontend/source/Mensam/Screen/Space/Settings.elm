@@ -117,6 +117,28 @@ element model =
                         , Mensam.Element.Button.button <|
                             Mensam.Element.Button.MkButton
                                 { attributes = [ Element.alignRight, Element.centerY ]
+                                , color = Mensam.Element.Button.Gray
+                                , enabled = True
+                                , label = Element.text "Go back"
+                                , message = Just <| MessageEffect ReturnToSpace
+                                , size = Mensam.Element.Button.Medium
+                                }
+                        ]
+                    , Element.row
+                        [ Element.width Element.fill
+                        , Element.height <| Element.px 70
+                        , Element.padding 10
+                        , Element.spacing 10
+                        ]
+                        [ Element.paragraph
+                            [ Element.width <| Element.px 120
+                            , Element.alignRight
+                            , Element.centerY
+                            ]
+                            [ Element.text "Other Settings: " ]
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.alignRight, Element.centerY ]
                                 , color = Mensam.Element.Button.Yellow
                                 , enabled = True
                                 , label = Element.text "Roles"
@@ -130,15 +152,6 @@ element model =
                                 , enabled = True
                                 , label = Element.text "Desks"
                                 , message = Just <| MessageEffect OpenPageToDesks
-                                , size = Mensam.Element.Button.Medium
-                                }
-                        , Mensam.Element.Button.button <|
-                            Mensam.Element.Button.MkButton
-                                { attributes = [ Element.alignRight, Element.centerY ]
-                                , color = Mensam.Element.Button.Gray
-                                , enabled = True
-                                , label = Element.text "Go back"
-                                , message = Just <| MessageEffect ReturnToSpace
                                 , size = Mensam.Element.Button.Medium
                                 }
                         ]

@@ -2074,10 +2074,10 @@ update message (MkModel model) =
                         Mensam.Auth.SignedOut ->
                             update (ReportError errorNoAuth) <| MkModel model
 
-                Mensam.Screen.Space.Desks.ReturnToSpace ->
+                Mensam.Screen.Space.Desks.ReturnToSpaceSettings ->
                     case model.screen of
                         ScreenSpaceDesks screenModel ->
-                            update (SetUrlAfterCancellingRequests { target = RouteSpace screenModel.spaceId, addCurrentPageToHistory = True }) <| MkModel model
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceSettings screenModel.spaceId, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model

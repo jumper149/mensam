@@ -25,6 +25,9 @@
 * Frontend.
   ** [ ] Improve Dashboard UI.
   ** [ ] Improve user settings UI.
+    *** [x] Move button to go to "Edit Desks" page to settings.
+    *** [ ] Handle different kinds of permissions properly.
+      **** Avoid error on the settings page by disabling what is not available to the user.
   ** [ ] Improve look of user preview for users without `edit-user` permission.
   ** [ ] Add wrapper function that sets ALL font properties at once, so you cannot forget anything.
   ** [ ] Light/Dark mode.

@@ -102,7 +102,7 @@ element model =
                             , color = Mensam.Element.Button.Gray
                             , enabled = True
                             , label = Element.text "Go back"
-                            , message = Just <| MessageEffect ReturnToSpace
+                            , message = Just <| MessageEffect ReturnToSpaceSettings
                             , size = Mensam.Element.Button.Medium
                             }
                     ]
@@ -830,7 +830,7 @@ type MessageEffect
     | SubmitCreateDesk { name : Mensam.Desk.Name }
     | SubmitEditDesk { id : Mensam.Desk.Identifier, name : Maybe Mensam.Desk.Name, location : Maybe (Maybe Mensam.Desk.Location) }
     | SubmitDeleteDesk { id : Mensam.Desk.Identifier }
-    | ReturnToSpace
+    | ReturnToSpaceSettings
 
 
 spaceView : Maybe Mensam.Http.Tracker.Tracker -> Mensam.Url.BaseUrl -> { jwt : Mensam.Auth.Bearer.Jwt, yourUserId : Mensam.User.Identifier } -> Mensam.Space.Identifier -> Cmd Message
@@ -846,7 +846,7 @@ spaceView tracker baseUrl auth id =
                 Ok (Mensam.Api.SpaceView.Success403Restricted view) ->
                     Messages <|
                         [ MessagePure <| SetSpaceName view.name
-                        , MessageEffect ReturnToSpace
+                        , MessageEffect ReturnToSpaceSettings
                         ]
 
                 Ok Mensam.Api.SpaceView.ErrorSpaceNotFound ->
