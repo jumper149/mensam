@@ -70,6 +70,7 @@ You can host a server by enabling it in your NixOS configuration.
 {
   services.mensam = {
     enable = true;
+    provider = "docker"; # Avoids building mensam from source.
     config = {
       port = 8177;
       email-config = {

@@ -1,5 +1,12 @@
 = Changelog
 
+== `0.15.1.0`
+
+* Deployment
+  ** NixOS module now supports using the prebuilt Docker image.
+* Frontend
+  ** Add a basic loading screen.
+
 == `0.15.0.0`
 
 * API, Frontend, Backend, Database
