@@ -31,15 +31,6 @@
     };
     config = lib.mkIf config.services.mensam.enable (lib.mkMerge [
       {
-        environment = {
-          etc."mensam.json".text = builtins.toJSON (
-            lib.recursiveUpdate {
-                nix = pkgs.mensam.config.default;
-                docker = pkgs.mensam.config.docker;
-              }.${config.services.mensam.provider}
-              config.services.mensam.config
-          );
-        };
         nixpkgs.overlays = [
           finalOverlay
         ];
@@ -56,62 +47,70 @@
         };
       }
 
-      {
-        nix = {
-          systemd.services.mensam = {
-            wantedBy = [ "multi-user.target" ];
-            after = [ "network.target" ];
-            description = "Mensam";
-            environment = {
-              MENSAM_CONFIG_FILE = "/etc/mensam.json";
-              MENSAM_LOG_COLOR = "False";
-              MENSAM_LOG_FILE = "/var/log/mensam/access.log";
-              MENSAM_LOG_LEVEL = "LevelInfo";
-            } // config.services.mensam.environment;
-            restartTriggers = [
-              config.environment.etc."mensam.json".source
-            ];
-            serviceConfig = {
-              ExecStart = "${pkgs.mensam.exe}/bin/mensam-server";
-              LogsDirectory = "mensam";
-              StateDirectory = "mensam";
-              User = "mensam";
-            };
+      (lib.mkIf (config.services.mensam.provider == "nix") {
+        environment = {
+          etc."mensam.json".text = builtins.toJSON (
+            lib.recursiveUpdate pkgs.mensam.config.default config.services.mensam.config
+          );
+        };
+        systemd.services.mensam = {
+          wantedBy = [ "multi-user.target" ];
+          after = [ "network.target" ];
+          description = "Mensam";
+          environment = {
+            MENSAM_CONFIG_FILE = "/etc/mensam.json";
+            MENSAM_LOG_COLOR = "False";
+            MENSAM_LOG_FILE = "/var/log/mensam/access.log";
+            MENSAM_LOG_LEVEL = "LevelInfo";
+          } // config.services.mensam.environment;
+          restartTriggers = [
+            config.environment.etc."mensam.json".source
+          ];
+          serviceConfig = {
+            ExecStart = "${pkgs.mensam.exe}/bin/mensam-server";
+            LogsDirectory = "mensam";
+            StateDirectory = "mensam";
+            User = "mensam";
           };
         };
+      })
 
-        docker = {
-          virtualisation.podman.enable = true;
-          virtualisation.oci-containers.backend = "podman";
-          services.systemd."mensam".serviceConfig = {
-              LogsDirectory = "mensam";
-              StateDirectory = "mensam";
-              User = "mensam";
-            };
-          virtualisation.oci-containers.containers."mensam" = {
-            serviceName = "mensam";
-            image = "docker.io/jumper149/mensam:${pkgs.mensam.revision}";
-            # ports = [
-            #   "127.0.0.1:8177:8177"
-            # ];
-            extraOptions = [
-              "--network=host" # Share all ports with the regular operating system.
-            ];
-            podman.user = "mensam";
-            volumes = [
-              "/var/lib/mensam:/var/lib/mensam"
-              "/var/log/mensam:/var/log/mensam"
-              "/etc/mensam.json:/etc/mensam.json:ro"
-              "${pkgs.cacert.outPath}/etc/ssl/certs/ca-bundle.crt:/etc/ssl/certs/ca-bundle.crt:ro"
-            ];
-            environment = {
-              MENSAM_CONFIG_FILE = "/etc/mensam.json";
-              MENSAM_LOG_COLOR = "False";
-              MENSAM_LOG_FILE = "/var/log/mensam/access.log";
-              MENSAM_LOG_LEVEL = "LevelInfo";
-            } // config.services.mensam.environment;
-          };
+      (lib.mkIf (config.services.mensam.provider == "docker") {
+        environment = {
+          etc."mensam.json".text = builtins.toJSON (
+            lib.recursiveUpdate pkgs.mensam.config.docker config.services.mensam.config
+          );
         };
-      }.${config.services.mensam.provider}
+        virtualisation.podman.enable = true;
+        virtualisation.oci-containers.backend = "podman";
+        services.systemd."mensam".serviceConfig = {
+            LogsDirectory = "mensam";
+            StateDirectory = "mensam";
+            User = "mensam";
+          };
+        virtualisation.oci-containers.containers."mensam" = {
+          serviceName = "mensam";
+          image = "docker.io/jumper149/mensam:${pkgs.mensam.revision}";
+          # ports = [
+          #   "127.0.0.1:8177:8177"
+          # ];
+          extraOptions = [
+            "--network=host" # Share all ports with the regular operating system.
+          ];
+          podman.user = "mensam";
+          volumes = [
+            "/var/lib/mensam:/var/lib/mensam"
+            "/var/log/mensam:/var/log/mensam"
+            "/etc/mensam.json:/etc/mensam.json:ro"
+            "${pkgs.cacert.outPath}/etc/ssl/certs/ca-bundle.crt:/etc/ssl/certs/ca-bundle.crt:ro"
+          ];
+          environment = {
+            MENSAM_CONFIG_FILE = "/etc/mensam.json";
+            MENSAM_LOG_COLOR = "False";
+            MENSAM_LOG_FILE = "/var/log/mensam/access.log";
+            MENSAM_LOG_LEVEL = "LevelInfo";
+          } // config.services.mensam.environment;
+        };
+      })
     ]);
   }
