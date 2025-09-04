@@ -35,7 +35,7 @@
           etc."mensam.json".text = builtins.toJSON (
             lib.recursiveUpdate {
                 nix = pkgs.mensam.config.default;
-                docker = pkgs.mensam.configDocker.default;
+                docker = pkgs.mensam.config.docker;
               }.${config.services.mensam.provider}
               config.services.mensam.config
           );
