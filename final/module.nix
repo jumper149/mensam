@@ -91,11 +91,8 @@
         virtualisation.oci-containers.containers."mensam" = {
           serviceName = "mensam";
           image = "docker.io/jumper149/mensam:${pkgs.mensam.revision}";
-          # ports = [
-          #   "127.0.0.1:8177:8177"
-          # ];
           extraOptions = [
-            "--network=host" # Share all ports with the regular operating system.
+            "--network=host" # Share all ports with the regular operating system. This is necessary for sending emails.
             "--cgroup-manager=cgroupfs" # Avoids warning about "cgroupv2 manager is set to systemd"
           ];
           podman.user = "mensam";
@@ -103,7 +100,7 @@
             "/var/lib/mensam:/var/lib/mensam"
             "/var/log/mensam:/var/log/mensam"
             "/etc/mensam.json:/etc/mensam.json:ro"
-            "${pkgs.cacert.outPath}/etc/ssl/certs/ca-bundle.crt:/etc/ssl/certs/ca-bundle.crt:ro"
+            "${pkgs.cacert.outPath}/etc/ssl/certs/ca-bundle.crt:/etc/ssl/certs/ca-bundle.crt:ro" # This is necessary for sending emails.
           ];
           environment = {
             MENSAM_CONFIG_FILE = "/etc/mensam.json";
