@@ -40,7 +40,6 @@
             group = "mensam";
             description = "Mensam user";
             home = "/var/lib/mensam";
-            linger = true;
           };
         };
         users.groups = {
@@ -97,6 +96,7 @@
           # ];
           extraOptions = [
             "--network=host" # Share all ports with the regular operating system.
+            "--cgroup-manager=cgroupfs" # Avoids warning about "cgroupv2 manager is set to systemd"
           ];
           podman.user = "mensam";
           volumes = [
