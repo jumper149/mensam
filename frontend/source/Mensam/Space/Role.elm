@@ -194,6 +194,16 @@ permissionCheck permissionToCheck (MkPermissions permissionsGiven) =
     Set.member (permissionToInt permissionToCheck) permissionsGiven
 
 
+permissionCheckAny : List Permission -> Permissions -> Bool
+permissionCheckAny permissionsToCheck permissions =
+    List.any (\p -> permissionCheck p permissions) permissionsToCheck
+
+
+permissionCheckAll : List Permission -> Permissions -> Bool
+permissionCheckAll permissionsToCheck permissions =
+    List.all (\p -> permissionCheck p permissions) permissionsToCheck
+
+
 allPermissions : Permissions
 allPermissions =
     permissionsFromList

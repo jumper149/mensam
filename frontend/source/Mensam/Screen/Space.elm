@@ -220,20 +220,25 @@ element model =
                             Element.none
 
                         Just yourRole ->
-                            case List.Extra.find (\p -> p == Mensam.Space.Role.MkPermissionEditSpace) <| Mensam.Space.Role.permissionsToList yourRole.permissions of
-                                Nothing ->
-                                    Element.none
+                            if
+                                Mensam.Space.Role.permissionCheckAny
+                                    [ Mensam.Space.Role.MkPermissionEditSpace
+                                    , Mensam.Space.Role.MkPermissionEditRole
+                                    ]
+                                    yourRole.permissions
+                            then
+                                Mensam.Element.Button.button <|
+                                    Mensam.Element.Button.MkButton
+                                        { attributes = [ Element.alignRight, Element.centerY ]
+                                        , color = Mensam.Element.Button.Yellow
+                                        , enabled = True
+                                        , label = Element.text "Settings"
+                                        , message = Just <| MessageEffect OpenPageToSettings
+                                        , size = Mensam.Element.Button.Medium
+                                        }
 
-                                Just _ ->
-                                    Mensam.Element.Button.button <|
-                                        Mensam.Element.Button.MkButton
-                                            { attributes = [ Element.alignRight, Element.centerY ]
-                                            , color = Mensam.Element.Button.Yellow
-                                            , enabled = True
-                                            , label = Element.text "Settings"
-                                            , message = Just <| MessageEffect OpenPageToSettings
-                                            , size = Mensam.Element.Button.Medium
-                                            }
+                            else
+                                Element.none
                     , Mensam.Element.Button.button <|
                         Mensam.Element.Button.MkButton
                             { attributes = [ Element.alignRight, Element.centerY ]
@@ -243,25 +248,6 @@ element model =
                             , message = Just <| MessageEffect OpenPageToUsers
                             , size = Mensam.Element.Button.Medium
                             }
-                    , case model.yourRole of
-                        Nothing ->
-                            Element.none
-
-                        Just yourRole ->
-                            case List.Extra.find (\p -> p == Mensam.Space.Role.MkPermissionEditDesk) <| Mensam.Space.Role.permissionsToList yourRole.permissions of
-                                Nothing ->
-                                    Element.none
-
-                                Just _ ->
-                                    Mensam.Element.Button.button <|
-                                        Mensam.Element.Button.MkButton
-                                            { attributes = [ Element.alignRight, Element.centerY ]
-                                            , color = Mensam.Element.Button.Yellow
-                                            , enabled = True
-                                            , label = Element.text "Desks"
-                                            , message = Just <| MessageEffect OpenPageToDesks
-                                            , size = Mensam.Element.Button.Medium
-                                            }
                     ]
                 , Element.column
                     [ Element.width Element.fill
