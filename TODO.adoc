@@ -77,6 +77,14 @@
     *** [ ] Window.
     *** more?
 
+* Signed reservation emails.
+  ** When the server sends the "Reservation created" notification email, we can attach a QR code.
+  ** This QR code is signed by the server.
+  ** The server saves its private key in its database.
+  ** The server shares a public key to verify the signature.
+  ** Some app (???) can then verify this QR code.
+    *** That way you know that the person show that QR code is actually the person that booked the reservation.
+
 * Smart desk assignment.
   ** Users can choose to reserve any desk (not a specific one).
   ** Mensam will not choose the desk until the reservation actually happens.
