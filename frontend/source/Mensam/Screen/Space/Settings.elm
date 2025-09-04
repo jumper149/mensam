@@ -126,6 +126,15 @@ element model =
                         , Mensam.Element.Button.button <|
                             Mensam.Element.Button.MkButton
                                 { attributes = [ Element.alignRight, Element.centerY ]
+                                , color = Mensam.Element.Button.Yellow
+                                , enabled = True
+                                , label = Element.text "Desks"
+                                , message = Just <| MessageEffect OpenPageToDesks
+                                , size = Mensam.Element.Button.Medium
+                                }
+                        , Mensam.Element.Button.button <|
+                            Mensam.Element.Button.MkButton
+                                { attributes = [ Element.alignRight, Element.centerY ]
                                 , color = Mensam.Element.Button.Gray
                                 , enabled = True
                                 , label = Element.text "Go back"
@@ -632,6 +641,7 @@ type MessageEffect
     | UploadSpacePictureUpload File.File
     | DeleteSpacePictureRequest
     | DownloadSpacePictureRequest
+    | OpenPageToDesks
     | OpenPageToRoles
 
 

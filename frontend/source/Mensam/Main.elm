@@ -1403,14 +1403,6 @@ update message (MkModel model) =
                         _ ->
                             update (ReportError errorScreen) <| MkModel model
 
-                Mensam.Screen.Space.OpenPageToDesks ->
-                    case model.screen of
-                        ScreenSpace screenModel ->
-                            update (SetUrlAfterCancellingRequests { target = RouteSpaceDesks screenModel.space, addCurrentPageToHistory = True }) <| MkModel model
-
-                        _ ->
-                            update (ReportError errorScreen) <| MkModel model
-
                 Mensam.Screen.Space.SubmitLeave ->
                     case model.authenticated of
                         Mensam.Auth.SignedIn (Mensam.Auth.MkAuthentication { jwt }) ->
@@ -1922,6 +1914,14 @@ update message (MkModel model) =
                     case model.screen of
                         ScreenSpaceSettings _ ->
                             update (SetUrlAfterCancellingRequests { target = RouteSpaces, addCurrentPageToHistory = True }) <| MkModel model
+
+                        _ ->
+                            update (ReportError errorScreen) <| MkModel model
+
+                Mensam.Screen.Space.Settings.OpenPageToDesks ->
+                    case model.screen of
+                        ScreenSpaceSettings screenModel ->
+                            update (SetUrlAfterCancellingRequests { target = RouteSpaceDesks screenModel.id, addCurrentPageToHistory = True }) <| MkModel model
 
                         _ ->
                             update (ReportError errorScreen) <| MkModel model

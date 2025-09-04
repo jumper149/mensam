@@ -9,7 +9,6 @@ import Element.Font
 import Element.Input
 import Element.Window
 import Html.Attributes
-import List.Extra
 import Mensam.Api.DeskList
 import Mensam.Api.ReservationCreate
 import Mensam.Api.SpaceLeave
@@ -1728,7 +1727,6 @@ type MessageEffect
     | OpenPageToJoin
     | OpenPageToUsers
     | OpenPageToSettings
-    | OpenPageToDesks
     | SubmitLeave
     | SubmitReservation
 
