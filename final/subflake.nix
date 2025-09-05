@@ -168,6 +168,8 @@
       ];
     };
 
+  checks.x86_64-linux.dockerImage = dockerImages.default;
+
   checks.x86_64-linux.nixosModules.minimal =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     pkgs.nixosTest {
@@ -187,7 +189,5 @@
         machine.wait_for_unit("mensam.service")
       '';
     };
-
-  checks.x86_64-linux.dockerImage = dockerImages.default;
 
 }
