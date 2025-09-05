@@ -50,7 +50,7 @@
 
       (lib.mkIf (config.services.mensam.provider == "nix") {
         environment = {
-          etc."mensam.json".text = builtins.toJSON (
+          etc."mensam/configuration.json".text = builtins.toJSON (
             lib.recursiveUpdate pkgs.mensam.config.nix config.services.mensam.config
           );
         };
@@ -59,13 +59,13 @@
           after = [ "network.target" ];
           description = "Mensam";
           environment = {
-            MENSAM_CONFIG_FILE = "/etc/mensam.json";
+            MENSAM_CONFIG_FILE = "/etc/mensam/configuration.json";
             MENSAM_LOG_COLOR = "False";
             MENSAM_LOG_FILE = "/var/log/mensam/access.log";
             MENSAM_LOG_LEVEL = "LevelInfo";
           } // config.services.mensam.environment;
           restartTriggers = [
-            config.environment.etc."mensam.json".source
+            config.environment.etc."mensam/configuration.json".source
           ];
           serviceConfig = {
             ExecStart = "${pkgs.mensam.exe}/bin/mensam-server";
@@ -78,7 +78,7 @@
 
       (lib.mkIf (config.services.mensam.provider == "docker") {
         environment = {
-          etc."mensam.json".text = builtins.toJSON (
+          etc."mensam/configuration.json".text = builtins.toJSON (
             lib.recursiveUpdate pkgs.mensam.config.docker config.services.mensam.config
           );
         };
@@ -103,11 +103,11 @@
           volumes = [
             "/var/lib/mensam:/var/lib/mensam"
             "/var/log/mensam:/var/log/mensam"
-            "/etc/mensam.json:/etc/mensam.json:ro"
+            "/etc/mensam:/etc/mensam:ro"
             "${pkgs.cacert.outPath}/etc/ssl/certs/ca-bundle.crt:/etc/ssl/certs/ca-bundle.crt:ro" # This is necessary for sending emails.
           ];
           environment = {
-            MENSAM_CONFIG_FILE = "/etc/mensam.json";
+            MENSAM_CONFIG_FILE = "/etc/mensam/configuration.json";
             MENSAM_LOG_COLOR = "False";
             MENSAM_LOG_FILE = "/var/log/mensam/access.log";
             MENSAM_LOG_LEVEL = "LevelInfo";

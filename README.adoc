@@ -55,7 +55,7 @@ Set up the configuration file. Use link:./final/configuration.json[`configuratio
 [source,bash]
 ----
 docker pull jumper149/mensam:v0.15.1.0
-docker run --publish 8080:8177 --volume ./final/configuration.json:/etc/mensam.json jumper149/mensam:v0.15.1.0.
+docker run --publish 8080:8177 --volume ./final/configuration.json:/etc/mensam/configuration.json jumper149/mensam:v0.15.1.0.
 ----
 
 This will use the default configuration file for Docker deployments and now you should be able to visit the web interface on http://localhost:8080.

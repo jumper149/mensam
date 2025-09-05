@@ -32,7 +32,7 @@
 
   packages.x86_64-linux.config =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    builtins.mapAttrs (_: c: writeText "mensam.json" (builtins.toJSON c)) config;
+    builtins.mapAttrs (_: c: writeText "mensam-configuration.json" (builtins.toJSON c)) config;
 
   packages.x86_64-linux.fallback =
     self.subflakes.fallback.packages.x86_64-linux.default;
@@ -92,7 +92,7 @@
           name = "mensam-root-docker";
           pathsToLink = [
             "/bin"
-            "/etc/mensam.json"
+            "/etc/mensam"
             "/usr/share/mensam"
             "/var/lib/mensam"
             "/var/log/mensam"
@@ -127,7 +127,7 @@
       config = {
         Cmd = [ "${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server" ];
         Env = [
-          "MENSAM_CONFIG_FILE=/etc/mensam.json"
+          "MENSAM_CONFIG_FILE=/etc/mensam/configuration.json"
           "MENSAM_LOG_COLOR=True"
           #"MENSAM_LOG_FILE=" # Docker expects the log on StdOut.
           "MENSAM_LOG_LEVEL=LevelDebug"
