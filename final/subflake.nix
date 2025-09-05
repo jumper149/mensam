@@ -61,6 +61,7 @@
       };
       config.default = config;
       config.docker = builtins.fromJSON (builtins.readFile ./configurations/docker.json);
+      dockerImage = dockerImages.default;
       revision = if self ? rev then self.rev else null;
     };
   };
@@ -155,15 +156,48 @@
       ];
     };
 
-  checks.x86_64-linux.nixosModules.default =
+  checks.x86_64-linux.nixosModules.nix =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     pkgs.nixosTest {
-      name = "mensam-nixos-startup-test";
+      name = "mensam-nixos-startup-nix-test";
       nodes.machine = { config, pkgs, ... }: {
         imports = [ nixosModules.default ];
         services.mensam = {
           enable = true;
           provider = "nix";
+          config = {
+            port = 8177;
+            email-config = null;
+            base-url = {
+              scheme = "http";
+              authority = {
+                host = "localhost";
+                port = 8177;
+              };
+              path = [];
+            };
+          };
+          environment = {
+          };
+        };
+      };
+      testScript = ''
+        machine.wait_for_unit("mensam.service")
+      '';
+    };
+
+  checks.x86_64-linux.nixosModules.docker =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    pkgs.nixosTest {
+      name = "mensam-nixos-startup-docker-test";
+      nodes.machine = { config, pkgs, ... }: {
+        imports = [ nixosModules.default ];
+        virtualisation.diskSize = 8192;
+        virtualisation.memorySize = 2048;
+        virtualisation.oci-containers.containers.mensam.image = lib.mkForce "docker-archive://${pkgs.mensam.dockerImage}";
+        services.mensam = {
+          enable = true;
+          provider = "docker";
           config = {
             port = 8177;
             email-config = null;

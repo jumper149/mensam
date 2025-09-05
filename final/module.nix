@@ -40,6 +40,7 @@
             group = "mensam";
             description = "Mensam user";
             home = "/var/lib/mensam";
+            autoSubUidGidRange = true;
           };
         };
         users.groups = {
@@ -83,12 +84,15 @@
         };
         virtualisation.podman.enable = true;
         virtualisation.oci-containers.backend = "podman";
-        systemd.services."mensam".serviceConfig = {
+        systemd.services.mensam = {
+          description = "Mensam (via Podman)";
+          serviceConfig = {
             LogsDirectory = "mensam";
             StateDirectory = "mensam";
             User = "mensam";
           };
-        virtualisation.oci-containers.containers."mensam" = {
+        };
+        virtualisation.oci-containers.containers.mensam = {
           serviceName = "mensam";
           image = "docker.io/jumper149/mensam:${pkgs.mensam.revision}";
           extraOptions = [
