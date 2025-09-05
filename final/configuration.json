@@ -4,13 +4,7 @@
   , "connection-pool-max-number-of-connections": 4
   , "check-data-integrity-on-startup": true
   }
-, "email-config":
-  { "hostname": ""
-  , "port": 465
-  , "username": ""
-  , "password": ""
-  , "tls": true
-  }
+, "email-config": null
 , "directory-static": "/usr/share/mensam/static"
 , "port": 8177
 , "base-url":

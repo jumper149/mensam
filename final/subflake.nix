@@ -4,14 +4,14 @@
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-server-full" ''
       #!${pkgs.bash}/bin/bash
-      MENSAM_CONFIG_FILE="${packages.x86_64-linux.config}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server
+      MENSAM_CONFIG_FILE="${packages.x86_64-linux.config.development}" ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server
     '';
 
   packages.x86_64-linux.mensam-test =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     writeScriptBin "mensam-test-full" ''
       #!${pkgs.bash}/bin/bash
-      export MENSAM_CONFIG_FILE="${packages.x86_64-linux.config}"
+      export MENSAM_CONFIG_FILE="${packages.x86_64-linux.config.development}"
       export MENSAM_LOG_LEVEL=LevelWarn
       ${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-test
     '';
@@ -32,26 +32,41 @@
 
   packages.x86_64-linux.config =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    writeText "mensam.json" (builtins.toJSON config);
+    builtins.mapAttrs (_: c: writeText "mensam.json" (builtins.toJSON c)) config;
 
   packages.x86_64-linux.fallback =
-    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     self.subflakes.fallback.packages.x86_64-linux.default;
 
-  deployment = builtins.fromJSON (builtins.readFile ./deployment.json);
-
-  config =
-    builtins.fromJSON (builtins.readFile ./configurations/${deployment}.json) // {
-      revision = if self ? rev then self.rev else null;
+  config = {
+    development = builtins.fromJSON (builtins.readFile ./configuration.json) // {
+      auth = {
+        timeout-seconds = 1200;
+      };
+      directory-haddock = "${self.subflakes.server.packages.x86_64-linux.package.doc}/share/doc/mensam-0/html";
       directory-static = "${self.subflakes.static.packages.x86_64-linux.default}";
-      directory-haddock =
-        if deployment == "development"
-        then null
-        else "${self.subflakes.server.packages.x86_64-linux.package.doc}/share/doc/mensam-0/html";
+      fonts = [ ];
+      sqlite = {
+        filepath = "mensam.sqlite";
+        connection-pool-timeout-seconds = 10;
+        connection-pool-max-number-of-connections = 4;
+        check-data-integrity-on-startup = true;
+      };
+      revision = if self ? rev then self.rev else null;
     };
+    nix = builtins.fromJSON (builtins.readFile ./configuration.json) // {
+      directory-haddock = "${self.subflakes.server.packages.x86_64-linux.package.doc}/share/doc/mensam-0/html";
+      directory-static = "${self.subflakes.static.packages.x86_64-linux.default}";
+      revision = if self ? rev then self.rev else null;
+    };
+    docker = builtins.fromJSON (builtins.readFile ./configuration.json) // {
+      revision = if self ? rev then self.rev else null;
+    };
+  };
 
   overlays.default = final: prev: {
     mensam = {
+      config = config;
+      dockerImage = dockerImages.default;
       exe = self.subflakes.server.packages.x86_64-linux.default;
       full = {
         server = packages.x86_64-linux.default;
@@ -59,9 +74,6 @@
         openapi = packages.x86_64-linux.mensam-openapi;
         fallback = packages.x86_64-linux.fallback;
       };
-      config.default = config;
-      config.docker = builtins.fromJSON (builtins.readFile ./configurations/docker.json);
-      dockerImage = dockerImages.default;
       revision = if self ? rev then self.rev else null;
     };
   };
@@ -80,7 +92,7 @@
           name = "mensam-root-docker";
           pathsToLink = [
             "/bin"
-            "/etc/mensam"
+            "/etc/mensam.json"
             "/usr/share/mensam"
             "/var/lib/mensam"
             "/var/log/mensam"
@@ -115,7 +127,7 @@
       config = {
         Cmd = [ "${self.subflakes.server.packages.x86_64-linux.default}/bin/mensam-server" ];
         Env = [
-          "MENSAM_CONFIG_FILE=/etc/mensam/mensam.json"
+          "MENSAM_CONFIG_FILE=/etc/mensam.json"
           "MENSAM_LOG_COLOR=True"
           #"MENSAM_LOG_FILE=" # Docker expects the log on StdOut.
           "MENSAM_LOG_LEVEL=LevelDebug"
@@ -164,21 +176,6 @@
         imports = [ nixosModules.default ];
         services.mensam = {
           enable = true;
-          provider = "nix";
-          config = {
-            port = 8177;
-            email-config = null;
-            base-url = {
-              scheme = "http";
-              authority = {
-                host = "localhost";
-                port = 8177;
-              };
-              path = [];
-            };
-          };
-          environment = {
-          };
         };
       };
       testScript = ''
@@ -198,20 +195,6 @@
         services.mensam = {
           enable = true;
           provider = "docker";
-          config = {
-            port = 8177;
-            email-config = null;
-            base-url = {
-              scheme = "http";
-              authority = {
-                host = "localhost";
-                port = 8177;
-              };
-              path = [];
-            };
-          };
-          environment = {
-          };
         };
       };
       testScript = ''

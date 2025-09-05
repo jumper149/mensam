@@ -51,7 +51,7 @@
       (lib.mkIf (config.services.mensam.provider == "nix") {
         environment = {
           etc."mensam.json".text = builtins.toJSON (
-            lib.recursiveUpdate pkgs.mensam.config.default config.services.mensam.config
+            lib.recursiveUpdate pkgs.mensam.config.nix config.services.mensam.config
           );
         };
         systemd.services.mensam = {

@@ -48,14 +48,14 @@ Docker Images are available on https://hub.docker.com/r/jumper149/mensam[DockerH
 ====
 Make sure you are pulling an up-to-date version.
 
-Set up the configuration file. Use link:./final/configurations/docker.json[`docker.json`] as a template configuration.
+Set up the configuration file. Use link:./final/configuration.json[`configuration.json`] as a template configuration.
 ====
 
 
 [source,bash]
 ----
-docker pull jumper149/mensam:v0.10.0.2
-docker run --publish 8080:8177 --volume ./final/configurations/docker.json:/etc/mensam/mensam.json jumper149/mensam:v0.10.0.2
+docker pull jumper149/mensam:v0.15.1.0
+docker run --publish 8080:8177 --volume ./final/configuration.json:/etc/mensam.json jumper149/mensam:v0.15.1.0.
 ----
 
 This will use the default configuration file for Docker deployments and now you should be able to visit the web interface on http://localhost:8080.

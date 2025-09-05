@@ -1,12 +1,7 @@
 = Final
 
-It's possible to use a development configuration.
-Modify link:./deployment.json[`deployment.json`] and use the name of a configuration.
+Here is a template link:./configuration.json[`configuration.json`] to configure the `mensam` executable.
 
-`nixpublic`:: Deployment configuration
-`development`:: Development configuration
+== NixOS
 
-[source,bash]
-----
-echo "\"development\"" > deployment.json
-----
+We also provide a NixOS module.
