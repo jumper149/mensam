@@ -198,6 +198,12 @@
       testScript = ''
         machine.wait_for_unit("mensam.service")
         machine.wait_for_unit("nginx.service")
+        #machine.wait_for_unit("acme-my-domain.service")
+        #machine.wait_for_unit("acme-mensam.my-domain.service")
+        #machine.succeed("test -f /var/lib/acme/my-domain.com/fullchain.pem")
+        #machine.succeed("test -f /var/lib/acme/my-domain.com/privkey.pem")
+        #machine.succeed("test -f /var/lib/acme/mensam.my-domain.com/fullchain.pem")
+        #machine.succeed("test -f /var/lib/acme/mensam.my-domain.com/privkey.pem")
       '';
     };
 
