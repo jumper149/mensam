@@ -155,6 +155,36 @@
       ];
     };
 
+  checks.x86_64-linux.nixosModules.default =
+    with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
+    pkgs.nixosTest {
+      name = "mensam-nixos-startup-test";
+      nodes.machine = { config, pkgs, ... }: {
+        imports = [ nixosModules.default ];
+        services.mensam = {
+          enable = true;
+          provider = "nix";
+          config = {
+            port = 8177;
+            email-config = null;
+            base-url = {
+              scheme = "http";
+              authority = {
+                host = "localhost";
+                port = 8177;
+              };
+              path = [];
+            };
+          };
+          environment = {
+          };
+        };
+      };
+      testScript = ''
+        machine.wait_for_unit("mensam.service")
+      '';
+    };
+
   checks.x86_64-linux.dockerImage = dockerImages.default;
 
 }
