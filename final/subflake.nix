@@ -78,7 +78,7 @@
     };
   };
 
-  nixosModules.default = import ./module.nix {
+  nixosModules.default = import ./nixos/module.nix {
     finalOverlay = overlays.default;
   };
 
@@ -168,35 +168,21 @@
       ];
     };
 
-  checks.x86_64-linux.nixosModules.nix =
+  checks.x86_64-linux.nixosModules.minimal =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     pkgs.nixosTest {
-      name = "mensam-nixos-startup-nix-test";
-      nodes.machine = { config, pkgs, ... }: {
-        imports = [ nixosModules.default ];
-        services.mensam = {
-          enable = true;
-        };
-      };
+      name = "mensam-nixos-startup-minimal-test";
+      nodes.machine = (import ./nixos/test/nixos-mensam-minimal.nix) nixosModules.default;
       testScript = ''
         machine.wait_for_unit("mensam.service")
       '';
     };
 
-  checks.x86_64-linux.nixosModules.docker =
+  checks.x86_64-linux.nixosModules.docker-minimal =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
     pkgs.nixosTest {
-      name = "mensam-nixos-startup-docker-test";
-      nodes.machine = { config, pkgs, ... }: {
-        imports = [ nixosModules.default ];
-        virtualisation.diskSize = 8192;
-        virtualisation.memorySize = 2048;
-        virtualisation.oci-containers.containers.mensam.image = lib.mkForce "docker-archive://${pkgs.mensam.dockerImage}";
-        services.mensam = {
-          enable = true;
-          provider = "docker";
-        };
-      };
+      name = "mensam-nixos-startup-docker-minimal-test";
+      nodes.machine = (import ./nixos/test/nixos-mensam-docker-minimal.nix) nixosModules.default;
       testScript = ''
         machine.wait_for_unit("mensam.service")
       '';
