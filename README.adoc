@@ -62,26 +62,25 @@ This will use the default configuration file for Docker deployments and now you 
 
 === NixOS module
 
-You can host a server by enabling it in your NixOS configuration.
+You can host a server by using the flake and enabling Mensam in your NixOS configuration.
 
 [source,nix]
 ----
-{ config, pkgs, lib, ... }:
-{
+{ config, pkgs, lib, ... }: {
   services.mensam = {
     enable = true;
     provider = "docker"; # Avoids building mensam from source.
     config = {
       port = 8177;
       email-config = {
-        hostname = "my-hostname.com";
-        username = "mensam@my-hostname.com";
+        hostname = "my-domain.com";
+        username = "mensam@my-domain.com";
         password = "********";
       };
       base-url = {
         scheme = "https";
         authority = {
-          host = "mensam.my-hostname.com";
+          host = "mensam.my-domain.com";
           port = null;
         };
         path = [];
