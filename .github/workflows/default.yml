@@ -36,8 +36,6 @@ jobs:
       with:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         name: jumper149-mensam
-    - name: "Set deployment"
-      run: echo "\"${{ matrix.deployment }}\"" > final/deployment.json
     - name: "Check"
       run: nix build ".#${{ matrix.attr }}" --print-build-logs
       if: ${{ matrix.sandbox }}

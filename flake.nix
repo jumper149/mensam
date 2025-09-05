@@ -104,15 +104,7 @@
         matrix = {
           include =
             let
-              addDeploymentDimension = deployment: matrix:
-                matrix // {
-                  deployment = deployment;
-                };
-              includeWithAllDimensions =
-                (map (addDeploymentDimension "development") generated.matrix.include) ++
-                (map (addDeploymentDimension "nixpublic") generated.matrix.include);
-              isBrokenCheck = matrix:
-                matrix.deployment == "nixpublic" && matrix.attr == "githubActions.checks.x86_64-linux.\"subflake-final-mensam-test\"";
+              isBrokenCheck = matrix: false;
               removeBrokenChecks = __filter (matrix: ! isBrokenCheck matrix);
               requiresSandboxFalse = matrix:
                 matrix.attr == "githubActions.checks.x86_64-linux.\"subflake-frontend-elm-review\"";
@@ -121,7 +113,7 @@
                 then matrix // { sandbox = false; }
                 else matrix // { sandbox = true; };
               setSandboxFields = map setSandboxField;
-            in setSandboxFields (removeBrokenChecks includeWithAllDimensions);
+            in setSandboxFields (removeBrokenChecks generated.matrix.include);
         };
       };
 
