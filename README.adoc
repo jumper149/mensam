@@ -82,7 +82,7 @@ You can host a server by enabling it in your NixOS configuration.
         scheme = "https";
         authority = {
           host = "mensam.my-hostname.com";
-          port= null;
+          port = null;
         };
         path = [];
       };
