@@ -14,7 +14,7 @@
         };
         environment = lib.mkOption {
           default = { };
-          type = with lib.types; attrsOf string;
+          type = with lib.types; attrsOf str;
           description = ''
             Environment variables to overwrite the default environment variables.
           '';
