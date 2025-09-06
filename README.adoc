@@ -170,9 +170,9 @@ Configure your NixOS configuration to trust the binary cache.
 
 === Versioning
 
-Any version number `EPOCH.MAJOR.MINOR.PATCH` already tells the operator of a deployment some basic information.
+Any version number `BREAK.MAJOR.MINOR.PATCH` already tells the operator of a deployment some basic information.
 
-`EPOCH`:: Enormous changes. Read the link:./CHANGELOG.adoc[changelog]!
-`MAJOR`:: Major changes. These changes break backwards compatibility, often including database migrations.
+`BREAK`:: Manual intervention required. Read the link:./CHANGELOG.adoc[changelog]!
+`MAJOR`:: Major changes. These changes break backwards compatibility, often including automated database migrations.
 `MINOR`:: Minor changes. These changes are backwards compatible. API changes are also considered __minor__ as the frontend is contained within the application.
 `PATCH`:: Bugfixes. These changes should always be applied as soon as possible.
