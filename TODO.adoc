@@ -1,8 +1,5 @@
 = TODO
 
-* Continuous integration.
-  ** [ ] Use `nixosConfigurations` to test the `nixosModule`.
-
 * Developer experience.
   ** [ ] Support GitHub Codespaces.
     *** Currently there is a bug with Nix in Codespaces: https://github.com/NixOS/nix/issues/6680
