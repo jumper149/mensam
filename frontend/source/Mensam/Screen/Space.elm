@@ -21,6 +21,7 @@ import Mensam.Element.Font
 import Mensam.Element.Screen
 import Mensam.Error
 import Mensam.Http.Tracker
+import Mensam.Icon
 import Mensam.NameOrIdentifier
 import Mensam.Reservation
 import Mensam.Room
@@ -231,7 +232,7 @@ element model =
                                         { attributes = [ Element.alignRight, Element.centerY ]
                                         , color = Mensam.Element.Button.Yellow
                                         , enabled = True
-                                        , label = Element.text "Settings"
+                                        , label = Element.html Mensam.Icon.settings
                                         , message = Just <| MessageEffect OpenPageToSettings
                                         , size = Mensam.Element.Button.Medium
                                         }
@@ -243,7 +244,7 @@ element model =
                             { attributes = [ Element.alignRight, Element.centerY ]
                             , color = Mensam.Element.Button.Yellow
                             , enabled = True
-                            , label = Element.text "Users"
+                            , label = Element.html Mensam.Icon.user
                             , message = Just <| MessageEffect OpenPageToUsers
                             , size = Mensam.Element.Button.Medium
                             }
