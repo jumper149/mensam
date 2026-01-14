@@ -24,57 +24,57 @@ data Routes route = Routes
       route
         :- Summary "Create Reservation"
           :> Description
-              "Request a desk reservation.\n\
-              \A desk can only be reserved by one user at any time.\n"
+               "Request a desk reservation.\n\
+               \A desk can only be reserved by one user at any time.\n"
           :> "create"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationCreate
           :> UVerb
-              PUT
-              '[JSON]
-              [ WithStatus 201 ResponseReservationCreate
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionCreateReservation)
-              , WithStatus 409 (StaticText "Desk is not available within the given time window.")
-              , WithStatus 500 ()
-              ]
+               PUT
+               '[JSON]
+               [ WithStatus 201 ResponseReservationCreate
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionCreateReservation)
+               , WithStatus 409 (StaticText "Desk is not available within the given time window.")
+               , WithStatus 500 ()
+               ]
   , routeReservationCancel ::
       route
         :- Summary "Cancel Reservation"
           :> Description
-              "Cancel a desk reservation.\n"
+               "Cancel a desk reservation.\n"
           :> "cancel"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationCancel
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseReservationCancel
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionCancelReservation)
-              , WithStatus 409 (StaticText "Already cancelled.")
-              , WithStatus 410 (StaticText "Already happened.")
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseReservationCancel
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionCancelReservation)
+               , WithStatus 409 (StaticText "Already cancelled.")
+               , WithStatus 410 (StaticText "Already happened.")
+               , WithStatus 500 ()
+               ]
   , routeReservationList ::
       route
         :- Summary "List Reservations"
           :> Description
-              "View all of your desk reservations.\n\
-              \Use the time-window to restrict the result to overlapping reservations.\n"
+               "View all of your desk reservations.\n\
+               \Use the time-window to restrict the result to overlapping reservations.\n"
           :> "list"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestReservationList
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseReservationList
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseReservationList
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 500 ()
+               ]
   }
   deriving stock (Generic)
 

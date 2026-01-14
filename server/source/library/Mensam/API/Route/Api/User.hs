@@ -25,99 +25,99 @@ data Routes route = Routes
       route
         :- Summary "Login"
           :> Description
-              "Login to your user account.\n"
+               "Login to your user account.\n"
           :> "login"
           :> Auth '[BasicAuth, JWTWithSession] UserAuthenticated
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseLogin
-              , WithStatus 401 ErrorBasicAuth
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseLogin
+               , WithStatus 401 ErrorBasicAuth
+               , WithStatus 500 ()
+               ]
   , routeLogout ::
       route
         :- Summary "Logout"
           :> Description
-              "Logout from a user session.\n\
-              \The token used with this request will be invalidated.\n"
+               "Logout from a user session.\n\
+               \The token used with this request will be invalidated.\n"
           :> "logout"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseLogout
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseLogout
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 500 ()
+               ]
   , routeRegister ::
       route
         :- Summary "Register"
           :> Description
-              "Register a new user account.\n\
-              \A confirmation email will be sent to the given email address.\n"
+               "Register a new user account.\n\
+               \A confirmation email will be sent to the given email address.\n"
           :> "register"
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRegister
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 201 ResponseRegister
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 409 (StaticText "Username is taken.")
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 201 ResponseRegister
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 409 (StaticText "Username is taken.")
+               , WithStatus 500 ()
+               ]
   , routePasswordChange ::
       route
         :- Summary "Change Password"
           :> Description
-              "Set a new password for your user account.\n"
+               "Set a new password for your user account.\n"
           :> "password"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestPasswordChange
           :> UVerb
-              PATCH
-              '[JSON]
-              [ WithStatus 200 ResponsePasswordChange
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 500 ()
-              ]
+               PATCH
+               '[JSON]
+               [ WithStatus 200 ResponsePasswordChange
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 500 ()
+               ]
   , routePictureUpload ::
       route
         :- Summary "Change Profile Picture"
           :> Description
-              "Upload a new profile picture.\n\
-              \This overwrites any old profile picture.\n"
+               "Upload a new profile picture.\n\
+               \This overwrites any old profile picture.\n"
           :> "picture"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[ImageJpeg] ImageJpegBytes
           :> UVerb
-              PUT
-              '[JSON]
-              [ WithStatus 200 (StaticText "Uploaded profile picture.")
-              , WithStatus 400 ErrorParseBodyJpeg
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 500 ()
-              ]
+               PUT
+               '[JSON]
+               [ WithStatus 200 (StaticText "Uploaded profile picture.")
+               , WithStatus 400 ErrorParseBodyJpeg
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 500 ()
+               ]
   , routePictureDelete ::
       route
         :- Summary "Delete Profile Picture"
           :> Description
-              "Delete your current profile picture.\n"
+               "Delete your current profile picture.\n"
           :> "picture"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> UVerb
-              DELETE
-              '[JSON]
-              [ WithStatus 200 (StaticText "Deleted profile picture.")
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 500 ()
-              ]
+               DELETE
+               '[JSON]
+               [ WithStatus 200 (StaticText "Deleted profile picture.")
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 500 ()
+               ]
   , routePictureDownload ::
       route
         :- Summary "View Profile Picture"
           :> Description
-              "View a profile picture.\n"
+               "View a profile picture.\n"
           :> "picture"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> QueryParam' '[Lenient, Required] "user" IdentifierUser
@@ -126,70 +126,70 @@ data Routes route = Routes
       route
         :- Summary "Request Email Address Confirmation"
           :> Description
-              "Send an email to your email address including a link.\n\
-              \This email includes a link to verify your email address.\n"
+               "Send an email to your email address including a link.\n\
+               \This email includes a link to verify your email address.\n"
           :> "confirmation"
           :> "request"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseConfirmationRequest
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseConfirmationRequest
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 500 ()
+               ]
   , routeConfirm ::
       route
         :- Summary "Confirm Email Address"
           :> Description
-              "Verify your email address.\n"
+               "Verify your email address.\n"
           :> "confirm"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestConfirm
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseConfirm
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 410 ()
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseConfirm
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 410 ()
+               , WithStatus 500 ()
+               ]
   , routeNotificationPreferences ::
       route
         :- Summary "Edit Notification Preferences"
           :> Description
-              "Edit your notification preferences.\n\
-              \You first have to verify your email address to be able edit your notification preferences.\n"
+               "Edit your notification preferences.\n\
+               \You first have to verify your email address to be able edit your notification preferences.\n"
           :> "notificationPreferences"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestNotifications
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseNotifications
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (StaticText "Email address is not verified.")
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseNotifications
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (StaticText "Email address is not verified.")
+               , WithStatus 500 ()
+               ]
   , routeProfile ::
       route
         :- Summary "View User"
           :> Description
-              "Request detailed user information.\n"
+               "Request detailed user information.\n"
           :> "profile"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestProfile
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseProfile
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 404 ()
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseProfile
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 404 ()
+               , WithStatus 500 ()
+               ]
   }
   deriving stock (Generic)
 

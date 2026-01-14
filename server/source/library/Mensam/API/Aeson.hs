@@ -9,14 +9,14 @@ import GHC.TypeLits
 type JSONSettings :: Symbol -> Symbol -> [Type]
 type JSONSettings constructorPrefix fieldPrefix =
   '[ A.ConstructorTagModifier
-      '[ A.StripPrefix constructorPrefix
-       , A.CamelToKebab
-       ]
+       '[ A.StripPrefix constructorPrefix
+        , A.CamelToKebab
+        ]
    , A.SumTaggedObject "tag" "value"
    , A.FieldLabelModifier
-      '[ A.StripPrefix fieldPrefix
-       , A.CamelToKebab
-       ]
+       '[ A.StripPrefix fieldPrefix
+        , A.CamelToKebab
+        ]
    , A.RejectUnknownFields
    ]
 

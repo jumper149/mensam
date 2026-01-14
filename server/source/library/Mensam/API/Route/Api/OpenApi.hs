@@ -12,7 +12,7 @@ newtype Routes route = Routes
       route
         :- Summary "OpenAPI"
           :> Description
-              "This OpenAPI specification is automatically generated from a servant API.\n"
+               "This OpenAPI specification is automatically generated from a servant API.\n"
           :> "openapi"
           :> Get '[JSON] OpenApi
   }

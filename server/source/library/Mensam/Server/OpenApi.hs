@@ -57,7 +57,7 @@ instance OpenApi.ToSchema OpenApi.OpenApi where
             ( mempty
                 & OpenApi.get
                   ?~ ( mempty
-                        & at 200 ?~ "OK"
+                         & at 200 ?~ "OK"
                      )
             )
 

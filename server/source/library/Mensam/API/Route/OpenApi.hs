@@ -13,7 +13,7 @@ newtype Routes route = Routes
       route
         :- Summary "View API documentation"
           :> Description
-              "View the OpenAPI documentation in a human-readabable format.\n"
+               "View the OpenAPI documentation in a human-readabable format.\n"
           :> Get '[HTML] Html
   }
   deriving stock (Generic)

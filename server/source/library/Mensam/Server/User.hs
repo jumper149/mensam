@@ -352,7 +352,7 @@ userConfirmationConfirm identifier secret = do
                       ( \dbUserRow ->
                           dbUserRow
                             `Selda.with` [ #dbUser_email_validated
-                                            Selda.:= Selda.literal True
+                                             Selda.:= Selda.literal True
                                          ]
                       )
                   case count of

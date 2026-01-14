@@ -31,103 +31,103 @@ data Routes route = Routes
       route
         :- Summary "Create Space"
           :> Description
-              "Create a new space.\n\
-              \You will be an administrator of this newly created space.\n"
+               "Create a new space.\n\
+               \You will be an administrator of this newly created space.\n"
           :> "space"
           :> "create"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceCreate
           :> UVerb
-              PUT
-              '[JSON]
-              [ WithStatus 201 ResponseSpaceCreate
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 500 ()
-              ]
+               PUT
+               '[JSON]
+               [ WithStatus 201 ResponseSpaceCreate
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 500 ()
+               ]
   , routeSpaceDelete ::
       route
         :- Summary "Delete Space"
           :> Description
-              "Delete a space irreversibly.\n\
-              \This also purges data associated with this space including reservations, desks and member roles.\n"
+               "Delete a space irreversibly.\n\
+               \This also purges data associated with this space including reservations, desks and member roles.\n"
           :> "space"
           :> "delete"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceDelete
           :> UVerb
-              DELETE
-              '[JSON]
-              [ WithStatus 200 ResponseSpaceDelete
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               DELETE
+               '[JSON]
+               [ WithStatus 200 ResponseSpaceDelete
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routeSpaceEdit ::
       route
         :- Summary "Edit Space"
           :> Description
-              "Update the configuration of a space.\n"
+               "Update the configuration of a space.\n"
           :> "space"
           :> "edit"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceEdit
           :> UVerb
-              PATCH
-              '[JSON]
-              [ WithStatus 200 ResponseSpaceEdit
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               PATCH
+               '[JSON]
+               [ WithStatus 200 ResponseSpaceEdit
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routePictureUpload ::
       route
         :- Summary "Change Space Picture"
           :> Description
-              "Upload a new space logo.\n\
-              \This overwrites any old space logo.\n"
+               "Upload a new space logo.\n\
+               \This overwrites any old space logo.\n"
           :> "space"
           :> "picture"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> QueryParam' '[Lenient, Required] "space" IdentifierSpace
           :> ReqBody' '[Lenient, Required] '[ImageJpeg] ImageJpegBytes
           :> UVerb
-              PUT
-              '[JSON]
-              [ WithStatus 200 (StaticText "Uploaded space picture.")
-              , WithStatus 400 ErrorParseBodyJpeg
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               PUT
+               '[JSON]
+               [ WithStatus 200 (StaticText "Uploaded space picture.")
+               , WithStatus 400 ErrorParseBodyJpeg
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routePictureDelete ::
       route
         :- Summary "Delete Space Picture"
           :> Description
-              "Delete the current space logo.\n"
+               "Delete the current space logo.\n"
           :> "space"
           :> "picture"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> QueryParam' '[Lenient, Required] "space" IdentifierSpace
           :> UVerb
-              DELETE
-              '[JSON]
-              [ WithStatus 200 (StaticText "Deleted space picture.")
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               DELETE
+               '[JSON]
+               [ WithStatus 200 (StaticText "Deleted space picture.")
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditSpace)
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routePictureDownload ::
       route
         :- Summary "View Space Picture"
           :> Description
-              "View a space logo.\n"
+               "View a space logo.\n"
           :> "space"
           :> "picture"
           :> Auth '[JWTWithSession] UserAuthenticated
@@ -137,258 +137,258 @@ data Routes route = Routes
       route
         :- Summary "Join Space"
           :> Description
-              "Become a member of a space.\n"
+               "Become a member of a space.\n"
           :> "space"
           :> "join"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceJoin
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseSpaceJoin
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (StaticTexts ["Role is inaccessible.", "Wrong role password."])
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseSpaceJoin
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (StaticTexts ["Role is inaccessible.", "Wrong role password."])
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routeSpaceLeave ::
       route
         :- Summary "Leave Space"
           :> Description
-              "Abandon membership of a space.\n"
+               "Abandon membership of a space.\n"
           :> "space"
           :> "leave"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceLeave
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseSpaceLeave
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (StaticText "Owner cannot leave space.")
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseSpaceLeave
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (StaticText "Owner cannot leave space.")
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routeSpaceKick ::
       route
         :- Summary "Kick User from Space"
           :> Description
-              "Kick a user out of a space.\n\
-              \You need the `edit-user` permission for that space to remove users.\n"
+               "Kick a user out of a space.\n\
+               \You need the `edit-user` permission for that space to remove users.\n"
           :> "space"
           :> "kick"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceKick
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseSpaceKick
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseSpaceKick
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routeSpaceUserRole ::
       route
         :- Summary "Set User Role for Space"
           :> Description
-              "Give a new role to a user of a space.\n\
-              \You need the `edit-user` permission for that space to redefine user roles.\n"
+               "Give a new role to a user of a space.\n\
+               \You need the `edit-user` permission for that space to redefine user roles.\n"
           :> "space"
           :> "user"
           :> "role"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceUserRole
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseSpaceUserRole
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseSpaceUserRole
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditUser)
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routeSpaceView ::
       route
         :- Summary "View Space"
           :> Description
-              "View a single space in detail.\n"
+               "View a single space in detail.\n"
           :> "space"
           :> "view"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceView
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseSpaceView
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 ResponseSpaceView403
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseSpaceView
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 ResponseSpaceView403
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routeSpaceList ::
       route
         :- Summary "List Spaces"
           :> Description
-              "List visible spaces.\n"
+               "List visible spaces.\n"
           :> "space"
           :> "list"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestSpaceList
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseSpaceList
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseSpaceList
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 500 ()
+               ]
   , routeRoleCreate ::
       route
         :- Summary "Create Role"
           :> Description
-              "Create a new role.\n\
-              \This role will be a way to access the given space.\n\
-              \You need the `edit-role` permission for that space to create roles.\n"
+               "Create a new role.\n\
+               \This role will be a way to access the given space.\n\
+               \You need the `edit-role` permission for that space to create roles.\n"
           :> "role"
           :> "create"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRoleCreate
           :> UVerb
-              PUT
-              '[JSON]
-              [ WithStatus 201 ResponseRoleCreate
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               PUT
+               '[JSON]
+               [ WithStatus 201 ResponseRoleCreate
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routeRoleEdit ::
       route
         :- Summary "Edit Role"
           :> Description
-              "Update settings of a role.\n\
-              \You need the `edit-role` permission for the space to edit roles.\n"
+               "Update settings of a role.\n\
+               \You need the `edit-role` permission for the space to edit roles.\n"
           :> "role"
           :> "edit"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRoleEdit
           :> UVerb
-              PATCH
-              '[JSON]
-              [ WithStatus 200 ResponseRoleEdit
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
-              , WithStatus 500 ()
-              ]
+               PATCH
+               '[JSON]
+               [ WithStatus 200 ResponseRoleEdit
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
+               , WithStatus 500 ()
+               ]
   , routeRoleDelete ::
       route
         :- Summary "Delete Role"
           :> Description
-              "Delete a role.\n\
-              \You have to provide a fallback role to reassign members to that fallback role.\n\
-              \You need the `edit-role` permission for the space to delete roles.\n"
+               "Delete a role.\n\
+               \You have to provide a fallback role to reassign members to that fallback role.\n\
+               \You need the `edit-role` permission for the space to delete roles.\n"
           :> "role"
           :> "delete"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestRoleDelete
           :> UVerb
-              DELETE
-              '[JSON]
-              [ WithStatus 200 ResponseRoleDelete
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
-              , WithStatus 500 ()
-              ]
+               DELETE
+               '[JSON]
+               [ WithStatus 200 ResponseRoleDelete
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditRole)
+               , WithStatus 500 ()
+               ]
   , routeDeskCreate ::
       route
         :- Summary "Create Desk"
           :> Description
-              "Create a new desk.\n\
-              \This desk will belong to the given space.\n\
-              \You need the `edit-desk` permission for that space to create desks.\n"
+               "Create a new desk.\n\
+               \This desk will belong to the given space.\n\
+               \You need the `edit-desk` permission for that space to create desks.\n"
           :> "desk"
           :> "create"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskCreate
           :> UVerb
-              PUT
-              '[JSON]
-              [ WithStatus 201 ResponseDeskCreate
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               PUT
+               '[JSON]
+               [ WithStatus 201 ResponseDeskCreate
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   , routeDeskDelete ::
       route
         :- Summary "Delete Desk"
           :> Description
-              "Delete a desk.\n\
-              \You need the `edit-desk` permission for that space to delete desks.\n"
+               "Delete a desk.\n\
+               \You need the `edit-desk` permission for that space to delete desks.\n"
           :> "desk"
           :> "delete"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskDelete
           :> UVerb
-              DELETE
-              '[JSON]
-              [ WithStatus 200 ResponseDeskDelete
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
-              , WithStatus 404 (StaticText "Desk not found.")
-              , WithStatus 500 ()
-              ]
+               DELETE
+               '[JSON]
+               [ WithStatus 200 ResponseDeskDelete
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
+               , WithStatus 404 (StaticText "Desk not found.")
+               , WithStatus 500 ()
+               ]
   , routeDeskEdit ::
       route
         :- Summary "Edit Desk"
           :> Description
-              "Update a desk.\n\
-              \You need the `edit-desk` permission for that space to edit desks.\n"
+               "Update a desk.\n\
+               \You need the `edit-desk` permission for that space to edit desks.\n"
           :> "desk"
           :> "edit"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskEdit
           :> UVerb
-              PATCH
-              '[JSON]
-              [ WithStatus 200 ResponseDeskEdit
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
-              , WithStatus 404 (StaticText "Desk not found.")
-              , WithStatus 500 ()
-              ]
+               PATCH
+               '[JSON]
+               [ WithStatus 200 ResponseDeskEdit
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionEditDesk)
+               , WithStatus 404 (StaticText "Desk not found.")
+               , WithStatus 500 ()
+               ]
   , routeDeskList ::
       route
         :- Summary "List Desks"
           :> Description
-              "List desks.\n\
-              \Use the time-window to restrict the reservations in the result to overlapping time frames.\n"
+               "List desks.\n\
+               \Use the time-window to restrict the reservations in the result to overlapping time frames.\n"
           :> "desk"
           :> "list"
           :> Auth '[JWTWithSession] UserAuthenticated
           :> ReqBody' '[Lenient, Required] '[JSON] RequestDeskList
           :> UVerb
-              POST
-              '[JSON]
-              [ WithStatus 200 ResponseDeskList
-              , WithStatus 400 ErrorParseBodyJson
-              , WithStatus 401 ErrorBearerAuth
-              , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
-              , WithStatus 404 (StaticText "Space not found.")
-              , WithStatus 500 ()
-              ]
+               POST
+               '[JSON]
+               [ WithStatus 200 ResponseDeskList
+               , WithStatus 400 ErrorParseBodyJson
+               , WithStatus 401 ErrorBearerAuth
+               , WithStatus 403 (ErrorInsufficientPermission MkPermissionViewSpace)
+               , WithStatus 404 (StaticText "Space not found.")
+               , WithStatus 500 ()
+               ]
   }
   deriving stock (Generic)
 
