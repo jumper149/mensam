@@ -172,7 +172,7 @@
 
   checks.x86_64-linux.nixosModule-minimal =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    pkgs.nixosTest {
+    pkgs.testers.nixosTest {
       name = "mensam-nixos-startup-minimal-test";
       nodes.machine = (import ./nixos/test/nixos-mensam-minimal.nix) nixosModules.default;
       testScript = ''
@@ -182,7 +182,7 @@
 
   checks.x86_64-linux.nixosModule-docker-minimal =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    pkgs.nixosTest {
+    pkgs.testers.nixosTest {
       name = "mensam-nixos-startup-docker-minimal-test";
       nodes.machine = (import ./nixos/test/nixos-mensam-docker-minimal.nix) nixosModules.default;
       testScript = ''
@@ -192,7 +192,7 @@
 
   checks.x86_64-linux.nixosModule-full =
     with import nixpkgs { system = "x86_64-linux"; overlays = [ self.subflakes.setup.overlays.default ]; };
-    pkgs.nixosTest {
+    pkgs.testers.nixosTest {
       name = "mensam-nixos-startup-full-test";
       nodes.machine = (import ./nixos/test/nixos-mensam-full.nix) nixosModules.default;
       testScript = ''
