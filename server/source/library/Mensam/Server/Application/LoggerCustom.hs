@@ -26,7 +26,7 @@ import System.IO
 
 type CustomLoggingT :: (Type -> Type) -> Type -> Type
 type role CustomLoggingT _ _
-newtype CustomLoggingT m a = CustomLoggingT {unCustomLoggingT :: ComposeT (T.ReaderT Bool) LoggingT m a}
+newtype CustomLoggingT m a = CustomLoggingT {unCustomLoggingT :: T.ReaderT Bool (LoggingT m) a}
   deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilyDependencies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Mensam.Server.Application where
@@ -40,7 +41,6 @@ type Transformers =
 type ApplicationT :: (Type -> Type) -> Type -> Type
 type role ApplicationT _ _
 newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m a}
-  deriving newtype (Applicative, Functor, Monad)
   deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
   deriving newtype (MonadBase b, MonadBaseControl b, MonadBaseControlIdentity b)
   deriving newtype (MonadIO, MonadUnliftIO)
@@ -51,6 +51,10 @@ newtype ApplicationT m a = ApplicationT {unApplicationT :: StackT Transformers m
   deriving newtype (MonadSeldaPool)
   deriving newtype (MonadSecret)
   deriving newtype (MonadEmail)
+
+deriving via (OptimizedStackT Transformers m) instance Functor m => Functor (ApplicationT m)
+deriving via (OptimizedStackT Transformers m) instance Applicative m => Applicative (ApplicationT m)
+deriving via (OptimizedStackT Transformers m) instance Monad m => Monad (ApplicationT m)
 
 runApplicationT ::
   (MonadBaseControlIdentity IO m, MonadMask m, MonadUnliftIO m) =>
@@ -72,3 +76,8 @@ runApplicationT app = do
           :..> runAppEmailT
 
   runStackT runTransformers $ unApplicationT app
+
+type OptimizedStackT :: Stack -> (Type -> Type) -> Type -> Type
+type family OptimizedStackT (ts :: Stack) (m :: Type -> Type) = (n :: Type -> Type) where
+  OptimizedStackT NilT m = m
+  OptimizedStackT (ts :.|> t) m = OptimizedStackT ts (t m)
