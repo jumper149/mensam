@@ -127,14 +127,8 @@
         selda = prev.fetchFromGitHub {
           owner  = "jumper149";
           repo   = "selda-teto";
-          rev    = "6fd2b969032b144e69633b136a84be1f7f7f5111";
-          sha256 = "sha256-IJCv8I1iTOCcnKVvLuavn2I/RedVWGJ4plBx7inJk4M=";
-        };
-        servant = prev.fetchFromGitHub {
-          owner  = "haskell-servant";
-          repo   = "servant";
-          rev    = "v0.20.2";
-          sha256 = "sha256-OW5R6RYRZ3i+xSKUILPDPNjt+yB8YJKlrIQ5TW3N3ho=";
+          rev    = "8d3bd2e5b9a21116c2e39668153a261f9de1467c";
+          sha256 = "sha256-nPMt+uhBT+BX5G7uZVCaPi/dftkIXrIkfZk013bZ6Do=";
         };
         wai-control = prev.fetchFromGitHub {
           owner  = "jumper149";
@@ -146,13 +140,6 @@
     in {
       selda = haskellPrev.callCabal2nix "selda" (source.selda.outPath + "/selda") {};
       selda-sqlite = haskellPrev.callCabal2nix "selda-sqlite" (source.selda.outPath + "/selda-sqlite") {};
-      servant = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant" (source.servant.outPath + "/servant") {});
-      servant-auth = haskellPrev.callCabal2nix "servant-auth" (source.servant.outPath + "/servant-auth/servant-auth") {};
-      servant-auth-client = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-auth-client" (source.servant.outPath + "/servant-auth/servant-auth-client") {});
-      servant-auth-server = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-auth-server" (source.servant.outPath + "/servant-auth/servant-auth-server") {});
-      servant-client = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-client" (source.servant.outPath + "/servant-client") {});
-      servant-client-core = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-client-core" (source.servant.outPath + "/servant-client-core") {});
-      servant-server = prev.haskell.lib.dontCheck (haskellPrev.callCabal2nix "servant-server" (source.servant.outPath + "/servant-server") {});
       tzdata = haskellPrev.callHackageDirect {
         pkg = "tzdata";
         ver = "0.2.20240201.0";
