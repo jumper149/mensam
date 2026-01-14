@@ -41,6 +41,7 @@
             description = "Mensam user";
             home = "/var/lib/mensam";
             autoSubUidGidRange = true;
+            linger = false;
           };
         };
         users.groups = {
