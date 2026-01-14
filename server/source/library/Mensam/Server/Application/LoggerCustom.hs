@@ -28,7 +28,18 @@ type CustomLoggingT :: (Type -> Type) -> Type -> Type
 type role CustomLoggingT _ _
 newtype CustomLoggingT m a = CustomLoggingT {unCustomLoggingT :: T.ReaderT Bool (LoggingT m) a}
   deriving newtype (Applicative, Functor, Monad)
-  deriving newtype (MonadTrans, MonadTransControl, MonadTransControlIdentity)
+
+instance MonadTrans CustomLoggingT where
+    lift = CustomLoggingT . lift . lift
+
+instance MonadTransControl CustomLoggingT where
+  type StT CustomLoggingT a = a
+  liftWith f = defaultLiftWith2 CustomLoggingT unCustomLoggingT $ \ x -> f x
+  restoreT = defaultRestoreT2 CustomLoggingT
+
+instance MonadTransControlIdentity CustomLoggingT where
+  liftWithIdentity inner = CustomLoggingT $ liftWithIdentity $ \ runId1 ->
+    liftWithIdentity $ \ runId2 -> inner $ runId2 . runId1 . unCustomLoggingT
 
 instance MonadIO m => MonadLogger (CustomLoggingT m) where
   monadLoggerLog loc logSource logLevel logStr = do
