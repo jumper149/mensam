@@ -1,8 +1,15 @@
 = Changelog
 
+== `1.0.0.0`
+
 * Deployment
   ** Default location of configuration was moved from `/etc/mensam/mensam.json` to `/etc/mensam/configuration.json` for the Docker image.
   ** NixOS is now also using `/etc/mensam/configuration.json` to link the generated configuration.
+* Frontend
+  ** Add some pictograms.
+  ** Updated dependencies.
+* Backend
+  ** Updated dependencies.
 
 == `0.15.1.0`
 
