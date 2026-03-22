@@ -104,9 +104,6 @@
         };
         virtualisation.oci-containers.containers.mensam = {
           serviceName = "mensam";
-          image = lib.defaultTo
-            "docker.io/jumper149/mensam:${pkgs.mensam.revision}"
-            "docker-archive://${config.services.mensam.dockerImage}";
           extraOptions = [
             "--network=host" # Share all ports with the regular operating system. This is necessary for sending emails.
             "--cgroup-manager=cgroupfs" # Avoids warning about "cgroupv2 manager is set to systemd"
@@ -125,6 +122,14 @@
             MENSAM_LOG_LEVEL = "LevelInfo";
           } // config.services.mensam.environment;
         };
+      })
+
+      (lib.mkIf (config.services.mensam.provider == "docker" && (isNull config.services.mensam.dockerImage)) {
+        virtualisation.oci-containers.containers.mensam.image = "docker.io/jumper149/mensam:${pkgs.mensam.revision}";
+      })
+
+      (lib.mkIf (config.services.mensam.provider == "docker" && (! (isNull config.services.mensam.dockerImage))) {
+        virtualisation.oci-containers.containers.mensam.image = "docker-archive://${config.services.mensam.dockerImage}";
       })
     ]);
   }
