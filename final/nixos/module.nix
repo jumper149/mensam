@@ -115,7 +115,7 @@
           volumes = [
             "/var/lib/mensam:/var/lib/mensam"
             "/var/log/mensam:/var/log/mensam"
-            "/etc/mensam:/etc/mensam:ro"
+            "/etc/mensam/configuration.json:/etc/mensam/configuration.json:ro"
             "${pkgs.cacert.outPath}/etc/ssl/certs/ca-bundle.crt:/etc/ssl/certs/ca-bundle.crt:ro" # This is necessary for sending emails.
           ];
           environment = {
