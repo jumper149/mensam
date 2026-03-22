@@ -177,6 +177,7 @@
       nodes.machine = (import ./nixos/test/nixos-mensam-minimal.nix) nixosModules.default;
       testScript = ''
         machine.wait_for_unit("mensam.service")
+        machine.succeed("systemctl is-active mensam.service")
       '';
     };
 
@@ -187,6 +188,7 @@
       nodes.machine = (import ./nixos/test/nixos-mensam-docker-minimal.nix) nixosModules.default;
       testScript = ''
         machine.wait_for_unit("mensam.service")
+        machine.succeed("systemctl is-active mensam.service")
       '';
     };
 
