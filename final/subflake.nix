@@ -176,8 +176,13 @@
       name = "mensam-nixos-startup-minimal-test";
       nodes.machine = (import ./nixos/test/nixos-mensam-minimal.nix) nixosModules.default;
       testScript = ''
+        machine.wait_for_unit("multi-user.target")
         machine.wait_for_unit("mensam.service")
-        machine.succeed("systemctl is-active mensam.service")
+        machine.require_unit_state("mensam.service")
+        machine.wait_for_open_port(8177)
+        machine.wait_until_succeeds(
+          'curl --fail --silent http://localhost:8177/api/openapi -H "Accept: application/json"'
+        )
       '';
     };
 
@@ -187,8 +192,13 @@
       name = "mensam-nixos-startup-docker-minimal-test";
       nodes.machine = (import ./nixos/test/nixos-mensam-docker-minimal.nix) nixosModules.default;
       testScript = ''
+        machine.wait_for_unit("multi-user.target")
         machine.wait_for_unit("mensam.service")
-        machine.succeed("systemctl is-active mensam.service")
+        machine.require_unit_state("mensam.service")
+        machine.wait_for_open_port(8177)
+        machine.wait_until_succeeds(
+          'curl --fail --silent http://localhost:8177/api/openapi -H "Accept: application/json"'
+        )
       '';
     };
 
