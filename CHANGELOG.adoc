@@ -1,5 +1,10 @@
 = Changelog
 
+== `1.0.0.2`
+
+* Deployment
+  ** Fix NixOS module.
+
 == `1.0.0.1`
 
 * Deployment
