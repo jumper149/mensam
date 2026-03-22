@@ -12,6 +12,15 @@
             "docker" uses a docker image to provide the executable and runs an oci-container with podman as a systemd service.
           '';
         };
+        dockerImage = lib.mkOption {
+          type = lib.types.nullOr lib.types.path;
+          default = null;
+          description = ''
+            Optional setting to use a different docker image with the \"docker\" provider.
+            When set to `null`, the docker image is pulled from Docker Hub, but this allows you to not rely on Docker Hub at all.
+            You can set it to `pkgs.mensam.dockerImage` for example.
+          '';
+        };
         environment = lib.mkOption {
           default = { };
           type = with lib.types; attrsOf str;
@@ -95,7 +104,9 @@
         };
         virtualisation.oci-containers.containers.mensam = {
           serviceName = "mensam";
-          image = "docker.io/jumper149/mensam:${pkgs.mensam.revision}";
+          image = lib.defaultTo
+            "docker.io/jumper149/mensam:${pkgs.mensam.revision}"
+            "docker-archive://${config.services.mensam.dockerImage}";
           extraOptions = [
             "--network=host" # Share all ports with the regular operating system. This is necessary for sending emails.
             "--cgroup-manager=cgroupfs" # Avoids warning about "cgroupv2 manager is set to systemd"
