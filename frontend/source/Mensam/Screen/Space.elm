@@ -396,7 +396,7 @@ element model =
                     in
                     Just <|
                         Element.column
-                            [ Element.spacing 17
+                            [ Element.spacing 12
                             , Element.width Element.fill
                             , Element.height Element.fill
                             ]
@@ -407,6 +407,34 @@ element model =
                                 ]
                               <|
                                 Element.text "Create reservation"
+                            , Element.row
+                                [ Element.alignLeft
+                                , Element.spacing 3
+                                , Element.paddingXY 10 0
+                                ]
+                                [ Element.el
+                                    [ Element.Font.size 12
+                                    , Element.padding 1
+                                    , Element.alignBottom
+                                    ]
+                                  <|
+                                    Element.text "Desk"
+                                , Element.paragraph
+                                    (Element.alignBottom :: Element.Font.size 16 :: Mensam.Element.Font.font (Mensam.Element.Font.Condensed { weight = Mensam.Element.Font.Regular400, italic = True }))
+                                    [ Element.text "#"
+                                    , Element.text <| Mensam.Desk.identifierToString reservation.desk.id
+                                    ]
+                                , Element.el
+                                    [ Element.Font.size 16
+                                    , Mensam.Element.Font.fontWeight Mensam.Element.Font.Regular400
+                                    , Element.width <| Element.px 200
+                                    , Element.clip
+                                    ]
+                                  <|
+                                    Element.text <|
+                                        Mensam.Desk.nameToString <|
+                                            reservation.desk.name
+                                ]
                             , Element.column
                                 [ Element.width Element.fill
                                 , Element.spacing 3
