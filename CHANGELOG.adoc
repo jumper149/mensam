@@ -1,5 +1,10 @@
 = Changelog
 
+== `1.0.1.1`
+
+* Frontend
+  ** Fix calculation, when reservations clash, for preview.
+
 == `1.0.1.0`
 
 * Frontend
