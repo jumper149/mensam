@@ -288,20 +288,14 @@ drawInstruction messages selected instruction =
                     , Svg.Attributes.height <| String.fromFloat <| distanceGet size.depth
                     , Svg.Attributes.fill <|
                         let
-                            timeSlotIsFree =
-                                List.isEmpty <|
-                                    List.filter
-                                        (\reservation ->
-                                            (Time.posixToMillis reservation.timeEnd > Time.posixToMillis selected.begin && Time.posixToMillis reservation.timeEnd <= Time.posixToMillis selected.end)
-                                                || (Time.posixToMillis reservation.timeBegin < Time.posixToMillis selected.end && Time.posixToMillis reservation.timeBegin >= Time.posixToMillis selected.begin)
-                                        )
-                                        desk.reservations
+                            reservationClash =
+                                reservationClashes { begin = selected.begin, end = selected.end, reservations = desk.reservations }
                         in
-                        if timeSlotIsFree then
-                            Mensam.Svg.Color.bright.white
+                        if reservationClash.beginClashes || reservationClash.endClashes then
+                            Mensam.Svg.Color.bright.red
 
                         else
-                            Mensam.Svg.Color.bright.red
+                            Mensam.Svg.Color.bright.white
                     , Svg.Events.onClick <| messages.onClickTable desk
                     , Svg.Events.onMouseOver messages.onEnterTable
                     , Svg.Events.onMouseOut messages.onLeaveTable
@@ -309,6 +303,75 @@ drawInstruction messages selected instruction =
                     []
                 ]
             ]
+
+
+reservationClashes :
+    { begin : Time.Posix
+    , end : Time.Posix
+    , reservations :
+        List
+            { desk : Mensam.Desk.Identifier
+            , id : Mensam.Reservation.Identifier
+            , status : Mensam.Reservation.Status
+            , timeBegin : Time.Posix
+            , timeEnd : Time.Posix
+            , user : Int
+            }
+    }
+    ->
+        { beginClashes : Bool
+        , endClashes : Bool
+        }
+reservationClashes input =
+    let
+        activeReservations =
+            List.filter
+                (\reservation ->
+                    case reservation.status of
+                        Mensam.Reservation.MkStatusPlanned ->
+                            True
+
+                        Mensam.Reservation.MkStatusCancelled ->
+                            False
+                )
+                input.reservations
+
+        isClashingAny =
+            List.any
+                (\reservation ->
+                    Time.posixToMillis reservation.timeBegin < Time.posixToMillis input.end && Time.posixToMillis reservation.timeEnd > Time.posixToMillis input.begin
+                )
+                activeReservations
+
+        isObviousClashingBegin =
+            List.any
+                (\reservation ->
+                    Time.posixToMillis reservation.timeBegin <= Time.posixToMillis input.begin && Time.posixToMillis reservation.timeEnd > Time.posixToMillis input.begin
+                )
+                activeReservations
+
+        isObviousClashingEnd =
+            List.any
+                (\reservation ->
+                    Time.posixToMillis reservation.timeBegin < Time.posixToMillis input.end && Time.posixToMillis reservation.timeEnd >= Time.posixToMillis input.end
+                )
+                activeReservations
+    in
+    case ( isClashingAny, isObviousClashingBegin, isObviousClashingEnd ) of
+        ( False, _, _ ) ->
+            { beginClashes = False, endClashes = False }
+
+        ( True, True, True ) ->
+            { beginClashes = True, endClashes = True }
+
+        ( True, True, False ) ->
+            { beginClashes = True, endClashes = False }
+
+        ( True, False, True ) ->
+            { beginClashes = False, endClashes = True }
+
+        ( True, False, False ) ->
+            { beginClashes = True, endClashes = True }
 
 
 instructGrid : DrawingInstruction msg

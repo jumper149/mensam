@@ -2377,52 +2377,9 @@ reservationClashes input =
 
         endPosix =
             Mensam.Time.toPosix input.timezone input.end
-
-        activeReservations =
-            List.filter
-                (\reservation ->
-                    case reservation.status of
-                        Mensam.Reservation.MkStatusPlanned ->
-                            True
-
-                        Mensam.Reservation.MkStatusCancelled ->
-                            False
-                )
-                input.reservations
-
-        isClashingAny =
-            List.any
-                (\reservation ->
-                    Time.posixToMillis reservation.timeBegin < Time.posixToMillis endPosix && Time.posixToMillis reservation.timeEnd > Time.posixToMillis beginPosix
-                )
-                activeReservations
-
-        isObviousClashingBegin =
-            List.any
-                (\reservation ->
-                    Time.posixToMillis reservation.timeBegin <= Time.posixToMillis beginPosix && Time.posixToMillis reservation.timeEnd > Time.posixToMillis beginPosix
-                )
-                activeReservations
-
-        isObviousClashingEnd =
-            List.any
-                (\reservation ->
-                    Time.posixToMillis reservation.timeBegin < Time.posixToMillis endPosix && Time.posixToMillis reservation.timeEnd >= Time.posixToMillis endPosix
-                )
-                activeReservations
     in
-    case ( isClashingAny, isObviousClashingBegin, isObviousClashingEnd ) of
-        ( False, _, _ ) ->
-            { beginClashes = False, endClashes = False }
-
-        ( True, True, True ) ->
-            { beginClashes = True, endClashes = True }
-
-        ( True, True, False ) ->
-            { beginClashes = True, endClashes = False }
-
-        ( True, False, True ) ->
-            { beginClashes = False, endClashes = True }
-
-        ( True, False, False ) ->
-            { beginClashes = True, endClashes = True }
+    Mensam.Room.reservationClashes
+        { begin = beginPosix
+        , end = endPosix
+        , reservations = input.reservations
+        }
