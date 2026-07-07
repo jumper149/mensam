@@ -1209,9 +1209,6 @@ visualizeSelection { begin, end } =
             ]
         <|
             let
-                secondsBegin =
-                    timeToSeconds begin.time
-
                 maybeSecondsEnd =
                     case Mensam.Time.compareDate begin.date end.date of
                         LT ->
@@ -1234,6 +1231,10 @@ visualizeSelection { begin, end } =
                     []
 
                 Just secondsEnd ->
+                    let
+                        secondsBegin =
+                            timeToSeconds begin.time
+                    in
                     [ Svg.rect
                         [ Svg.Attributes.x <| String.fromInt secondsBegin
                         , Svg.Attributes.y "0"
