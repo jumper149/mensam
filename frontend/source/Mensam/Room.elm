@@ -2,11 +2,13 @@ module Mensam.Room exposing (..)
 
 import Element
 import Mensam.Desk
+import Mensam.Reservation
 import Mensam.Space
 import Mensam.Svg.Color
 import Svg
 import Svg.Attributes
 import Svg.Events
+import Time
 
 
 type Room msg
@@ -15,14 +17,29 @@ type Room msg
         , drawingInstructions : List (DrawingInstruction msg)
         , messages :
             { onClickTable :
-                { id : Mensam.Desk.Identifier
-                , name : Mensam.Desk.Name
-                , space : Mensam.Space.Identifier
-                , location : Maybe Mensam.Desk.Location
+                { desk :
+                    { id : Mensam.Desk.Identifier
+                    , name : Mensam.Desk.Name
+                    , space : Mensam.Space.Identifier
+                    , location : Maybe Mensam.Desk.Location
+                    }
+                , reservations :
+                    List
+                        { desk : Mensam.Desk.Identifier
+                        , id : Mensam.Reservation.Identifier
+                        , status : Mensam.Reservation.Status
+                        , timeBegin : Time.Posix
+                        , timeEnd : Time.Posix
+                        , user : Int
+                        }
                 }
                 -> msg
             , onEnterTable : msg
             , onLeaveTable : msg
+            }
+        , selected :
+            { begin : Time.Posix
+            , end : Time.Posix
             }
         }
 
@@ -38,10 +55,21 @@ type DrawingInstruction msg
             , depth : Distance
             }
         , desk :
-            { id : Mensam.Desk.Identifier
-            , name : Mensam.Desk.Name
-            , space : Mensam.Space.Identifier
-            , location : Maybe Mensam.Desk.Location
+            { desk :
+                { id : Mensam.Desk.Identifier
+                , name : Mensam.Desk.Name
+                , space : Mensam.Space.Identifier
+                , location : Maybe Mensam.Desk.Location
+                }
+            , reservations :
+                List
+                    { desk : Mensam.Desk.Identifier
+                    , id : Mensam.Reservation.Identifier
+                    , status : Mensam.Reservation.Status
+                    , timeBegin : Time.Posix
+                    , timeEnd : Time.Posix
+                    , user : Int
+                    }
             }
         }
 
@@ -115,24 +143,39 @@ drawRoom (MkRoom room) =
                     ]
             ]
         <|
-            List.concatMap (drawInstruction room.messages) <|
+            List.concatMap (drawInstruction room.messages room.selected) <|
                 room.drawingInstructions
 
 
 drawInstruction :
     { onClickTable :
-        { id : Mensam.Desk.Identifier
-        , name : Mensam.Desk.Name
-        , space : Mensam.Space.Identifier
-        , location : Maybe Mensam.Desk.Location
+        { desk :
+            { id : Mensam.Desk.Identifier
+            , name : Mensam.Desk.Name
+            , space : Mensam.Space.Identifier
+            , location : Maybe Mensam.Desk.Location
+            }
+        , reservations :
+            List
+                { desk : Mensam.Desk.Identifier
+                , id : Mensam.Reservation.Identifier
+                , status : Mensam.Reservation.Status
+                , timeBegin : Time.Posix
+                , timeEnd : Time.Posix
+                , user : Int
+                }
         }
         -> msg
     , onEnterTable : msg
     , onLeaveTable : msg
     }
+    ->
+        { begin : Time.Posix
+        , end : Time.Posix
+        }
     -> DrawingInstruction msg
     -> List (Svg.Svg msg)
-drawInstruction messages instruction =
+drawInstruction messages selected instruction =
     case instruction of
         DrawNothing ->
             []
@@ -243,7 +286,22 @@ drawInstruction messages instruction =
                     , Svg.Attributes.y <| String.fromFloat <| 0 - distanceGet size.depth / 2
                     , Svg.Attributes.width <| String.fromFloat <| distanceGet size.width
                     , Svg.Attributes.height <| String.fromFloat <| distanceGet size.depth
-                    , Svg.Attributes.fill Mensam.Svg.Color.bright.white
+                    , Svg.Attributes.fill <|
+                        let
+                            timeSlotIsFree =
+                                List.isEmpty <|
+                                    List.filter
+                                        (\reservation ->
+                                            (Time.posixToMillis reservation.timeEnd > Time.posixToMillis selected.begin && Time.posixToMillis reservation.timeEnd <= Time.posixToMillis selected.end)
+                                                || (Time.posixToMillis reservation.timeBegin < Time.posixToMillis selected.end && Time.posixToMillis reservation.timeBegin >= Time.posixToMillis selected.begin)
+                                        )
+                                        desk.reservations
+                        in
+                        if timeSlotIsFree then
+                            Mensam.Svg.Color.bright.white
+
+                        else
+                            Mensam.Svg.Color.bright.red
                     , Svg.Events.onClick <| messages.onClickTable desk
                     , Svg.Events.onMouseOver messages.onEnterTable
                     , Svg.Events.onMouseOut messages.onLeaveTable
@@ -259,14 +317,25 @@ instructGrid =
 
 
 instructDesk :
-    { id : Mensam.Desk.Identifier
-    , name : Mensam.Desk.Name
-    , space : Mensam.Space.Identifier
-    , location : Maybe Mensam.Desk.Location
+    { desk :
+        { id : Mensam.Desk.Identifier
+        , name : Mensam.Desk.Name
+        , space : Mensam.Space.Identifier
+        , location : Maybe Mensam.Desk.Location
+        }
+    , reservations :
+        List
+            { desk : Mensam.Desk.Identifier
+            , id : Mensam.Reservation.Identifier
+            , status : Mensam.Reservation.Status
+            , timeBegin : Time.Posix
+            , timeEnd : Time.Posix
+            , user : Int
+            }
     }
     -> DrawingInstruction msg
 instructDesk desk =
-    case desk.location of
+    case desk.desk.location of
         Nothing ->
             DrawNothing
 

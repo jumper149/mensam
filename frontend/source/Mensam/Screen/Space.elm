@@ -1347,7 +1347,7 @@ deskRoom model =
                             , drawingInstructions =
                                 let
                                     deskInstructions =
-                                        List.map (Mensam.Room.instructDesk << .desk) model.desks
+                                        List.map Mensam.Room.instructDesk model.desks
                                 in
                                 List.concat
                                     [ [ Mensam.Room.instructGrid
@@ -1361,11 +1361,37 @@ deskRoom model =
                                         MessagePure <|
                                             ViewDetailed <|
                                                 Just
-                                                    { desk = desk
+                                                    { desk = desk.desk
                                                     , dontViewUnlessMouseIsStillDragging = False
                                                     }
                                 , onEnterTable = Messages []
                                 , onLeaveTable = Messages []
+                                }
+                            , selected =
+                                { begin =
+                                    Mensam.Time.toPosix model.timezone <|
+                                        Mensam.Time.MkTimestamp
+                                            { date =
+                                                case model.modelDateBegin of
+                                                    Mensam.Widget.Date.MkModel modelDate ->
+                                                        modelDate.selected
+                                            , time =
+                                                case model.modelTimeBegin of
+                                                    Mensam.Widget.Time.MkModel modelTime ->
+                                                        modelTime.selected
+                                            }
+                                , end =
+                                    Mensam.Time.toPosix model.timezone <|
+                                        Mensam.Time.MkTimestamp
+                                            { date =
+                                                case model.modelDateEnd of
+                                                    Mensam.Widget.Date.MkModel modelDate ->
+                                                        modelDate.selected
+                                            , time =
+                                                case model.modelTimeEnd of
+                                                    Mensam.Widget.Time.MkModel modelTime ->
+                                                        modelTime.selected
+                                            }
                                 }
                             }
 
