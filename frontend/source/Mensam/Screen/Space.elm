@@ -460,7 +460,13 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.width Element.fill ]
                                             , color = Mensam.Element.Button.Blue
-                                            , enabled = True
+                                            , enabled =
+                                                case reservation.pickerVisibility of
+                                                    DateBeginPickerVisible ->
+                                                        False
+
+                                                    _ ->
+                                                        True
                                             , label =
                                                 let
                                                     date =
@@ -488,7 +494,13 @@ element model =
 
                                                 else
                                                     Mensam.Element.Button.Blue
-                                            , enabled = True
+                                            , enabled =
+                                                case reservation.pickerVisibility of
+                                                    TimeBeginPickerVisible ->
+                                                        False
+
+                                                    _ ->
+                                                        True
                                             , label =
                                                 let
                                                     time =
@@ -577,7 +589,13 @@ element model =
                                         Mensam.Element.Button.MkButton
                                             { attributes = [ Element.width Element.fill ]
                                             , color = Mensam.Element.Button.Blue
-                                            , enabled = True
+                                            , enabled =
+                                                case reservation.pickerVisibility of
+                                                    DateEndPickerVisible ->
+                                                        False
+
+                                                    _ ->
+                                                        True
                                             , label =
                                                 let
                                                     date =
@@ -605,7 +623,13 @@ element model =
 
                                                 else
                                                     Mensam.Element.Button.Blue
-                                            , enabled = True
+                                            , enabled =
+                                                case reservation.pickerVisibility of
+                                                    TimeEndPickerVisible ->
+                                                        False
+
+                                                    _ ->
+                                                        True
                                             , label =
                                                 let
                                                     time =
