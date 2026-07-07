@@ -1,5 +1,10 @@
 = Changelog
 
+== `1.0.1.0`
+
+* Frontend
+  ** Add time range previews to room view.
+
 == `1.0.0.2`
 
 * Deployment
@@ -155,7 +160,7 @@
 == `0.10.0.0`
 
 * Frontend
-  ** Desks can viewed in a top-down "Room" view.
+  ** Desks can be viewed in a top-down "Room" view.
     *** Clicking a desk will bring up a window to create a reservation.
   ** Desks can be edited to change their location in the room.
   ** Improve visibility of reservations on timetable.
