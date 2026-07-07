@@ -1194,6 +1194,60 @@ visualizeReservation timezone date reservation =
             Nothing
 
 
+visualizeSelection :
+    { begin : { date : Mensam.Time.Date, time : Mensam.Time.Time }
+    , end : { date : Mensam.Time.Date, time : Mensam.Time.Time }
+    }
+    -> Element.Element a
+visualizeSelection { begin, end } =
+    Element.html <|
+        Svg.svg
+            [ Svg.Attributes.width "100%"
+            , Svg.Attributes.height "100%"
+            , Svg.Attributes.preserveAspectRatio "none"
+            , Svg.Attributes.viewBox "0 0 86400 100"
+            ]
+        <|
+            let
+                secondsBegin =
+                    timeToSeconds begin.time
+
+                maybeSecondsEnd =
+                    case Mensam.Time.compareDate begin.date end.date of
+                        LT ->
+                            Just <|
+                                timeToSeconds <|
+                                    Mensam.Time.MkTime
+                                        { hour = Mensam.Time.MkHour 23
+                                        , minute = Mensam.Time.MkMinute 59
+                                        , second = Mensam.Time.MkSecond 59
+                                        }
+
+                        EQ ->
+                            Just <| timeToSeconds end.time
+
+                        GT ->
+                            Nothing
+            in
+            case maybeSecondsEnd of
+                Nothing ->
+                    []
+
+                Just secondsEnd ->
+                    [ Svg.rect
+                        [ Svg.Attributes.x <| String.fromInt secondsBegin
+                        , Svg.Attributes.y "0"
+                        , Svg.Attributes.width <| String.fromInt <| secondsEnd - secondsBegin
+                        , Svg.Attributes.height "100%"
+                        , Svg.Attributes.rx "0"
+                        , Svg.Attributes.ry "0"
+                        , Svg.Attributes.fill Mensam.Svg.Color.dark.green
+                        , Svg.Attributes.opacity "0.6"
+                        ]
+                        []
+                    ]
+
+
 timeToSeconds : Mensam.Time.Time -> Int
 timeToSeconds time =
     Mensam.Time.unSecond (Mensam.Time.unTime time).second
@@ -1216,84 +1270,304 @@ deskRoom model =
         , Element.Background.color <| Mensam.Element.Color.dark.white Mensam.Element.Color.Opaque100
         , Element.htmlAttribute <| Html.Attributes.style "contain" "size"
         , Element.inFront <|
-            Element.row
-                [ Element.alignTop
-                , Element.alignRight
-                , Element.spacing 15
-                , Element.padding 20
-                , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
-                ]
-                [ Element.Input.button
-                    [ Element.width <| Element.px 30
-                    , Element.height <| Element.px 30
-                    , Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque25
-                    , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque50 ]
-                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                    ]
-                    { onPress = Just <| MessagePure <| MessageWindow Element.Window.MessageZoomIn
-                    , label =
-                        Element.el [ Element.centerX, Element.centerY ] <| Element.text "+"
-                    }
-                , Element.Input.button
-                    [ Element.width <| Element.px 30
-                    , Element.height <| Element.px 30
-                    , Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque25
-                    , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque50 ]
-                    , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
-                    ]
-                    { onPress = Just <| MessagePure <| MessageWindow Element.Window.MessageZoomOut
-                    , label =
-                        Element.el [ Element.centerX, Element.centerY ] <| Element.text "-"
-                    }
-                ]
-        ]
-    <|
-        Element.Window.view model.window
-            { viewportAttributes = []
-            , contentAttributes =
-                [ Element.width <| Element.px 10000
-                , Element.height <| Element.px 10000
-                , Element.Window.onDown <| MessagePure << MessageWindow
-                , Element.Window.onMove <| MessagePure << MessageWindow
-                , Element.Window.onUp <| MessagePure << MessageWindow
-                , Element.Window.onLeave <| MessagePure << MessageWindow
-                , Element.Border.width 2
-                , Element.htmlAttribute <| Html.Attributes.style "touch-action" "pinch-zoom"
-                ]
-            }
-        <|
             Element.el
-                [ Element.centerX
-                , Element.centerY
+                [ Element.alignBottom
+                , Element.centerX
+                , Element.Border.widthEach
+                    { bottom = 0
+                    , left = 0
+                    , right = 1
+                    , top = 0
+                    }
+                , Element.htmlAttribute <| Html.Attributes.style "user-select" "none"
                 ]
             <|
-                Mensam.Room.drawRoom <|
-                    Mensam.Room.MkRoom
-                        { dimensions = { minX = -5000, minY = -5000, maxX = 5000, maxY = 5000 }
-                        , drawingInstructions =
-                            let
-                                deskInstructions =
-                                    List.map (Mensam.Room.instructDesk << .desk) model.desks
-                            in
-                            List.concat
-                                [ [ Mensam.Room.instructGrid
-                                  ]
-                                , deskInstructions
-                                ]
-                        , messages =
-                            -- TODO: Add useful messages.
-                            { onClickTable =
-                                \desk ->
-                                    MessagePure <|
-                                        ViewDetailed <|
-                                            Just
-                                                { desk = desk
-                                                , dontViewUnlessMouseIsStillDragging = False
-                                                }
-                            , onEnterTable = Messages []
-                            , onLeaveTable = Messages []
-                            }
+                roomTimetable model
+        ]
+    <|
+        Element.el
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            , Element.clip
+            , Element.inFront <|
+                Element.row
+                    [ Element.alignTop
+                    , Element.alignRight
+                    , Element.spacing 15
+                    , Element.padding 20
+                    , Element.htmlAttribute <| Html.Attributes.style "text-transform" "uppercase"
+                    ]
+                    [ Element.Input.button
+                        [ Element.width <| Element.px 30
+                        , Element.height <| Element.px 30
+                        , Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque25
+                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque50 ]
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        ]
+                        { onPress = Just <| MessagePure <| MessageWindow Element.Window.MessageZoomIn
+                        , label =
+                            Element.el [ Element.centerX, Element.centerY ] <| Element.text "+"
                         }
+                    , Element.Input.button
+                        [ Element.width <| Element.px 30
+                        , Element.height <| Element.px 30
+                        , Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque25
+                        , Element.mouseOver [ Element.Background.color <| Mensam.Element.Color.bright.black Mensam.Element.Color.Opaque50 ]
+                        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+                        ]
+                        { onPress = Just <| MessagePure <| MessageWindow Element.Window.MessageZoomOut
+                        , label =
+                            Element.el [ Element.centerX, Element.centerY ] <| Element.text "-"
+                        }
+                    ]
+            ]
+        <|
+            Element.Window.view model.window
+                { viewportAttributes = []
+                , contentAttributes =
+                    [ Element.width <| Element.px 10000
+                    , Element.height <| Element.px 10000
+                    , Element.Window.onDown <| MessagePure << MessageWindow
+                    , Element.Window.onMove <| MessagePure << MessageWindow
+                    , Element.Window.onUp <| MessagePure << MessageWindow
+                    , Element.Window.onLeave <| MessagePure << MessageWindow
+                    , Element.Border.width 2
+                    , Element.htmlAttribute <| Html.Attributes.style "touch-action" "pinch-zoom"
+                    ]
+                }
+            <|
+                Element.el
+                    [ Element.centerX
+                    , Element.centerY
+                    ]
+                <|
+                    Mensam.Room.drawRoom <|
+                        Mensam.Room.MkRoom
+                            { dimensions = { minX = -5000, minY = -5000, maxX = 5000, maxY = 5000 }
+                            , drawingInstructions =
+                                let
+                                    deskInstructions =
+                                        List.map (Mensam.Room.instructDesk << .desk) model.desks
+                                in
+                                List.concat
+                                    [ [ Mensam.Room.instructGrid
+                                      ]
+                                    , deskInstructions
+                                    ]
+                            , messages =
+                                -- TODO: Add useful messages.
+                                { onClickTable =
+                                    \desk ->
+                                        MessagePure <|
+                                            ViewDetailed <|
+                                                Just
+                                                    { desk = desk
+                                                    , dontViewUnlessMouseIsStillDragging = False
+                                                    }
+                                , onEnterTable = Messages []
+                                , onLeaveTable = Messages []
+                                }
+                            }
+
+
+roomTimetable : Model -> Element.Element Message
+roomTimetable model =
+    Element.el
+        [ Element.width <| Element.px 280
+        , Element.height <| Element.px 40
+        , Element.htmlAttribute <| Html.Attributes.style "cursor" "pointer"
+        , Element.htmlAttribute <| Html.Attributes.style "touch-action" "pan-y pinch-zoom"
+        , Element.Events.Pointer.onEnter <| \_ -> MessagePure <| SetSelected <| Just -1
+        , Element.Events.Pointer.onLeave <|
+            \_ ->
+                Messages
+                    [ MessagePure <| SetSelected Nothing
+                    , MessagePure AbortSelectionDragging
+                    ]
+        , Element.inFront <|
+            let
+                elementId =
+                    "timetableRegionRoom"
+            in
+            Element.el
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.Background.color Mensam.Element.Color.transparent
+                , Element.Events.Pointer.onEnter <| \_ -> MessageEffect <| GetSelectorRegionWidth elementId
+                , Element.Events.Pointer.onMove <|
+                    \e ->
+                        Messages
+                            [ MessagePure <| SetTimetablePointer e
+                            , MessagePure <| SetSelectionDraggingKeepFromPointer
+                            ]
+                , Element.Events.Pointer.onDown <|
+                    \e ->
+                        Messages
+                            [ MessagePure <| SetTimetablePointer e
+                            , MessagePure <| SetSelectionDraggingStartFromPointer
+                            ]
+                , Element.Events.Pointer.onUp <|
+                    \e ->
+                        Messages
+                            [ MessagePure <| SetTimetablePointer e
+                            , MessagePure <| SetSelectionDraggingKeepFromPointer
+                            , MessagePure SetTimeFromSelectionDragging
+                            , MessagePure AbortSelectionDragging
+                            ]
+                , Element.htmlAttribute <| Html.Attributes.id <| elementId
+                ]
+            <|
+                Element.none
+        , Element.Background.color (Element.rgba 0 0 0 0.4)
+        ]
+    <|
+        Element.row
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            , Element.alignTop
+            , Element.Border.widthEach
+                { bottom = 0
+                , left = 0
+                , right = 0
+                , top = 1
+                }
+            , Element.behindContent <|
+                Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.inFront <|
+                        visualizeSelection
+                            { begin =
+                                { date =
+                                    case model.modelDateBegin of
+                                        Mensam.Widget.Date.MkModel x ->
+                                            x.selected
+                                , time =
+                                    case model.modelTimeBegin of
+                                        Mensam.Widget.Time.MkModel x ->
+                                            x.selected
+                                }
+                            , end =
+                                { date =
+                                    case model.modelDateEnd of
+                                        Mensam.Widget.Date.MkModel x ->
+                                            x.selected
+                                , time =
+                                    case model.modelTimeEnd of
+                                        Mensam.Widget.Time.MkModel x ->
+                                            x.selected
+                                }
+                            }
+                    ]
+                <|
+                    visualizeReservations
+                        model.timezone
+                        (Mensam.Widget.Date.unModel model.modelDateBegin).selected
+                        (List.concatMap (\desk -> desk.reservations) model.desks)
+            ]
+        <|
+            let
+                rowPiece piece =
+                    Element.el
+                        ([ Element.width Element.fill
+                         , Element.height Element.fill
+                         ]
+                            ++ (case model.selectionDragging of
+                                    Nothing ->
+                                        case ( model.timetablePointer, model.timetablePointerRegionDimensions ) of
+                                            ( Just ptr, Just dim ) ->
+                                                if calculateHour ptr dim == Mensam.Time.MkHour piece.hour && model.selected == Just -1 then
+                                                    [ Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque50
+                                                    ]
+
+                                                else
+                                                    []
+
+                                            _ ->
+                                                []
+
+                                    Just interval ->
+                                        let
+                                            orderedInterval =
+                                                if Mensam.Time.unHour interval.start <= Mensam.Time.unHour interval.end then
+                                                    { begin = interval.start, end = interval.end }
+
+                                                else
+                                                    { begin = interval.end, end = interval.start }
+                                        in
+                                        if
+                                            piece.hour
+                                                >= Mensam.Time.unHour orderedInterval.begin
+                                                && piece.hour
+                                                <= Mensam.Time.unHour orderedInterval.end
+                                                && (case model.selected of
+                                                        Nothing ->
+                                                            False
+
+                                                        Just m ->
+                                                            -1 == m
+                                                   )
+                                        then
+                                            [ Element.Background.color <| Mensam.Element.Color.bright.green Mensam.Element.Color.Opaque50
+                                            ]
+
+                                        else
+                                            []
+                               )
+                        )
+                    <|
+                        Element.el
+                            [ Element.width Element.fill
+                            , Element.height <| Element.px piece.indicatorHeight
+                            , Element.alignTop
+                            , Element.Font.size 6
+                            , Element.paddingEach
+                                { bottom = 0
+                                , left = 1
+                                , right = 0
+                                , top = 0
+                                }
+                            , Element.Border.widthEach
+                                { bottom = 0
+                                , left = 1
+                                , right = 0
+                                , top = 0
+                                }
+                            ]
+                        <|
+                            Element.paragraph
+                                [ Element.width <| Element.px 8
+                                , Element.height <| Element.px 15
+                                ]
+                                [ Element.text <| String.fromInt piece.hour
+                                ]
+            in
+            List.map rowPiece
+                [ { hour = 0, indicatorHeight = 40 }
+                , { hour = 1, indicatorHeight = 12 }
+                , { hour = 2, indicatorHeight = 12 }
+                , { hour = 3, indicatorHeight = 18 }
+                , { hour = 4, indicatorHeight = 12 }
+                , { hour = 5, indicatorHeight = 12 }
+                , { hour = 6, indicatorHeight = 25 }
+                , { hour = 7, indicatorHeight = 12 }
+                , { hour = 8, indicatorHeight = 12 }
+                , { hour = 9, indicatorHeight = 18 }
+                , { hour = 10, indicatorHeight = 12 }
+                , { hour = 11, indicatorHeight = 12 }
+                , { hour = 12, indicatorHeight = 40 }
+                , { hour = 13, indicatorHeight = 12 }
+                , { hour = 14, indicatorHeight = 12 }
+                , { hour = 15, indicatorHeight = 18 }
+                , { hour = 16, indicatorHeight = 12 }
+                , { hour = 17, indicatorHeight = 12 }
+                , { hour = 18, indicatorHeight = 25 }
+                , { hour = 19, indicatorHeight = 12 }
+                , { hour = 20, indicatorHeight = 12 }
+                , { hour = 21, indicatorHeight = 18 }
+                , { hour = 22, indicatorHeight = 12 }
+                , { hour = 23, indicatorHeight = 12 }
+                ]
 
 
 type Message
@@ -1438,6 +1712,7 @@ updatePure message model =
                             , MessageTimeBegin <| Mensam.Widget.Time.SetMinute <| Mensam.Time.MkMinute 0
                             , MessageTimeEnd <| Mensam.Widget.Time.SetHour <| fixedBoundsInterval.end
                             , MessageTimeEnd <| Mensam.Widget.Time.SetMinute <| Mensam.Time.MkMinute 0
+                            , SetDateEndToDateBegin
                             ]
                                 ++ (if Mensam.Time.unHour fixedBoundsInterval.end < Mensam.Time.unHour orderedInterval.end then
                                         [ SetDateEndOneAfterDateBegin ]
